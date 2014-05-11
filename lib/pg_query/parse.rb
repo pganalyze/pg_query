@@ -1,10 +1,32 @@
 require 'json'
 
-class PgQueryparser
-  def self.parse(input)
-    str = _raw_parse(input)
-    str = parsetree_to_json(str)
-    JSON.parse(str, max_nesting: 1000)
+class PgQuery
+  def self.parse(query)
+    output = _raw_parse(query)
+    
+    parsetree = []
+    warnings = []
+    output.each_line do |line|
+      if line[/^WARNING/]
+        warnings << line.strip
+      elsif line[/^LOCATION/]
+        # Ignore
+      elsif !line.empty?
+        line_as_json = parsetree_to_json(line)
+        parsetree += JSON.parse(line_as_json, max_nesting: 1000)
+      end
+    end
+    
+    PgQuery.new(query, parsetree, warnings)
+  end
+
+  attr_reader :query
+  attr_reader :parsetree
+  attr_reader :warnings
+  def initialize(query, parsetree, warnings = [])
+    @query = query
+    @parsetree = parsetree
+    @warnings = warnings
   end
 
 protected

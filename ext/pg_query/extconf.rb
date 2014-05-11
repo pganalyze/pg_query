@@ -21,15 +21,15 @@ $objs += " #{pgdir}/src/timezone/localtime.o #{pgdir}/src/timezone/strftime.o #{
 $objs += " #{pgdir}/src/common/libpgcommon_srv.a #{pgdir}/src/port/libpgport_srv.a"
 $objs = $objs.split(" ")
 
-$objs << File.join(File.dirname(__FILE__), "pg_queryparser.o")
+$objs << File.join(File.dirname(__FILE__), "pg_query.o")
 
 $CFLAGS << " -I #{pgdir}/src/include"
 
-SYMFILE = File.join(File.dirname(__FILE__), "pg_queryparser.sym")
+SYMFILE = File.join(File.dirname(__FILE__), "pg_query.sym")
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << "-exported_symbols_list #{SYMFILE}"
 else
   $DLDFLAGS << "-export-symbols #{SYMFILE}"
 end
 
-create_makefile 'pg_queryparser/pg_queryparser'
+create_makefile 'pg_query/pg_query'

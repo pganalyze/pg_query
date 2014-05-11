@@ -1,1 +1,1 @@
-require 'pg_queryparser'
+require 'pg_query'

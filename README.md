@@ -7,15 +7,15 @@ This is slightly crazy, but is the only reliable way of parsing all valid Postgr
 #### Installation
 
 ```
-gem install pg_queryparser
+gem install pg_query
 ```
 
-**Note:** Due to building a copy of PostgreSQL, installation will take a while.
+**Note:** Due to building a copy of PostgreSQL, installation will take a while. Expect 5 to 10 minutes on a fast machine.
 
 #### Usage
 
 ```
-PgQueryparser.parse("SELECT 1")
+PgQuery.parse("SELECT 1")
 # => {"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>"false", "larg"=>nil, "rarg"=>nil}}
 ```
 

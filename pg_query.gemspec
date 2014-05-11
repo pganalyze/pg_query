@@ -1,29 +1,29 @@
 $:.push File.expand_path("../lib", __FILE__)
-require 'pg_queryparser/version'
+require 'pg_query/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'pg_queryparser'
-  s.version     = PgQueryparser::VERSION
+  s.name        = 'pg_query'
+  s.version     = PgQuery::VERSION
   
   s.summary     = 'PostgreSQL query parsing and normalization library'
   s.description = 'Uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree'
   s.author      = 'Lukas Fittl'
   s.email       = 'lukas@fittl.com'
   s.license     = 'MIT'
-  s.homepage    = 'http://github.com/pganalyze/pg_queryparser'
+  s.homepage    = 'http://github.com/pganalyze/pg_query'
   
-  s.extensions = %w[ext/pg_queryparser/extconf.rb]
+  s.extensions = %w[ext/pg_query/extconf.rb]
 
   s.files = %w[
     LICENSE
     Rakefile
-    ext/pg_queryparser/extconf.rb
-    ext/pg_queryparser/pg_queryparser.c
-    ext/pg_queryparser/pg_queryparser.sym
-    lib/pg_queryparser.rb
-    lib/pg_queryparser/parse.rb
-    lib/pg_queryparser/parse_error.rb
-    lib/pg_queryparser/version.rb
+    ext/pg_query/extconf.rb
+    ext/pg_query/pg_query.c
+    ext/pg_query/pg_query.sym
+    lib/pg_query.rb
+    lib/pg_query/parse.rb
+    lib/pg_query/parse_error.rb
+    lib/pg_query/version.rb
   ]
   
   s.add_development_dependency "rake-compiler", '~> 0'

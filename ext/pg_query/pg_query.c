@@ -12,9 +12,9 @@
 
 #include <ruby.h>
 
-const char* progname = "pg_queryparser";
+const char* progname = "pg_query";
 
-static VALUE pg_queryparser_raw_parse(VALUE self, VALUE input)
+static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 {
 	Check_Type(input, T_STRING);
 	
@@ -54,11 +54,11 @@ static VALUE pg_queryparser_raw_parse(VALUE self, VALUE input)
 	MemoryContextDelete(ctx);
 	
 	if (tree == NULL || error != NULL) {
-		VALUE cPgQueryparser, cParseError;
+		VALUE cPgQuery, cParseError;
 		VALUE exc, args[2];
 		
-		cPgQueryparser = rb_const_get(rb_cObject, rb_intern("PgQueryparser"));
-		cParseError = rb_const_get_at(cPgQueryparser, rb_intern("ParseError"));
+		cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
+		cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 		
 		if (error) {
 			args[0] = rb_tainted_str_new_cstr(error->message);
@@ -76,13 +76,13 @@ static VALUE pg_queryparser_raw_parse(VALUE self, VALUE input)
 	return result;
 }
 
-void Init_pg_queryparser(void)
+void Init_pg_query(void)
 {
-	VALUE cPgQueryparser;
+	VALUE cPgQuery;
 	
 	MemoryContextInit();
 
-	cPgQueryparser = rb_const_get(rb_cObject, rb_intern("PgQueryparser"));
+	cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 
-	rb_define_singleton_method(cPgQueryparser, "_raw_parse", pg_queryparser_raw_parse, 1);
+	rb_define_singleton_method(cPgQuery, "_raw_parse", pg_query_raw_parse, 1);
 }
