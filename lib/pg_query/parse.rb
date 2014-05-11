@@ -2,19 +2,19 @@ require 'json'
 
 class PgQuery
   def self.parse(query)
-    output = _raw_parse(query)
+    parsetree, stderr = _raw_parse(query)
     
-    parsetree = []
+    parsetree = [] if parsetree == '<>'
+    
+    if !parsetree.nil? && !parsetree.empty?
+      parsetree = parsetree_to_json(parsetree)
+      parsetree = JSON.parse(parsetree, max_nesting: 1000)
+    end
+    
     warnings = []
-    output.each_line do |line|
-      if line[/^WARNING/]
-        warnings << line.strip
-      elsif line[/^LOCATION/]
-        # Ignore
-      elsif !line.empty?
-        line_as_json = parsetree_to_json(line)
-        parsetree += JSON.parse(line_as_json, max_nesting: 1000)
-      end
+    stderr.each_line do |line|
+      next unless line[/^WARNING/]
+      warnings << line.strip
     end
     
     PgQuery.new(query, parsetree, warnings)

@@ -1,28 +1,43 @@
 #include "postgres.h"
-
-#include <ctype.h>
-#include <float.h>
-#include <math.h>
-#include <limits.h>
-#include <unistd.h>
-#include <sys/stat.h>
 #include "utils/memutils.h"
 #include "parser/parser.h"
 #include "nodes/print.h"
 
+#include <unistd.h>
+#include <fcntl.h>
+
 #include <ruby.h>
 
 const char* progname = "pg_query";
+
+static void raise_parse_error(ErrorData* error)
+{
+	VALUE cPgQuery, cParseError;
+	VALUE exc, args[2];
+	
+	cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
+	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
+	
+	args[0] = rb_tainted_str_new_cstr(error->message);
+	args[1] = INT2NUM(error->cursorpos);
+	
+	exc = rb_class_new_instance(2, args, cParseError);
+	
+	rb_exc_raise(exc);
+}
+
+#define STDERR_BUFFER_LEN 4096
 
 static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 {
 	Check_Type(input, T_STRING);
 	
 	MemoryContext ctx = NULL;
-	List *tree;
-	char *str;
 	VALUE result;
 	ErrorData* error = NULL;
+	char stderr_buffer[STDERR_BUFFER_LEN + 1] = {0};
+	int stderr_global;
+	int stderr_pipe[2];
 
 	ctx = AllocSetContextCreate(TopMemoryContext,
 								"RootContext",
@@ -30,12 +45,37 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 								ALLOCSET_DEFAULT_INITSIZE,
 								ALLOCSET_DEFAULT_MAXSIZE);
 	MemoryContextSwitchTo(ctx);
-
-	str = StringValueCStr(input);
 	
+	// Setup pipe for stderr redirection
+	if (pipe(stderr_pipe) != 0)
+		rb_raise(rb_eRuntimeError, "PgQuery._raw_parse: Could not allocate pipe for stderr redirection");
+
+	fcntl(stderr_pipe[0], F_SETFL, fcntl(stderr_pipe[0], F_GETFL) | O_NONBLOCK);
+	
+	// Redirect stderr to the pipe
+	stderr_global = dup(STDERR_FILENO);
+	dup2(stderr_pipe[1], STDERR_FILENO);
+	close(stderr_pipe[1]);
+	
+	// Parse it!
 	PG_TRY();
 	{
+		List *tree;
+		char *str;
+		
+		str = StringValueCStr(input);
 		tree = raw_parser(str);
+		
+		str = nodeToString(tree);
+	
+		// Save stderr for result
+		read(stderr_pipe[0], stderr_buffer, STDERR_BUFFER_LEN);
+	
+		result = rb_ary_new();
+		rb_ary_push(result, rb_tainted_str_new_cstr(str));
+		rb_ary_push(result, rb_str_new2(stderr_buffer));
+	
+		pfree(str);
 	}
 	PG_CATCH();
 	{
@@ -44,34 +84,13 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	}
 	PG_END_TRY();
 	
-	if (tree && error == NULL) {
-		str = nodeToString(tree);
-		result = rb_tainted_str_new_cstr(str);
-		pfree(str);
-	}
-	
+	// Restore stderr & return to previous PostgreSQL memory context
+	dup2(stderr_global, STDERR_FILENO);
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
 	
-	if (tree == NULL || error != NULL) {
-		VALUE cPgQuery, cParseError;
-		VALUE exc, args[2];
-		
-		cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
-		cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
-		
-		if (error) {
-			args[0] = rb_tainted_str_new_cstr(error->message);
-			args[1] = INT2NUM(error->cursorpos);
-		} else {
-			args[0] = rb_str_new2("unknown parser error");
-			args[1] = Qnil;
-		}
-		
-		exc = rb_class_new_instance(2, args, cParseError);
-		
-		rb_exc_raise(exc);
-	}
+	// If we got an error, throw a ParseError exception
+	if (error) raise_parse_error(error);
 	
 	return result;
 }

@@ -21,6 +21,13 @@ describe PgQuery do
   
   it "should set warnings for unknown node types" do
     query = PgQuery.parse("DEALLOCATE a739")
-    query.warnings.should == ["WARNING:  01000: could not dump unrecognized node type: 765"]
+    expect(query.parsetree).to eq [{}]
+    expect(query.warnings).to eq ["WARNING:  01000: could not dump unrecognized node type: 765"]
+  end
+  
+  it "should parse empty queries" do
+    query = PgQuery.parse("-- nothing")
+    expect(query.parsetree).to eq []
+    expect(query.warnings).to be_empty
   end
 end
