@@ -1,0 +1,6 @@
+pkg
+tmp
+.DS_Store
+
+*.bundle
+*.o
