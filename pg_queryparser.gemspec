@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
     ext/pg_queryparser/pg_queryparser.sym
     lib/pg_queryparser.rb
     lib/pg_queryparser/parse.rb
+    lib/pg_queryparser/parse_error.rb
     lib/pg_queryparser/version.rb
   ]
   

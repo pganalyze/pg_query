@@ -22,8 +22,7 @@ static VALUE pg_queryparser_raw_parse(VALUE self, VALUE input)
 	List *tree;
 	char *str;
 	VALUE result;
-	
-	MemoryContextInit();
+	ErrorData* error = NULL;
 
 	ctx = AllocSetContextCreate(TopMemoryContext,
 								"RootContext",
@@ -33,21 +32,46 @@ static VALUE pg_queryparser_raw_parse(VALUE self, VALUE input)
 	MemoryContextSwitchTo(ctx);
 
 	str = StringValueCStr(input);
-	tree = raw_parser((char*) str);
 	
-	if (tree == NULL) {
-		MemoryContextSwitchTo(TopMemoryContext);
-		MemoryContextDelete(ctx);
-		rb_raise(rb_eArgError, "failed to parse query");
+	PG_TRY();
+	{
+		tree = raw_parser(str);
+	}
+	PG_CATCH();
+	{
+		error = CopyErrorData();
+		FlushErrorState();
+	}
+	PG_END_TRY();
+	
+	if (tree && error == NULL) {
+		str = nodeToString(tree);
+		result = rb_tainted_str_new_cstr(str);
+		pfree(str);
 	}
 	
-	str = nodeToString(tree);
-	
-	result = rb_tainted_str_new_cstr(str);
-	pfree(str);
-
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
+	
+	if (tree == NULL || error != NULL) {
+		VALUE cPgQueryparser, cParseError;
+		VALUE exc, args[2];
+		
+		cPgQueryparser = rb_const_get(rb_cObject, rb_intern("PgQueryparser"));
+		cParseError = rb_const_get_at(cPgQueryparser, rb_intern("ParseError"));
+		
+		if (error) {
+			args[0] = rb_tainted_str_new_cstr(error->message);
+			args[1] = INT2NUM(error->cursorpos);
+		} else {
+			args[0] = rb_str_new2("unknown parser error");
+			args[1] = Qnil;
+		}
+		
+		exc = rb_class_new_instance(2, args, cParseError);
+		
+		rb_exc_raise(exc);
+	}
 	
 	return result;
 }
@@ -55,6 +79,8 @@ static VALUE pg_queryparser_raw_parse(VALUE self, VALUE input)
 void Init_pg_queryparser(void)
 {
 	VALUE cPgQueryparser;
+	
+	MemoryContextInit();
 
 	cPgQueryparser = rb_const_get(rb_cObject, rb_intern("PgQueryparser"));
 
