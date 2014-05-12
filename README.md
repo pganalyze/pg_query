@@ -23,7 +23,35 @@ Usage
 
 ```ruby
 PgQuery.parse("SELECT 1")
-# => #<PgQuery:0x007fc82a3ff080 @query="SELECT 1", @parsetree=[{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>"false", "larg"=>nil, "rarg"=>nil}}], @warnings=[]> 
+
+=> #<PgQuery:0x007fe92b27ea18
+ @parsetree=
+  [{"SELECT"=>
+     {"distinctClause"=>nil,
+      "intoClause"=>nil,
+      "targetList"=>
+       [{"RESTARGET"=>
+          {"name"=>nil,
+           "indirection"=>nil,
+           "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}},
+           "location"=>7}}],
+      "fromClause"=>nil,
+      "whereClause"=>nil,
+      "groupClause"=>nil,
+      "havingClause"=>nil,
+      "windowClause"=>nil,
+      "valuesLists"=>nil,
+      "sortClause"=>nil,
+      "limitOffset"=>nil,
+      "limitCount"=>nil,
+      "lockingClause"=>nil,
+      "withClause"=>nil,
+      "op"=>0,
+      "all"=>"false",
+      "larg"=>nil,
+      "rarg"=>nil}}],
+ @query="SELECT 1",
+ @warnings=[]>
 ```
 
 Authors
