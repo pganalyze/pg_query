@@ -12,7 +12,7 @@ if !Dir.exists?(pgdir)
   end
   system("unzip -q #{workdir}/postgres.zip -d #{workdir}") || raise("ERROR")
   system("mv #{workdir}/postgres-more-outfuncs #{pgdir}") || raise("ERROR")
-  system("cd #{pgdir}; ./configure") || raise("ERROR")
+  system("cd #{pgdir}; CFLAGS=-fPIC ./configure") || raise("ERROR")
   system("cd #{pgdir}; make") || raise("ERROR")
 end
 
@@ -29,7 +29,7 @@ SYMFILE = File.join(File.dirname(__FILE__), "pg_query.sym")
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << "-exported_symbols_list #{SYMFILE}"
 else
-  $DLDFLAGS << "-export-symbols #{SYMFILE}"
+  $DLDFLAGS << "-Wl,--retain-symbols-file=#{SYMFILE}"
 end
 
 create_makefile 'pg_query/pg_query'
