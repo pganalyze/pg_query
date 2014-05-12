@@ -6,10 +6,10 @@ Gem::Specification.new do |s|
   s.version     = PgQuery::VERSION
   
   s.summary     = 'PostgreSQL query parsing and normalization library'
-  s.description = 'Uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree'
+  s.description = 'Parses SQL queries using a copy of the PostgreSQL server query parser'
   s.author      = 'Lukas Fittl'
   s.email       = 'lukas@fittl.com'
-  s.license     = 'MIT'
+  s.license     = 'PostgreSQL'
   s.homepage    = 'http://github.com/pganalyze/pg_query'
   
   s.extensions = %w[ext/pg_query/extconf.rb]
