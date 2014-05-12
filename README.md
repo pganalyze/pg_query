@@ -62,6 +62,6 @@ Authors
 License
 -------
 
-Copyright (c) 2014 pganalyze
+Copyright (c) 2014, pganalyze Team <team@pganalyze.com>
 
-pg_query is licensed under the PostgreSQL license, see LICENSE file for details.
+pg_query is licensed under the 3-clause BSD license, see LICENSE file for details.
