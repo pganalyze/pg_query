@@ -48,7 +48,7 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	
 	// Setup pipe for stderr redirection
 	if (pipe(stderr_pipe) != 0)
-		rb_raise(rb_eRuntimeError, "PgQuery._raw_parse: Could not allocate pipe for stderr redirection");
+		rb_raise(rb_eIOError, "Failed to open pipe, too many open file descriptors");
 
 	fcntl(stderr_pipe[0], F_SETFL, fcntl(stderr_pipe[0], F_GETFL) | O_NONBLOCK);
 	
@@ -84,8 +84,9 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	}
 	PG_END_TRY();
 	
-	// Restore stderr & return to previous PostgreSQL memory context
+	// Restore stderr, close pipe & return to previous PostgreSQL memory context
 	dup2(stderr_global, STDERR_FILENO);
+	close(stderr_pipe[0]);
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
 	
