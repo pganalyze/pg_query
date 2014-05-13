@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe PgQuery do
+describe PgQuery, "parsing" do
   it "should parse a simple query" do
     query = PgQuery.parse("SELECT 1")
     expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>"false", "larg"=>nil, "rarg"=>nil}}]
@@ -29,5 +29,16 @@ describe PgQuery do
     query = PgQuery.parse("-- nothing")
     expect(query.parsetree).to eq []
     expect(query.warnings).to be_empty
+  end
+end
+
+describe PgQuery, "normalized parsing" do
+  it "should parse a normalized query" do
+    query = PgQuery.parse_normalized("SELECT ? FROM x")
+    expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil,
+                                    "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}}, "location"=>7}}],
+                                    "fromClause"=>[{"RANGEVAR"=>{"schemaname"=>nil, "relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "alias"=>nil, "location"=>16}}],
+                                    "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>"false", "larg"=>nil, "rarg"=>nil}}]
+    expect(query.query).to eq "SELECT ? FROM x"
   end
 end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pg_query (0.1.1)
+    pg_query (0.1.2)
       json (~> 1.8)
 
 GEM

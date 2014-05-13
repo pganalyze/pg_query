@@ -52,6 +52,38 @@ PgQuery.parse("SELECT 1")
       "rarg"=>nil}}],
  @query="SELECT 1",
  @warnings=[]>
+
+# Parsing a pg_stat_statements normalized query
+PgQuery.parse_normalized("SELECT ?")
+
+=> #<PgQuery:0x007f9a740b81d0
+ @parsetree=
+  [{"SELECT"=>
+     {"distinctClause"=>nil,
+      "intoClause"=>nil,
+      "targetList"=>
+       [{"RESTARGET"=>
+          {"name"=>nil,
+           "indirection"=>nil,
+           "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}},
+           "location"=>7}}],
+      "fromClause"=>nil,
+      "whereClause"=>nil,
+      "groupClause"=>nil,
+      "havingClause"=>nil,
+      "windowClause"=>nil,
+      "valuesLists"=>nil,
+      "sortClause"=>nil,
+      "limitOffset"=>nil,
+      "limitCount"=>nil,
+      "lockingClause"=>nil,
+      "withClause"=>nil,
+      "op"=>0,
+      "all"=>"false",
+      "larg"=>nil,
+      "rarg"=>nil}}],
+ @query="SELECT ?",
+ @warnings=[]>
 ```
 
 Authors
