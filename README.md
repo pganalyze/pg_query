@@ -3,6 +3,8 @@ pg_query
 
 This Ruby extension uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree.
 
+In addition the extension allows you to normalize queries (replacing constant values with ?) and parse these normalized queries into a parsetree again.
+
 When you build this extension, it fetches a copy of the PostgreSQL server source and builds it, and then statically links it into this extension.
 
 This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
@@ -85,9 +87,8 @@ Authors
 License
 -------
 
-Copyright (c) 2014, pganalyze Team <team@pganalyze.com>
-
+Copyright (c) 2014, pganalyze Team <team@pganalyze.com><br>
 pg_query is licensed under the 3-clause BSD license, see LICENSE file for details.
 
-
-Query normalization code: Copyright (c) 2008-2014, PostgreSQL Global Development Group
+Query normalization code:<br>
+Copyright (c) 2008-2014, PostgreSQL Global Development Group
