@@ -8,10 +8,10 @@ pgdir = File.join(workdir, "postgres")
 # Note: We intentionally use a patched version that fixes bugs in outfuncs.c
 if !Dir.exists?(pgdir)
   unless File.exists?("#{workdir}/postgres.zip")
-    system("curl https://codeload.github.com/pganalyze/postgres/zip/more-outfuncs -o #{workdir}/postgres.zip") || raise("ERROR")
+    system("curl https://codeload.github.com/pganalyze/postgres/zip/pg_query -o #{workdir}/postgres.zip") || raise("ERROR")
   end
   system("unzip -q #{workdir}/postgres.zip -d #{workdir}") || raise("ERROR")
-  system("mv #{workdir}/postgres-more-outfuncs #{pgdir}") || raise("ERROR")
+  system("mv #{workdir}/postgres-pg_query #{pgdir}") || raise("ERROR")
   system("cd #{pgdir}; CFLAGS=-fPIC ./configure") || raise("ERROR")
   system("cd #{pgdir}; make") || raise("ERROR")
 end

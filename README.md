@@ -7,7 +7,7 @@ When you build this extension, it fetches a copy of the PostgreSQL server source
 
 This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
 
-**Note:** This gem uses a patched version of the latest PostgreSQL stable, [with improvements to outfuncs.c](https://github.com/pganalyze/postgres/compare/REL9_3_STABLE...more-outfuncs).
+**Note:** This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_3_STABLE...pg_query).
 
 Installation
 ------------
@@ -35,28 +35,19 @@ PgQuery.parse("SELECT 1")
            "indirection"=>nil,
            "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}},
            "location"=>7}}],
-      "fromClause"=>nil,
-      "whereClause"=>nil,
-      "groupClause"=>nil,
-      "havingClause"=>nil,
-      "windowClause"=>nil,
-      "valuesLists"=>nil,
-      "sortClause"=>nil,
-      "limitOffset"=>nil,
-      "limitCount"=>nil,
-      "lockingClause"=>nil,
-      "withClause"=>nil,
-      "op"=>0,
-      "all"=>"false",
-      "larg"=>nil,
-      "rarg"=>nil}}],
+      ...}}],
  @query="SELECT 1",
  @warnings=[]>
 
-# Parsing a pg_stat_statements normalized query
-PgQuery.parse_normalized("SELECT ?")
+# Normalizing a query (like pg_stat_statements)
+PgQuery.normalize("SELECT 1 FROM x WHERE y = 'foo'")
 
-=> #<PgQuery:0x007f9a740b81d0
+=> "SELECT ? FROM x WHERE y = ?"
+
+# Parsing a normalized query
+PgQuery.parse("SELECT ? FROM x WHERE y = ?")
+
+=> #<PgQuery:0x007fb99455a438
  @parsetree=
   [{"SELECT"=>
      {"distinctClause"=>nil,
@@ -67,22 +58,22 @@ PgQuery.parse_normalized("SELECT ?")
            "indirection"=>nil,
            "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}},
            "location"=>7}}],
-      "fromClause"=>nil,
-      "whereClause"=>nil,
-      "groupClause"=>nil,
-      "havingClause"=>nil,
-      "windowClause"=>nil,
-      "valuesLists"=>nil,
-      "sortClause"=>nil,
-      "limitOffset"=>nil,
-      "limitCount"=>nil,
-      "lockingClause"=>nil,
-      "withClause"=>nil,
-      "op"=>0,
-      "all"=>"false",
-      "larg"=>nil,
-      "rarg"=>nil}}],
- @query="SELECT ?",
+      "fromClause"=>
+       [{"RANGEVAR"=>
+          {"schemaname"=>nil,
+           "relname"=>"x",
+           "inhOpt"=>2,
+           "relpersistence"=>"p",
+           "alias"=>nil,
+           "location"=>14}}],
+      "whereClause"=>
+       {"AEXPR"=>
+         {"name"=>["="],
+          "lexpr"=>{"COLUMNREF"=>{"fields"=>["y"], "location"=>22}},
+          "rexpr"=>{"PARAMREF"=>{"number"=>0, "location"=>26}},
+          "location"=>24}},
+      ...}}],
+ @query="SELECT ? FROM x WHERE y = ?",
  @warnings=[]>
 ```
 
@@ -97,3 +88,6 @@ License
 Copyright (c) 2014, pganalyze Team <team@pganalyze.com>
 
 pg_query is licensed under the 3-clause BSD license, see LICENSE file for details.
+
+
+Query normalization code: Copyright (c) 2008-2014, PostgreSQL Global Development Group

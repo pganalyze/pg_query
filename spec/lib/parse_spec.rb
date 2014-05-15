@@ -34,11 +34,58 @@ end
 
 describe PgQuery, "normalized parsing" do
   it "should parse a normalized query" do
-    query = PgQuery.parse_normalized("SELECT ? FROM x")
+    #pending
+    query = PgQuery.parse("SELECT ? FROM x")
     expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil,
                                     "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}}, "location"=>7}}],
-                                    "fromClause"=>[{"RANGEVAR"=>{"schemaname"=>nil, "relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "alias"=>nil, "location"=>16}}],
+                                    "fromClause"=>[{"RANGEVAR"=>{"schemaname"=>nil, "relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "alias"=>nil, "location"=>14}}],
                                     "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>"false", "larg"=>nil, "rarg"=>nil}}]
     expect(query.query).to eq "SELECT ? FROM x"
+  end
+  
+  it "should keep locations correct" do
+    query = PgQuery.parse("SELECT ?, 123")
+    targetlist = query.parsetree[0]["SELECT"]["targetList"]
+    expect(targetlist[0]["RESTARGET"]["location"]).to eq 7
+    expect(targetlist[1]["RESTARGET"]["location"]).to eq 10
+  end
+  
+  it "should parse INTERVAL ?" do
+    query = PgQuery.parse("SELECT INTERVAL ?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse BETWEEN ? AND ?" do
+    query = PgQuery.parse("SELECT x WHERE y BETWEEN ? AND ?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse ?.?" do
+    pending
+    query = PgQuery.parse("SELECT ?.?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse $1?" do
+    query = PgQuery.parse("SELECT 1 FROM x WHERE x IN ($1?, $1?)")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse SET" do
+    pending
+    query = PgQuery.parse("SET statement_timeout=?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse weird SET normalizations" do
+    pending
+    query = PgQuery.parse("SET CLIENT_ENCODING TO UTF?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse ?=ANY(..) constructs" do
+    pending
+    query = PgQuery.parse("SELECT 1 FROM x WHERE ?= ANY(z)")
+    expect(query.parsetree).not_to be_nil
   end
 end
