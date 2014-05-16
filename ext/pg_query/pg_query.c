@@ -89,6 +89,7 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	// Restore stderr, close pipe & return to previous PostgreSQL memory context
 	dup2(stderr_global, STDERR_FILENO);
 	close(stderr_pipe[0]);
+	close(stderr_global);
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
 	
