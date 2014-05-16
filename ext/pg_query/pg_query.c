@@ -13,10 +13,10 @@
 
 const char* progname = "pg_query";
 
-static void raise_parse_error(ErrorData* error)
+static VALUE new_parse_error(ErrorData* error)
 {
 	VALUE cPgQuery, cParseError;
-	VALUE exc, args[2];
+	VALUE args[2];
 	
 	cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
@@ -24,9 +24,7 @@ static void raise_parse_error(ErrorData* error)
 	args[0] = rb_tainted_str_new_cstr(error->message);
 	args[1] = INT2NUM(error->cursorpos);
 	
-	exc = rb_class_new_instance(2, args, cParseError);
-	
-	rb_exc_raise(exc);
+	return rb_class_new_instance(2, args, cParseError);
 }
 
 #define STDERR_BUFFER_LEN 4096
@@ -36,8 +34,8 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	Check_Type(input, T_STRING);
 	
 	MemoryContext ctx = NULL;
-	VALUE result;
-	ErrorData* error = NULL;
+	VALUE result = Qnil;
+	VALUE error = Qnil;
 	char stderr_buffer[STDERR_BUFFER_LEN + 1] = {0};
 	int stderr_global;
 	int stderr_pipe[2];
@@ -82,7 +80,8 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	}
 	PG_CATCH();
 	{
-		error = CopyErrorData();
+		ErrorData* error_data = CopyErrorData();
+		error = new_parse_error(error_data);
 		FlushErrorState();
 	}
 	PG_END_TRY();
@@ -93,8 +92,8 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
 	
-	// If we got an error, throw a ParseError exception
-	if (error) raise_parse_error(error);
+	// If we got an error, throw it
+	if (!NIL_P(error)) rb_exc_raise(error);
 	
 	return result;
 }
@@ -351,10 +350,6 @@ bool const_record_walker(Node *node, pgssConstLocations *jstate)
 		jstate->clocations[jstate->clocations_count].length = -1;
 		jstate->clocations_count++;
 	}
-	//else if (isA(node, Query))
-	//{
-	//	return query_tree_walker(node, const_record_walker, jstate, 0);
-	//}
 	
 	PG_TRY();
 	{
@@ -372,8 +367,8 @@ static VALUE pg_query_normalize(VALUE self, VALUE input)
 	Check_Type(input, T_STRING);
 	
 	MemoryContext ctx = NULL;
-	VALUE result;
-	ErrorData* error = NULL;
+	VALUE result = Qnil;
+	VALUE error = Qnil;
 	
 	ctx = AllocSetContextCreate(TopMemoryContext,
 								"pg_query_normalize",
@@ -412,16 +407,17 @@ static VALUE pg_query_normalize(VALUE self, VALUE input)
 	}
 	PG_CATCH();
 	{
-		error = CopyErrorData();
+		ErrorData* error_data = CopyErrorData();
+		error = new_parse_error(error_data);
 		FlushErrorState();
 	}
 	PG_END_TRY();
-
+	
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
 	
-	// If we got an error, throw a ParseError exception
-	if (error) raise_parse_error(error);
+	// If we got an error, throw it
+	if (!NIL_P(error)) rb_exc_raise(error);
 	
 	return result;
 }
