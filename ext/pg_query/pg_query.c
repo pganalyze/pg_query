@@ -332,6 +332,8 @@ generate_normalized_query(pgssConstLocations *jstate, const char *query,
 
 bool const_record_walker(Node *node, pgssConstLocations *jstate)
 {
+	bool result;
+	
 	if (node == NULL) return false;
 	
 	if (IsA(node, A_Const) && ((A_Const *) node)->location >= 0)
@@ -353,13 +355,16 @@ bool const_record_walker(Node *node, pgssConstLocations *jstate)
 	
 	PG_TRY();
 	{
-		return raw_expression_tree_walker(node, const_record_walker, (void*) jstate);
+		result = raw_expression_tree_walker(node, const_record_walker, (void*) jstate);
 	}
 	PG_CATCH();
 	{
-		return false;
+		FlushErrorState();
+		result = false;
 	}
 	PG_END_TRY();
+	
+	return result;
 }
 
 static VALUE pg_query_normalize(VALUE self, VALUE input)
