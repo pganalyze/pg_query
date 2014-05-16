@@ -53,6 +53,62 @@ describe PgQuery, "normalized parsing" do
   it "should parse INTERVAL ?" do
     query = PgQuery.parse("SELECT INTERVAL ?")
     expect(query.parsetree).not_to be_nil
+    targetlist = query.parsetree[0]["SELECT"]["targetList"]
+    expect(targetlist[0]["RESTARGET"]["val"]).to eq({"TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
+                                                     "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
+                                                                  "setof"=>"false", "pct_type"=>"false", "typmods"=>nil,
+                                                                  "typemod"=>"-1", "arrayBounds"=>nil, "location"=>7}},
+                                                     "location"=>"-1"}})
+  end
+  
+  it "should parse INTERVAL ? hour" do
+    q = PgQuery.parse("SELECT INTERVAL ? hour")
+    expect(q.parsetree).not_to be_nil
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq({"TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
+                                       "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
+                                                                 "setof"=>"false", "pct_type"=>"false",
+                                                                 "typmods"=>[{"A_CONST"=>{"val"=>0, "location"=>"-1"}}],
+                                                                 "typemod"=>"-1", "arrayBounds"=>nil, "location"=>7}},
+                                       "location"=>"-1"}})
+  end
+  
+  it "should parse 'a ? b' in target list" do
+    q = PgQuery.parse("SELECT a ? b")
+    expect(q.parsetree).not_to be_nil
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq({"AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>7}},
+                                                   "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>11}},
+                                    "location"=>9}})
+  end
+  
+  it "should parse 'a ?, b' in target list" do
+    q = PgQuery.parse("SELECT a ?, b")
+    expect(q.parsetree).not_to be_nil
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq({"AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>7}},
+                                                   "rexpr"=>nil,
+                                    "location"=>9}})
+  end
+  
+  it "should parse 'a ? AND b' in where clause" do
+    q = PgQuery.parse("SELECT * FROM x WHERE a ? AND b")
+    expect(q.parsetree).not_to be_nil
+    expr = q.parsetree[0]["SELECT"]["whereClause"]
+    expect(expr).to eq({"AEXPR AND"=>{"lexpr"=>{"AEXPR"=>{"name"=>["?"],
+                                                "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>22}},
+                                                "rexpr"=>nil, "location"=>24}},
+                                      "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>30}},
+                                      "location"=>26}})
+  end
+  
+  it "should parse 'a ? b' in where clause" do
+    q = PgQuery.parse("SELECT * FROM x WHERE a ? b")
+    expect(q.parsetree).not_to be_nil
+    expr = q.parsetree[0]["SELECT"]["whereClause"]
+    expect(expr).to eq({"AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>22}},
+                                                   "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>26}},
+                                    "location"=>24}})
   end
   
   it "should parse BETWEEN ? AND ?" do
@@ -71,8 +127,12 @@ describe PgQuery, "normalized parsing" do
     expect(query.parsetree).not_to be_nil
   end
   
-  it "should parse SET" do
-    pending
+  it "should parse SET x = ?" do
+    query = PgQuery.parse("SET statement_timeout = ?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse SET x=?" do
     query = PgQuery.parse("SET statement_timeout=?")
     expect(query.parsetree).not_to be_nil
   end
@@ -84,7 +144,6 @@ describe PgQuery, "normalized parsing" do
   end
   
   it "should parse ?=ANY(..) constructs" do
-    pending
     query = PgQuery.parse("SELECT 1 FROM x WHERE ?= ANY(z)")
     expect(query.parsetree).not_to be_nil
   end
