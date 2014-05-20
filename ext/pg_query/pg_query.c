@@ -353,6 +353,10 @@ bool const_record_walker(Node *node, pgssConstLocations *jstate)
 		jstate->clocations[jstate->clocations_count].length = -1;
 		jstate->clocations_count++;
 	}
+	else if (IsA(node, VariableSetStmt))
+	{
+		return const_record_walker((Node *) ((VariableSetStmt *) node)->args, jstate);
+	}
 	
 	PG_TRY();
 	{

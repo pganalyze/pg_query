@@ -23,12 +23,13 @@ describe PgQuery, "normalization" do
   end
   
   it "should normalize SETs" do
-    pending
+    q = PgQuery.normalize("SET test=123")
+    expect(q).to eq "SET test=?"
   end
   
   it "should normalize weird SETs" do
-    pending
-    # SET CLIENT_ENCODING = UTF8
+    q = PgQuery.normalize("SET CLIENT_ENCODING = UTF8")
+    expect(q).to eq "SET CLIENT_ENCODING = ?"
   end
   
   it "should not fail if it does not understand parts of the statement" do

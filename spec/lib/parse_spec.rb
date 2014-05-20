@@ -34,7 +34,6 @@ end
 
 describe PgQuery, "normalized parsing" do
   it "should parse a normalized query" do
-    #pending
     query = PgQuery.parse("SELECT ? FROM x")
     expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil,
                                     "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}}, "location"=>7}}],
@@ -113,12 +112,6 @@ describe PgQuery, "normalized parsing" do
   
   it "should parse BETWEEN ? AND ?" do
     query = PgQuery.parse("SELECT x WHERE y BETWEEN ? AND ?")
-    expect(query.parsetree).not_to be_nil
-  end
-  
-  it "should parse ?.?" do
-    pending
-    query = PgQuery.parse("SELECT ?.?")
     expect(query.parsetree).not_to be_nil
   end
   
