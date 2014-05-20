@@ -30,6 +30,205 @@ describe PgQuery, "parsing" do
     expect(query.parsetree).to eq []
     expect(query.warnings).to be_empty
   end
+  
+  it "should parse ALTER TABLE" do
+    query = PgQuery.parse("ALTER TABLE test ADD PRIMARY KEY (gid)")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"ALTER TABLE"=>
+          {"relation"=>
+            {"RANGEVAR"=>
+              {"schemaname"=>nil,
+               "relname"=>"test",
+               "inhOpt"=>2,
+               "relpersistence"=>"p",
+               "alias"=>nil,
+               "location"=>12}},
+           "cmds"=>
+            [{"ALTER TABLE CMD"=>
+               {"subtype"=>14,
+                "name"=>nil,
+                "def"=>
+                 {"CONSTRAINT"=>
+                   {"conname"=>nil,
+                    "deferrable"=>"false",
+                    "initdeferred"=>"false",
+                    "location"=>21,
+                    "contype"=>"PRIMARY_KEY",
+                    "keys"=>["gid"],
+                    "options"=>nil,
+                    "indexname"=>nil,
+                    "indexspace"=>nil}},
+                "behavior"=>0,
+                "missing_ok"=>"false"}}],
+           "relkind"=>26,
+           "missing_ok"=>"false"}}]
+  end
+  
+  it "should parse SET" do
+    query = PgQuery.parse("SET statement_timeout=0")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"SET"=>
+          {"kind"=>0,
+           "name"=>"statement_timeout",
+           "args"=>[{"A_CONST"=>{"val"=>0, "location"=>22}}],
+           "is_local"=>"false"}}]
+  end
+  
+  it "should parse SHOW" do
+    query = PgQuery.parse("SHOW work_mem")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"SHOW"=>{"name"=>"work_mem"}}]
+  end
+  
+  it "should parse COPY" do
+    query = PgQuery.parse("COPY test (id) TO stdout")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"COPY"=>
+          {"relation"=>
+            {"RANGEVAR"=>
+              {"schemaname"=>nil,
+               "relname"=>"test",
+               "inhOpt"=>2,
+               "relpersistence"=>"p",
+               "alias"=>nil,
+               "location"=>5}},
+           "query"=>nil,
+           "attlist"=>["id"],
+           "is_from"=>"false",
+           "is_program"=>"false",
+           "filename"=>nil,
+           "options"=>nil}}]
+  end
+  
+  it "should parse DROP" do
+    query = PgQuery.parse("drop table test123 cascade")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"DROP"=>
+          {"objects"=>[["test123"]],
+           "arguments"=>nil,
+           "removeType"=>26,
+           "behavior"=>1,
+           "missing_ok"=>"false",
+           "concurrent"=>"false"}}]
+  end
+  
+  it "should parse COMMIT" do
+    query = PgQuery.parse("COMMIT")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"TRANSACTION"=>{"kind"=>2, "options"=>nil, "gid"=>nil}}]
+  end
+
+  it "should parse CHECKPOINT" do
+    query = PgQuery.parse("CHECKPOINT")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"CHECKPOINT"=>{}}]
+  end
+  
+  it "should parse VACUUM" do
+    query = PgQuery.parse("VACUUM my_table")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"VACUUM"=>
+          {"options"=>1,
+           "freeze_min_age"=>"-1",
+           "freeze_table_age"=>"-1",
+           "relation"=>
+            {"RANGEVAR"=>
+              {"schemaname"=>nil,
+               "relname"=>"my_table",
+               "inhOpt"=>2,
+               "relpersistence"=>"p",
+               "alias"=>nil,
+               "location"=>7}},
+           "va_cols"=>nil,
+           "multixact_freeze_min_age"=>"-1",
+           "multixact_freeze_table_age"=>"-1"}}]
+  end
+  
+  it "should parse EXPLAIN" do
+    query = PgQuery.parse("EXPLAIN DELETE FROM test")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"EXPLAIN"=>
+          {"query"=>
+            {"DELETE FROM"=>
+              {"relation"=>
+                {"RANGEVAR"=>
+                  {"schemaname"=>nil,
+                   "relname"=>"test",
+                   "inhOpt"=>2,
+                   "relpersistence"=>"p",
+                   "alias"=>nil,
+                   "location"=>20}},
+               "usingClause"=>nil,
+               "whereClause"=>nil,
+               "returningList"=>nil,
+               "withClause"=>nil}},
+           "options"=>nil}}]
+  end
+  
+  it "should parse SELECT INTO" do
+    query = PgQuery.parse("CREATE TEMP TABLE test AS SELECT 1")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"CREATE TABLE AS"=>
+          {"query"=>
+            {"SELECT"=>
+              {"distinctClause"=>nil,
+               "intoClause"=>nil,
+               "targetList"=>
+                [{"RESTARGET"=>
+                   {"name"=>nil,
+                    "indirection"=>nil,
+                    "val"=>{"A_CONST"=>{"val"=>1, "location"=>33}},
+                    "location"=>33}}],
+               "fromClause"=>nil,
+               "whereClause"=>nil,
+               "groupClause"=>nil,
+               "havingClause"=>nil,
+               "windowClause"=>nil,
+               "valuesLists"=>nil,
+               "sortClause"=>nil,
+               "limitOffset"=>nil,
+               "limitCount"=>nil,
+               "lockingClause"=>nil,
+               "withClause"=>nil,
+               "op"=>0,
+               "all"=>"false",
+               "larg"=>nil,
+               "rarg"=>nil}},
+           "into"=>
+            {"INTOCLAUSE"=>
+              {"rel"=>
+                {"RANGEVAR"=>
+                  {"schemaname"=>nil,
+                   "relname"=>"test",
+                   "inhOpt"=>2,
+                   "relpersistence"=>"t",
+                   "alias"=>nil,
+                   "location"=>18}},
+               "colNames"=>nil,
+               "options"=>nil,
+               "onCommit"=>0,
+               "tableSpaceName"=>nil,
+               "viewQuery"=>nil,
+               "skipData"=>"false"}},
+           "relkind"=>26,
+           "is_select_into"=>"false"}}]
+  end
+  
+  it "should parse LOCK" do
+    query = PgQuery.parse("LOCK TABLE public.schema_migrations IN ACCESS SHARE MODE")
+    expect(query.warnings).to eq []
+    expect(query.parsetree).to eq [{"LOCK"=>
+          {"relations"=>
+            [{"RANGEVAR"=>
+               {"schemaname"=>"public",
+                "relname"=>"schema_migrations",
+                "inhOpt"=>2,
+                "relpersistence"=>"p",
+                "alias"=>nil,
+                "location"=>11}}],
+           "mode"=>1,
+           "nowait"=>"false"}}]
+  end
 end
 
 describe PgQuery, "normalized parsing" do
