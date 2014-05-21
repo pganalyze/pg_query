@@ -22,6 +22,18 @@ describe PgQuery, "normalization" do
   it "should normalize ANY(query, query)" do
   end
   
+  it "should work with complicated strings" do
+    q = PgQuery.normalize("SELECT U&'d\\0061t\\+000061' FROM x")
+    expect(q).to eq "SELECT ? FROM x"
+    
+    q = PgQuery.normalize("SELECT u&'d\\0061t\\+000061'    FROM x")
+    expect(q).to eq "SELECT ?    FROM x"
+    
+    # We can't avoid this easily, so treat it as known behaviour that we remove comments in this case
+    q = PgQuery.normalize("SELECT U&'d\\0061t\\+000061'-- comment\nFROM x")
+    expect(q).to eq "SELECT ?\nFROM x"
+  end
+      
   it "should normalize SETs" do
     q = PgQuery.normalize("SET test=123")
     expect(q).to eq "SET test=?"

@@ -2,6 +2,7 @@
 #include "utils/memutils.h"
 #include "parser/parser.h"
 #include "parser/scanner.h"
+#include "parser/scansup.h"
 #include "nodes/print.h"
 #include "nodes/nodeFuncs.h"
 #include "mb/pg_wchar.h"
@@ -238,6 +239,21 @@ fill_in_constant_lengths(pgssConstLocations *jstate, const char *query)
 				 * byte after the text of the current token in scanbuf.
 				 */
 				locs[i].length = (int) strlen(yyextra.scanbuf + loc);
+
+				/* Quoted string with Unicode escapes
+				 *
+				 * The lexer consumes trailing whitespace in order to find UESCAPE, but if there
+				 * is no UESCAPE it has still consumed it - don't include it in constant length.
+				 */
+				if (locs[i].length > 4 && /* U&'' */
+					(yyextra.scanbuf[loc] == 'u' || yyextra.scanbuf[loc] == 'U') &&
+					 yyextra.scanbuf[loc + 1] == '&' && yyextra.scanbuf[loc + 2] == '\'')
+				{
+					int j = locs[i].length - 1; /* Skip the \0 */
+					for (; j >= 0 && scanner_isspace(yyextra.scanbuf[loc + j]); j--) {}
+					locs[i].length = j + 1; /* Count the \0 */
+				}
+
 				break;			/* out of inner for-loop */
 			}
 		}
