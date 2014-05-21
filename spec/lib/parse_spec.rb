@@ -314,6 +314,18 @@ describe PgQuery, "normalized parsing" do
     expect(query.parsetree).not_to be_nil
   end
   
+  it "should parse substituted pseudo keywords in extract()" do
+    q = PgQuery.parse("SELECT extract(? from NOW())")
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq({"FUNCCALL" => {"funcname"=>["pg_catalog", "date_part"],
+                                       "args"=>[{"PARAMREF"=>{"number"=>0, "location"=>15}},
+                                                {"FUNCCALL"=>{"funcname"=>["now"], "args"=>nil, "agg_order"=>nil,
+                                                              "agg_star"=>"false", "agg_distinct"=>"false",
+                                                              "func_variadic"=>"false", "over"=>nil, "location"=>22}}],
+                                       "agg_order"=>nil, "agg_star"=>"false", "agg_distinct"=>"false",
+                                       "func_variadic"=>"false", "over"=>nil, "location"=>7}})
+  end
+  
   it "should parse $1?" do
     query = PgQuery.parse("SELECT 1 FROM x WHERE x IN ($1?, $1?)")
     expect(query.parsetree).not_to be_nil
@@ -326,12 +338,6 @@ describe PgQuery, "normalized parsing" do
   
   it "should parse SET x=?" do
     query = PgQuery.parse("SET statement_timeout=?")
-    expect(query.parsetree).not_to be_nil
-  end
-  
-  it "should parse weird SET normalizations" do
-    pending
-    query = PgQuery.parse("SET CLIENT_ENCODING TO UTF?")
     expect(query.parsetree).not_to be_nil
   end
   

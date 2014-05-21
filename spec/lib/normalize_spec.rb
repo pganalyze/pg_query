@@ -36,10 +36,4 @@ describe PgQuery, "normalization" do
     q = PgQuery.normalize("DEALLOCATE bla; SELECT 1")
     expect(q).to eq "DEALLOCATE bla; SELECT ?"
   end
-  
-  it "should not normalize pseudo-keywords" do
-    pending
-    q = PgQuery.normalize("SELECT extract(hour from NOW())")
-    expect(q).to eq "SELECT extract(hour from NOW())"
-  end
 end
