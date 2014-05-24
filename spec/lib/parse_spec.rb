@@ -387,6 +387,31 @@ describe PgQuery, "normalized parsing" do
     expect(query.parsetree).not_to be_nil
   end
   
+  it "should parse SET TIME ZONE ?" do
+    query = PgQuery.parse("SET TIME ZONE ?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse SET SCHEMA ?" do
+    query = PgQuery.parse("SET SCHEMA ?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse SET ROLE ?" do
+    query = PgQuery.parse("SET ROLE ?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse SET SESSION AUTHORIZATION ?" do
+    query = PgQuery.parse("SET SESSION AUTHORIZATION ?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse SET encoding = UTF?" do
+    query = PgQuery.parse("SET encoding = UTF?")
+    expect(query.parsetree).not_to be_nil
+  end
+  
   it "should parse ?=ANY(..) constructs" do
     query = PgQuery.parse("SELECT 1 FROM x WHERE ?= ANY(z)")
     expect(query.parsetree).not_to be_nil
@@ -394,6 +419,11 @@ describe PgQuery, "normalized parsing" do
   
   it "should parse complicated queries" do
     query = PgQuery.parse("BEGIN;SET statement_timeout=?;COMMIT;SELECT DISTINCT ON (nspname, seqname) nspname, seqname, quote_ident(nspname) || ? || quote_ident(seqname) AS safename, typname FROM ( SELECT depnsp.nspname, dep.relname as seqname, typname FROM pg_depend JOIN pg_class on classid = pg_class.oid JOIN pg_class dep on dep.oid = objid JOIN pg_namespace depnsp on depnsp.oid= dep.relnamespace JOIN pg_class refclass on refclass.oid = refclassid JOIN pg_class ref on ref.oid = refobjid JOIN pg_namespace refnsp on refnsp.oid = ref.relnamespace JOIN pg_attribute refattr ON (refobjid, refobjsubid) = (refattr.attrelid, refattr.attnum) JOIN pg_type ON refattr.atttypid = pg_type.oid WHERE pg_class.relname = ? AND refclass.relname = ? AND dep.relkind in (?) AND ref.relkind in (?) AND typname IN (?) UNION ALL SELECT nspname, seq.relname, typname FROM pg_attrdef JOIN pg_attribute ON (attrelid, attnum) = (adrelid, adnum) JOIN pg_type on pg_type.oid = atttypid JOIN pg_class rel ON rel.oid = attrelid JOIN pg_class seq ON seq.relname = regexp_replace(adsrc, $re$^nextval\\(?::regclass\\)$$re$, $$\\?$$) AND seq.relnamespace = rel.relnamespace JOIN pg_namespace nsp ON nsp.oid = seq.relnamespace WHERE adsrc ~ ? AND seq.relkind = ? AND typname IN (?) UNION ALL SELECT nspname, relname, CAST(? AS TEXT) FROM pg_class JOIN pg_namespace nsp ON nsp.oid = relnamespace WHERE relkind = ? ) AS seqs ORDER BY nspname, seqname, typname")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse cast(? as varchar(?))" do
+    query = PgQuery.parse("SELECT cast(? as varchar(?))")
     expect(query.parsetree).not_to be_nil
   end
 end
