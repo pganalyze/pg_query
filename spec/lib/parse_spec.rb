@@ -3,7 +3,7 @@ require 'spec_helper'
 describe PgQuery, "parsing" do
   it "should parse a simple query" do
     query = PgQuery.parse("SELECT 1")
-    expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>"false", "larg"=>nil, "rarg"=>nil}}]
+    expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>false, "larg"=>nil, "rarg"=>nil}}]
   end
   
   it "should handle errors" do
@@ -50,8 +50,8 @@ describe PgQuery, "parsing" do
                 "def"=>
                  {"CONSTRAINT"=>
                    {"conname"=>nil,
-                    "deferrable"=>"false",
-                    "initdeferred"=>"false",
+                    "deferrable"=>false,
+                    "initdeferred"=>false,
                     "location"=>21,
                     "contype"=>"PRIMARY_KEY",
                     "keys"=>["gid"],
@@ -59,9 +59,9 @@ describe PgQuery, "parsing" do
                     "indexname"=>nil,
                     "indexspace"=>nil}},
                 "behavior"=>0,
-                "missing_ok"=>"false"}}],
+                "missing_ok"=>false}}],
            "relkind"=>26,
-           "missing_ok"=>"false"}}]
+           "missing_ok"=>false}}]
   end
   
   it "should parse SET" do
@@ -71,7 +71,7 @@ describe PgQuery, "parsing" do
           {"kind"=>0,
            "name"=>"statement_timeout",
            "args"=>[{"A_CONST"=>{"val"=>0, "location"=>22}}],
-           "is_local"=>"false"}}]
+           "is_local"=>false}}]
   end
   
   it "should parse SHOW" do
@@ -94,8 +94,8 @@ describe PgQuery, "parsing" do
                "location"=>5}},
            "query"=>nil,
            "attlist"=>["id"],
-           "is_from"=>"false",
-           "is_program"=>"false",
+           "is_from"=>false,
+           "is_program"=>false,
            "filename"=>nil,
            "options"=>nil}}]
   end
@@ -108,8 +108,8 @@ describe PgQuery, "parsing" do
            "arguments"=>nil,
            "removeType"=>26,
            "behavior"=>1,
-           "missing_ok"=>"false",
-           "concurrent"=>"false"}}]
+           "missing_ok"=>false,
+           "concurrent"=>false}}]
   end
   
   it "should parse COMMIT" do
@@ -129,8 +129,8 @@ describe PgQuery, "parsing" do
     expect(query.warnings).to eq []
     expect(query.parsetree).to eq [{"VACUUM"=>
           {"options"=>1,
-           "freeze_min_age"=>"-1",
-           "freeze_table_age"=>"-1",
+           "freeze_min_age"=>-1,
+           "freeze_table_age"=>-1,
            "relation"=>
             {"RANGEVAR"=>
               {"schemaname"=>nil,
@@ -140,8 +140,8 @@ describe PgQuery, "parsing" do
                "alias"=>nil,
                "location"=>7}},
            "va_cols"=>nil,
-           "multixact_freeze_min_age"=>"-1",
-           "multixact_freeze_table_age"=>"-1"}}]
+           "multixact_freeze_min_age"=>-1,
+           "multixact_freeze_table_age"=>-1}}]
   end
   
   it "should parse EXPLAIN" do
@@ -191,7 +191,7 @@ describe PgQuery, "parsing" do
                "lockingClause"=>nil,
                "withClause"=>nil,
                "op"=>0,
-               "all"=>"false",
+               "all"=>false,
                "larg"=>nil,
                "rarg"=>nil}},
            "into"=>
@@ -209,9 +209,9 @@ describe PgQuery, "parsing" do
                "onCommit"=>0,
                "tableSpaceName"=>nil,
                "viewQuery"=>nil,
-               "skipData"=>"false"}},
+               "skipData"=>false}},
            "relkind"=>26,
-           "is_select_into"=>"false"}}]
+           "is_select_into"=>false}}]
   end
   
   it "should parse LOCK" do
@@ -227,7 +227,7 @@ describe PgQuery, "parsing" do
                 "alias"=>nil,
                 "location"=>11}}],
            "mode"=>1,
-           "nowait"=>"false"}}]
+           "nowait"=>false}}]
   end
 end
 
@@ -237,7 +237,7 @@ describe PgQuery, "normalized parsing" do
     expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil,
                                     "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}}, "location"=>7}}],
                                     "fromClause"=>[{"RANGEVAR"=>{"schemaname"=>nil, "relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "alias"=>nil, "location"=>14}}],
-                                    "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>"false", "larg"=>nil, "rarg"=>nil}}]
+                                    "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>false, "larg"=>nil, "rarg"=>nil}}]
     expect(query.query).to eq "SELECT ? FROM x"
   end
   
@@ -254,9 +254,9 @@ describe PgQuery, "normalized parsing" do
     targetlist = query.parsetree[0]["SELECT"]["targetList"]
     expect(targetlist[0]["RESTARGET"]["val"]).to eq({"TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
                                                      "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
-                                                                  "setof"=>"false", "pct_type"=>"false", "typmods"=>nil,
-                                                                  "typemod"=>"-1", "arrayBounds"=>nil, "location"=>7}},
-                                                     "location"=>"-1"}})
+                                                                  "setof"=>false, "pct_type"=>false, "typmods"=>nil,
+                                                                  "typemod"=>-1, "arrayBounds"=>nil, "location"=>7}},
+                                                     "location"=>-1}})
   end
   
   it "should parse INTERVAL ? hour" do
@@ -265,10 +265,15 @@ describe PgQuery, "normalized parsing" do
     expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
     expect(expr).to eq({"TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
                                        "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
-                                                                 "setof"=>"false", "pct_type"=>"false",
-                                                                 "typmods"=>[{"A_CONST"=>{"val"=>0, "location"=>"-1"}}],
-                                                                 "typemod"=>"-1", "arrayBounds"=>nil, "location"=>7}},
-                                       "location"=>"-1"}})
+                                                                 "setof"=>false, "pct_type"=>false,
+                                                                 "typmods"=>[{"A_CONST"=>{"val"=>0, "location"=>-1}}],
+                                                                 "typemod"=>-1, "arrayBounds"=>nil, "location"=>7}},
+                                       "location"=>-1}})
+  end
+  
+  it "should parse INTERVAL (?) ?" do
+    query = PgQuery.parse("SELECT INTERVAL (?) ?")
+    expect(query.parsetree).not_to be_nil
   end
   
   it "should parse 'a ? b' in target list" do
@@ -361,10 +366,10 @@ describe PgQuery, "normalized parsing" do
     expect(expr).to eq({"FUNCCALL" => {"funcname"=>["pg_catalog", "date_part"],
                                        "args"=>[{"PARAMREF"=>{"number"=>0, "location"=>15}},
                                                 {"FUNCCALL"=>{"funcname"=>["now"], "args"=>nil, "agg_order"=>nil,
-                                                              "agg_star"=>"false", "agg_distinct"=>"false",
-                                                              "func_variadic"=>"false", "over"=>nil, "location"=>22}}],
-                                       "agg_order"=>nil, "agg_star"=>"false", "agg_distinct"=>"false",
-                                       "func_variadic"=>"false", "over"=>nil, "location"=>7}})
+                                                              "agg_star"=>false, "agg_distinct"=>false,
+                                                              "func_variadic"=>false, "over"=>nil, "location"=>22}}],
+                                       "agg_order"=>nil, "agg_star"=>false, "agg_distinct"=>false,
+                                       "func_variadic"=>false, "over"=>nil, "location"=>7}})
   end
   
   it "should parse $1?" do

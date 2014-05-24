@@ -68,7 +68,7 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 		str = StringValueCStr(input);
 		tree = raw_parser(str);
 		
-		str = nodeToString(tree);
+		str = nodeToJSONString(tree);
 	
 		// Save stderr for result
 		read(stderr_pipe[0], stderr_buffer, STDERR_BUFFER_LEN);
