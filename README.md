@@ -9,8 +9,6 @@ When you build this extension, it fetches a copy of the PostgreSQL server source
 
 This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
 
-**Note:** This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_3_STABLE...pg_query).
-
 Installation
 ------------
 
@@ -78,6 +76,19 @@ PgQuery.parse("SELECT ? FROM x WHERE y = ?")
  @query="SELECT ? FROM x WHERE y = ?",
  @warnings=[]>
 ```
+
+Differences from Upstream PostgreSQL
+------------------------------------
+
+**This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_3_STABLE...pg_query).**
+
+Changes:
+* **scan.l/gram.y:** Modified to support parsing normalized queries
+ * Known regression: When ? is used as an operator, the parser can't parse '? a_expr' anymore
+* **outfuncs.c:** Support output of additional node types
+* **outfuncs_json.c:** Copy of outfuncs.c that outputs a parsetree as JSON (called through nodeToJSONString)
+
+Unit tests for these patches are inside this library - the tests will break if run against upstream.
 
 Authors
 -------
