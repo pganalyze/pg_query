@@ -31,6 +31,18 @@ describe PgQuery, "parsing" do
     expect(query.warnings).to be_empty
   end
   
+  it "should parse floats with leading dot" do
+    q = PgQuery.parse("SELECT .1")
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq({"A_CONST" => {"val"=>0.1, "location"=>7}})
+  end
+  
+  it "should parse floats with trailing dot" do
+    q = PgQuery.parse("SELECT 1.")
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq({"A_CONST" => {"val"=>1.0, "location"=>7}})
+  end
+  
   it "should parse ALTER TABLE" do
     query = PgQuery.parse("ALTER TABLE test ADD PRIMARY KEY (gid)")
     expect(query.warnings).to eq []
