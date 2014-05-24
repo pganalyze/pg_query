@@ -280,6 +280,30 @@ describe PgQuery, "normalized parsing" do
                                     "location"=>9}})
   end
   
+  it "should fail on '? 10' in target list" do
+    # IMPORTANT: This is a difference of our patched parser from the main PostgreSQL parser
+    #
+    # This should be parsed as a left-unary operator, but we can't
+    # support that due to keyword/function duality (e.g. JOIN)
+    expect { PgQuery.parse("SELECT ? 10") }.to raise_error do |error|
+      expect(error).to be_a(PgQuery::ParseError)
+      expect(error.message).to eq "syntax error at or near \"10\""
+    end
+  end
+  
+  it "should mis-parse on '? a' in target list" do
+    # IMPORTANT: This is a difference of our patched parser from the main PostgreSQL parser
+    #
+    # This is mis-parsed as a target list name (should be a column reference),
+    # but we can't avoid that.
+    q = PgQuery.parse("SELECT ? a")
+    expect(q.parsetree).not_to be_nil
+    restarget = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]
+    expect(restarget).to eq({"name"=>"a", "indirection"=>nil,
+                             "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}},
+                             "location"=>7})
+  end
+  
   it "should parse 'a ?, b' in target list" do
     q = PgQuery.parse("SELECT a ?, b")
     expect(q.parsetree).not_to be_nil
@@ -298,6 +322,23 @@ describe PgQuery, "normalized parsing" do
                                                 "rexpr"=>nil, "location"=>24}},
                                       "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>30}},
                                       "location"=>26}})
+  end
+  
+  it "should parse 'JOIN y ON a = ? JOIN z ON c = d'" do
+    # JOIN can be both a keyword and a function, this test is to make sure we treat it as a keyword in this case
+    q = PgQuery.parse("SELECT * FROM x JOIN y ON a = ? JOIN z ON c = d")
+    expect(q.parsetree).not_to be_nil
+  end
+  
+  it "should parse JSON operators" do
+    q = PgQuery.parse("SELECT '{\"a\":1, \"b\":2, \"c\":3}'::jsonb ?| array['b', 'c']")
+    expect(q.parsetree).not_to be_nil
+
+    q = PgQuery.parse("SELECT '{\"a\":1, \"b\":2}'::jsonb ? 'b'")
+    expect(q.parsetree).not_to be_nil
+    
+    q = PgQuery.parse("SELECT '[\"a\", \"b\"]'::jsonb ?& array['a', 'b']")
+    expect(q.parsetree).not_to be_nil
   end
   
   it "should parse 'a ? b' in where clause" do
