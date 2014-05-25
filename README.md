@@ -84,7 +84,8 @@ Differences from Upstream PostgreSQL
 
 Changes:
 * **scan.l/gram.y:** Modified to support parsing normalized queries
- * Known regression: When ? is used as an operator, the parser can't parse '? a_expr' anymore
+ * Known regression: Removed support for custom operators containing "?",
+   hstore/JSON/geometric operators containing "?" are still supported
 * **outfuncs.c:** Support output of additional node types
 * **outfuncs_json.c:** Copy of outfuncs.c that outputs a parsetree as JSON (called through nodeToJSONString)
 
