@@ -17,9 +17,13 @@ describe PgQuery, "normalization" do
   end
   
   it "should normalize ANY(array[...])" do
+    q = PgQuery.normalize("SELECT * FROM x WHERE y = ANY(array[1, 2])")
+    expect(q).to eq "SELECT * FROM x WHERE y = ANY(array[?, ?])"
   end
   
-  it "should normalize ANY(query, query)" do
+  it "should normalize ANY(query)" do
+    q = PgQuery.normalize("SELECT * FROM x WHERE y = ANY(SELECT 1)")
+    expect(q).to eq "SELECT * FROM x WHERE y = ANY(SELECT ?)"
   end
   
   it "should work with complicated strings" do
