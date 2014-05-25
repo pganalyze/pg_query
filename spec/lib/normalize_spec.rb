@@ -29,6 +29,9 @@ describe PgQuery, "normalization" do
     q = PgQuery.normalize("SELECT u&'d\\0061t\\+000061'    FROM x")
     expect(q).to eq "SELECT ?    FROM x"
     
+    q = PgQuery.normalize("SELECT * FROM x WHERE z NOT LIKE E'abc'AND TRUE")
+    expect(q).to eq "SELECT * FROM x WHERE z NOT LIKE ?AND ?"
+    
     # We can't avoid this easily, so treat it as known behaviour that we remove comments in this case
     q = PgQuery.normalize("SELECT U&'d\\0061t\\+000061'-- comment\nFROM x")
     expect(q).to eq "SELECT ?\nFROM x"

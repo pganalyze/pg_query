@@ -243,6 +243,14 @@ describe PgQuery, "parsing" do
   end
 end
 
+def parse_expr(expr)
+  q = PgQuery.parse("SELECT " + expr + " FROM x")
+  expect(q.parsetree).not_to be_nil
+  r = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+  expect(r["AEXPR"]).not_to be_nil
+  r["AEXPR"]
+end
+
 describe PgQuery, "normalized parsing" do
   it "should parse a normalized query" do
     query = PgQuery.parse("SELECT ? FROM x")
@@ -347,17 +355,6 @@ describe PgQuery, "normalized parsing" do
     expect(q.parsetree).not_to be_nil
   end
   
-  it "should parse JSON operators" do
-    q = PgQuery.parse("SELECT '{\"a\":1, \"b\":2, \"c\":3}'::jsonb ?| array['b', 'c']")
-    expect(q.parsetree).not_to be_nil
-
-    q = PgQuery.parse("SELECT '{\"a\":1, \"b\":2}'::jsonb ? 'b'")
-    expect(q.parsetree).not_to be_nil
-    
-    q = PgQuery.parse("SELECT '[\"a\", \"b\"]'::jsonb ?& array['a', 'b']")
-    expect(q.parsetree).not_to be_nil
-  end
-  
   it "should parse 'a ? b' in where clause" do
     q = PgQuery.parse("SELECT * FROM x WHERE a ? b")
     expect(q.parsetree).not_to be_nil
@@ -370,6 +367,190 @@ describe PgQuery, "normalized parsing" do
   it "should parse BETWEEN ? AND ?" do
     query = PgQuery.parse("SELECT x WHERE y BETWEEN ? AND ?")
     expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse ?=?" do
+    e = parse_expr("?=?")
+    expect(e["name"]).to eq ["="]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+  
+  it "should parse ?=x" do
+    e = parse_expr("?=x")
+    expect(e["name"]).to eq ["="]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["COLUMNREF"]).not_to be_nil
+  end
+  
+  it "should parse x=?" do
+    e = parse_expr("x=?")
+    expect(e["name"]).to eq ["="]
+    expect(e["lexpr"]["COLUMNREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+  
+  it "should parse ?!=?" do
+    e = parse_expr("?!=?")
+    expect(e["name"]).to eq ["<>"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+  
+  it "should parse ?!=x" do
+    e = parse_expr("?!=x")
+    expect(e["name"]).to eq ["<>"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["COLUMNREF"]).not_to be_nil
+  end
+  
+  it "should parse x!=?" do
+    e = parse_expr("x!=?")
+    expect(e["name"]).to eq ["<>"]
+    expect(e["lexpr"]["COLUMNREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+  
+  it "should parse ?-?" do
+    e = parse_expr("?-?")
+    expect(e["name"]).to eq ["-"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+  
+  it "should parse ?<?-?" do
+    e = parse_expr("?<?-?")
+    expect(e["name"]).to eq ["<"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["AEXPR"]).not_to be_nil
+  end
+  
+  it "should parse ?+?" do
+    e = parse_expr("?+?")
+    expect(e["name"]).to eq ["+"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+  
+  it "should parse ?*?" do
+    e = parse_expr("?*?")
+    expect(e["name"]).to eq ["*"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+  
+  it "should parse ?/?" do
+    e = parse_expr("?/?")
+    expect(e["name"]).to eq ["/"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+
+  # http://www.postgresql.org/docs/devel/static/functions-json.html
+  # http://www.postgresql.org/docs/devel/static/hstore.html
+  it "should parse hstore/JSON operators containing ?" do
+    e = parse_expr("'{\"a\":1, \"b\":2}'::jsonb ? 'b'")
+    expect(e["name"]).to eq ["?"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["A_CONST"]).not_to be_nil
+    
+    e = parse_expr("? ? ?")
+    expect(e["name"]).to eq ["?"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    
+    e = parse_expr("'{\"a\":1, \"b\":2, \"c\":3}'::jsonb ?| array['b', 'c']")
+    expect(e["name"]).to eq ["?|"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["A_ARRAYEXPR"]).not_to be_nil
+
+    e = parse_expr("? ?| ?")
+    expect(e["name"]).to eq ["?|"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+
+    e = parse_expr("'[\"a\", \"b\"]'::jsonb ?& array['a', 'b']")
+    expect(e["name"]).to eq ["?&"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["A_ARRAYEXPR"]).not_to be_nil
+
+    e = parse_expr("? ?& ?")
+    expect(e["name"]).to eq ["?&"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+  end
+
+  # http://www.postgresql.org/docs/devel/static/functions-geometry.html
+  it "should parse geometric operators containing ?" do
+    e = parse_expr("lseg '((-1,0),(1,0))' ?# box '((-2,-2),(2,2))'")
+    expect(e["name"]).to eq ["?#"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+
+    e = parse_expr("? ?# ?")
+    expect(e["name"]).to eq ["?#"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    
+    e = parse_expr("?- lseg '((-1,0),(1,0))'")
+    expect(e["name"]).to eq ["?-"]
+    expect(e["lexpr"]).to be_nil
+    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    
+    e = parse_expr("?- ?")
+    expect(e["name"]).to eq ["?-"]
+    expect(e["lexpr"]).to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    
+    e = parse_expr("point '(1,0)' ?- point '(0,0)'")
+    expect(e["name"]).to eq ["?-"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    
+    e = parse_expr("? ?- ?")
+    expect(e["name"]).to eq ["?-"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    
+    e = parse_expr("?| lseg '((-1,0),(1,0))'")
+    expect(e["name"]).to eq ["?|"]
+    expect(e["lexpr"]).to be_nil
+    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    
+    e = parse_expr("?| ?")
+    expect(e["name"]).to eq ["?|"]
+    expect(e["lexpr"]).to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    
+    e = parse_expr("point '(0,1)' ?| point '(0,0)'")
+    expect(e["name"]).to eq ["?|"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    
+    e = parse_expr("? ?| ?")
+    expect(e["name"]).to eq ["?|"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    
+    e = parse_expr("lseg '((0,0),(0,1))' ?-| lseg '((0,0),(1,0))'")
+    expect(e["name"]).to eq ["?-|"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    
+    e = parse_expr("? ?-| ?")
+    expect(e["name"]).to eq ["?-|"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    
+    e = parse_expr("lseg '((-1,0),(1,0))' ?|| lseg '((-1,2),(1,2))'")
+    expect(e["name"]).to eq ["?||"]
+    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    
+    e = parse_expr("? ?|| ?")
+    expect(e["name"]).to eq ["?||"]
+    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
   end
   
   it "should parse substituted pseudo keywords in extract()" do
@@ -426,6 +607,16 @@ describe PgQuery, "normalized parsing" do
   
   it "should parse ?=ANY(..) constructs" do
     query = PgQuery.parse("SELECT 1 FROM x WHERE ?= ANY(z)")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse KEYWORD? constructs" do
+    query = PgQuery.parse("select * from sessions where pid ilike? and id=? ")
+    expect(query.parsetree).not_to be_nil
+  end
+  
+  it "should parse E?KEYWORD constructs" do
+    query = PgQuery.parse("SELECT 1 FROM x WHERE nspname NOT LIKE E?AND nspname NOT LIKE ?")
     expect(query.parsetree).not_to be_nil
   end
   
