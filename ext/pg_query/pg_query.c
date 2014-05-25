@@ -373,6 +373,10 @@ bool const_record_walker(Node *node, pgssConstLocations *jstate)
 	{
 		return const_record_walker((Node *) ((VariableSetStmt *) node)->args, jstate);
 	}
+	else if (IsA(node, CopyStmt))
+	{
+		return const_record_walker((Node *) ((CopyStmt *) node)->query, jstate);
+	}
 	
 	PG_TRY();
 	{

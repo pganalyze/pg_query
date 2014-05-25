@@ -40,6 +40,11 @@ describe PgQuery, "normalization" do
     q = PgQuery.normalize("SELECT U&'d\\0061t\\+000061'-- comment\nFROM x")
     expect(q).to eq "SELECT ?\nFROM x"
   end
+  
+  it "should normalize COPY" do
+     q = PgQuery.normalize("COPY (SELECT * FROM t WHERE id IN ('1', '2')) TO STDOUT")
+    expect(q).to eq "COPY (SELECT * FROM t WHERE id IN (?, ?)) TO STDOUT"
+  end
       
   it "should normalize SETs" do
     q = PgQuery.normalize("SET test=123")
