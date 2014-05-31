@@ -1,4 +1,5 @@
 require 'mkmf'
+require 'open-uri'
 
 workdir = Dir.pwd
 pgdir = File.join(workdir, "postgres")
@@ -8,7 +9,11 @@ pgdir = File.join(workdir, "postgres")
 # Note: We intentionally use a patched version that fixes bugs in outfuncs.c
 if !Dir.exists?(pgdir)
   unless File.exists?("#{workdir}/postgres.zip")
-    system("curl https://codeload.github.com/pganalyze/postgres/zip/pg_query -o #{workdir}/postgres.zip") || raise("ERROR")
+    File.open("#{workdir}/postgres.zip", "wb") do |target_file|
+      open("https://codeload.github.com/pganalyze/postgres/zip/pg_query", "rb") do |read_file|
+        target_file.write(read_file.read)
+      end
+    end
   end
   system("unzip -q #{workdir}/postgres.zip -d #{workdir}") || raise("ERROR")
   system("mv #{workdir}/postgres-pg_query #{pgdir}") || raise("ERROR")
