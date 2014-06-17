@@ -17,17 +17,20 @@ describe PgQuery, "parsing" do
   it "should parse real queries" do
     query = PgQuery.parse("SELECT memory_total_bytes, memory_free_bytes, memory_pagecache_bytes, memory_buffers_bytes, memory_applications_bytes, (memory_swap_total_bytes - memory_swap_free_bytes) AS swap, date_part($0, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON (snapshot_id = s.id) WHERE s.database_id = $0 AND s.collected_at BETWEEN $0 AND $0 ORDER BY collected_at")
     expect(query.parsetree).not_to be_nil
+    expect(query.tables).to eq ['snapshots', 'system_snapshots']
   end
   
   it "should set warnings for unknown node types" do
     query = PgQuery.parse("DEALLOCATE a739")
     expect(query.parsetree).to eq [{}]
+    expect(query.tables).to eq []
     expect(query.warnings).to eq ["WARNING:  01000: could not dump unrecognized node type: 765"]
   end
   
   it "should parse empty queries" do
     query = PgQuery.parse("-- nothing")
     expect(query.parsetree).to eq []
+    expect(query.tables).to eq []
     expect(query.warnings).to be_empty
   end
   
@@ -46,6 +49,7 @@ describe PgQuery, "parsing" do
   it "should parse ALTER TABLE" do
     query = PgQuery.parse("ALTER TABLE test ADD PRIMARY KEY (gid)")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"ALTER TABLE"=>
           {"relation"=>
             {"RANGEVAR"=>
@@ -79,6 +83,7 @@ describe PgQuery, "parsing" do
   it "should parse SET" do
     query = PgQuery.parse("SET statement_timeout=0")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"SET"=>
           {"kind"=>0,
            "name"=>"statement_timeout",
@@ -89,12 +94,14 @@ describe PgQuery, "parsing" do
   it "should parse SHOW" do
     query = PgQuery.parse("SHOW work_mem")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"SHOW"=>{"name"=>"work_mem"}}]
   end
   
   it "should parse COPY" do
     query = PgQuery.parse("COPY test (id) TO stdout")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"COPY"=>
           {"relation"=>
             {"RANGEVAR"=>
@@ -113,10 +120,11 @@ describe PgQuery, "parsing" do
   end
   
   it "should parse DROP" do
-    query = PgQuery.parse("drop table test123 cascade")
+    query = PgQuery.parse("drop table abc.test123 cascade")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq ['abc.test123']
     expect(query.parsetree).to eq [{"DROP"=>
-          {"objects"=>[["test123"]],
+          {"objects"=>[["abc", "test123"]],
            "arguments"=>nil,
            "removeType"=>26,
            "behavior"=>1,
@@ -139,6 +147,7 @@ describe PgQuery, "parsing" do
   it "should parse VACUUM" do
     query = PgQuery.parse("VACUUM my_table")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq ['my_table']
     expect(query.parsetree).to eq [{"VACUUM"=>
           {"options"=>1,
            "freeze_min_age"=>-1,
@@ -159,6 +168,7 @@ describe PgQuery, "parsing" do
   it "should parse EXPLAIN" do
     query = PgQuery.parse("EXPLAIN DELETE FROM test")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"EXPLAIN"=>
           {"query"=>
             {"DELETE FROM"=>
@@ -180,6 +190,7 @@ describe PgQuery, "parsing" do
   it "should parse SELECT INTO" do
     query = PgQuery.parse("CREATE TEMP TABLE test AS SELECT 1")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"CREATE TABLE AS"=>
           {"query"=>
             {"SELECT"=>
@@ -229,6 +240,7 @@ describe PgQuery, "parsing" do
   it "should parse LOCK" do
     query = PgQuery.parse("LOCK TABLE public.schema_migrations IN ACCESS SHARE MODE")
     expect(query.warnings).to eq []
+    expect(query.tables).to eq ['public.schema_migrations']
     expect(query.parsetree).to eq [{"LOCK"=>
           {"relations"=>
             [{"RANGEVAR"=>
