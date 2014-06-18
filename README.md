@@ -9,6 +9,8 @@ When you build this extension, it fetches a copy of the PostgreSQL server source
 
 This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
 
+You can find further examples and a longer rationale here: https://pganalyze.com/blog/parse-postgresql-queries-in-ruby.html
+
 Installation
 ------------
 
