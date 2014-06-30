@@ -22,7 +22,7 @@ static VALUE new_parse_error(ErrorData* error)
 	cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 	
-	args[0] = rb_tainted_str_new_cstr(error->message);
+	args[0] = rb_str_new2(error->message);
 	args[1] = INT2NUM(error->cursorpos);
 	
 	return rb_class_new_instance(2, args, cParseError);
@@ -74,7 +74,7 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 		read(stderr_pipe[0], stderr_buffer, STDERR_BUFFER_LEN);
 	
 		result = rb_ary_new();
-		rb_ary_push(result, rb_tainted_str_new_cstr(str));
+		rb_ary_push(result, rb_str_new2(str));
 		rb_ary_push(result, rb_str_new2(stderr_buffer));
 	
 		pfree(str);
@@ -431,7 +431,7 @@ static VALUE pg_query_normalize(VALUE self, VALUE input)
 		query_len = (int) strlen(str);
 		str = generate_normalized_query(&jstate, str, &query_len, PG_UTF8);
 	
-		result = rb_tainted_str_new_cstr(str);
+		result = rb_str_new2(str);
 	
 		pfree(str);
 	}

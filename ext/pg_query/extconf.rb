@@ -32,7 +32,7 @@ $CFLAGS << " -I #{pgdir}/src/include"
 
 SYMFILE = File.join(File.dirname(__FILE__), "pg_query.sym")
 if RUBY_PLATFORM =~ /darwin/
-  $DLDFLAGS << "-Wl,-exported_symbols_list #{SYMFILE}"
+  $DLDFLAGS << "-Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
 else
   $DLDFLAGS << "-Wl,--retain-symbols-file=#{SYMFILE}"
 end
