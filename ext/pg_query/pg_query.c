@@ -14,6 +14,8 @@
 
 const char* progname = "pg_query";
 
+void Init_pg_query(void);
+
 static VALUE new_parse_error(ErrorData* error)
 {
 	VALUE cPgQuery, cParseError;
@@ -347,7 +349,7 @@ generate_normalized_query(pgssConstLocations *jstate, const char *query,
 	return norm_query;
 }
 
-bool const_record_walker(Node *node, pgssConstLocations *jstate)
+static bool const_record_walker(Node *node, pgssConstLocations *jstate)
 {
 	bool result;
 	
