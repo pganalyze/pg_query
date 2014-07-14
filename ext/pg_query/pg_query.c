@@ -31,6 +31,7 @@ static VALUE new_parse_error(ErrorData* error)
 }
 
 #define STDERR_BUFFER_LEN 4096
+//#define DEBUG
 
 static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 {
@@ -40,8 +41,10 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	VALUE result = Qnil;
 	VALUE error = Qnil;
 	char stderr_buffer[STDERR_BUFFER_LEN + 1] = {0};
+#ifndef DEBUG
 	int stderr_global;
 	int stderr_pipe[2];
+#endif
 
 	ctx = AllocSetContextCreate(TopMemoryContext,
 								"pg_query_raw_parse",
@@ -50,6 +53,7 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 								ALLOCSET_DEFAULT_MAXSIZE);
 	MemoryContextSwitchTo(ctx);
 	
+#ifndef DEBUG
 	// Setup pipe for stderr redirection
 	if (pipe(stderr_pipe) != 0)
 		rb_raise(rb_eIOError, "Failed to open pipe, too many open file descriptors");
@@ -60,6 +64,7 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	stderr_global = dup(STDERR_FILENO);
 	dup2(stderr_pipe[1], STDERR_FILENO);
 	close(stderr_pipe[1]);
+#endif
 	
 	// Parse it!
 	PG_TRY();
@@ -72,9 +77,11 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 		
 		str = nodeToJSONString(tree);
 	
+#ifndef DEBUG
 		// Save stderr for result
 		read(stderr_pipe[0], stderr_buffer, STDERR_BUFFER_LEN);
-	
+#endif
+
 		result = rb_ary_new();
 		rb_ary_push(result, rb_str_new2(str));
 		rb_ary_push(result, rb_str_new2(stderr_buffer));
@@ -89,10 +96,14 @@ static VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	}
 	PG_END_TRY();
 	
-	// Restore stderr, close pipe & return to previous PostgreSQL memory context
+#ifndef DEBUG
+	// Restore stderr, close pipe
 	dup2(stderr_global, STDERR_FILENO);
 	close(stderr_pipe[0]);
 	close(stderr_global);
+#endif
+
+	// Return to previous PostgreSQL memory context
 	MemoryContextSwitchTo(TopMemoryContext);
 	MemoryContextDelete(ctx);
 	
