@@ -30,6 +30,9 @@ $objs << File.join(File.dirname(__FILE__), "pg_query.o")
 
 $CFLAGS << " -I #{pgdir}/src/include"
 
+# Similar to those used by PostgreSQL
+$CFLAGS << " -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv"
+
 SYMFILE = File.join(File.dirname(__FILE__), "pg_query.sym")
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << "-Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)

@@ -27,26 +27,26 @@ class PgQuery
     @parsetree = parsetree
     @warnings = warnings
   end
-  
+
   def tables
     load_tables_and_aliases! if @tables.nil?
     @tables
   end
-  
+
   def aliases
     load_tables_and_aliases! if @aliases.nil?
     @aliases
   end
-  
+
 protected
   def load_tables_and_aliases!
     @tables = []
     @aliases = {}
-  
+
     statements = @parsetree.dup
     from_clause_items = []
     where_clause_items = []
-  
+
     loop do
       if statement = statements.shift
         case statement.keys[0]
@@ -63,22 +63,39 @@ protected
             statements << statement["SELECT"]["larg"] if statement["SELECT"]["larg"]
             statements << statement["SELECT"]["rarg"] if statement["SELECT"]["rarg"]
           end
-        when "INSERT INTO", "UPDATE", "DELETE FROM", "VACUUM", "COPY", "ALTER TABLE"
+        when "INSERT INTO", "UPDATE", "DELETE FROM", "VACUUM", "COPY", "ALTER TABLE", "CREATESTMT", "INDEXSTMT", "RULESTMT", "CREATETRIGSTMT"
           from_clause_items << statement.values[0]["relation"]
-        when "EXPLAIN"
-          statements << statement["EXPLAIN"]["query"]
+        when "EXPLAIN", "VIEWSTMT"
+          statements << statement.values[0]["query"]
         when "CREATE TABLE AS"
           from_clause_items << statement["CREATE TABLE AS"]["into"]["INTOCLAUSE"]["rel"] rescue nil
-        when "LOCK"
-          from_clause_items += statement["LOCK"]["relations"]
+        when "LOCK", "TRUNCATE"
+          from_clause_items += statement.values[0]["relations"]
+        when "GRANTSTMT"
+          objects = statement["GRANTSTMT"]["objects"]
+          case statement["GRANTSTMT"]["objtype"]
+          when 0 # Column
+            # FIXME
+          when 1 # Table
+            from_clause_items += objects
+          when 2 # Sequence
+            # FIXME
+          end
         when "DROP"
-          object_type = statement["DROP"]["removeType"]
-          @tables += statement["DROP"]["objects"].map {|r| r.join('.') } if object_type == 26 # Table
+          objects = statement["DROP"]["objects"]
+          case statement["DROP"]["removeType"]
+          when 26 # Table
+            @tables += objects.map {|r| r.join('.') }
+          when 23 # Rule
+            @tables += objects.map {|r| r[0..-2].join('.') }
+          when 28 # Trigger
+            @tables += objects.map {|r| r[0..-2].join('.') }
+          end
         end
-    
+
         where_clause_items << statement.values[0]["whereClause"] if !statement.empty? && statement.values[0]["whereClause"]
       end
-    
+
       # Find subselects in WHERE clause
       if next_item = where_clause_items.shift
         case next_item.keys[0]
@@ -95,13 +112,13 @@ protected
           statements << next_item["SUBLINK"]["subselect"]
         end
       end
-    
+
       break if where_clause_items.empty? && statements.empty?
     end
-  
+
     loop do
       break unless next_item = from_clause_items.shift
-    
+
       case next_item.keys[0]
       when "JOINEXPR"
         ["larg", "rarg"].each do |side|
@@ -116,7 +133,7 @@ protected
         @aliases[rangevar["alias"]["ALIAS"]["aliasname"]] = table if rangevar["alias"]
       end
     end
-  
+
     @tables.uniq!
   end
 end
