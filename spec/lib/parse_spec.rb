@@ -571,6 +571,75 @@ describe PgQuery, "parsing" do
        "restart_seqs"=>true,
        "behavior"=>0}}]
   end
+
+  it 'should parse multi-line function definitions' do
+    query = PgQuery.parse('CREATE OR REPLACE FUNCTION thing(parameter_thing text)
+  RETURNS bigint AS
+$BODY$
+DECLARE
+        local_thing_id BIGINT := 0;
+BEGIN
+        SELECT thing_id INTO local_thing_id FROM thing_map
+        WHERE
+                thing_map_field = parameter_thing
+        ORDER BY 1 LIMIT 1;
+
+        IF NOT FOUND THEN
+                local_thing_id = 0;
+        END IF;
+        RETURN local_thing_id;
+END;
+$BODY$
+  LANGUAGE plpgsql STABLE')
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq []
+    expect(query.parsetree).to eq [{"CREATEFUNCTIONSTMT"=>
+     {"replace"=>true,
+      "funcname"=>["thing"],
+      "parameters"=>
+       [{"FUNCTIONPARAMETER"=>
+          {"name"=>"parameter_thing",
+           "argType"=>
+            {"TYPENAME"=>
+              {"names"=>["text"],
+               "typeOid"=>0,
+               "setof"=>false,
+               "pct_type"=>false,
+               "typmods"=>nil,
+               "typemod"=>-1,
+               "arrayBounds"=>nil,
+               "location"=>49}},
+           "mode"=>105,
+           "defexpr"=>nil}}],
+      "returnType"=>
+       {"TYPENAME"=>
+         {"names"=>["pg_catalog", "int8"],
+          "typeOid"=>0,
+          "setof"=>false,
+          "pct_type"=>false,
+          "typmods"=>nil,
+          "typemod"=>-1,
+          "arrayBounds"=>nil,
+          "location"=>65}},
+      "options"=>
+       [{"DEFELEM"=>
+          {"defnamespace"=>nil,
+           "defname"=>"as",
+           "arg"=>
+            ["\nDECLARE\n        local_thing_id BIGINT := 0;\nBEGIN\n        SELECT thing_id INTO local_thing_id FROM thing_map\n        WHERE\n                thing_map_field = parameter_thing\n        ORDER BY 1 LIMIT 1;\n\n        IF NOT FOUND THEN\n                local_thing_id = 0;\n        END IF;\n        RETURN local_thing_id;\nEND;\n"],
+           "defaction"=>0}},
+        {"DEFELEM"=>
+          {"defnamespace"=>nil,
+           "defname"=>"language",
+           "arg"=>"plpgsql",
+           "defaction"=>0}},
+        {"DEFELEM"=>
+          {"defnamespace"=>nil,
+           "defname"=>"volatility",
+           "arg"=>"stable",
+           "defaction"=>0}}],
+      "withClause"=>nil}}]
+  end
 end
 
 def parse_expr(expr)
