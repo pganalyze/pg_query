@@ -35,9 +35,9 @@ $CFLAGS << " -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-
 
 SYMFILE = File.join(File.dirname(__FILE__), "pg_query.sym")
 if RUBY_PLATFORM =~ /darwin/
-  $DLDFLAGS << "-Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
+  $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
 else
-  $DLDFLAGS << "-Wl,--retain-symbols-file=#{SYMFILE}"
+  $DLDFLAGS << " -Wl,--retain-symbols-file=#{SYMFILE}"
 end
 
 create_makefile 'pg_query/pg_query'
