@@ -5,18 +5,24 @@ workdir = Dir.pwd
 pgdir = File.join(workdir, "postgres")
 
 # Limit the objects we build to speed up compilation times
-UTILS_OBJS = [
-  'mb/wchar.o', 'mb/encnames.o', 'mb/mbutils.o',
-  'mmgr/mcxt.o', 'mmgr/aset.o',
-  'error/elog.o', 'init/globals.o',
-  'adt/name.o' # namein
-]
-PARSER_OBJS = [
-  'gram.o', 'parser.o', 'keywords.o', 'kwlookup.o', 'scansup.o'
-]
-NODES_OBJS = [
-  'nodeFuncs.o', 'makefuncs.o', 'value.o', 'list.o', 'outfuncs_json.o'
-]
+PG_OBJS = {
+  'backend/utils' => [
+    'mb/wchar.o', 'mb/encnames.o', 'mb/mbutils.o',
+    'mmgr/mcxt.o', 'mmgr/aset.o',
+    'error/elog.o', 'init/globals.o',
+    'adt/name.o' # namein
+  ],
+  'backend/parser' => [
+    'gram.o', 'parser.o', 'keywords.o', 'kwlookup.o', 'scansup.o'
+  ],
+  'backend/nodes' => [
+    'nodeFuncs.o', 'makefuncs.o', 'value.o', 'list.o', 'outfuncs_json.o'
+  ],
+  'backend/lib' => ['stringinfo.o'],
+  'port'        => ['qsort.o'],
+  'common'      => ['psprintf.o'],
+  'timezone'    => ['pgtz.o'],
+}
 
 # Download & compile PostgreSQL if we don't have it yet
 #
@@ -32,25 +38,13 @@ if !Dir.exists?(pgdir)
   system("unzip -q #{workdir}/postgres.zip -d #{workdir}") || raise("ERROR")
   system("mv #{workdir}/postgres-pg_query #{pgdir}") || raise("ERROR")
   system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q") || raise("ERROR")
-  system("cd #{pgdir}; make -C src/backend lib-recursive") # This also ensures headers are generated
-  system("cd #{pgdir}; make -C src/backend/utils  #{UTILS_OBJS.join(' ')}")  || raise("ERROR")
-  system("cd #{pgdir}; make -C src/backend/parser #{PARSER_OBJS.join(' ')}") || raise("ERROR")
-  system("cd #{pgdir}; make -C src/backend/nodes  #{NODES_OBJS.join(' ')}")  || raise("ERROR")
-  system("cd #{pgdir}; make -C src/port") || raise("ERROR")
-  system("cd #{pgdir}; make -C src/common libpgcommon_srv.a") || raise("ERROR")
+  system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
+  PG_OBJS.each do |directory, objs|
+    system("cd #{pgdir}; make -C src/#{directory} #{objs.join(' ')}")  || raise("ERROR")
+  end
 end
 
-$objs = []
-$objs << 'timezone/pgtz.o'
-$objs << 'common/libpgcommon_srv.a'
-$objs << 'port/libpgport_srv.a'
-$objs << 'backend/lib/stringinfo.o'
-$objs += UTILS_OBJS.map  { |o| 'backend/utils/' + o }
-$objs += PARSER_OBJS.map { |o| 'backend/parser/' + o }
-$objs += NODES_OBJS.map  { |o| 'backend/nodes/' + o }
-
-$objs.map! { |obj| "#{pgdir}/src/#{obj}" }
-
+$objs = PG_OBJS.map { |directory, objs| objs.map { |obj| "#{pgdir}/src/#{directory}/#{obj}" } }.flatten
 $objs << File.join(File.dirname(__FILE__), "pg_query.o")
 $objs << File.join(File.dirname(__FILE__), "pg_polyfills.o")
 
