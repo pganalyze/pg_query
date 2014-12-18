@@ -283,7 +283,8 @@ describe PgQuery, "parsing" do
              "collClause"=>nil,
              "collOid"=>0,
              "constraints"=>nil,
-             "fdwoptions"=>nil}}],
+             "fdwoptions"=>nil,
+             "location"=>19}}],
         "inhRelations"=>nil,
         "ofTypename"=>nil,
         "constraints"=>nil,
@@ -391,7 +392,8 @@ describe PgQuery, "parsing" do
           "larg"=>nil,
           "rarg"=>nil}},
       "replace"=>false,
-      "options"=>nil}}]
+      "options"=>nil,
+      "withCheckOption"=>0}}]
   end
 
   it 'should parse CREATE RULE' do
@@ -958,9 +960,11 @@ describe PgQuery, "normalized parsing" do
     expect(expr).to eq({"FUNCCALL" => {"funcname"=>["pg_catalog", "date_part"],
                                        "args"=>[{"PARAMREF"=>{"number"=>0, "location"=>15}},
                                                 {"FUNCCALL"=>{"funcname"=>["now"], "args"=>nil, "agg_order"=>nil,
+                                                              "agg_filter"=>nil, "agg_within_group"=>false,
                                                               "agg_star"=>false, "agg_distinct"=>false,
                                                               "func_variadic"=>false, "over"=>nil, "location"=>22}}],
-                                       "agg_order"=>nil, "agg_star"=>false, "agg_distinct"=>false,
+                                       "agg_order"=>nil, "agg_filter"=>nil, "agg_within_group"=>false,
+                                       "agg_star"=>false, "agg_distinct"=>false,
                                        "func_variadic"=>false, "over"=>nil, "location"=>7}})
   end
 
