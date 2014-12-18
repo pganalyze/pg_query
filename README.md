@@ -5,7 +5,7 @@ This Ruby extension uses the actual PostgreSQL server source to parse SQL querie
 
 In addition the extension allows you to normalize queries (replacing constant values with ?) and parse these normalized queries into a parsetree again.
 
-When you build this extension, it fetches a copy of the PostgreSQL server source and builds it, and then statically links it into this extension.
+When you build this extension, it fetches a copy of the PostgreSQL server source and builds parts of it, and then statically links it into this extension.
 
 This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
 
@@ -18,7 +18,9 @@ Installation
 gem install pg_query
 ```
 
-Due to compiling PostgreSQL, installation will take a while. Expect up to 10 minutes on a fast machine.
+Due to compiling parts of PostgreSQL, installation will take a while. Expect between 2 and 10 minutes.
+
+Note: On some Linux systems you'll have to install the ```unzip``` and ```flex``` packages beforehand.
 
 Usage
 -----
@@ -82,13 +84,12 @@ PgQuery.parse("SELECT ? FROM x WHERE y = ?")
 Differences from Upstream PostgreSQL
 ------------------------------------
 
-**This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_3_STABLE...pg_query).**
+**This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_4_STABLE...pg_query).**
 
 Changes:
 * **scan.l/gram.y:** Modified to support parsing normalized queries
  * Known regression: Removed support for custom operators containing "?" (doesn't affect hstore/JSON/geometric operators)
-* **outfuncs.c:** Support output of additional node types
-* **outfuncs_json.c:** Copy of outfuncs.c that outputs a parsetree as JSON (called through nodeToJSONString)
+* **outfuncs_json.c:** Auto-generated outfuncs that outputs a parsetree as JSON (called through nodeToJSONString)
 
 Unit tests for these patches are inside this library - the tests will break if run against upstream.
 
