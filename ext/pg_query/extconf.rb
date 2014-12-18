@@ -4,6 +4,20 @@ require 'open-uri'
 workdir = Dir.pwd
 pgdir = File.join(workdir, "postgres")
 
+# Limit the objects we build to speed up compilation times
+UTILS_OBJS = [
+  'mb/wchar.o', 'mb/encnames.o', 'mb/mbutils.o',
+  'mmgr/mcxt.o', 'mmgr/aset.o',
+  'error/elog.o', 'init/globals.o',
+  'adt/name.o' # namein
+]
+PARSER_OBJS = [
+  'gram.o', 'parser.o', 'keywords.o', 'kwlookup.o', 'scansup.o'
+]
+NODES_OBJS = [
+  'nodeFuncs.o', 'makefuncs.o', 'value.o', 'list.o', 'outfuncs_json.o'
+]
+
 # Download & compile PostgreSQL if we don't have it yet
 #
 # Note: We intentionally use a patched version that fixes bugs in outfuncs.c
@@ -17,16 +31,28 @@ if !Dir.exists?(pgdir)
   end
   system("unzip -q #{workdir}/postgres.zip -d #{workdir}") || raise("ERROR")
   system("mv #{workdir}/postgres-pg_query #{pgdir}") || raise("ERROR")
-  system("cd #{pgdir}; CFLAGS=-fPIC ./configure") || raise("ERROR")
-  system("cd #{pgdir}; make") || raise("ERROR")
+  system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q") || raise("ERROR")
+  system("cd #{pgdir}; make -C src/backend lib-recursive") # This also ensures headers are generated
+  system("cd #{pgdir}; make -C src/backend/utils  #{UTILS_OBJS.join(' ')}")  || raise("ERROR")
+  system("cd #{pgdir}; make -C src/backend/parser #{PARSER_OBJS.join(' ')}") || raise("ERROR")
+  system("cd #{pgdir}; make -C src/backend/nodes  #{NODES_OBJS.join(' ')}")  || raise("ERROR")
+  system("cd #{pgdir}; make -C src/port") || raise("ERROR")
+  system("cd #{pgdir}; make -C src/common libpgcommon_srv.a") || raise("ERROR")
 end
 
-$objs = `find #{pgdir}/src/backend -name '*.o' | egrep -v '(main/main\.o|snowball|libpqwalreceiver|conversion_procs)' | xargs echo`
-$objs += " #{pgdir}/src/timezone/localtime.o #{pgdir}/src/timezone/strftime.o #{pgdir}/src/timezone/pgtz.o"
-$objs += " #{pgdir}/src/common/libpgcommon_srv.a #{pgdir}/src/port/libpgport_srv.a"
-$objs = $objs.split(" ")
+$objs = []
+$objs << 'timezone/pgtz.o'
+$objs << 'common/libpgcommon_srv.a'
+$objs << 'port/libpgport_srv.a'
+$objs << 'backend/lib/stringinfo.o'
+$objs += UTILS_OBJS.map  { |o| 'backend/utils/' + o }
+$objs += PARSER_OBJS.map { |o| 'backend/parser/' + o }
+$objs += NODES_OBJS.map  { |o| 'backend/nodes/' + o }
+
+$objs.map! { |obj| "#{pgdir}/src/#{obj}" }
 
 $objs << File.join(File.dirname(__FILE__), "pg_query.o")
+$objs << File.join(File.dirname(__FILE__), "pg_polyfills.o")
 
 $CFLAGS << " -I #{pgdir}/src/include"
 
