@@ -1,3 +1,5 @@
+require 'digest'
+
 class PgQuery
   def fingerprint
     normalized_parsetree = deep_dup(parsetree)

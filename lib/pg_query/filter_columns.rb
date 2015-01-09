@@ -1,6 +1,3 @@
-require 'active_support'
-require 'active_support/core_ext/string'
-
 class PgQuery
   # Returns a list of columns that the query filters by - this excludes the
   # target list, but includes things like JOIN condition and WHERE clause.
@@ -14,7 +11,7 @@ class PgQuery
     condition_items = []
     filter_columns = []
     loop do
-      if statement = statements.shift.presence
+      if statement = statements.shift
         if statement["SELECT"]
           if statement["SELECT"]["op"] == 0
             if statement["SELECT"]["fromClause"]
@@ -42,9 +39,9 @@ class PgQuery
 
       # Process both JOIN and WHERE conditions here
       if next_item = condition_items.shift
-        if next_item.keys[0].starts_with?("AEXPR") || next_item["ANY"]
+        if next_item.keys[0].start_with?("AEXPR") || next_item["ANY"]
           ["lexpr", "rexpr"].each do |side|
-            next unless expr = next_item.values[0][side].presence
+            next unless expr = next_item.values[0][side]
             next unless expr.is_a?(Hash)
             condition_items << expr
           end
