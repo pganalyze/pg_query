@@ -87,25 +87,29 @@ PgQuery.parse("SELECT ? FROM x WHERE y = ?")
 ### Extracting tables from a query
 
 ```ruby
-=> PgQuery.parse("SELECT ? FROM x JOIN y USING (id) WHERE z = ?").tables
- ["x", "y"]
+PgQuery.parse("SELECT ? FROM x JOIN y USING (id) WHERE z = ?").tables
+
+=> ["x", "y"]
 ```
 
 ### Extracting columns from a query
 
 ```ruby
-=> PgQuery.parse("SELECT ? FROM x WHERE x.y = ? AND z = ?").filter_columns
- [["x", "y"], [nil, "z"]]
+PgQuery.parse("SELECT ? FROM x WHERE x.y = ? AND z = ?").filter_columns
+
+=> [["x", "y"], [nil, "z"]]
 ```
 
 ### Fingerprinting a query
 
 ```ruby
-=> PgQuery.parse("SELECT 1").fingerprint
- "db76551255b7861b99bd384cf8096a3dd5162ab3"
+PgQuery.parse("SELECT 1").fingerprint
+
+=> "db76551255b7861b99bd384cf8096a3dd5162ab3"
  
-=> PgQuery.parse("SELECT 2; --- comment").fingerprint
- "db76551255b7861b99bd384cf8096a3dd5162ab3"
+PgQuery.parse("SELECT 2; --- comment").fingerprint
+
+=> "db76551255b7861b99bd384cf8096a3dd5162ab3"
 ```
 
 ## Differences from Upstream PostgreSQL
