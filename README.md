@@ -1,5 +1,4 @@
-pg_query
-========
+# pg_query
 
 This Ruby extension uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree.
 
@@ -11,8 +10,7 @@ This is slightly crazy, but is the only reliable way of parsing all valid Postgr
 
 You can find further examples and a longer rationale here: https://pganalyze.com/blog/parse-postgresql-queries-in-ruby.html
 
-Installation
-------------
+## Installation
 
 ```
 gem install pg_query
@@ -22,8 +20,9 @@ Due to compiling parts of PostgreSQL, installation will take a while. Expect bet
 
 Note: On some Linux systems you'll have to install the ```unzip``` and ```flex``` packages beforehand.
 
-Usage
------
+## Usage
+
+### Parsing a query
 
 ```ruby
 PgQuery.parse("SELECT 1")
@@ -42,7 +41,11 @@ PgQuery.parse("SELECT 1")
       ...}}],
  @query="SELECT 1",
  @warnings=[]>
+```
 
+### Parsing a normalized query
+
+```ruby
 # Normalizing a query (like pg_stat_statements)
 PgQuery.normalize("SELECT 1 FROM x WHERE y = 'foo'")
 
@@ -81,8 +84,31 @@ PgQuery.parse("SELECT ? FROM x WHERE y = ?")
  @warnings=[]>
 ```
 
-Differences from Upstream PostgreSQL
-------------------------------------
+### Extracting tables from a query
+
+```ruby
+=> PgQuery.parse("SELECT ? FROM x JOIN y USING (id) WHERE z = ?").tables
+ ["x", "y"]
+```
+
+### Extracting columns from a query
+
+```ruby
+=> PgQuery.parse("SELECT ? FROM x WHERE x.y = ? AND z = ?").filter_columns
+ [["x", "y"], [nil, "z"]]
+```
+
+### Fingerprinting a query
+
+```ruby
+=> PgQuery.parse("SELECT 1").fingerprint
+ "db76551255b7861b99bd384cf8096a3dd5162ab3"
+ 
+=> PgQuery.parse("SELECT 2; --- comment").fingerprint
+ "db76551255b7861b99bd384cf8096a3dd5162ab3"
+```
+
+## Differences from Upstream PostgreSQL
 
 **This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_4_STABLE...pg_query).**
 
@@ -93,16 +119,14 @@ Changes:
 
 Unit tests for these patches are inside this library - the tests will break if run against upstream.
 
-Authors
--------
+## Authors
 
 - [Lukas Fittl](mailto:lukas@fittl.com)
 
-License
--------
+## License
 
-Copyright (c) 2014, pganalyze Team <team@pganalyze.com><br>
+Copyright (c) 2015, pganalyze Team <team@pganalyze.com><br>
 pg_query is licensed under the 3-clause BSD license, see LICENSE file for details.
 
 Query normalization code:<br>
-Copyright (c) 2008-2014, PostgreSQL Global Development Group
+Copyright (c) 2008-2015, PostgreSQL Global Development Group
