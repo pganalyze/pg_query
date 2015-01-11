@@ -30,13 +30,13 @@ PG_OBJS = {
 if !Dir.exists?(pgdir)
   unless File.exists?("#{workdir}/postgres.tar.gz")
     File.open("#{workdir}/postgres.tar.gz", "wb") do |target_file|
-      open("https://api.github.com/repos/pganalyze/postgres/tarball/pg_query", "rb") do |read_file|
+      open("https://codeload.github.com/pganalyze/postgres/tar.gz/pg_query", "rb") do |read_file|
         target_file.write(read_file.read)
       end
     end
   end
   system("tar -xf #{workdir}/postgres.tar.gz") || raise("ERROR")
-  system("mv #{workdir}/pganalyze-postgres-* #{pgdir}") || raise("ERROR")
+  system("mv #{workdir}/postgres-pg_query #{pgdir}") || raise("ERROR")
   system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q") || raise("ERROR")
   system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
   PG_OBJS.each do |directory, objs|
