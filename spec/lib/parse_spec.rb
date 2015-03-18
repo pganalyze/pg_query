@@ -294,6 +294,53 @@ describe PgQuery, "parsing" do
         "if_not_exists"=>false}}]
   end
 
+  it 'should parse CREATE TABLE WITH OIDS' do
+    query = PgQuery.parse('CREATE TABLE test (a int4) WITH OIDS')
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['test']
+    expect(query.parsetree).to eq [{"CREATESTMT"=>
+       {"relation"=>
+         {"RANGEVAR"=>
+           {"schemaname"=>nil,
+            "relname"=>"test",
+            "inhOpt"=>2,
+            "relpersistence"=>"p",
+            "alias"=>nil,
+            "location"=>13}},
+        "tableElts"=>
+         [{"COLUMNDEF"=>
+            {"colname"=>"a",
+             "typeName"=>
+              {"TYPENAME"=>
+                {"names"=>["int4"],
+                 "typeOid"=>0,
+                 "setof"=>false,
+                 "pct_type"=>false,
+                 "typmods"=>nil,
+                 "typemod"=>-1,
+                 "arrayBounds"=>nil,
+                 "location"=>21}},
+             "inhcount"=>0,
+             "is_local"=>true,
+             "is_not_null"=>false,
+             "is_from_type"=>false,
+             "storage"=>nil,
+             "raw_default"=>nil,
+             "cooked_default"=>nil,
+             "collClause"=>nil,
+             "collOid"=>0,
+             "constraints"=>nil,
+             "fdwoptions"=>nil,
+             "location"=>19}}],
+        "inhRelations"=>nil,
+        "ofTypename"=>nil,
+        "constraints"=>nil,
+        "options"=> [{"DEFELEM"=> {"defnamespace"=>nil, "defname"=>"oids", "arg"=>1, "defaction"=>0}}],
+        "oncommit"=>0,
+        "tablespacename"=>nil,
+        "if_not_exists"=>false}}]
+  end
+
   it 'should parse CREATE INDEX' do
     query = PgQuery.parse('CREATE INDEX testidx ON test USING gist (a)')
     expect(query.warnings).to eq []

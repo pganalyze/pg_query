@@ -31,3 +31,11 @@ bool proc_exit_inprogress = false;
 /* src/backend/tcop/postgres.c */
 #include "miscadmin.h"
 void check_stack_depth(void) { /* Do nothing */ }
+
+/* src/backends/commands/define.c */
+#include "commands/defrem.h"
+#include "nodes/makefuncs.h"
+DefElem * defWithOids(bool value)
+{
+  return makeDefElem("oids", (Node *) makeInteger(value));
+}
