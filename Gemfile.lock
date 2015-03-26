@@ -1,14 +1,14 @@
 PATH
   remote: .
   specs:
-    pg_query (0.4.1)
+    pg_query (0.5.0)
       json (~> 1.8)
 
 GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.2.5)
-    json (1.8.1)
+    json (1.8.2)
     rake (10.4.2)
     rake-compiler (0.9.3)
       rake
