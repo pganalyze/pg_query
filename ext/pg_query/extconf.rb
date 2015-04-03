@@ -45,7 +45,7 @@ if !Dir.exists?(pgdir)
 end
 
 $objs = PG_OBJS.map { |directory, objs| objs.map { |obj| "#{pgdir}/src/#{directory}/#{obj}" } }.flatten
-$objs += ["pg_query.o", "pg_polyfills.o"]
+$objs += ["pg_query.o", "pg_query_parse.o", "pg_query_normalize.o", "pg_polyfills.o"]
 
 $CFLAGS << " -I #{pgdir}/src/include"
 
