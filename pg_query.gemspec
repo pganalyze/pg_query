@@ -31,7 +31,7 @@ Gem::Specification.new do |s|
   ]
 
   s.add_development_dependency "rake-compiler", '~> 0'
-  s.add_development_dependency 'rspec', '~> 2.0'
+  s.add_development_dependency 'rspec', '~> 3.0'
 
   s.add_runtime_dependency "json", '~> 1.8'
 end
