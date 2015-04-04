@@ -10,6 +10,7 @@ PG_OBJS = {
     'mb/wchar.o', 'mb/encnames.o', 'mb/mbutils.o',
     'mmgr/mcxt.o', 'mmgr/aset.o',
     'error/elog.o', 'init/globals.o',
+    'hash/hashfn.o', # tag_hash
     'adt/name.o' # namein
   ],
   'backend/parser' => [
@@ -18,10 +19,11 @@ PG_OBJS = {
   'backend/nodes' => [
     'nodeFuncs.o', 'makefuncs.o', 'value.o', 'list.o', 'outfuncs_json.o'
   ],
-  'backend/lib' => ['stringinfo.o'],
-  'port'        => ['qsort.o'],
-  'common'      => ['psprintf.o'],
-  'timezone'    => ['pgtz.o'],
+  'backend/lib'    => ['stringinfo.o'],
+  'pl/plpgsql/src' => ['pl_funcs.o', 'pl_gram.o', 'pl_scanner.o'],
+  'port'           => ['qsort.o'],
+  'common'         => ['psprintf.o'],
+  'timezone'       => ['pgtz.o'],
 }
 
 # Download & compile PostgreSQL if we don't have it yet
@@ -37,6 +39,7 @@ if !Dir.exists?(pgdir)
   end
   system("tar -xf #{workdir}/postgres.tar.gz") || raise("ERROR")
   system("mv #{workdir}/postgres-pg_query #{pgdir}") || raise("ERROR")
+  #system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q --enable-debug") || raise("ERROR")
   system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q") || raise("ERROR")
   system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
   PG_OBJS.each do |directory, objs|
@@ -45,12 +48,14 @@ if !Dir.exists?(pgdir)
 end
 
 $objs = PG_OBJS.map { |directory, objs| objs.map { |obj| "#{pgdir}/src/#{directory}/#{obj}" } }.flatten
-$objs += ["pg_query.o", "pg_query_parse.o", "pg_query_normalize.o", "pg_polyfills.o"]
+$objs += ["pg_query.o", "pg_query_parse.o", "pg_query_normalize.o", "pg_query_plpgsql.o",
+          "pg_plpgsql_to_json.o", "pg_plpgsql_comp.o", "pg_polyfills.o"]
 
-$CFLAGS << " -I #{pgdir}/src/include"
+$CFLAGS << " -I #{pgdir}/src/include -I #{pgdir}/src/pl/plpgsql/src"
 
 # Similar to those used by PostgreSQL
 $CFLAGS << " -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv"
+#$CFLAGS << " -g"
 
 SYMFILE = File.join(File.dirname(__FILE__), "pg_query.sym")
 if RUBY_PLATFORM =~ /darwin/

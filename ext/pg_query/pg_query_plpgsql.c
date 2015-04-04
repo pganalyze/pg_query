@@ -1,27 +1,7 @@
 #include "pg_query.h"
+#include "pg_plpgsql_to_json.h"
 
-#include "parser/parser.h"
-#include "parser/scanner.h"
-#include "parser/scansup.h"
-
-#include <unistd.h>
-#include <fcntl.h>
-
-VALUE new_parse_error(ErrorData* error)
-{
-	VALUE cPgQuery, cParseError;
-	VALUE args[2];
-
-	cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
-	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
-
-	args[0] = rb_str_new2(error->message);
-	args[1] = INT2NUM(error->cursorpos);
-
-	return rb_class_new_instance(2, args, cParseError);
-}
-
-VALUE pg_query_raw_parse(VALUE self, VALUE input)
+VALUE pg_query_raw_parse_plpgsql(VALUE self, VALUE input)
 {
 	Check_Type(input, T_STRING);
 
@@ -35,7 +15,7 @@ VALUE pg_query_raw_parse(VALUE self, VALUE input)
 #endif
 
 	ctx = AllocSetContextCreate(TopMemoryContext,
-								"pg_query_raw_parse",
+								"pg_query_raw_parse_plpgsql",
 								ALLOCSET_DEFAULT_MINSIZE,
 								ALLOCSET_DEFAULT_INITSIZE,
 								ALLOCSET_DEFAULT_MAXSIZE);
@@ -57,13 +37,14 @@ VALUE pg_query_raw_parse(VALUE self, VALUE input)
 	// Parse it!
 	PG_TRY();
 	{
-		List *tree;
+		PLpgSQL_function *func;
 		char *str;
 
 		str = StringValueCStr(input);
-		tree = raw_parser(str);
 
-		str = nodeToJSONString(tree);
+		func = plpgsql_compile_inline(str);
+
+		str = plpgsqlToJSON(func);
 
 #ifndef DEBUG
 		// Save stderr for result
@@ -74,6 +55,7 @@ VALUE pg_query_raw_parse(VALUE self, VALUE input)
 		rb_ary_push(result, rb_str_new2(str));
 		rb_ary_push(result, rb_str_new2(stderr_buffer));
 
+		plpgsql_free_function_memory(func);
 		pfree(str);
 	}
 	PG_CATCH();
