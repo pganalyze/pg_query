@@ -13,4 +13,9 @@ describe PgQuery, '#filter_columns' do
   it 'finds qualified names' do
     expect(filter_columns('SELECT * FROM x WHERE x.y = ? AND x.z = 1')).to eq [['x', 'y'], ['x', 'z']]
   end
+
+  it 'traverses into CTEs' do
+    query = 'WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a WHERE b = 5'
+    expect(filter_columns(query)).to match_array [['x', 'y'], ['x', 'z'], [nil, 'b']]
+  end
 end

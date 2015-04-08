@@ -621,6 +621,109 @@ describe PgQuery, "parsing" do
        "behavior"=>0}}]
   end
 
+  it 'should parse WITH' do
+    query = PgQuery.parse('WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a')
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['a', 'x']
+    expect(query.parsetree).to eq [{"SELECT"=>
+   {"distinctClause"=>nil,
+    "intoClause"=>nil,
+    "targetList"=>
+     [{"RESTARGET"=>
+        {"name"=>nil,
+         "indirection"=>nil,
+         "val"=>{"COLUMNREF"=>{"fields"=>[{"A_STAR"=>{}}], "location"=>61}},
+         "location"=>61}}],
+    "fromClause"=>
+     [{"RANGEVAR"=>
+        {"schemaname"=>nil,
+         "relname"=>"a",
+         "inhOpt"=>2,
+         "relpersistence"=>"p",
+         "alias"=>nil,
+         "location"=>68}}],
+    "whereClause"=>nil,
+    "groupClause"=>nil,
+    "havingClause"=>nil,
+    "windowClause"=>nil,
+    "valuesLists"=>nil,
+    "sortClause"=>nil,
+    "limitOffset"=>nil,
+    "limitCount"=>nil,
+    "lockingClause"=>nil,
+    "withClause"=>
+     {"WITHCLAUSE"=>
+       {"ctes"=>
+         [{"COMMONTABLEEXPR"=>
+            {"ctename"=>"a",
+             "aliascolnames"=>nil,
+             "ctequery"=>
+              {"SELECT"=>
+                {"distinctClause"=>nil,
+                 "intoClause"=>nil,
+                 "targetList"=>
+                  [{"RESTARGET"=>
+                     {"name"=>nil,
+                      "indirection"=>nil,
+                      "val"=>
+                       {"COLUMNREF"=>
+                         {"fields"=>[{"A_STAR"=>{}}], "location"=>18}},
+                      "location"=>18}}],
+                 "fromClause"=>
+                  [{"RANGEVAR"=>
+                     {"schemaname"=>nil,
+                      "relname"=>"x",
+                      "inhOpt"=>2,
+                      "relpersistence"=>"p",
+                      "alias"=>nil,
+                      "location"=>25}}],
+                 "whereClause"=>
+                  {"AEXPR AND"=>
+                    {"lexpr"=>
+                      {"AEXPR"=>
+                        {"name"=>["="],
+                         "lexpr"=>
+                          {"COLUMNREF"=>
+                            {"fields"=>["x", "y"], "location"=>33}},
+                         "rexpr"=>{"PARAMREF"=>{"number"=>0, "location"=>39}},
+                         "location"=>37}},
+                     "rexpr"=>
+                      {"AEXPR"=>
+                        {"name"=>["="],
+                         "lexpr"=>
+                          {"COLUMNREF"=>
+                            {"fields"=>["x", "z"], "location"=>45}},
+                         "rexpr"=>{"A_CONST"=>{"val"=>1, "location"=>51}},
+                         "location"=>49}},
+                     "location"=>41}},
+                 "groupClause"=>nil,
+                 "havingClause"=>nil,
+                 "windowClause"=>nil,
+                 "valuesLists"=>nil,
+                 "sortClause"=>nil,
+                 "limitOffset"=>nil,
+                 "limitCount"=>nil,
+                 "lockingClause"=>nil,
+                 "withClause"=>nil,
+                 "op"=>0,
+                 "all"=>false,
+                 "larg"=>nil,
+                 "rarg"=>nil}},
+             "location"=>5,
+             "cterecursive"=>false,
+             "cterefcount"=>0,
+             "ctecolnames"=>nil,
+             "ctecoltypes"=>nil,
+             "ctecoltypmods"=>nil,
+             "ctecolcollations"=>nil}}],
+        "recursive"=>false,
+        "location"=>0}},
+    "op"=>0,
+    "all"=>false,
+    "larg"=>nil,
+    "rarg"=>nil}}]
+  end
+
   it 'should parse multi-line function definitions' do
     query = PgQuery.parse('CREATE OR REPLACE FUNCTION thing(parameter_thing text)
   RETURNS bigint AS

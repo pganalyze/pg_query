@@ -59,6 +59,13 @@ protected
                 from_clause_items << item
               end
             end
+
+            # CTEs
+            if statement["SELECT"]["withClause"]
+              statement["SELECT"]["withClause"]["WITHCLAUSE"]["ctes"].each do |item|
+                statements << item["COMMONTABLEEXPR"]["ctequery"] if item["COMMONTABLEEXPR"]
+              end
+            end
           elsif statement["SELECT"]["op"] == 1
             statements << statement["SELECT"]["larg"] if statement["SELECT"]["larg"]
             statements << statement["SELECT"]["rarg"] if statement["SELECT"]["rarg"]
