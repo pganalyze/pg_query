@@ -72,8 +72,13 @@ protected
           end
         when "INSERT INTO", "UPDATE", "DELETE FROM", "VACUUM", "COPY", "ALTER TABLE", "CREATESTMT", "INDEXSTMT", "RULESTMT", "CREATETRIGSTMT"
           from_clause_items << statement.values[0]["relation"]
-        when "EXPLAIN", "VIEWSTMT"
-          statements << statement.values[0]["query"]
+        when "VIEWSTMT"
+          from_clause_items << statement["VIEWSTMT"]["view"]
+          statements << statement["VIEWSTMT"]["query"]
+        when "REFRESHMATVIEWSTMT"
+          from_clause_items << statement["REFRESHMATVIEWSTMT"]["relation"]
+        when "EXPLAIN"
+          statements << statement["EXPLAIN"]["query"]
         when "CREATE TABLE AS"
           from_clause_items << statement["CREATE TABLE AS"]["into"]["INTOCLAUSE"]["rel"] rescue nil
         when "LOCK", "TRUNCATE"

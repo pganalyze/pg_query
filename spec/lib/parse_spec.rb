@@ -394,7 +394,7 @@ describe PgQuery, "parsing" do
   it 'should parse CREATE VIEW' do
     query = PgQuery.parse('CREATE VIEW myview AS SELECT * FROM mytab')
     expect(query.warnings).to eq []
-    expect(query.tables).to eq ['mytab']
+    expect(query.tables).to eq ['myview', 'mytab']
     expect(query.parsetree).to eq [{"VIEWSTMT"=>
      {"view"=>
        {"RANGEVAR"=>
@@ -441,6 +441,23 @@ describe PgQuery, "parsing" do
       "replace"=>false,
       "options"=>nil,
       "withCheckOption"=>0}}]
+  end
+
+  it 'should parse REFRESH MATERIALIZED VIEW' do
+    query = PgQuery.parse('REFRESH MATERIALIZED VIEW myview')
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['myview']
+    expect(query.parsetree).to eq [{"REFRESHMATVIEWSTMT"=>
+   {"concurrent"=>false,
+    "skipData"=>false,
+    "relation"=>
+     {"RANGEVAR"=>
+       {"schemaname"=>nil,
+        "relname"=>"myview",
+        "inhOpt"=>2,
+        "relpersistence"=>"p",
+        "alias"=>nil,
+        "location"=>26}}}}]
   end
 
   it 'should parse CREATE RULE' do
