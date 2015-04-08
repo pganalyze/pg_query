@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-static VALUE new_parse_error(ErrorData* error)
+VALUE new_parse_error(ErrorData* error)
 {
 	VALUE cPgQuery, cParseError;
 	VALUE args[2];
@@ -20,9 +20,6 @@ static VALUE new_parse_error(ErrorData* error)
 
 	return rb_class_new_instance(2, args, cParseError);
 }
-
-#define STDERR_BUFFER_LEN 4096
-//#define DEBUG
 
 VALUE pg_query_raw_parse(VALUE self, VALUE input)
 {

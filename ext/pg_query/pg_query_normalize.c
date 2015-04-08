@@ -4,6 +4,7 @@
 #include "parser/scanner.h"
 #include "parser/scansup.h"
 #include "mb/pg_wchar.h"
+#include "nodes/nodeFuncs.h"
 
 /*
  * Struct for tracking locations/lengths of constants during normalization
