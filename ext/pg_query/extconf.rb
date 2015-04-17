@@ -16,7 +16,7 @@ PG_OBJS = {
     'gram.o', 'parser.o', 'keywords.o', 'kwlookup.o', 'scansup.o'
   ],
   'backend/nodes' => [
-    'nodeFuncs.o', 'makefuncs.o', 'value.o', 'list.o', 'outfuncs_json.o'
+    'copyfuncs.o', 'nodeFuncs.o', 'makefuncs.o', 'value.o', 'list.o', 'outfuncs_json.o'
   ],
   'backend/lib' => ['stringinfo.o'],
   'port'        => ['qsort.o'],

@@ -809,6 +809,68 @@ $BODY$
            "defaction"=>0}}],
       "withClause"=>nil}}]
   end
+
+  it 'parses table functions' do
+    query = PgQuery.parse("CREATE FUNCTION getfoo(int) RETURNS TABLE (f1 int) AS '
+    SELECT * FROM foo WHERE fooid = $1;
+' LANGUAGE SQL")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq []
+    expect(query.parsetree).to eq [{"CREATEFUNCTIONSTMT"=>
+    {"replace"=>false,
+    "funcname"=>["getfoo"],
+    "parameters"=>
+     [{"FUNCTIONPARAMETER"=>
+        {"name"=>nil,
+         "argType"=>
+          {"TYPENAME"=>
+            {"names"=>["pg_catalog", "int4"],
+             "typeOid"=>0,
+             "setof"=>false,
+             "pct_type"=>false,
+             "typmods"=>nil,
+             "typemod"=>-1,
+             "arrayBounds"=>nil,
+             "location"=>23}},
+         "mode"=>105,
+         "defexpr"=>nil}},
+      {"FUNCTIONPARAMETER"=>
+        {"name"=>"f1",
+         "argType"=>
+          {"TYPENAME"=>
+            {"names"=>["pg_catalog", "int4"],
+             "typeOid"=>0,
+             "setof"=>false,
+             "pct_type"=>false,
+             "typmods"=>nil,
+             "typemod"=>-1,
+             "arrayBounds"=>nil,
+             "location"=>46}},
+         "mode"=>116,
+         "defexpr"=>nil}}],
+    "returnType"=>
+     {"TYPENAME"=>
+       {"names"=>["pg_catalog", "int4"],
+        "typeOid"=>0,
+        "setof"=>true,
+        "pct_type"=>false,
+        "typmods"=>nil,
+        "typemod"=>-1,
+        "arrayBounds"=>nil,
+        "location"=>36}},
+    "options"=>
+     [{"DEFELEM"=>
+        {"defnamespace"=>nil,
+         "defname"=>"as",
+         "arg"=>["\n    SELECT * FROM foo WHERE fooid = $1;\n"],
+         "defaction"=>0}},
+      {"DEFELEM"=>
+        {"defnamespace"=>nil,
+         "defname"=>"language",
+         "arg"=>"sql",
+         "defaction"=>0}}],
+    "withClause"=>nil}}]
+  end
 end
 
 def parse_expr(expr)
