@@ -18,7 +18,7 @@ gem install pg_query
 
 Due to compiling parts of PostgreSQL, installation will take a while. Expect between 2 and 10 minutes.
 
-Note: On some Linux systems you'll have to install the ```unzip``` and ```flex``` packages beforehand.
+Note: On some Linux systems you'll have to install the ```flex``` package beforehand.
 
 ## Usage
 
