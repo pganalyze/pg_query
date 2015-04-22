@@ -10,4 +10,9 @@ describe PgQuery, 'deparse' do
     query = PgQuery.parse("INSERT INTO x (y, z) VALUES (1, 'abc')")
     expect(query.deparse).to eq "INSERT INTO x (y, z) VALUES (1, 'abc')"
   end
+
+  it 'can deparse basic UPDATE statements' do
+    query = PgQuery.parse("UPDATE x SET y = 1 WHERE z = 'abc'")
+    expect(query.deparse).to eq "UPDATE x SET y = 1 WHERE z = 'abc'"
+  end
 end

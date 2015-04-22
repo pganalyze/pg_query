@@ -9,7 +9,7 @@ class PgQuery
 
   private
 
-  def deparse_item(item)
+  def deparse_item(item, context = nil)
     return if item.nil?
 
     type = item.keys[0]
@@ -25,13 +25,15 @@ class PgQuery
     when 'A_CONST'
       deparse_a_const(node)
     when 'RESTARGET'
-      deparse_restarget(node)
+      deparse_restarget(node, context)
     when 'AEXPR AND'
       deparse_aexpr_and(node)
     when 'SELECT'
       deparse_select(node)
     when 'INSERT INTO'
       deparse_insert_into(node)
+    when 'UPDATE'
+      deparse_update(node)
     else
       raise format("Can't deparse: %s: %s", type, node.inspect)
     end
@@ -49,8 +51,16 @@ class PgQuery
     node['val'].inspect.gsub('"', '\'')
   end
 
-  def deparse_restarget(node)
-    [deparse_item(node['val']), node['name']].compact.join(' AS ')
+  def deparse_restarget(node, context)
+    if context == :select
+      [deparse_item(node['val']), node['name']].compact.join(' AS ')
+    elsif context == :update
+      [node['name'], deparse_item(node['val'])].compact.join(' = ')
+    elsif node['val'].nil?
+      node['name']
+    else
+      raise format("Can't deparse %s in context %s", node.inspect, context)
+    end
   end
 
   def deparse_aexpr(node)
@@ -70,7 +80,7 @@ class PgQuery
     if node['targetList']
       output << 'SELECT'
       node['targetList'].each do |item|
-        output << deparse_item(item)
+        output << deparse_item(item, :select)
       end
     end
 
@@ -105,6 +115,25 @@ class PgQuery
     end.join(', ') + ')'
 
     output << deparse_item(node['selectStmt'])
+
+    output.join(' ')
+  end
+
+  def deparse_update(node)
+    output = ['UPDATE']
+    output << deparse_item(node['relation'])
+
+    if node['targetList']
+      output << 'SET'
+      node['targetList'].each do |item|
+        output << deparse_item(item, :update)
+      end
+    end
+
+    if node['whereClause']
+      output << 'WHERE'
+      output << deparse_item(node['whereClause'])
+    end
 
     output.join(' ')
   end
