@@ -24,10 +24,20 @@ class PgQuery
       deparse_columnref(node)
     when 'A_CONST'
       deparse_a_const(node)
+    when 'ALIAS'
+      deparse_alias(node)
+    when 'PARAMREF'
+      deparse_paramref(node)
     when 'RESTARGET'
       deparse_restarget(node, context)
+    when 'FUNCCALL'
+      deparse_funccall(node)
     when 'AEXPR AND'
       deparse_aexpr_and(node)
+    when 'JOINEXPR'
+      deparse_joinexpr(node)
+    when 'SORTBY'
+      deparse_sortby(node)
     when 'SELECT'
       deparse_select(node)
     when 'INSERT INTO'
@@ -40,7 +50,10 @@ class PgQuery
   end
 
   def deparse_rangevar(node)
-    node['relname']
+    output = []
+    output << node['relname']
+    output << deparse_item(node['alias']) if node['alias']
+    output.join(' ')
   end
 
   def deparse_columnref(node)
@@ -49,6 +62,14 @@ class PgQuery
 
   def deparse_a_const(node)
     node['val'].inspect.gsub('"', '\'')
+  end
+
+  def deparse_alias(node)
+    node['aliasname']
+  end
+
+  def deparse_paramref(node)
+    format('$%d', node['number'])
   end
 
   def deparse_restarget(node, context)
@@ -63,6 +84,11 @@ class PgQuery
     end
   end
 
+  def deparse_funccall(node)
+    args = node['args'].map { |arg| deparse_item(arg) }
+    format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+  end
+
   def deparse_aexpr(node)
     output = []
     output << deparse_item(node['lexpr'])
@@ -74,14 +100,35 @@ class PgQuery
     format('%s AND %s', deparse_item(node['lexpr']), deparse_item(node['rexpr']))
   end
 
+  def deparse_joinexpr(node)
+    output = []
+    output << deparse_item(node['larg'])
+    output << 'JOIN'
+    output << deparse_item(node['rarg'])
+
+    if node['quals']
+      output << 'ON'
+      output << deparse_item(node['quals'])
+    end
+
+    output.join(' ')
+  end
+
+  def deparse_sortby(node)
+    output = []
+    output << deparse_item(node['node'])
+    output << 'ASC' if node['sortby_dir'] == 1
+    output.join(' ')
+  end
+
   def deparse_select(node)
     output = []
 
     if node['targetList']
       output << 'SELECT'
-      node['targetList'].each do |item|
-        output << deparse_item(item, :select)
-      end
+      output << node['targetList'].map do |item|
+        deparse_item(item, :select)
+      end.join(', ')
     end
 
     if node['fromClause']
@@ -100,6 +147,13 @@ class PgQuery
       output << 'VALUES'
       output << node['valuesLists'].map do |value_list|
         '(' + value_list.map { |v| deparse_item(v) }.join(', ') + ')'
+      end.join(', ')
+    end
+
+    if node['sortClause']
+      output << 'ORDER BY'
+      output << node['sortClause'].map do |item|
+        deparse_item(item)
       end.join(', ')
     end
 
