@@ -1,4 +1,4 @@
-$:.push File.expand_path("../lib", __FILE__)
+$LOAD_PATH.push File.expand_path('../lib', __FILE__)
 require 'pg_query/version'
 
 Gem::Specification.new do |s|
@@ -12,9 +12,9 @@ Gem::Specification.new do |s|
   s.license     = 'BSD-3-Clause'
   s.homepage    = 'http://github.com/pganalyze/pg_query'
 
-  s.extensions = %w[ext/pg_query/extconf.rb]
+  s.extensions = %w(ext/pg_query/extconf.rb)
 
-  s.files = %w[
+  s.files = %w(
     LICENSE
     Rakefile
     ext/pg_query/extconf.rb
@@ -31,10 +31,12 @@ Gem::Specification.new do |s|
     lib/pg_query/parse_error.rb
     lib/pg_query/parse.rb
     lib/pg_query/version.rb
-  ]
+  )
 
-  s.add_development_dependency "rake-compiler", '~> 0'
+  s.add_development_dependency 'rake-compiler', '~> 0'
   s.add_development_dependency 'rspec', '~> 3.0'
+  s.add_development_dependency 'rubocop'
+  s.add_development_dependency 'rubocop-rspec'
 
-  s.add_runtime_dependency "json", '~> 1.8'
+  s.add_runtime_dependency 'json', '~> 1.8'
 end

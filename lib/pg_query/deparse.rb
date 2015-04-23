@@ -9,7 +9,7 @@ class PgQuery
 
   private
 
-  def deparse_item(item, context = nil)
+  def deparse_item(item, context = nil) # rubocop:disable Style/CyclomaticComplexity
     return if item.nil?
 
     type = item.keys[0]
@@ -45,7 +45,7 @@ class PgQuery
     when 'UPDATE'
       deparse_update(node)
     else
-      raise format("Can't deparse: %s: %s", type, node.inspect)
+      fail format("Can't deparse: %s: %s", type, node.inspect)
     end
   end
 
@@ -80,7 +80,7 @@ class PgQuery
     elsif node['val'].nil?
       node['name']
     else
-      raise format("Can't deparse %s in context %s", node.inspect, context)
+      fail format("Can't deparse %s in context %s", node.inspect, context)
     end
   end
 

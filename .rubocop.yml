@@ -1,0 +1,20 @@
+require: rubocop-rspec
+
+AllCops:
+  Exclude:
+    - spec/**/*
+
+Documentation:
+  Enabled: false
+
+LineLength:
+  Enabled: false
+
+MethodLength:
+  Enabled: false
+
+ClassLength:
+  Enabled: false
+
+Style/BlockNesting:
+  Enabled: false
