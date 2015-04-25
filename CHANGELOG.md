@@ -7,6 +7,7 @@
 * Extract views as tables from CREATE/REFRESH VIEW
 * Refactor code using generic treewalker
 * fingerprint: Normalize IN lists
+* param_refs: Fix length attribute in result
 
 
 ## 0.5.0    2015-03-26
