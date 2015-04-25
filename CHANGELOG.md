@@ -5,6 +5,7 @@
 * Restructure extension C code
 * Add table/filter columns support for CTEs
 * Extract views as tables from CREATE/REFRESH VIEW
+* Refactor code using generic treewalker
 
 
 ## 0.5.0    2015-03-26
