@@ -1,4 +1,4 @@
-# pg_query
+# pg_query ![](https://img.shields.io/gem/v/pg_query.svg) ![](https://img.shields.io/gem/dt/pg_query.svg) [ ![Codeship Status for lfittl/dblint](https://img.shields.io/codeship/584524e0-ed17-0131-838b-4216c01ccc74.svg)](https://codeship.com/projects/26651)
 
 This Ruby extension uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree.
 
