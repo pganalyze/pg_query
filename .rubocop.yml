@@ -1,6 +1,22 @@
 require: rubocop-rspec
 
-AllCops:
+Style/AlignHash:
+  Exclude:
+    - spec/**/*
+
+Style/WordArray:
+  Exclude:
+    - spec/**/*
+
+Style/StringLiterals:
+  Exclude:
+    - spec/**/*
+
+Style/SpaceAroundOperators:
+  Exclude:
+    - spec/**/*
+
+Style/SpaceInsideHashLiteralBraces:
   Exclude:
     - spec/**/*
 

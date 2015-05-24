@@ -255,10 +255,10 @@ class PgQuery
   end
 
   def deparse_typename(node)
-    if node['names'] == ['pg_catalog', 'bool']
+    if node['names'] == %w(pg_catalog bool)
       :boolean
     else
-      nil
+      node['names'].join('.')
     end
   end
 end

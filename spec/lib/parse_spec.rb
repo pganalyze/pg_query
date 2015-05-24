@@ -1,46 +1,46 @@
 require 'spec_helper'
 
-describe PgQuery, "parsing" do
-  it "should parse a simple query" do
-    query = PgQuery.parse("SELECT 1")
+describe PgQuery, '.parse' do
+  it "parses a simple query" do
+    query = described_class.parse("SELECT 1")
     expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>false, "larg"=>nil, "rarg"=>nil}}]
   end
 
-  it "should handle errors" do
-    expect { PgQuery.parse("SELECT 'ERR") }.to raise_error {|error|
-      expect(error).to be_a(PgQuery::ParseError)
+  it "handles errors" do
+    expect { described_class.parse("SELECT 'ERR") }.to raise_error {|error|
+      expect(error).to be_a(described_class::ParseError)
       expect(error.message).to eq "unterminated quoted string at or near \"'ERR\""
       expect(error.location).to eq 8 # 8th character in query string
     }
   end
 
-  it "should parse real queries" do
-    query = PgQuery.parse("SELECT memory_total_bytes, memory_free_bytes, memory_pagecache_bytes, memory_buffers_bytes, memory_applications_bytes, (memory_swap_total_bytes - memory_swap_free_bytes) AS swap, date_part($0, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON (snapshot_id = s.id) WHERE s.database_id = $0 AND s.collected_at BETWEEN $0 AND $0 ORDER BY collected_at")
+  it "parses real queries" do
+    query = described_class.parse("SELECT memory_total_bytes, memory_free_bytes, memory_pagecache_bytes, memory_buffers_bytes, memory_applications_bytes, (memory_swap_total_bytes - memory_swap_free_bytes) AS swap, date_part($0, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON (snapshot_id = s.id) WHERE s.database_id = $0 AND s.collected_at BETWEEN $0 AND $0 ORDER BY collected_at")
     expect(query.parsetree).not_to be_nil
     expect(query.tables).to eq ['snapshots', 'system_snapshots']
   end
 
-  it "should parse empty queries" do
-    query = PgQuery.parse("-- nothing")
+  it "parses empty queries" do
+    query = described_class.parse("-- nothing")
     expect(query.parsetree).to eq []
     expect(query.tables).to eq []
     expect(query.warnings).to be_empty
   end
 
-  it "should parse floats with leading dot" do
-    q = PgQuery.parse("SELECT .1")
+  it "parses floats with leading dot" do
+    q = described_class.parse("SELECT .1")
     expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq({"A_CONST" => {"val"=>0.1, "location"=>7}})
+    expect(expr).to eq("A_CONST" => {"val"=>0.1, "location"=>7})
   end
 
-  it "should parse floats with trailing dot" do
-    q = PgQuery.parse("SELECT 1.")
+  it "parses floats with trailing dot" do
+    q = described_class.parse("SELECT 1.")
     expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq({"A_CONST" => {"val"=>1.0, "location"=>7}})
+    expect(expr).to eq("A_CONST" => {"val"=>1.0, "location"=>7})
   end
 
-  it "should parse ALTER TABLE" do
-    query = PgQuery.parse("ALTER TABLE test ADD PRIMARY KEY (gid)")
+  it "parses ALTER TABLE" do
+    query = described_class.parse("ALTER TABLE test ADD PRIMARY KEY (gid)")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"ALTER TABLE"=>
@@ -73,8 +73,8 @@ describe PgQuery, "parsing" do
            "missing_ok"=>false}}]
   end
 
-  it "should parse SET" do
-    query = PgQuery.parse("SET statement_timeout=0")
+  it "parses SET" do
+    query = described_class.parse("SET statement_timeout=0")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"SET"=>
@@ -84,15 +84,15 @@ describe PgQuery, "parsing" do
            "is_local"=>false}}]
   end
 
-  it "should parse SHOW" do
-    query = PgQuery.parse("SHOW work_mem")
+  it "parses SHOW" do
+    query = described_class.parse("SHOW work_mem")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"SHOW"=>{"name"=>"work_mem"}}]
   end
 
-  it "should parse COPY" do
-    query = PgQuery.parse("COPY test (id) TO stdout")
+  it "parses COPY" do
+    query = described_class.parse("COPY test (id) TO stdout")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"COPY"=>
@@ -112,8 +112,8 @@ describe PgQuery, "parsing" do
            "options"=>nil}}]
   end
 
-  it "should parse DROP TABLE" do
-    query = PgQuery.parse("drop table abc.test123 cascade")
+  it "parses DROP TABLE" do
+    query = described_class.parse("drop table abc.test123 cascade")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['abc.test123']
     expect(query.parsetree).to eq [{"DROP"=>
@@ -125,20 +125,20 @@ describe PgQuery, "parsing" do
            "concurrent"=>false}}]
   end
 
-  it "should parse COMMIT" do
-    query = PgQuery.parse("COMMIT")
+  it "parses COMMIT" do
+    query = described_class.parse("COMMIT")
     expect(query.warnings).to eq []
     expect(query.parsetree).to eq [{"TRANSACTION"=>{"kind"=>2, "options"=>nil, "gid"=>nil}}]
   end
 
-  it "should parse CHECKPOINT" do
-    query = PgQuery.parse("CHECKPOINT")
+  it "parses CHECKPOINT" do
+    query = described_class.parse("CHECKPOINT")
     expect(query.warnings).to eq []
     expect(query.parsetree).to eq [{"CHECKPOINT"=>{}}]
   end
 
-  it "should parse VACUUM" do
-    query = PgQuery.parse("VACUUM my_table")
+  it "parses VACUUM" do
+    query = described_class.parse("VACUUM my_table")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['my_table']
     expect(query.parsetree).to eq [{"VACUUM"=>
@@ -158,8 +158,8 @@ describe PgQuery, "parsing" do
            "multixact_freeze_table_age"=>-1}}]
   end
 
-  it "should parse EXPLAIN" do
-    query = PgQuery.parse("EXPLAIN DELETE FROM test")
+  it "parses EXPLAIN" do
+    query = described_class.parse("EXPLAIN DELETE FROM test")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"EXPLAIN"=>
@@ -180,8 +180,8 @@ describe PgQuery, "parsing" do
            "options"=>nil}}]
   end
 
-  it "should parse SELECT INTO" do
-    query = PgQuery.parse("CREATE TEMP TABLE test AS SELECT 1")
+  it "parses SELECT INTO" do
+    query = described_class.parse("CREATE TEMP TABLE test AS SELECT 1")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"CREATE TABLE AS"=>
@@ -230,8 +230,8 @@ describe PgQuery, "parsing" do
            "is_select_into"=>false}}]
   end
 
-  it "should parse LOCK" do
-    query = PgQuery.parse("LOCK TABLE public.schema_migrations IN ACCESS SHARE MODE")
+  it "parses LOCK" do
+    query = described_class.parse("LOCK TABLE public.schema_migrations IN ACCESS SHARE MODE")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['public.schema_migrations']
     expect(query.parsetree).to eq [{"LOCK"=>
@@ -247,8 +247,8 @@ describe PgQuery, "parsing" do
            "nowait"=>false}}]
   end
 
-  it 'should parse CREATE TABLE' do
-    query = PgQuery.parse('CREATE TABLE test (a int4)')
+  it 'parses CREATE TABLE' do
+    query = described_class.parse('CREATE TABLE test (a int4)')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"CREATESTMT"=>
@@ -294,8 +294,8 @@ describe PgQuery, "parsing" do
         "if_not_exists"=>false}}]
   end
 
-  it 'should parse CREATE TABLE WITH OIDS' do
-    query = PgQuery.parse('CREATE TABLE test (a int4) WITH OIDS')
+  it 'parses CREATE TABLE WITH OIDS' do
+    query = described_class.parse('CREATE TABLE test (a int4) WITH OIDS')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"CREATESTMT"=>
@@ -341,8 +341,8 @@ describe PgQuery, "parsing" do
         "if_not_exists"=>false}}]
   end
 
-  it 'should parse CREATE INDEX' do
-    query = PgQuery.parse('CREATE INDEX testidx ON test USING gist (a)')
+  it 'parses CREATE INDEX' do
+    query = described_class.parse('CREATE INDEX testidx ON test USING gist (a)')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.parsetree).to eq [{"INDEXSTMT"=>
@@ -380,8 +380,8 @@ describe PgQuery, "parsing" do
         "concurrent"=>false}}]
   end
 
-  it 'should parse CREATE SCHEMA' do
-    query = PgQuery.parse('CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe')
+  it 'parses CREATE SCHEMA' do
+    query = described_class.parse('CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"CREATE SCHEMA"=>
@@ -391,8 +391,8 @@ describe PgQuery, "parsing" do
         "if_not_exists"=>true}}]
   end
 
-  it 'should parse CREATE VIEW' do
-    query = PgQuery.parse('CREATE VIEW myview AS SELECT * FROM mytab')
+  it 'parses CREATE VIEW' do
+    query = described_class.parse('CREATE VIEW myview AS SELECT * FROM mytab')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['myview', 'mytab']
     expect(query.parsetree).to eq [{"VIEWSTMT"=>
@@ -443,8 +443,8 @@ describe PgQuery, "parsing" do
       "withCheckOption"=>0}}]
   end
 
-  it 'should parse REFRESH MATERIALIZED VIEW' do
-    query = PgQuery.parse('REFRESH MATERIALIZED VIEW myview')
+  it 'parses REFRESH MATERIALIZED VIEW' do
+    query = described_class.parse('REFRESH MATERIALIZED VIEW myview')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['myview']
     expect(query.parsetree).to eq [{"REFRESHMATVIEWSTMT"=>
@@ -460,8 +460,8 @@ describe PgQuery, "parsing" do
         "location"=>26}}}}]
   end
 
-  it 'should parse CREATE RULE' do
-    query = PgQuery.parse('CREATE RULE shoe_ins_protect AS ON INSERT TO shoe
+  it 'parses CREATE RULE' do
+    query = described_class.parse('CREATE RULE shoe_ins_protect AS ON INSERT TO shoe
                            DO INSTEAD NOTHING')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['shoe']
@@ -482,8 +482,8 @@ describe PgQuery, "parsing" do
       "replace"=>false}}]
   end
 
-  it 'should parse CREATE TRIGGER' do
-    query = PgQuery.parse('CREATE TRIGGER check_update
+  it 'parses CREATE TRIGGER' do
+    query = described_class.parse('CREATE TRIGGER check_update
                            BEFORE UPDATE ON accounts
                            FOR EACH ROW
                            EXECUTE PROCEDURE check_account_update()')
@@ -512,8 +512,8 @@ describe PgQuery, "parsing" do
         "constrrel"=>nil}}]
   end
 
-  it 'should parse DROP SCHEMA' do
-    query = PgQuery.parse('DROP SCHEMA myschema')
+  it 'parses DROP SCHEMA' do
+    query = described_class.parse('DROP SCHEMA myschema')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"DROP"=>
@@ -525,8 +525,8 @@ describe PgQuery, "parsing" do
         "concurrent"=>false}}]
   end
 
-  it 'should parse DROP VIEW' do
-    query = PgQuery.parse('DROP VIEW myview, myview2')
+  it 'parses DROP VIEW' do
+    query = described_class.parse('DROP VIEW myview, myview2')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"DROP"=>
@@ -538,8 +538,8 @@ describe PgQuery, "parsing" do
         "concurrent"=>false}}]
   end
 
-  it 'should parse DROP INDEX' do
-    query = PgQuery.parse('DROP INDEX CONCURRENTLY myindex')
+  it 'parses DROP INDEX' do
+    query = described_class.parse('DROP INDEX CONCURRENTLY myindex')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"DROP"=>
@@ -551,8 +551,8 @@ describe PgQuery, "parsing" do
         "concurrent"=>true}}]
   end
 
-  it 'should parse DROP RULE' do
-    query = PgQuery.parse('DROP RULE myrule ON mytable CASCADE')
+  it 'parses DROP RULE' do
+    query = described_class.parse('DROP RULE myrule ON mytable CASCADE')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['mytable']
     expect(query.parsetree).to eq [{"DROP"=>
@@ -564,8 +564,8 @@ describe PgQuery, "parsing" do
        "concurrent"=>false}}]
   end
 
-  it 'should parse DROP TRIGGER' do
-    query = PgQuery.parse('DROP TRIGGER IF EXISTS mytrigger ON mytable RESTRICT')
+  it 'parses DROP TRIGGER' do
+    query = described_class.parse('DROP TRIGGER IF EXISTS mytrigger ON mytable RESTRICT')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['mytable']
     expect(query.parsetree).to eq [{"DROP"=>
@@ -577,8 +577,8 @@ describe PgQuery, "parsing" do
        "concurrent"=>false}}]
   end
 
-  it 'should parse GRANT' do
-    query = PgQuery.parse('GRANT INSERT, UPDATE ON mytable TO myuser')
+  it 'parses GRANT' do
+    query = described_class.parse('GRANT INSERT, UPDATE ON mytable TO myuser')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['mytable']
     expect(query.parsetree).to eq [{"GRANTSTMT"=>
@@ -601,8 +601,8 @@ describe PgQuery, "parsing" do
         "behavior"=>0}}]
   end
 
-  it 'should parse REVOKE' do
-    query = PgQuery.parse('REVOKE admins FROM joe')
+  it 'parses REVOKE' do
+    query = described_class.parse('REVOKE admins FROM joe')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"GRANTROLESTMT"=>
@@ -614,8 +614,8 @@ describe PgQuery, "parsing" do
        "behavior"=>0}}]
   end
 
-  it 'should parse TRUNCATE' do
-    query = PgQuery.parse('TRUNCATE bigtable, fattable RESTART IDENTITY')
+  it 'parses TRUNCATE' do
+    query = described_class.parse('TRUNCATE bigtable, fattable RESTART IDENTITY')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['bigtable', 'fattable']
     expect(query.parsetree).to eq [{"TRUNCATE"=>
@@ -638,8 +638,8 @@ describe PgQuery, "parsing" do
        "behavior"=>0}}]
   end
 
-  it 'should parse WITH' do
-    query = PgQuery.parse('WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a')
+  it 'parses WITH' do
+    query = described_class.parse('WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['a', 'x']
     expect(query.parsetree).to eq [{"SELECT"=>
@@ -741,8 +741,8 @@ describe PgQuery, "parsing" do
     "rarg"=>nil}}]
   end
 
-  it 'should parse multi-line function definitions' do
-    query = PgQuery.parse('CREATE OR REPLACE FUNCTION thing(parameter_thing text)
+  it 'parses multi-line function definitions' do
+    query = described_class.parse('CREATE OR REPLACE FUNCTION thing(parameter_thing text)
   RETURNS bigint AS
 $BODY$
 DECLARE
@@ -811,7 +811,7 @@ $BODY$
   end
 
   it 'parses table functions' do
-    query = PgQuery.parse("CREATE FUNCTION getfoo(int) RETURNS TABLE (f1 int) AS '
+    query = described_class.parse("CREATE FUNCTION getfoo(int) RETURNS TABLE (f1 int) AS '
     SELECT * FROM foo WHERE fooid = $1;
 ' LANGUAGE SQL")
     expect(query.warnings).to eq []
@@ -870,395 +870,5 @@ $BODY$
          "arg"=>"sql",
          "defaction"=>0}}],
     "withClause"=>nil}}]
-  end
-end
-
-def parse_expr(expr)
-  q = PgQuery.parse("SELECT " + expr + " FROM x")
-  expect(q.parsetree).not_to be_nil
-  r = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-  expect(r["AEXPR"]).not_to be_nil
-  r["AEXPR"]
-end
-
-describe PgQuery, "normalized parsing" do
-  it "should parse a normalized query" do
-    query = PgQuery.parse("SELECT ? FROM x")
-    expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil,
-                                    "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}}, "location"=>7}}],
-                                    "fromClause"=>[{"RANGEVAR"=>{"schemaname"=>nil, "relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "alias"=>nil, "location"=>14}}],
-                                    "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>false, "larg"=>nil, "rarg"=>nil}}]
-    expect(query.query).to eq "SELECT ? FROM x"
-  end
-
-  it "should keep locations correct" do
-    query = PgQuery.parse("SELECT ?, 123")
-    targetlist = query.parsetree[0]["SELECT"]["targetList"]
-    expect(targetlist[0]["RESTARGET"]["location"]).to eq 7
-    expect(targetlist[1]["RESTARGET"]["location"]).to eq 10
-  end
-
-  it "should parse INTERVAL ?" do
-    query = PgQuery.parse("SELECT INTERVAL ?")
-    expect(query.parsetree).not_to be_nil
-    targetlist = query.parsetree[0]["SELECT"]["targetList"]
-    expect(targetlist[0]["RESTARGET"]["val"]).to eq({"TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
-                                                     "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
-                                                                  "setof"=>false, "pct_type"=>false, "typmods"=>nil,
-                                                                  "typemod"=>-1, "arrayBounds"=>nil, "location"=>7}},
-                                                     "location"=>-1}})
-  end
-
-  it "should parse INTERVAL ? hour" do
-    q = PgQuery.parse("SELECT INTERVAL ? hour")
-    expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq({"TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
-                                       "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
-                                                                 "setof"=>false, "pct_type"=>false,
-                                                                 "typmods"=>[{"A_CONST"=>{"val"=>0, "location"=>-1}}],
-                                                                 "typemod"=>-1, "arrayBounds"=>nil, "location"=>7}},
-                                       "location"=>-1}})
-  end
-
-  it "should parse INTERVAL (?) ?" do
-    query = PgQuery.parse("SELECT INTERVAL (?) ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse 'a ? b' in target list" do
-    q = PgQuery.parse("SELECT a ? b")
-    expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq({"AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>7}},
-                                                   "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>11}},
-                                    "location"=>9}})
-  end
-
-  it "should fail on '? 10' in target list" do
-    # IMPORTANT: This is a difference of our patched parser from the main PostgreSQL parser
-    #
-    # This should be parsed as a left-unary operator, but we can't
-    # support that due to keyword/function duality (e.g. JOIN)
-    expect { PgQuery.parse("SELECT ? 10") }.to raise_error do |error|
-      expect(error).to be_a(PgQuery::ParseError)
-      expect(error.message).to eq "syntax error at or near \"10\""
-    end
-  end
-
-  it "should mis-parse on '? a' in target list" do
-    # IMPORTANT: This is a difference of our patched parser from the main PostgreSQL parser
-    #
-    # This is mis-parsed as a target list name (should be a column reference),
-    # but we can't avoid that.
-    q = PgQuery.parse("SELECT ? a")
-    expect(q.parsetree).not_to be_nil
-    restarget = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]
-    expect(restarget).to eq({"name"=>"a", "indirection"=>nil,
-                             "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}},
-                             "location"=>7})
-  end
-
-  it "should parse 'a ?, b' in target list" do
-    q = PgQuery.parse("SELECT a ?, b")
-    expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq({"AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>7}},
-                                                   "rexpr"=>nil,
-                                    "location"=>9}})
-  end
-
-  it "should parse 'a ? AND b' in where clause" do
-    q = PgQuery.parse("SELECT * FROM x WHERE a ? AND b")
-    expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["whereClause"]
-    expect(expr).to eq({"AEXPR AND"=>{"lexpr"=>{"AEXPR"=>{"name"=>["?"],
-                                                "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>22}},
-                                                "rexpr"=>nil, "location"=>24}},
-                                      "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>30}},
-                                      "location"=>26}})
-  end
-
-  it "should parse 'JOIN y ON a = ? JOIN z ON c = d'" do
-    # JOIN can be both a keyword and a function, this test is to make sure we treat it as a keyword in this case
-    q = PgQuery.parse("SELECT * FROM x JOIN y ON a = ? JOIN z ON c = d")
-    expect(q.parsetree).not_to be_nil
-  end
-
-  it "should parse 'a ? b' in where clause" do
-    q = PgQuery.parse("SELECT * FROM x WHERE a ? b")
-    expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["whereClause"]
-    expect(expr).to eq({"AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>22}},
-                                                   "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>26}},
-                                    "location"=>24}})
-  end
-
-  it "should parse BETWEEN ? AND ?" do
-    query = PgQuery.parse("SELECT x WHERE y BETWEEN ? AND ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse ?=?" do
-    e = parse_expr("?=?")
-    expect(e["name"]).to eq ["="]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse ?=x" do
-    e = parse_expr("?=x")
-    expect(e["name"]).to eq ["="]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["COLUMNREF"]).not_to be_nil
-  end
-
-  it "should parse x=?" do
-    e = parse_expr("x=?")
-    expect(e["name"]).to eq ["="]
-    expect(e["lexpr"]["COLUMNREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse ?!=?" do
-    e = parse_expr("?!=?")
-    expect(e["name"]).to eq ["<>"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse ?!=x" do
-    e = parse_expr("?!=x")
-    expect(e["name"]).to eq ["<>"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["COLUMNREF"]).not_to be_nil
-  end
-
-  it "should parse x!=?" do
-    e = parse_expr("x!=?")
-    expect(e["name"]).to eq ["<>"]
-    expect(e["lexpr"]["COLUMNREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse ?-?" do
-    e = parse_expr("?-?")
-    expect(e["name"]).to eq ["-"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse ?<?-?" do
-    e = parse_expr("?<?-?")
-    expect(e["name"]).to eq ["<"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["AEXPR"]).not_to be_nil
-  end
-
-  it "should parse ?+?" do
-    e = parse_expr("?+?")
-    expect(e["name"]).to eq ["+"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse ?*?" do
-    e = parse_expr("?*?")
-    expect(e["name"]).to eq ["*"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse ?/?" do
-    e = parse_expr("?/?")
-    expect(e["name"]).to eq ["/"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  # http://www.postgresql.org/docs/devel/static/functions-json.html
-  # http://www.postgresql.org/docs/devel/static/hstore.html
-  it "should parse hstore/JSON operators containing ?" do
-    e = parse_expr("'{\"a\":1, \"b\":2}'::jsonb ? 'b'")
-    expect(e["name"]).to eq ["?"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["A_CONST"]).not_to be_nil
-
-    e = parse_expr("? ? ?")
-    expect(e["name"]).to eq ["?"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("'{\"a\":1, \"b\":2, \"c\":3}'::jsonb ?| array['b', 'c']")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["A_ARRAYEXPR"]).not_to be_nil
-
-    e = parse_expr("? ?| ?")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("'[\"a\", \"b\"]'::jsonb ?& array['a', 'b']")
-    expect(e["name"]).to eq ["?&"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["A_ARRAYEXPR"]).not_to be_nil
-
-    e = parse_expr("? ?& ?")
-    expect(e["name"]).to eq ["?&"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  # http://www.postgresql.org/docs/devel/static/functions-geometry.html
-  it "should parse geometric operators containing ?" do
-    e = parse_expr("lseg '((-1,0),(1,0))' ?# box '((-2,-2),(2,2))'")
-    expect(e["name"]).to eq ["?#"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
-
-    e = parse_expr("? ?# ?")
-    expect(e["name"]).to eq ["?#"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("?- lseg '((-1,0),(1,0))'")
-    expect(e["name"]).to eq ["?-"]
-    expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
-
-    e = parse_expr("?- ?")
-    expect(e["name"]).to eq ["?-"]
-    expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("point '(1,0)' ?- point '(0,0)'")
-    expect(e["name"]).to eq ["?-"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
-
-    e = parse_expr("? ?- ?")
-    expect(e["name"]).to eq ["?-"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("?| lseg '((-1,0),(1,0))'")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
-
-    e = parse_expr("?| ?")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("point '(0,1)' ?| point '(0,0)'")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
-
-    e = parse_expr("? ?| ?")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("lseg '((0,0),(0,1))' ?-| lseg '((0,0),(1,0))'")
-    expect(e["name"]).to eq ["?-|"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
-
-    e = parse_expr("? ?-| ?")
-    expect(e["name"]).to eq ["?-|"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-
-    e = parse_expr("lseg '((-1,0),(1,0))' ?|| lseg '((-1,2),(1,2))'")
-    expect(e["name"]).to eq ["?||"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
-
-    e = parse_expr("? ?|| ?")
-    expect(e["name"]).to eq ["?||"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
-  end
-
-  it "should parse substituted pseudo keywords in extract()" do
-    q = PgQuery.parse("SELECT extract(? from NOW())")
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq({"FUNCCALL" => {"funcname"=>["pg_catalog", "date_part"],
-                                       "args"=>[{"PARAMREF"=>{"number"=>0, "location"=>15}},
-                                                {"FUNCCALL"=>{"funcname"=>["now"], "args"=>nil, "agg_order"=>nil,
-                                                              "agg_filter"=>nil, "agg_within_group"=>false,
-                                                              "agg_star"=>false, "agg_distinct"=>false,
-                                                              "func_variadic"=>false, "over"=>nil, "location"=>22}}],
-                                       "agg_order"=>nil, "agg_filter"=>nil, "agg_within_group"=>false,
-                                       "agg_star"=>false, "agg_distinct"=>false,
-                                       "func_variadic"=>false, "over"=>nil, "location"=>7}})
-  end
-
-  it "should parse $1?" do
-    query = PgQuery.parse("SELECT 1 FROM x WHERE x IN ($1?, $1?)")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse SET x = ?" do
-    query = PgQuery.parse("SET statement_timeout = ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse SET x=?" do
-    query = PgQuery.parse("SET statement_timeout=?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse SET TIME ZONE ?" do
-    query = PgQuery.parse("SET TIME ZONE ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse SET SCHEMA ?" do
-    query = PgQuery.parse("SET SCHEMA ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse SET ROLE ?" do
-    query = PgQuery.parse("SET ROLE ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse SET SESSION AUTHORIZATION ?" do
-    query = PgQuery.parse("SET SESSION AUTHORIZATION ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse SET encoding = UTF?" do
-    query = PgQuery.parse("SET encoding = UTF?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse ?=ANY(..) constructs" do
-    query = PgQuery.parse("SELECT 1 FROM x WHERE ?= ANY(z)")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse KEYWORD? constructs" do
-    query = PgQuery.parse("select * from sessions where pid ilike? and id=? ")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse E?KEYWORD constructs" do
-    query = PgQuery.parse("SELECT 1 FROM x WHERE nspname NOT LIKE E?AND nspname NOT LIKE ?")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse complicated queries" do
-    query = PgQuery.parse("BEGIN;SET statement_timeout=?;COMMIT;SELECT DISTINCT ON (nspname, seqname) nspname, seqname, quote_ident(nspname) || ? || quote_ident(seqname) AS safename, typname FROM ( SELECT depnsp.nspname, dep.relname as seqname, typname FROM pg_depend JOIN pg_class on classid = pg_class.oid JOIN pg_class dep on dep.oid = objid JOIN pg_namespace depnsp on depnsp.oid= dep.relnamespace JOIN pg_class refclass on refclass.oid = refclassid JOIN pg_class ref on ref.oid = refobjid JOIN pg_namespace refnsp on refnsp.oid = ref.relnamespace JOIN pg_attribute refattr ON (refobjid, refobjsubid) = (refattr.attrelid, refattr.attnum) JOIN pg_type ON refattr.atttypid = pg_type.oid WHERE pg_class.relname = ? AND refclass.relname = ? AND dep.relkind in (?) AND ref.relkind in (?) AND typname IN (?) UNION ALL SELECT nspname, seq.relname, typname FROM pg_attrdef JOIN pg_attribute ON (attrelid, attnum) = (adrelid, adnum) JOIN pg_type on pg_type.oid = atttypid JOIN pg_class rel ON rel.oid = attrelid JOIN pg_class seq ON seq.relname = regexp_replace(adsrc, $re$^nextval\\(?::regclass\\)$$re$, $$\\?$$) AND seq.relnamespace = rel.relnamespace JOIN pg_namespace nsp ON nsp.oid = seq.relnamespace WHERE adsrc ~ ? AND seq.relkind = ? AND typname IN (?) UNION ALL SELECT nspname, relname, CAST(? AS TEXT) FROM pg_class JOIN pg_namespace nsp ON nsp.oid = relnamespace WHERE relkind = ? ) AS seqs ORDER BY nspname, seqname, typname")
-    expect(query.parsetree).not_to be_nil
-  end
-
-  it "should parse cast(? as varchar(?))" do
-    query = PgQuery.parse("SELECT cast(? as varchar(?))")
-    expect(query.parsetree).not_to be_nil
   end
 end

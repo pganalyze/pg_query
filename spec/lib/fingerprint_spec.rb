@@ -5,8 +5,8 @@ def fingerprint(qstr)
   q.fingerprint
 end
 
-describe PgQuery, "fingerprint" do
-  it "should work for basic cases" do
+describe PgQuery, "#fingerprint" do
+  it "works for basic cases" do
     expect(fingerprint("SELECT 1")).to eq fingerprint("SELECT 2")
     expect(fingerprint("SELECT  1")).to eq fingerprint("SELECT 2")
     expect(fingerprint("SELECT A")).to eq fingerprint("SELECT a")
@@ -21,12 +21,12 @@ describe PgQuery, "fingerprint" do
     expect(fingerprint("SELECT * FROM a")).not_to eq fingerprint("SELECT * FROM b")
   end
 
-  it "should work for multi-statement queries" do
+  it "works for multi-statement queries" do
     expect(fingerprint("SET x=?; SELECT A")).to eq fingerprint("SET x=?; SELECT a")
     expect(fingerprint("SET x=?; SELECT A")).not_to eq fingerprint("SELECT a")
   end
 
-  it "should ignore aliases" do
+  it "ignores aliases" do
     expect(fingerprint("SELECT a AS b")).to eq fingerprint("SELECT a AS c")
     expect(fingerprint("SELECT a")).to eq fingerprint("SELECT a AS c")
     expect(fingerprint("SELECT * FROM a AS b")).to eq fingerprint("SELECT * FROM a AS c")
@@ -35,17 +35,17 @@ describe PgQuery, "fingerprint" do
     expect(fingerprint("SELECT a AS b UNION SELECT x AS y")).to eq fingerprint("SELECT a AS c UNION SELECT x AS z")
   end
 
-  it "should ignore aliases referenced in query" do
+  it "ignores aliases referenced in query" do
     pending
     expect(fingerprint("SELECT s1.id FROM snapshots s1")).to eq fingerprint("SELECT s2.id FROM snapshots s2")
     expect(fingerprint("SELECT a AS b ORDER BY b")).to eq fingerprint("SELECT a AS c ORDER BY c")
   end
 
-  it "should ignore param references" do
+  it "ignores param references" do
     expect(fingerprint("SELECT $1")).to eq fingerprint("SELECT $2")
   end
 
-  it "should ignore SELECT target list ordering" do
+  it "ignores SELECT target list ordering" do
     expect(fingerprint("SELECT a, b FROM x")).to eq fingerprint("SELECT b, a FROM x")
     expect(fingerprint("SELECT ?, b FROM x")).to eq fingerprint("SELECT b, ? FROM x")
     expect(fingerprint("SELECT ?, ?, b FROM x")).to eq fingerprint("SELECT ?, b, ? FROM x")
@@ -55,7 +55,7 @@ describe PgQuery, "fingerprint" do
     expect(fingerprint("SELECT b FROM x")).not_to eq fingerprint("SELECT b, a FROM x")
   end
 
-  it "should ignore INSERT cols ordering" do
+  it "ignores INSERT cols ordering" do
     expect(fingerprint("INSERT INTO test (a, b) VALUES (?, ?)")).to eq fingerprint("INSERT INTO test (b, a) VALUES (?, ?)")
 
     # Test uniqueness

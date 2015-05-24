@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe PgQuery, 'deparse' do
-  subject { PgQuery.parse(oneline_query).deparse }
+describe PgQuery, '#deparse' do
+  subject { described_class.parse(oneline_query).deparse }
 
-  let (:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip }
+  let(:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip }
 
   context 'SELECT' do
     context 'basic statement' do
@@ -22,7 +22,7 @@ describe PgQuery, 'deparse' do
     end
 
     context 'complex WITH statement' do
-      let(:query) {
+      let(:query) do
         """
         WITH RECURSIVE employee_recursive(distance, employee_name, manager_name) AS (
           SELECT 1, employee_name, manager_name
@@ -35,7 +35,7 @@ describe PgQuery, 'deparse' do
         )
         SELECT distance, employee_name FROM employee_recursive
         """
-      }
+      end
       it { is_expected.to eq oneline_query }
     end
 
@@ -45,12 +45,12 @@ describe PgQuery, 'deparse' do
     end
 
     context 'LATERAL JOIN' do
-      let(:query) {
+      let(:query) do
         """
         SELECT m.name AS mname, pname
           FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
         """
-      }
+      end
       it { is_expected.to eq oneline_query }
     end
 
