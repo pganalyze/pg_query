@@ -1,7 +1,7 @@
 require 'digest'
 
 class PgQuery
-  def fingerprint # rubocop:disable Style/CyclomaticComplexity
+  def fingerprint # rubocop:disable Metrics/CyclomaticComplexity
     normalized_parsetree = deep_dup(parsetree)
 
     # First delete all simple elements and attributes that can be removed
@@ -23,11 +23,11 @@ class PgQuery
       elsif k == 'targetList' && v.is_a?(Array)
         # Remove SELECT target list names & ignore order
         v.each { |v2| v2['RESTARGET']['name'] = nil if v2['RESTARGET'] } # Remove names
-        v.sort_by! { |v2| v2.to_s }
+        v.sort_by!(&:to_s)
         expr[k] = v
       elsif k == 'cols' && v.is_a?(Array)
         # Ignore INSERT cols order
-        v.sort_by! { |v2| v2.to_s }
+        v.sort_by!(&:to_s)
         expr[k] = v
       end
     end

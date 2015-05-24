@@ -3,7 +3,7 @@ class PgQuery
   # target list, but includes things like JOIN condition and WHERE clause.
   #
   # Note: This also traverses into sub-selects.
-  def filter_columns # rubocop:disable Style/CyclomaticComplexity
+  def filter_columns # rubocop:disable Metrics/CyclomaticComplexity
     load_tables_and_aliases! if @aliases.nil?
 
     # Get condition items from the parsetree

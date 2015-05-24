@@ -42,7 +42,7 @@ unless Dir.exist?(pgdir)
   system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q") || fail('ERROR')
   system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
   PG_OBJS.each do |directory, objs|
-    system("cd #{pgdir}; make -C src/#{directory} #{objs.join(' ')}")  || fail('ERROR')
+    system("cd #{pgdir}; make -C src/#{directory} #{objs.join(' ')}") || fail('ERROR')
   end
 end
 

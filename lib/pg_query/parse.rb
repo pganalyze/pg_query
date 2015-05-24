@@ -41,7 +41,7 @@ class PgQuery
 
   protected
 
-  def load_tables_and_aliases! # rubocop:disable Style/CyclomaticComplexity
+  def load_tables_and_aliases! # rubocop:disable Metrics/CyclomaticComplexity
     @tables = []
     @aliases = {}
 

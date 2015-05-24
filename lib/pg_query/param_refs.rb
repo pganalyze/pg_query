@@ -1,5 +1,5 @@
 class PgQuery
-  def param_refs # rubocop:disable Style/CyclomaticComplexity
+  def param_refs # rubocop:disable Metrics/CyclomaticComplexity
     results = []
 
     treewalker! parsetree do |_, _, v|

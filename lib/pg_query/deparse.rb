@@ -9,7 +9,7 @@ class PgQuery
 
   private
 
-  def deparse_item(item, context = nil) # rubocop:disable Style/CyclomaticComplexity
+  def deparse_item(item, context = nil) # rubocop:disable Metrics/CyclomaticComplexity
     return if item.nil?
 
     type = item.keys[0]
