@@ -109,4 +109,9 @@ describe PgQuery, '#deparse' do
     let(:query) { "SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id" }
     it { is_expected.to eq query }
   end
+
+  context 'type cast' do
+    let(:query) { "SELECT 1::int8" }
+    it { is_expected.to eq query }
+  end
 end

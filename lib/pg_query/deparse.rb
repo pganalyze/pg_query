@@ -302,7 +302,7 @@ class PgQuery
     if deparse_item(node['typeName']) == :boolean
       deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
     else
-      fail format("Can't deparse typecast %s", node.inspect)
+      deparse_item(node['arg']) + '::' + deparse_typename(node['typeName']['TYPENAME'])
     end
   end
 
