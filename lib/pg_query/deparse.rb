@@ -56,6 +56,10 @@ class PgQuery
       deparse_typecast(node)
     when 'TYPENAME'
       deparse_typename(node)
+    when 'CASE'
+      deparse_case(node)
+    when 'WHEN'
+      deparse_when(node)
     else
       fail format("Can't deparse: %s: %s", type, node.inspect)
     end
@@ -163,6 +167,27 @@ class PgQuery
     output += format('(%s)', node['aliascolnames'].join(', ')) if node['aliascolnames']
     output += format(' AS (%s)', deparse_item(node['ctequery']))
     output
+  end
+
+  def deparse_case(node)
+    pp node
+    output = ['(CASE']
+    output += node['args'].map { |node| deparse_item(node)}
+    if node['defresult']
+      output << 'ELSE'
+      output << deparse_item(node['defresult'])
+    end
+    output << 'END)'
+    output.join(' ')
+  end
+
+  def deparse_when(node)
+
+    output = ['WHEN']
+    output << deparse_item(node['expr'])
+    output << 'THEN'
+    output << deparse_item(node['result'])
+    output.join(' ')
   end
 
   def deparse_select(node) # rubocop:disable Metrics/CyclomaticComplexity

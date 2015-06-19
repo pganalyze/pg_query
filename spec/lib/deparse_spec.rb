@@ -69,4 +69,19 @@ describe PgQuery, '#deparse' do
     let(:query) { "UPDATE x SET y = 1 WHERE z = 'abc'" }
     it { is_expected.to eq query }
   end
+
+  context 'basic CASE WHEN statements' do
+    let(:query) { "SELECT (CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' END) FROM accounts a" }
+    it { is_expected.to eq query }
+  end
+
+  context 'CASE WHEN statements with ELSE clause' do
+    let(:query) { "SELECT (CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' ELSE 'unknown' END) FROM accounts a" }
+    it { is_expected.to eq query }
+  end
+
+  context 'CASE WHEN statements in WHERE clause' do
+    let(:query) { "SELECT * FROM accounts WHERE status = (CASE WHEN x = 1 THEN 'active' ELSE 'inactive' END)" }
+    it { is_expected.to eq query }
+  end
 end
