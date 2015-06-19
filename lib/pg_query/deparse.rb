@@ -60,6 +60,12 @@ class PgQuery
       deparse_case(node)
     when 'WHEN'
       deparse_when(node)
+    when 'SUBLINK'
+      deparse_sublink(node)
+    when 'RANGESUBSELECT'
+      deparse_rangesubselect(node)
+    when 'AEXPR IN'
+      deparse_aexpr_in(node)
     else
       fail format("Can't deparse: %s: %s", type, node.inspect)
     end
@@ -109,6 +115,11 @@ class PgQuery
   def deparse_funccall(node)
     args = Array(node['args']).map { |arg| deparse_item(arg) }
     format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+  end
+
+  def deparse_aexpr_in(node)
+    rexpr = Array(node['rexpr']).map { |arg| deparse_item(arg) }
+    format('%s IN (%s)', deparse_item(node['lexpr']), rexpr.join(', '))
   end
 
   def deparse_range_function(node)
@@ -170,24 +181,40 @@ class PgQuery
   end
 
   def deparse_case(node)
-    pp node
-    output = ['(CASE']
+    output = ['CASE']
     output += node['args'].map { |node| deparse_item(node)}
     if node['defresult']
       output << 'ELSE'
       output << deparse_item(node['defresult'])
     end
-    output << 'END)'
+    output << 'END'
     output.join(' ')
   end
 
   def deparse_when(node)
-
     output = ['WHEN']
     output << deparse_item(node['expr'])
     output << 'THEN'
     output << deparse_item(node['result'])
     output.join(' ')
+  end
+
+  def deparse_sublink(node)
+    if node["subLinkType"] == 2 && node["operName"] == ["="]
+      return format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
+    else
+      return format("(%s)", deparse_item(node['subselect']))
+    end
+  end
+
+  def deparse_rangesubselect(node)
+    output = '('
+    output += deparse_item(node['subquery'])
+    output += ')'
+    if node["alias"]
+      output += ' ' + node["alias"]["ALIAS"]["aliasname"]
+    end
+    output
   end
 
   def deparse_select(node) # rubocop:disable Metrics/CyclomaticComplexity

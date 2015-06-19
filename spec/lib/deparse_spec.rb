@@ -71,17 +71,42 @@ describe PgQuery, '#deparse' do
   end
 
   context 'basic CASE WHEN statements' do
-    let(:query) { "SELECT (CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' END) FROM accounts a" }
+    let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' END FROM accounts a" }
     it { is_expected.to eq query }
   end
 
   context 'CASE WHEN statements with ELSE clause' do
-    let(:query) { "SELECT (CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' ELSE 'unknown' END) FROM accounts a" }
+    let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' ELSE 'unknown' END FROM accounts a" }
     it { is_expected.to eq query }
   end
 
   context 'CASE WHEN statements in WHERE clause' do
-    let(:query) { "SELECT * FROM accounts WHERE status = (CASE WHEN x = 1 THEN 'active' ELSE 'inactive' END)" }
+    let(:query) { "SELECT * FROM accounts WHERE status = CASE WHEN x = 1 THEN 'active' ELSE 'inactive' END" }
+    it { is_expected.to eq query }
+  end
+
+  context 'Subselect in SELECT clause' do
+    let(:query) { "SELECT (SELECT 'x')" }
+    it { is_expected.to eq query }
+  end
+
+  context 'Subselect in FROM clause' do
+    let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) a" }
+    it { is_expected.to eq query }
+  end
+
+  context 'IN expression' do
+    let(:query) { "SELECT * FROM x WHERE id IN (1, 2, 3)" }
+    it { is_expected.to eq query }
+  end
+
+  context 'IN expression Subselect' do
+    let(:query) { "SELECT * FROM x WHERE id IN (SELECT id FROM account)" }
+    it { is_expected.to eq query }
+  end
+
+  context 'Subselect JOIN' do
+    let(:query) { "SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id" }
     it { is_expected.to eq query }
   end
 end
