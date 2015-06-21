@@ -182,7 +182,7 @@ class PgQuery
 
   def deparse_case(node)
     output = ['CASE']
-    output += node['args'].map { |node| deparse_item(node)}
+    output += node['args'].map { |arg| deparse_item(arg) }
     if node['defresult']
       output << 'ELSE'
       output << deparse_item(node['defresult'])
@@ -200,10 +200,10 @@ class PgQuery
   end
 
   def deparse_sublink(node)
-    if node["subLinkType"] == 2 && node["operName"] == ["="]
+    if node['subLinkType'] == 2 && node['operName'] == ['=']
       return format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
     else
-      return format("(%s)", deparse_item(node['subselect']))
+      return format('(%s)', deparse_item(node['subselect']))
     end
   end
 
@@ -211,9 +211,7 @@ class PgQuery
     output = '('
     output += deparse_item(node['subquery'])
     output += ')'
-    if node["alias"]
-      output += ' ' + node["alias"]["ALIAS"]["aliasname"]
-    end
+    output += ' ' + node['alias']['ALIAS']['aliasname'] if node['alias']
     output
   end
 
