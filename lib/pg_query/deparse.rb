@@ -377,25 +377,17 @@ class PgQuery
     output.join(' ')
   end
 
+  TRANSACTION_CMDS = {
+    0 => 'BEGIN',
+    2 => 'COMMIT',
+    3 => 'ROLLBACK',
+    4 => 'SAVEPOINT',
+    5 => 'RELEASE',
+    6 => 'ROLLBACK TO SAVEPOINT'
+  }
   def deparse_transaction(node)
     output = []
-
-    output << case node['kind']
-    when 0
-      'BEGIN'
-    when 2
-      'COMMIT'
-    when 3
-      'ROLLBACK'
-    when 4
-      'SAVEPOINT'
-    when 5
-      'RELEASE'
-    when 6
-      'ROLLBACK TO SAVEPOINT'
-    else
-      fail format("Can't deparse TRANSACTION %s", node.inspect)
-    end
+    output << TRANSACTION_CMDS[node['kind']] || fail(format("Can't deparse TRANSACTION %s", node.inspect))
 
     if node['options'] && node['options'][0]['DEFELEM']
       output << node['options'][0]['DEFELEM']['arg']
@@ -405,7 +397,7 @@ class PgQuery
   end
 
   def deparse_coalesce(node)
-    format('COALESCE(%s)', node['args'].map {|a| deparse_item(a) }.join(', '))
+    format('COALESCE(%s)', node['args'].map { |a| deparse_item(a) }.join(', '))
   end
 
   def deparse_delete_from(node)

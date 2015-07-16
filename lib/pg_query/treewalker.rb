@@ -2,7 +2,7 @@ class PgQuery
   private
 
   def treewalker!(normalized_parsetree, &block)
-    exprs = normalized_parsetree.dup.map {|e| [e, []] }
+    exprs = normalized_parsetree.dup.map { |e| [e, []] }
 
     loop do
       expr, parent_location = exprs.shift
@@ -16,7 +16,7 @@ class PgQuery
           exprs << [v, location] unless v.nil?
         end
       elsif expr.is_a?(Array)
-        exprs += expr.map.with_index {|e, idx| [e, parent_location + [idx]] }
+        exprs += expr.map.with_index { |e, idx| [e, parent_location + [idx]] }
       end
 
       break if exprs.empty?
