@@ -1,5 +1,5 @@
 class PgQuery
-  PossibleTruncation = Struct.new(:location, :node_type, :length)
+  PossibleTruncation = Struct.new(:location, :node_type, :length, :is_array)
 
   # Truncates the query string to be below the specified length, first trying to
   # omit less important parts of the query, and only then cutting off the end.
@@ -14,10 +14,19 @@ class PgQuery
 
     # (1) Save possible truncations, their location, type & lengths
     treewalker! tree do |expr, k, v, location|
-      if k == 'targetList'
+      case k
+      when 'targetList'
         length = deparse([{ 'SELECT' => { k => v } }]).size - 'SELECT '.size
 
-        truncations << PossibleTruncation.new(location, 'targetList', length)
+        truncations << PossibleTruncation.new(location, 'targetList', length, true)
+      when 'whereClause'
+        length = deparse([{ 'SELECT' => { k => v } }]).size
+
+        truncations << PossibleTruncation.new(location, 'whereClause', length, false)
+      when 'ctequery'
+        truncations << PossibleTruncation.new(location, 'ctequery', deparse([v]).size, false)
+      when 'cols'
+        truncations << PossibleTruncation.new(location, 'cols', deparse(v).size, true)
       end
     end
 
@@ -27,7 +36,8 @@ class PgQuery
       next if truncation.length < 3
 
       find_tree_location(tree, truncation.location) do |expr, k|
-        expr[k] = [{ 'A_TRUNCATED' => nil }]
+        expr[k] = { 'A_TRUNCATED' => nil }
+        expr[k] = [expr[k]] if truncation.is_array
       end
 
       output = deparse(tree)
