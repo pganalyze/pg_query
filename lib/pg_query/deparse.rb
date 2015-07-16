@@ -26,6 +26,10 @@ class PgQuery
       deparse_a_const(node)
     when 'A_STAR'
       deparse_a_star(node)
+    when 'A_INDIRECTION'
+      deparse_a_indirection(node)
+    when 'A_INDICES'
+      deparse_a_indices(node)
     when 'ALIAS'
       deparse_alias(node)
     when 'PARAMREF'
@@ -66,8 +70,20 @@ class PgQuery
       deparse_rangesubselect(node)
     when 'AEXPR IN'
       deparse_aexpr_in(node)
+    when 'AEXPR NOT'
+      deparse_aexpr_not(node)
+    when 'AEXPR OR'
+      deparse_aexpr_or(node)
+    when 'AEXPR ANY'
+      deparse_aexpr_any(node)
     when 'NULLTEST'
       deparse_nulltest(node)
+    when 'TRANSACTION'
+      deparse_transaction(node)
+    when 'COALESCE'
+      deparse_coalesce(node)
+    when 'DELETE FROM'
+      deparse_delete_from(node)
     when 'A_TRUNCATED'
       '...' # pg_query internal
     else
@@ -96,12 +112,28 @@ class PgQuery
     '*'
   end
 
+  def deparse_a_indirection(node)
+    output = [deparse_item(node['arg'])]
+    node['indirection'].each do |subnode|
+      output << deparse_item(subnode)
+    end
+    output.join
+  end
+
+  def deparse_a_indices(node)
+    format('[%s]', deparse_item(node['uidx']))
+  end
+
   def deparse_alias(node)
     node['aliasname']
   end
 
   def deparse_paramref(node)
-    format('$%d', node['number'])
+    if node['number'] == 0
+      '?'
+    else
+      format('$%d', node['number'])
+    end
   end
 
   def deparse_restarget(node, context)
@@ -126,6 +158,10 @@ class PgQuery
     format('%s IN (%s)', deparse_item(node['lexpr']), rexpr.join(', '))
   end
 
+  def deparse_aexpr_not(node)
+    format('NOT %s', deparse_item(node['rexpr']))
+  end
+
   def deparse_range_function(node)
     output = []
     output << 'LATERAL' if node['lateral']
@@ -143,6 +179,21 @@ class PgQuery
 
   def deparse_aexpr_and(node)
     format('%s AND %s', deparse_item(node['lexpr']), deparse_item(node['rexpr']))
+  end
+
+  def deparse_aexpr_or(node)
+    output = []
+    output << deparse_item(node['lexpr'])
+    output << 'OR'
+    output << deparse_item(node['rexpr'])
+    output.join(' ')
+  end
+
+  def deparse_aexpr_any(node)
+    output = []
+    output << deparse_item(node['lexpr'])
+    output << format('ANY(%s)', deparse_item(node['rexpr']))
+    output.join(' ' + node['name'][0] + ' ')
   end
 
   def deparse_joinexpr(node)
@@ -323,6 +374,49 @@ class PgQuery
     elsif node['nulltesttype'] == 1
       output << 'IS NOT NULL'
     end
+    output.join(' ')
+  end
+
+  def deparse_transaction(node)
+    output = []
+
+    output << case node['kind']
+    when 0
+      'BEGIN'
+    when 2
+      'COMMIT'
+    when 3
+      'ROLLBACK'
+    when 4
+      'SAVEPOINT'
+    when 5
+      'RELEASE'
+    when 6
+      'ROLLBACK TO SAVEPOINT'
+    else
+      fail format("Can't deparse TRANSACTION %s", node.inspect)
+    end
+
+    if node['options'] && node['options'][0]['DEFELEM']
+      output << node['options'][0]['DEFELEM']['arg']
+    end
+
+    output.join(' ')
+  end
+
+  def deparse_coalesce(node)
+    format('COALESCE(%s)', node['args'].map {|a| deparse_item(a) }.join(', '))
+  end
+
+  def deparse_delete_from(node)
+    output = ['DELETE FROM']
+    output << deparse_item(node['relation'])
+
+    if node['whereClause']
+      output << 'WHERE'
+      output << deparse_item(node['whereClause'])
+    end
+
     output.join(' ')
   end
 end

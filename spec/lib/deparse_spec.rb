@@ -12,7 +12,7 @@ describe PgQuery, '#deparse' do
     end
 
     context 'complex SELECT statement' do
-      let(:query) { "SELECT memory_total_bytes, memory_swap_total_bytes - memory_swap_free_bytes AS swap, date_part($0, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON snapshot_id = s.id WHERE s.database_id = $0 AND s.collected_at >= $0 AND s.collected_at <= $0 ORDER BY collected_at ASC" }
+      let(:query) { "SELECT memory_total_bytes, memory_swap_total_bytes - memory_swap_free_bytes AS swap, date_part(?, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON snapshot_id = s.id WHERE s.database_id = ? AND s.collected_at >= ? AND s.collected_at <= ? ORDER BY collected_at ASC" }
       it { is_expected.to eq query }
     end
 
@@ -68,6 +68,100 @@ describe PgQuery, '#deparse' do
       let(:query) { 'SELECT * FROM x WHERE y IS NOT NULL' }
       it { is_expected.to eq query }
     end
+
+    context 'basic CASE WHEN statements' do
+      let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' END FROM accounts a" }
+      it { is_expected.to eq query }
+    end
+
+    context 'CASE WHEN statements with ELSE clause' do
+      let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' ELSE 'unknown' END FROM accounts a" }
+      it { is_expected.to eq query }
+    end
+
+    context 'CASE WHEN statements in WHERE clause' do
+      let(:query) { "SELECT * FROM accounts WHERE status = CASE WHEN x = 1 THEN 'active' ELSE 'inactive' END" }
+      it { is_expected.to eq query }
+    end
+
+    context 'Subselect in SELECT clause' do
+      let(:query) { "SELECT (SELECT 'x')" }
+      it { is_expected.to eq query }
+    end
+
+    context 'Subselect in FROM clause' do
+      let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) a" }
+      it { is_expected.to eq query }
+    end
+
+    context 'IN expression' do
+      let(:query) { "SELECT * FROM x WHERE id IN (1, 2, 3)" }
+      it { is_expected.to eq query }
+    end
+
+    context 'IN expression Subselect' do
+      let(:query) { "SELECT * FROM x WHERE id IN (SELECT id FROM account)" }
+      it { is_expected.to eq query }
+    end
+
+    context 'Subselect JOIN' do
+      let(:query) { "SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id" }
+      it { is_expected.to eq query }
+    end
+
+    context 'simple indirection' do
+      let(:query) { "SELECT * FROM x WHERE y = z[?]" }
+      it { is_expected.to eq query }
+    end
+
+    context 'complex indirection' do
+      let(:query) { "SELECT * FROM x WHERE y = z[?][?]" }
+      it { is_expected.to eq query }
+    end
+
+    context 'NOT' do
+      let(:query) { "SELECT * FROM x WHERE NOT y" }
+      it { is_expected.to eq query }
+    end
+
+    context 'OR' do
+      let(:query) { "SELECT * FROM x WHERE x OR y" }
+      it { is_expected.to eq query }
+    end
+
+    context 'ANY' do
+      let(:query) { "SELECT * FROM x WHERE x = ANY(?)" }
+      it { is_expected.to eq query }
+    end
+
+    context 'COALESCE' do
+      let(:query) { "SELECT * FROM x WHERE x = COALESCE(y, ?)" }
+      it { is_expected.to eq query }
+    end
+  end
+
+  context 'type cast' do
+    context 'simple case' do
+      let(:query) { "SELECT 1::int8" }
+      it { is_expected.to eq query }
+    end
+
+    context 'regclass' do
+      let(:query) { "SELECT ?::regclass" }
+      it { is_expected.to eq query }
+    end
+  end
+
+  context 'param ref' do
+    context 'normal param refs' do
+      let(:query) { "SELECT $5" }
+      it { is_expected.to eq query }
+    end
+
+    context 'query replacement character' do
+      let(:query) { "SELECT ?" }
+      it { is_expected.to eq query }
+    end
   end
 
   context 'basic INSERT statements' do
@@ -80,48 +174,40 @@ describe PgQuery, '#deparse' do
     it { is_expected.to eq query }
   end
 
-  context 'basic CASE WHEN statements' do
-    let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' END FROM accounts a" }
+  context 'basic DELETE statements' do
+    let(:query) { "DELETE FROM x WHERE y = 1" }
     it { is_expected.to eq query }
   end
 
-  context 'CASE WHEN statements with ELSE clause' do
-    let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' ELSE 'unknown' END FROM accounts a" }
-    it { is_expected.to eq query }
-  end
+  context 'TRANSACTION' do
+    context 'BEGIN' do
+      let(:query) { 'BEGIN' }
+      it { is_expected.to eq query }
+    end
 
-  context 'CASE WHEN statements in WHERE clause' do
-    let(:query) { "SELECT * FROM accounts WHERE status = CASE WHEN x = 1 THEN 'active' ELSE 'inactive' END" }
-    it { is_expected.to eq query }
-  end
+    context 'ROLLBACK' do
+      let(:query) { 'ROLLBACK' }
+      it { is_expected.to eq query }
+    end
 
-  context 'Subselect in SELECT clause' do
-    let(:query) { "SELECT (SELECT 'x')" }
-    it { is_expected.to eq query }
-  end
+    context 'COMMIT' do
+      let(:query) { 'COMMIT' }
+      it { is_expected.to eq query }
+    end
 
-  context 'Subselect in FROM clause' do
-    let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) a" }
-    it { is_expected.to eq query }
-  end
+    context 'SAVEPOINT' do
+      let(:query) { 'SAVEPOINT x' }
+      it { is_expected.to eq query }
+    end
 
-  context 'IN expression' do
-    let(:query) { "SELECT * FROM x WHERE id IN (1, 2, 3)" }
-    it { is_expected.to eq query }
-  end
+    context 'ROLLBACK TO SAFEPOINT' do
+      let(:query) { 'ROLLBACK TO SAVEPOINT x' }
+      it { is_expected.to eq query }
+    end
 
-  context 'IN expression Subselect' do
-    let(:query) { "SELECT * FROM x WHERE id IN (SELECT id FROM account)" }
-    it { is_expected.to eq query }
-  end
-
-  context 'Subselect JOIN' do
-    let(:query) { "SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id" }
-    it { is_expected.to eq query }
-  end
-
-  context 'type cast' do
-    let(:query) { "SELECT 1::int8" }
-    it { is_expected.to eq query }
+    context 'RELEASE' do
+      let(:query) { 'RELEASE x' }
+      it { is_expected.to eq query }
+    end
   end
 end
