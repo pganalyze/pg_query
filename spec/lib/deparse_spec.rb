@@ -58,6 +58,16 @@ describe PgQuery, '#deparse' do
       let(:query) { 'SELECT 2 + 2' }
       it { is_expected.to eq query }
     end
+
+    context 'IS NULL' do
+      let(:query) { 'SELECT * FROM x WHERE y IS NULL' }
+      it { is_expected.to eq query }
+    end
+
+    context 'IS NOT NULL' do
+      let(:query) { 'SELECT * FROM x WHERE y IS NOT NULL' }
+      it { is_expected.to eq query }
+    end
   end
 
   context 'basic INSERT statements' do

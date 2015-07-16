@@ -1,7 +1,7 @@
 class PgQuery
-  def deparse
+  def deparse(tree = @parsetree)
     output = []
-    @parsetree.each do |item|
+    tree.each do |item|
       output << deparse_item(item)
     end
     output.join(';')
@@ -66,6 +66,10 @@ class PgQuery
       deparse_rangesubselect(node)
     when 'AEXPR IN'
       deparse_aexpr_in(node)
+    when 'NULLTEST'
+      deparse_nulltest(node)
+    when 'A_TRUNCATED'
+      '...' # pg_query internal
     else
       fail format("Can't deparse: %s: %s", type, node.inspect)
     end
@@ -310,5 +314,15 @@ class PgQuery
     else
       node['names'].join('.')
     end
+  end
+
+  def deparse_nulltest(node)
+    output = [deparse_item(node['arg'])]
+    if node['nulltesttype'] == 0
+      output << 'IS NULL'
+    elsif node['nulltesttype'] == 1
+      output << 'IS NOT NULL'
+    end
+    output.join(' ')
   end
 end
