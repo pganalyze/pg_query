@@ -126,6 +126,8 @@ class PgQuery
       output.join
     end
 
+
+
     def deparse_a_indices(node)
       format('[%s]', deparse_item(node['uidx']))
     end
@@ -189,9 +191,11 @@ class PgQuery
 
     def deparse_aexpr_or(node)
       output = []
+      output << '('
       output << deparse_item(node['lexpr'])
       output << 'OR'
       output << deparse_item(node['rexpr'])
+      output << ')'
       output.join(' ')
     end
 

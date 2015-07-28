@@ -132,7 +132,12 @@ describe PgQuery do
       end
 
       context 'OR' do
-        let(:query) { "SELECT * FROM x WHERE x OR y" }
+        let(:query) { "SELECT * FROM x WHERE ( x OR y )" }
+        it { is_expected.to eq query }
+      end
+
+      context 'OR with parens' do
+        let(:query) { "SELECT 1 WHERE ( 1 = 1 OR 1 = 2 ) AND 1 = 2" }
         it { is_expected.to eq query }
       end
 
