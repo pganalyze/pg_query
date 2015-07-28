@@ -309,6 +309,13 @@ class PgQuery
       end.join(', ')
     end
 
+    if node['groupClause']
+      output << 'GROUP BY'
+      output << node['groupClause'].map do |item|
+        deparse_item(item)
+      end.join(', ')
+    end
+
     if node['sortClause']
       output << 'ORDER BY'
       output << node['sortClause'].map do |item|

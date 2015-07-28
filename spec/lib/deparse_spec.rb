@@ -138,6 +138,11 @@ describe PgQuery, '#deparse' do
       let(:query) { "SELECT * FROM x WHERE x = COALESCE(y, ?)" }
       it { is_expected.to eq query }
     end
+
+    context 'GROUP BY' do
+      let(:query) { "SELECT a, b, max(c) FROM c WHERE d = 1 GROUP BY a, b" }
+      it { is_expected.to eq query }
+    end
   end
 
   context 'type cast' do
