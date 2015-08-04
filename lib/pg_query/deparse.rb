@@ -248,6 +248,9 @@ class PgQuery
 
   def deparse_when(node)
     output = ['WHEN']
+    if node['expr']["SUBLINK"] && node['expr']["SUBLINK"]["subLinkType"] == 0
+      output << 'EXISTS'
+    end
     output << deparse_item(node['expr'])
     output << 'THEN'
     output << deparse_item(node['result'])
