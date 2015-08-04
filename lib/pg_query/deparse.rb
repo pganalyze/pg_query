@@ -257,6 +257,8 @@ class PgQuery
   def deparse_sublink(node)
     if node['subLinkType'] == 2 && node['operName'] == ['=']
       return format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
+    elsif node['subLinkType'] == 0
+      return format('EXISTS(%s)', deparse_item(node['subselect']))
     else
       return format('(%s)', deparse_item(node['subselect']))
     end

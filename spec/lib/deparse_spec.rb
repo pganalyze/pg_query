@@ -84,6 +84,11 @@ describe PgQuery, '#deparse' do
       it { is_expected.to eq query }
     end
 
+    context 'CASE WHEN EXISTS' do
+      let(:query) { "SELECT CASE WHEN EXISTS(SELECT 1) THEN 1 ELSE 2 END" }
+      it { is_expected.to eq query }
+    end
+
     context 'Subselect in SELECT clause' do
       let(:query) { "SELECT (SELECT 'x')" }
       it { is_expected.to eq query }
