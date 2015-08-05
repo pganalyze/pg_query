@@ -45,6 +45,11 @@ describe PgQuery do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'SUM' do
+        let(:query) { 'SELECT sum(price_cents) FROM products' }
+        it { is_expected.to eq query }
+      end
+
       context 'LATERAL' do
         let(:query) { 'SELECT m.name AS mname, pname FROM manufacturers m, LATERAL get_product_names(m.id) pname' }
         it { is_expected.to eq query }
