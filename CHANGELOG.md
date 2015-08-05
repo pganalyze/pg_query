@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.6.0    UNRELEASED
+## 0.6.1    UNRELEASED
+
+* ...
+
+
+## 0.6.0    2015-08-05
 
 * Deparsing (experimental)
   * Turns parse trees into SQL again
