@@ -43,6 +43,59 @@ PgQuery.parse("SELECT 1")
  @warnings=[]>
 ```
 
+### Modifying a parsed query and turning it into SQL again
+
+```ruby
+parsed_query = PgQuery.parse("SELECT * FROM users")
+
+=> #<PgQuery:0x007ff3e956c8b0
+ @parsetree=
+  [{"SELECT"=>{"distinctClause"=>nil,
+               "intoClause"=>nil,
+               "targetList"=>
+               [{"RESTARGET"=>
+                 {"name"=>nil,
+                  "indirection"=>nil,
+                  "val"=>
+                  {"COLUMNREF"=>
+                    {"fields"=>[{"A_STAR"=>{}}],
+                     "location"=>7}},
+                  "location"=>7}}],
+               "fromClause"=>
+               [{"RANGEVAR"=>
+                 {"schemaname"=>nil,
+                  "relname"=>"users",
+                  "inhOpt"=>2,
+                  "relpersistence"=>"p",
+                  "alias"=>nil,
+                  "location"=>14}}],
+               "whereClause"=>nil,
+               "groupClause"=>nil,
+               "havingClause"=>nil,
+               "windowClause"=>nil,
+               "valuesLists"=>nil,
+               "sortClause"=>nil,
+               "limitOffset"=>nil,
+               "limitCount"=>nil,
+               "lockingClause"=>nil,
+               "withClause"=>nil,
+               "op"=>0,
+               "all"=>false,
+               "larg"=>nil,
+               "rarg"=>nil}}],
+ @query="SELECT * FROM users",
+ @warnings=[]>
+
+# Modify the parse tree in some way
+parsed_query.parsetree[0]['SELECT']['fromClause'][0]['RANGEVAR']['relname'] = 'other_users'
+
+# Turn it into SQL again
+parsed_query.deparse
+=> "SELECT * FROM other_users"
+```
+
+Note: The deparsing feature is experimental and does not support outputting all SQL yet.
+
 ### Parsing a normalized query
 
 ```ruby
@@ -106,7 +159,7 @@ PgQuery.parse("SELECT ? FROM x WHERE x.y = ? AND z = ?").filter_columns
 PgQuery.parse("SELECT 1").fingerprint
 
 => "db76551255b7861b99bd384cf8096a3dd5162ab3"
- 
+
 PgQuery.parse("SELECT 2; --- comment").fingerprint
 
 => "db76551255b7861b99bd384cf8096a3dd5162ab3"

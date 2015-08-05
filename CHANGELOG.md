@@ -2,12 +2,14 @@
 
 ## 0.6.0    UNRELEASED
 
+* Deparsing (experimental)
+  * Turns parse trees into SQL again
+  * New truncate method to smartly truncate based on less important query parts
+  * Thanks to @mme & @JackDanger for their contributions
 * Restructure extension C code
 * Add table/filter columns support for CTEs
 * Extract views as tables from CREATE/REFRESH VIEW
 * Refactor code using generic treewalker
-* Introduce deparse method to turn trees into SQL again
-* Introduce truncate method to smartly truncate based on less important query parts
 * fingerprint: Normalize IN lists
 * param_refs: Fix length attribute in result
 
