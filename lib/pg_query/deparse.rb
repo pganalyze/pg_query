@@ -99,6 +99,7 @@ class PgQuery
 
     def deparse_rangevar(node)
       output = []
+      output << 'ONLY' if node['inhOpt'] == 0
       output << node['relname']
       output << deparse_item(node['alias']) if node['alias']
       output.join(' ')
@@ -338,9 +339,11 @@ class PgQuery
       output = ['INSERT INTO']
       output << deparse_item(node['relation'])
 
-      output << '(' + node['cols'].map do |column|
-        deparse_item(column)
-      end.join(', ') + ')'
+      if node['cols']
+        output << '(' + node['cols'].map do |column|
+          deparse_item(column)
+        end.join(', ') + ')'
+      end
 
       output << deparse_item(node['selectStmt'])
 
@@ -361,6 +364,14 @@ class PgQuery
       if node['whereClause']
         output << 'WHERE'
         output << deparse_item(node['whereClause'])
+      end
+
+      if node['returningList']
+        output << 'RETURNING'
+        output << node['returningList'].map do |item|
+          # RETURNING is formatted like a SELECT
+          deparse_item(item, :select)
+        end.join(', ')
       end
 
       output.join(' ')
