@@ -338,7 +338,10 @@ class PgQuery
     end
 
     def deparse_insert_into(node)
-      output = ['INSERT INTO']
+      output = []
+      output << deparse_item(node['withClause']) if node['withClause']
+
+      output << 'INSERT INTO'
       output << deparse_item(node['relation'])
 
       if node['cols']
@@ -353,7 +356,10 @@ class PgQuery
     end
 
     def deparse_update(node)
-      output = ['UPDATE']
+      output = []
+      output << deparse_item(node['withClause']) if node['withClause']
+
+      output << 'UPDATE'
       output << deparse_item(node['relation'])
 
       if node['targetList']
@@ -429,7 +435,10 @@ class PgQuery
     end
 
     def deparse_delete_from(node)
-      output = ['DELETE FROM']
+      output = []
+      output << deparse_item(node['withClause']) if node['withClause']
+
+      output << 'DELETE FROM'
       output << deparse_item(node['relation'])
 
       if node['usingClause']

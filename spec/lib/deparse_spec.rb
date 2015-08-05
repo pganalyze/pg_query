@@ -201,6 +201,21 @@ describe PgQuery do
         let(:query) { "INSERT INTO x SELECT * FROM y" }
         it { is_expected.to eq query }
       end
+
+      context 'WITH' do
+        let(:query) do
+          """
+          WITH moved AS (
+            DELETE
+            FROM employees
+            WHERE manager_name = 'Mary'
+          )
+          INSERT INTO employees_of_mary
+          SELECT * FROM moved;
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'UPDATE' do
@@ -215,6 +230,20 @@ describe PgQuery do
         end
         it { is_expected.to eq query }
       end
+
+      context 'WITH' do
+        let(:query) do
+          """
+          WITH archived AS (
+            DELETE
+            FROM employees
+            WHERE manager_name = 'Mary'
+          )
+          UPDATE users SET archived = true WHERE users.id IN (SELECT user_id FROM moved)
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'DELETE' do
@@ -226,6 +255,20 @@ describe PgQuery do
       context 'elaborate' do
         let(:query) { "DELETE FROM ONLY x table_x USING table_z WHERE y = 1 RETURNING *" }
         it { is_expected.to eq query }
+      end
+
+      context 'WITH' do
+        let(:query) do
+          """
+          WITH archived AS (
+            DELETE
+            FROM employees
+            WHERE manager_name = 'Mary'
+          )
+          DELETE FROM users WHERE users.id IN (SELECT user_id FROM moved)
+          """
+        end
+        it { is_expected.to eq oneline_query }
       end
     end
 
