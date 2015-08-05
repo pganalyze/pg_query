@@ -127,6 +127,8 @@ class PgQuery
       output.join
     end
 
+
+
     def deparse_a_indices(node)
       format('[%s]', deparse_item(node['uidx']))
     end
@@ -189,11 +191,9 @@ class PgQuery
     end
 
     def deparse_aexpr_or(node)
-      output = []
-      output << deparse_item(node['lexpr'])
-      output << 'OR'
-      output << deparse_item(node['rexpr'])
-      output.join(' ')
+      lexpr = format(node['lexpr'].keys[0] == 'AEXPR AND' ? "(%s)" : "%s", deparse_item(node['lexpr']))
+      rexpr = format(node['rexpr'].keys[0] == 'AEXPR AND' ? "(%s)" : "%s", deparse_item(node['rexpr']))
+      format('(%s OR %s)', lexpr, rexpr)
     end
 
     def deparse_aexpr_any(node)
