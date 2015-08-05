@@ -176,19 +176,42 @@ describe PgQuery do
       end
     end
 
-    context 'basic INSERT statements' do
-      let(:query) { "INSERT INTO x (y, z) VALUES (1, 'abc')" }
-      it { is_expected.to eq query }
+    context 'INSERT' do
+      context 'basic' do
+        let(:query) { "INSERT INTO x (y, z) VALUES (1, 'abc')" }
+        it { is_expected.to eq query }
+      end
+
+      context 'INTO SELECT' do
+        let(:query) { "INSERT INTO x SELECT * FROM y" }
+        it { is_expected.to eq query }
+      end
     end
 
-    context 'basic UPDATE statements' do
-      let(:query) { "UPDATE x SET y = 1 WHERE z = 'abc'" }
-      it { is_expected.to eq query }
+    context 'UPDATE' do
+      context 'basic' do
+        let(:query) { "UPDATE x SET y = 1 WHERE z = 'abc'" }
+        it { is_expected.to eq query }
+      end
+
+      context 'elaborate' do
+        let(:query) do
+          "UPDATE ONLY x table_x SET y = 1 WHERE z = 'abc' RETURNING y AS changed_y"
+        end
+        it { is_expected.to eq query }
+      end
     end
 
-    context 'basic DELETE statements' do
-      let(:query) { "DELETE FROM x WHERE y = 1" }
-      it { is_expected.to eq query }
+    context 'DELETE' do
+      context 'basic' do
+        let(:query) { "DELETE FROM x WHERE y = 1" }
+        it { is_expected.to eq query }
+      end
+
+      context 'elaborate' do
+        let(:query) { "DELETE FROM ONLY x table_x USING table_z WHERE y = 1 RETURNING *" }
+        it { is_expected.to eq query }
+      end
     end
 
     context 'TRANSACTION' do
