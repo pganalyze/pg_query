@@ -185,15 +185,17 @@ class PgQuery
     end
 
     def deparse_aexpr_and(node)
-      format('%s AND %s', deparse_item(node['lexpr']), deparse_item(node['rexpr']))
+      # Only put parantheses around OR nodes that are inside this one
+      lexpr = format(['AEXPR OR'].include?(node['lexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['lexpr']))
+      rexpr = format(['AEXPR OR'].include?(node['rexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['rexpr']))
+      format('%s AND %s', lexpr, rexpr)
     end
 
     def deparse_aexpr_or(node)
-      output = []
-      output << deparse_item(node['lexpr'])
-      output << 'OR'
-      output << deparse_item(node['rexpr'])
-      output.join(' ')
+      # Put parantheses around AND + OR nodes that are inside
+      lexpr = format(['AEXPR AND', 'AEXPR OR'].include?(node['lexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['lexpr']))
+      rexpr = format(['AEXPR AND', 'AEXPR OR'].include?(node['rexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['rexpr']))
+      format('%s OR %s', lexpr, rexpr)
     end
 
     def deparse_aexpr_any(node)

@@ -136,6 +136,21 @@ describe PgQuery do
         it { is_expected.to eq query }
       end
 
+      context 'OR with parens' do
+        let(:query) { "SELECT 1 WHERE (1 = 1 OR 1 = 2) AND 1 = 2" }
+        it { is_expected.to eq query }
+      end
+
+      context 'OR with nested AND' do
+        let(:query) { "SELECT 1 WHERE (1 = 1 AND 2 = 2) OR 2 = 3" }
+        it { is_expected.to eq query }
+      end
+
+      context 'OR with nested OR' do
+        let(:query) { "SELECT 1 WHERE (1 = 1 OR 2 = 2) OR 2 = 3" }
+        it { is_expected.to eq query }
+      end
+
       context 'ANY' do
         let(:query) { "SELECT * FROM x WHERE x = ANY(?)" }
         it { is_expected.to eq query }
