@@ -24,18 +24,22 @@ describe PgQuery do
       end
 
       context 'complex WITH statement' do
+        # Taken from http://www.postgresql.org/docs/9.1/static/queries-with.html
         let(:query) do
           """
-          WITH RECURSIVE employee_recursive(distance, employee_name, manager_name) AS (
-            SELECT 1, employee_name, manager_name
-            FROM employee
-            WHERE manager_name = 'Mary'
-          UNION ALL
-            SELECT er.distance + 1, e.employee_name, e.manager_name
-            FROM employee_recursive er, employee e
-            WHERE er.employee_name = e.manager_name
+          WITH RECURSIVE search_graph(id, link, data, depth, path, cycle) AS (
+              SELECT g.id, g.link, g.data, 1,
+                ARRAY[ROW(g.f1, g.f2)],
+                false
+              FROM graph g
+            UNION ALL
+              SELECT g.id, g.link, g.data, sg.depth + 1,
+                path || ROW(g.f1, g.f2),
+                ROW(g.f1, g.f2) = ANY(path)
+              FROM graph g, search_graph sg
+              WHERE g.id = sg.link AND NOT cycle
           )
-          SELECT distance, employee_name FROM employee_recursive
+          SELECT id, data, link FROM search_graph;
           """
         end
         it { is_expected.to eq oneline_query }

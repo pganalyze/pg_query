@@ -28,6 +28,8 @@ class PgQuery
         deparse_aexpr(node)
       when 'COLUMNREF'
         deparse_columnref(node)
+      when 'A_ARRAYEXPR'
+        deparse_a_arrayexp(node)
       when 'A_CONST'
         deparse_a_const(node)
       when 'A_STAR'
@@ -74,6 +76,8 @@ class PgQuery
         deparse_sublink(node)
       when 'RANGESUBSELECT'
         deparse_rangesubselect(node)
+      when 'ROW'
+        deparse_row(node)
       when 'AEXPR IN'
         deparse_aexpr_in(node)
       when 'AEXPR NOT'
@@ -109,6 +113,12 @@ class PgQuery
       node['fields'].map do |field|
         field.is_a?(String) ? field : deparse_item(field)
       end.join('.')
+    end
+
+    def deparse_a_arrayexp(node)
+      'ARRAY[' + node['elements'].map do |element|
+        deparse_item(element)
+      end.join(', ') + ']'
     end
 
     def deparse_a_const(node)
@@ -279,6 +289,10 @@ class PgQuery
       output += ')'
       output += ' ' + node['alias']['ALIAS']['aliasname'] if node['alias']
       output
+    end
+
+    def deparse_row(node)
+      'ROW(' + node['args'].map { |arg| deparse_item(arg) }.join(', ') + ')'
     end
 
     def deparse_select(node) # rubocop:disable Metrics/CyclomaticComplexity
