@@ -132,7 +132,7 @@ describe PgQuery do
       end
 
       context 'OR' do
-        let(:query) { "SELECT * FROM x WHERE (x OR y)" }
+        let(:query) { "SELECT * FROM x WHERE x OR y" }
         it { is_expected.to eq query }
       end
 
@@ -142,7 +142,12 @@ describe PgQuery do
       end
 
       context 'OR with nested AND' do
-        let(:query) { "SELECT 1 WHERE ((1 = 1 AND 2 = 2) OR 2 = 3)" }
+        let(:query) { "SELECT 1 WHERE (1 = 1 AND 2 = 2) OR 2 = 3" }
+        it { is_expected.to eq query }
+      end
+
+      context 'OR with nested OR' do
+        let(:query) { "SELECT 1 WHERE (1 = 1 OR 2 = 2) OR 2 = 3" }
         it { is_expected.to eq query }
       end
 
