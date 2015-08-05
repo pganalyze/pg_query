@@ -196,7 +196,7 @@ describe PgQuery do
 
       context 'elaborate' do
         let(:query) do
-         "UPDATE ONLY x table_x SET y = 1 WHERE z = 'abc' RETURNING y AS changed_y"
+          "UPDATE ONLY x table_x SET y = 1 WHERE z = 'abc' RETURNING y AS changed_y"
         end
         it { is_expected.to eq query }
       end
