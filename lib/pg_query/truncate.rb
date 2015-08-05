@@ -11,7 +11,8 @@ class PgQuery
 
     truncations = find_possible_truncations
 
-    # TODO: Sort by most promising truncation
+    # Truncate the deepest possible truncation that is the longest first
+    truncations.sort_by! {|t| [-t.location.size, -t.length]}
 
     tree = deep_dup(parsetree)
     truncations.each do |truncation|

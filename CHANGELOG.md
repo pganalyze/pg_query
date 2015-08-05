@@ -5,7 +5,7 @@
 * Deparsing (experimental)
   * Turns parse trees into SQL again
   * New truncate method to smartly truncate based on less important query parts
-  * Thanks to @mme & @JackDanger for their contributions
+  * Thanks to [@mme](https://github.com/mme) & [@JackDanger](https://github.com/JackDanger) for their contributions
 * Restructure extension C code
 * Add table/filter columns support for CTEs
 * Extract views as tables from CREATE/REFRESH VIEW
