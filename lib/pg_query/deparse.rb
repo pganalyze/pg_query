@@ -1,14 +1,17 @@
 class PgQuery
+  # Reconstruct all of the parsed queries into their original form
   def deparse(tree = @parsetree)
-    self.class.deparse_all(tree).join(';')
+    tree.map do |item|
+      self.class.deparse(item)
+    end.join('; ')
   end
 
   class << self
 
-    def deparse_all(tree)
-      tree.map do |item|
-        deparse_item(item)
-      end
+    # Given one element of the PgQuery#parsetree reconstruct it back into the
+    # original query.
+    def deparse(item)
+      deparse_item(item)
     end
 
     private
