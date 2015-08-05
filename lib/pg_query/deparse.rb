@@ -7,7 +7,6 @@ class PgQuery
   end
 
   class << self
-
     # Given one element of the PgQuery#parsetree reconstruct it back into the
     # original query.
     def deparse(item)
