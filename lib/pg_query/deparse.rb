@@ -430,9 +430,24 @@ class PgQuery
       output = ['DELETE FROM']
       output << deparse_item(node['relation'])
 
+      if node['usingClause']
+        output << 'USING'
+        output << node['usingClause'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+
       if node['whereClause']
         output << 'WHERE'
         output << deparse_item(node['whereClause'])
+      end
+
+      if node['returningList']
+        output << 'RETURNING'
+        output << node['returningList'].map do |item|
+          # RETURNING is formatted like a SELECT
+          deparse_item(item, :select)
+        end.join(', ')
       end
 
       output.join(' ')
