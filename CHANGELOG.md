@@ -1,8 +1,14 @@
 # Changelog
 
-## 0.6.1    UNRELEASED
+## 0.6.2    UNRELEASED
 
 * ...
+
+
+## 0.6.1    2015-08-06
+
+* Deparsing: Support WITH clauses in INSERT/UPDATE/DELETE [@JackDanger](https://github.com/JackDanger)
+* Make sure gemspec includes all necessary files
 
 
 ## 0.6.0    2015-08-05
