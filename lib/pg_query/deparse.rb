@@ -28,6 +28,8 @@ class PgQuery
         deparse_aexpr(node)
       when 'COLUMNREF'
         deparse_columnref(node)
+      when 'A_ARRAYEXPR'
+        deparse_a_arrayexp(node)
       when 'A_CONST'
         deparse_a_const(node)
       when 'A_STAR'
@@ -74,6 +76,8 @@ class PgQuery
         deparse_sublink(node)
       when 'RANGESUBSELECT'
         deparse_rangesubselect(node)
+      when 'ROW'
+        deparse_row(node)
       when 'AEXPR IN'
         deparse_aexpr_in(node)
       when 'AEXPR NOT'
@@ -109,6 +113,12 @@ class PgQuery
       node['fields'].map do |field|
         field.is_a?(String) ? field : deparse_item(field)
       end.join('.')
+    end
+
+    def deparse_a_arrayexp(node)
+      'ARRAY[' + node['elements'].map do |element|
+        deparse_item(element)
+      end.join(', ') + ']'
     end
 
     def deparse_a_const(node)
@@ -281,6 +291,10 @@ class PgQuery
       output
     end
 
+    def deparse_row(node)
+      'ROW(' + node['args'].map { |arg| deparse_item(arg) }.join(', ') + ')'
+    end
+
     def deparse_select(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = []
 
@@ -338,7 +352,10 @@ class PgQuery
     end
 
     def deparse_insert_into(node)
-      output = ['INSERT INTO']
+      output = []
+      output << deparse_item(node['withClause']) if node['withClause']
+
+      output << 'INSERT INTO'
       output << deparse_item(node['relation'])
 
       if node['cols']
@@ -353,7 +370,10 @@ class PgQuery
     end
 
     def deparse_update(node)
-      output = ['UPDATE']
+      output = []
+      output << deparse_item(node['withClause']) if node['withClause']
+
+      output << 'UPDATE'
       output << deparse_item(node['relation'])
 
       if node['targetList']
@@ -429,7 +449,10 @@ class PgQuery
     end
 
     def deparse_delete_from(node)
-      output = ['DELETE FROM']
+      output = []
+      output << deparse_item(node['withClause']) if node['withClause']
+
+      output << 'DELETE FROM'
       output << deparse_item(node['relation'])
 
       if node['usingClause']
