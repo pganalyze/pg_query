@@ -157,6 +157,7 @@ PgQuery.parse("SELECT 2; --- comment").fingerprint
 **This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_4_STABLE...pg_query).**
 
 Changes:
+
 * **scan.l/gram.y:** Modified to support parsing normalized queries
  * Known regression: Removed support for custom operators containing "?" (doesn't affect hstore/JSON/geometric operators)
 * **outfuncs_json.c:** Auto-generated outfuncs that outputs a parsetree as JSON (called through nodeToJSONString)

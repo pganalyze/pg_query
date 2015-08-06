@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.3    UNRELEASED
+
+* ...
+
+
 ## 0.6.2    2015-08-06
 
 * Speed up gem install by not generating rdoc/ri for the Postgres source
