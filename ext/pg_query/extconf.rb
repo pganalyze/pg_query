@@ -4,65 +4,28 @@ require 'mkmf'
 require 'open-uri'
 
 workdir = Dir.pwd
-pgdir = File.join(workdir, 'postgres')
+libdir = File.join(workdir, 'libpg_query-master')
 
-PG_VERSION = '9.4.5'
-
-# Limit the objects we build to speed up compilation times
-PG_OBJS = {
-  'backend/utils' => [
-    'mb/wchar.o', 'mb/encnames.o', 'mb/mbutils.o',
-    'mmgr/mcxt.o', 'mmgr/aset.o',
-    'error/elog.o', 'init/globals.o',
-    'adt/name.o' # namein
-  ],
-  'backend/parser' => [
-    'gram.o', 'parser.o', 'keywords.o', 'kwlookup.o', 'scansup.o'
-  ],
-  'backend/nodes' => [
-    'copyfuncs.o', 'nodeFuncs.o', 'makefuncs.o', 'value.o', 'list.o', 'outfuncs_json.o'
-  ],
-  'backend/lib' => ['stringinfo.o'],
-  'port'        => ['qsort.o'],
-  'common'      => ['psprintf.o'],
-  'timezone'    => ['pgtz.o']
-}
-
-# Download PostgreSQL if we don't have it yet
-unless File.exist?("#{workdir}/postgres.tar.gz")
-  File.open("#{workdir}/postgres.tar.gz", 'wb') do |target_file|
-    open(format('https://ftp.postgresql.org/pub/source/v%s/postgresql-%s.tar.bz2', PG_VERSION, PG_VERSION), 'rb') do |read_file|
+unless File.exist?("#{workdir}/libpg_query.tar.gz")
+  File.open("#{workdir}/libpg_query.tar.gz", 'wb') do |target_file|
+    open('https://codeload.github.com/lfittl/libpg_query/tar.gz/master', 'rb') do |read_file|
       target_file.write(read_file.read)
     end
   end
 end
 
-unless Dir.exist?(pgdir)
-  system("tar -xf #{workdir}/postgres.tar.gz") || fail('ERROR')
-  system("mv #{workdir}/postgresql-#{PG_VERSION} #{pgdir}") || fail('ERROR')
-
-  # Apply patches
-  Dir[File.join(File.absolute_path(File.dirname(__FILE__)), 'patches/*')].each do |patch|
-    system("cd #{pgdir}; patch -p1 < #{patch}")
-  end
+unless Dir.exist?(libdir)
+  system("tar -xf #{workdir}/libpg_query.tar.gz") || fail('ERROR')
 end
 
-# We always run the build process in case this was cached between build (e.g. on Heroku)
-system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q --without-readline --without-zlib") || fail('ERROR')
-system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
-PG_OBJS.each do |directory, objs|
-  system("cd #{pgdir}; make -C src/#{directory} #{objs.join(' ')}") || fail('ERROR')
-end
+# Build libpg_query (and parts of PostgreSQL)
+system("cd #{libdir}; make")
 
-$objs = PG_OBJS.map { |directory, objs| objs.map { |obj| "#{pgdir}/src/#{directory}/#{obj}" } }.flatten
-$objs += %w(pg_query.o pg_query_parse.o pg_query_normalize.o pg_polyfills.o)
+$objs = ["#{libdir}/libpg_query.a", 'pg_query_ruby.o']
 
-$CFLAGS << " -I #{pgdir}/src/include"
+$CFLAGS << " -I #{libdir} -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv"
 
-# Similar to those used by PostgreSQL
-$CFLAGS << ' -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv'
-
-SYMFILE = File.join(File.dirname(__FILE__), 'pg_query.sym')
+SYMFILE = File.join(File.dirname(__FILE__), 'pg_query_ruby.sym')
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
 else
