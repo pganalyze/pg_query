@@ -166,7 +166,11 @@ class PgQuery
     end
 
     def deparse_funccall(node)
+      # SUM(a, b)
       args = Array(node['args']).map { |arg| deparse_item(arg) }
+      # COUNT(*)
+      args << '*' if node['agg_star']
+
       format('%s(%s)', node['funcname'].join('.'), args.join(', '))
     end
 
