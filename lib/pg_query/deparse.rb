@@ -94,6 +94,8 @@ class PgQuery
         deparse_coalesce(node)
       when 'DELETE FROM'
         deparse_delete_from(node)
+      when 'WINDOWDEF'
+        deparse_windowdef(node)        
       when 'A_TRUNCATED'
         '...' # pg_query internal
       else
@@ -166,12 +168,39 @@ class PgQuery
     end
 
     def deparse_funccall(node)
+      output = []
       # SUM(a, b)
       args = Array(node['args']).map { |arg| deparse_item(arg) }
       # COUNT(*)
       args << '*' if node['agg_star']
 
-      format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+      output << format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+
+      if node['over']
+        output << format('OVER (%s)', deparse_item(node['over']))
+      end
+
+      output.join(' ')
+    end
+
+    def deparse_windowdef(node)
+      output = []
+
+      if node['partitionClause']
+        output << 'PARTITION BY'
+        output << node['partitionClause'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+
+      if node['orderClause']
+        output << 'ORDER BY'
+        output << node['orderClause'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end      
+
+      output.join(' ')
     end
 
     def deparse_aexpr_in(node)
