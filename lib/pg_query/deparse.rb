@@ -267,6 +267,7 @@ class PgQuery
       output = []
       output << deparse_item(node['node'])
       output << 'ASC' if node['sortby_dir'] == 1
+      output << 'DESC' if node['sortby_dir'] == 2
       output.join(' ')
     end
 
