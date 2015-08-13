@@ -113,7 +113,7 @@ class PgQuery
 
     def deparse_columnref(node)
       node['fields'].map do |field|
-        field.is_a?(String) ? field : deparse_item(field)
+        field.is_a?(String) ? (field.include?(' ') ? format('"%s"', field) : field) : deparse_item(field)
       end.join('.')
     end
 
@@ -124,6 +124,7 @@ class PgQuery
     end
 
     def deparse_a_const(node)
+      node['val'].inspect.gsub('\'', '\'\'')
       node['val'].inspect.gsub('"', '\'')
     end
 
