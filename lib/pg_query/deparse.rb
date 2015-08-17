@@ -125,7 +125,11 @@ class PgQuery
     end
 
     def deparse_a_const(node)
-      node['val'].inspect.gsub('\'', '\'\'').gsub('"', '\'')
+      if node['val'].nil? 
+        '\'\''
+      else
+        node['val'].inspect.gsub('\'', '\'\'').gsub('"', '\'')
+      end
     end
 
     def deparse_a_star(_node)
