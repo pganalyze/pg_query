@@ -317,6 +317,28 @@ describe PgQuery do
         it { is_expected.to eq query }
       end
     end
+
+    context 'OVER' do
+      context 'OVER ()' do
+        let(:query) { "SELECT RANK() OVER ()" }
+        it { is_expected.to eq query }        
+      end
+
+      context 'OVER with PARTITION BY' do
+        let(:query) { "SELECT RANK() OVER (PARTITION BY id)" }
+        it { is_expected.to eq query }        
+      end      
+
+      context 'OVER with ORDER BY' do
+        let(:query) { "SELECT RANK() OVER (ORDER BY id)" }
+        it { is_expected.to eq query }        
+      end    
+
+      context 'complex OVER' do
+        let(:query) { "SELECT RANK() OVER (PARTITION BY id, id2, ORDER BY id DESC, id2)" }
+        it { is_expected.to eq query }        
+      end                
+    end
   end
 
   describe '#deparse' do
