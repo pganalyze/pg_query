@@ -52,10 +52,16 @@ class PgQuery
         deparse_case(node)
       when 'COALESCE'
         deparse_coalesce(node)
+      when 'COLUMNDEF'
+        deparse_columndef(node)
       when 'COLUMNREF'
         deparse_columnref(node)
       when 'COMMONTABLEEXPR'
         deparse_cte(node)
+      when 'CONSTRAINT'
+        deparse_constraint(node)
+      when 'CREATESTMT'
+        deparse_create(node)
       when 'DELETE FROM'
         deparse_delete_from(node)
       when 'FUNCCALL'
@@ -269,6 +275,46 @@ class PgQuery
       output.join(' ')
     end
 
+    def deparse_columndef(node)
+      output = [node['colname']]
+      output << deparse_item(node['typeName'])
+      if node['constraints']
+        output += node['constraints'].map do |item|
+          deparse_item(item)
+        end
+      end
+      output.join(' ')
+    end
+
+    def deparse_constraint(node)
+      output = []
+      # NOT_NULL -> NOT NULL
+      output << node['contype'].gsub('_', ' ')
+      if node['raw_expr']
+        output << deparse_item(node['raw_expr'])
+      end
+      output.join(' ')
+    end
+
+    def deparse_create(node)
+      output = []
+      output << 'CREATE TABLE'
+      output << deparse_item(node['relation'])
+
+      output << '(' + node['tableElts'].map do |item|
+        deparse_item(item)
+      end.join(', ') + ')'
+
+      if node['inhRelations']
+        output << 'INHERITS'
+        output << '(' + node['inhRelations'].map do |relation|
+          deparse_item(relation)
+        end.join(', ') + ')'
+      end
+
+      output.join(' ')
+    end
+
     def deparse_when(node)
       output = ['WHEN']
       output << deparse_item(node['expr'])
@@ -412,10 +458,42 @@ class PgQuery
     end
 
     def deparse_typename(node)
-      if node['names'] == %w(pg_catalog bool)
+      catalog, type = node['names']
+
+      # Just pass along any custom types.
+      # (The pg_catalog types are built-in Postgres system types and are
+      #  handled in the case statement below)
+      return node['names'].join('.') if catalog != 'pg_catalog'
+
+      if node['typmods']
+        arguments = node['typmods'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+
+      case type
+      when 'bpchar'
+        # char(2) or char(9)
+        "char(#{arguments})"
+      when 'varchar'
+        "varchar(#{arguments})"
+      when 'numeric'
+        # numeric(3, 5)
+        "numeric(#{arguments})"
+      when 'bool'
         :boolean
+      when 'int2'
+        'smallint'
+      when 'int4'
+        'int'
+      when 'int8'
+        'bigint'
+      when 'real', 'float4'
+        'real'
+      when 'float8'
+        'double'
       else
-        node['names'].join('.')
+        fail format("Can't deparse type: %s", type)
       end
     end
 

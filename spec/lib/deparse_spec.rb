@@ -286,6 +286,59 @@ describe PgQuery do
       end
     end
 
+    context 'CREATE TABLE' do
+      context 'top-level' do
+        let(:query) do
+          """
+            CREATE TABLE cities (
+                name            text,
+                population      real,
+                altitude        double,
+                identifier      smallint,
+                postal_code     int,
+                foreign_id      bigint
+           );
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with alternate typecasts' do
+        let(:query) do
+          """
+            CREATE TABLE types (a float(2), b float(49), c NUMERIC(2, 3), d character(4), e char(5), f varchar(6), g character varying(7));
+          """
+        end
+        it do
+          is_expected.to eq(
+            "CREATE TABLE types (a real, b double, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))"
+          )
+        end
+      end
+
+      context 'with column definition options' do
+        let(:query) do
+          """
+          CREATE TABLE tablename (
+              colname int NOT NULL DEFAULT nextval('tablename_colname_seq')
+          );
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'inheriting' do
+        let(:query) do
+          """
+            CREATE TABLE capitals (
+                state           char(2)
+            ) INHERITS (cities);
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
     context 'TRANSACTION' do
       context 'BEGIN' do
         let(:query) { 'BEGIN' }
