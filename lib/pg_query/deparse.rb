@@ -22,80 +22,80 @@ class PgQuery
       node = item.values[0]
 
       case type
-      when 'RANGEVAR'
-        deparse_rangevar(node)
-      when 'AEXPR'
-        deparse_aexpr(node)
-      when 'COLUMNREF'
-        deparse_columnref(node)
-      when 'A_ARRAYEXPR'
-        deparse_a_arrayexp(node)
-      when 'A_CONST'
-        deparse_a_const(node)
-      when 'A_STAR'
-        deparse_a_star(node)
-      when 'A_INDIRECTION'
-        deparse_a_indirection(node)
-      when 'A_INDICES'
-        deparse_a_indices(node)
-      when 'ALIAS'
-        deparse_alias(node)
-      when 'PARAMREF'
-        deparse_paramref(node)
-      when 'RESTARGET'
-        deparse_restarget(node, context)
-      when 'FUNCCALL'
-        deparse_funccall(node)
-      when 'RANGEFUNCTION'
-        deparse_range_function(node)
       when 'AEXPR AND'
         deparse_aexpr_and(node)
-      when 'JOINEXPR'
-        deparse_joinexpr(node)
-      when 'SORTBY'
-        deparse_sortby(node)
-      when 'SELECT'
-        deparse_select(node)
-      when 'WITHCLAUSE'
-        deparse_with_clause(node)
-      when 'COMMONTABLEEXPR'
-        deparse_cte(node)
-      when 'INSERT INTO'
-        deparse_insert_into(node)
-      when 'UPDATE'
-        deparse_update(node)
-      when 'TYPECAST'
-        deparse_typecast(node)
-      when 'TYPENAME'
-        deparse_typename(node)
-      when 'CASE'
-        deparse_case(node)
-      when 'WHEN'
-        deparse_when(node)
-      when 'SUBLINK'
-        deparse_sublink(node)
-      when 'RANGESUBSELECT'
-        deparse_rangesubselect(node)
-      when 'ROW'
-        deparse_row(node)
+      when 'AEXPR ANY'
+        deparse_aexpr_any(node)
       when 'AEXPR IN'
         deparse_aexpr_in(node)
       when 'AEXPR NOT'
         deparse_aexpr_not(node)
       when 'AEXPR OR'
         deparse_aexpr_or(node)
-      when 'AEXPR ANY'
-        deparse_aexpr_any(node)
-      when 'NULLTEST'
-        deparse_nulltest(node)
-      when 'TRANSACTION'
-        deparse_transaction(node)
-      when 'COALESCE'
-        deparse_coalesce(node)
-      when 'DELETE FROM'
-        deparse_delete_from(node)
+      when 'AEXPR'
+        deparse_aexpr(node)
+      when 'ALIAS'
+        deparse_alias(node)
+      when 'A_ARRAYEXPR'
+        deparse_a_arrayexp(node)
+      when 'A_CONST'
+        deparse_a_const(node)
+      when 'A_INDICES'
+        deparse_a_indices(node)
+      when 'A_INDIRECTION'
+        deparse_a_indirection(node)
+      when 'A_STAR'
+        deparse_a_star(node)
       when 'A_TRUNCATED'
         '...' # pg_query internal
+      when 'CASE'
+        deparse_case(node)
+      when 'COALESCE'
+        deparse_coalesce(node)
+      when 'COLUMNREF'
+        deparse_columnref(node)
+      when 'COMMONTABLEEXPR'
+        deparse_cte(node)
+      when 'DELETE FROM'
+        deparse_delete_from(node)
+      when 'FUNCCALL'
+        deparse_funccall(node)
+      when 'INSERT INTO'
+        deparse_insert_into(node)
+      when 'JOINEXPR'
+        deparse_joinexpr(node)
+      when 'NULLTEST'
+        deparse_nulltest(node)
+      when 'PARAMREF'
+        deparse_paramref(node)
+      when 'RANGEFUNCTION'
+        deparse_range_function(node)
+      when 'RANGESUBSELECT'
+        deparse_rangesubselect(node)
+      when 'RANGEVAR'
+        deparse_rangevar(node)
+      when 'RESTARGET'
+        deparse_restarget(node, context)
+      when 'ROW'
+        deparse_row(node)
+      when 'SELECT'
+        deparse_select(node)
+      when 'SORTBY'
+        deparse_sortby(node)
+      when 'SUBLINK'
+        deparse_sublink(node)
+      when 'TRANSACTION'
+        deparse_transaction(node)
+      when 'TYPECAST'
+        deparse_typecast(node)
+      when 'TYPENAME'
+        deparse_typename(node)
+      when 'UPDATE'
+        deparse_update(node)
+      when 'WHEN'
+        deparse_when(node)
+      when 'WITHCLAUSE'
+        deparse_with_clause(node)
       else
         fail format("Can't deparse: %s: %s", type, node.inspect)
       end
