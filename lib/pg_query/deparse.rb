@@ -290,9 +290,7 @@ class PgQuery
       output = []
       # NOT_NULL -> NOT NULL
       output << node['contype'].gsub('_', ' ')
-      if node['raw_expr']
-        output << deparse_item(node['raw_expr'])
-      end
+      output << deparse_item(node['raw_expr']) if node['raw_expr']
       output.join(' ')
     end
 
@@ -457,7 +455,7 @@ class PgQuery
       end
     end
 
-    def deparse_typename(node)
+    def deparse_typename(node) # rubocop:disable Metrics/CyclomaticComplexity
       catalog, type = node['names']
 
       # Just pass along any custom types.
