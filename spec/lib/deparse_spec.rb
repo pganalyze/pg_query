@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe PgQuery do
   let(:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip.chomp(';') }
-  let(:parsetree) { described_class.parse(oneline_query).parsetree }
+  let(:parsetree) { described_class.parse(query).parsetree }
 
   describe '.deparse' do
     subject { described_class.deparse(parsetree.first) }
@@ -369,6 +369,17 @@ describe PgQuery do
         let(:query) { 'RELEASE x' }
         it { is_expected.to eq query }
       end
+    end
+
+    context 'COMMENTS' do
+      let(:query) do
+        """
+        CREATE TABLE remove_comments (
+          id int -- inline comment in multiline
+        );
+        """
+      end
+      it { is_expected.to eq("CREATE TABLE remove_comments (id int)") }
     end
   end
 
