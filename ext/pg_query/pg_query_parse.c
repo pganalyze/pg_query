@@ -10,15 +10,21 @@
 VALUE new_parse_error(ErrorData* error)
 {
 	VALUE cPgQuery, cParseError;
-	VALUE args[2];
+	VALUE args[4];
 
 	cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
+	// exception message
 	args[0] = rb_str_new2(error->message);
-	args[1] = INT2NUM(error->cursorpos);
+	// source of exception (e.g. parse.l)
+	args[1] = rb_str_new2(error->filename);
+	// source of exception (e.g. 104)
+	args[2] = INT2NUM(error->lineno);
+	// char in query at which exception occurred
+	args[3] = INT2NUM(error->cursorpos);
 
-	return rb_class_new_instance(2, args, cParseError);
+	return rb_class_new_instance(4, args, cParseError);
 }
 
 VALUE pg_query_raw_parse(VALUE self, VALUE input)
