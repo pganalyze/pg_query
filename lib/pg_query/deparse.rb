@@ -60,12 +60,18 @@ class PgQuery
         deparse_cte(node)
       when 'CONSTRAINT'
         deparse_constraint(node)
+      when 'CREATEFUNCTIONSTMT'
+        deparse_create_function(node)
       when 'CREATESTMT'
         deparse_create(node)
+      when 'DEFELEM'
+        deparse_defelem(node)
       when 'DELETE FROM'
         deparse_delete_from(node)
       when 'FUNCCALL'
         deparse_funccall(node)
+      when 'FUNCTIONPARAMETER'
+        deparse_functionparameter(node)
       when 'INSERT INTO'
         deparse_insert_into(node)
       when 'JOINEXPR'
@@ -180,6 +186,10 @@ class PgQuery
       format('%s(%s)', node['funcname'].join('.'), args.join(', '))
     end
 
+    def deparse_functionparameter(node)
+      deparse_item(node['argType'])
+    end
+
     def deparse_aexpr_in(node)
       rexpr = Array(node['rexpr']).map { |arg| deparse_item(arg) }
       format('%s IN (%s)', deparse_item(node['lexpr']), rexpr.join(', '))
@@ -291,6 +301,21 @@ class PgQuery
       # NOT_NULL -> NOT NULL
       output << node['contype'].gsub('_', ' ')
       output << deparse_item(node['raw_expr']) if node['raw_expr']
+      output.join(' ')
+    end
+
+    def deparse_create_function(node)
+      output = []
+      output << 'CREATE FUNCTION'
+
+      arguments = node['parameters'].map { |item| deparse_item(item) }.join(', ')
+
+      output << node['funcname'].first + '(' + arguments + ')'
+
+      output << 'RETURNS'
+      output << deparse_item(node['returnType'])
+      output += node['options'].map { |item| deparse_item(item) }
+
       output.join(' ')
     end
 
@@ -448,26 +473,34 @@ class PgQuery
     end
 
     def deparse_typecast(node)
-      if deparse_item(node['typeName']) == :boolean
+      if deparse_item(node['typeName']) == 'boolean'
         deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
       else
         deparse_item(node['arg']) + '::' + deparse_typename(node['typeName']['TYPENAME'])
       end
     end
 
-    def deparse_typename(node) # rubocop:disable Metrics/CyclomaticComplexity
-      catalog, type = node['names']
-
-      # Just pass along any custom types.
-      # (The pg_catalog types are built-in Postgres system types and are
-      #  handled in the case statement below)
-      return node['names'].join('.') if catalog != 'pg_catalog'
+    def deparse_typename(node)
+      output = []
+      output << 'SETOF' if node['setof']
 
       if node['typmods']
         arguments = node['typmods'].map do |item|
           deparse_item(item)
         end.join(', ')
       end
+
+      output << deparse_typename_cast(node['names'], arguments)
+
+      output.join(' ')
+    end
+
+    def deparse_typename_cast(names, arguments) # rubocop:disable Metrics/CyclomaticComplexity
+      catalog, type = names
+      # Just pass along any custom types.
+      # (The pg_catalog types are built-in Postgres system types and are
+      #  handled in the case statement below)
+      return names.join('.') if catalog != 'pg_catalog'
 
       case type
       when 'bpchar'
@@ -479,7 +512,7 @@ class PgQuery
         # numeric(3, 5)
         "numeric(#{arguments})"
       when 'bool'
-        :boolean
+        'boolean'
       when 'int2'
         'smallint'
       when 'int4'
@@ -517,8 +550,8 @@ class PgQuery
       output = []
       output << TRANSACTION_CMDS[node['kind']] || fail(format("Can't deparse TRANSACTION %s", node.inspect))
 
-      if node['options'] && node['options'][0]['DEFELEM']
-        output << node['options'][0]['DEFELEM']['arg']
+      if node['options']
+        output += node['options'].map { |item| deparse_item(item) }
       end
 
       output.join(' ')
@@ -526,6 +559,17 @@ class PgQuery
 
     def deparse_coalesce(node)
       format('COALESCE(%s)', node['args'].map { |a| deparse_item(a) }.join(', '))
+    end
+
+    def deparse_defelem(node)
+      case node['defname']
+      when 'as'
+        "AS $$#{node['arg'].join("\n")}$$"
+      when 'language'
+        "language #{node['arg']}"
+      else
+        node['arg']
+      end
     end
 
     def deparse_delete_from(node)

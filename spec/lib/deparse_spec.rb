@@ -286,6 +286,20 @@ describe PgQuery do
       end
     end
 
+    context 'CREATE FUNCTION' do
+      # Taken from http://www.postgresql.org/docs/8.3/static/queries-table-expressions.html
+      context 'with inline function definition' do
+        let(:query) do
+          """
+          CREATE FUNCTION getfoo(int) RETURNS SETOF users AS $$
+              SELECT * FROM users WHERE users.id = $1;
+          $$ language sql;
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
     context 'CREATE TABLE' do
       context 'top-level' do
         let(:query) do
