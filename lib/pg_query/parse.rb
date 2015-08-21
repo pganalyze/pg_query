@@ -7,7 +7,7 @@ class PgQuery
     begin
       parsetree = JSON.parse(parsetree, max_nesting: 1000)
     rescue JSON::ParserError
-      raise ParseError.new('Failed to parse JSON', -1)
+      raise ParseError.new('Failed to parse JSON', __FILE__, __LINE__, -1)
     end
 
     warnings = []
