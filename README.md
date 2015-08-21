@@ -1,4 +1,4 @@
-# pg_query [ ![](https://img.shields.io/gem/v/pg_query.svg)](https://rubygems.org/gems/pg_query) [ ![](https://img.shields.io/gem/dt/pg_query.svg)](https://rubygems.org/gems/pg_query) [ ![Codeship Status for lfittl/dblint](https://travis-ci.org/lfittl/pg_query.svg?branch=master)](https://travis-ci.org/lfittl/pg_query)
+# pg_query [ ![](https://img.shields.io/gem/v/pg_query.svg)](https://rubygems.org/gems/pg_query) [ ![](https://img.shields.io/gem/dt/pg_query.svg)](https://rubygems.org/gems/pg_query) [ ![](https://travis-ci.org/lfittl/pg_query.svg?branch=master)](https://travis-ci.org/lfittl/pg_query)
 
 This Ruby extension uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree.
 
@@ -165,9 +165,14 @@ Changes:
 Unit tests for these patches are inside this library - the tests will break if run against upstream.
 
 
-## Authors
+## Original Author
 
 - [Lukas Fittl](mailto:lukas@fittl.com)
+
+
+## Special Thanks to
+
+- [Jack Danger Canty](https://github.com/JackDanger), for significantly improving deparsing
 
 
 ## License

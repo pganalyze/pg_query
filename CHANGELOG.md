@@ -1,8 +1,17 @@
 # Changelog
 
-## 0.6.3    UNRELEASED
+## 0.6.4    UNRELEASED
 
 * ...
+
+
+## 0.6.3    2015-08-20
+
+* Deparsing
+  * COUNT(*) [@JackDanger](https://github.com/JackDanger)
+  * Window clauses [Chris Martin](https://github.com/cmrtn)
+  * CREATE TABLE/VIEW/FUNCTION [@JackDanger](https://github.com/JackDanger)
+* Return exact location for parser errors [@JackDanger](https://github.com/JackDanger)
 
 
 ## 0.6.2    2015-08-06
