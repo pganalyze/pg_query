@@ -18,6 +18,11 @@ describe PgQuery do
         it { is_expected.to eq query }
       end
 
+      context 'with specific column alias' do
+        let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(first, last)" }
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'simple WITH statement' do
         let(:query) { 'WITH t AS (SELECT random() AS x FROM generate_series(1, 3)) SELECT * FROM t' }
         it { is_expected.to eq query }

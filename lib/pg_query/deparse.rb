@@ -154,7 +154,12 @@ class PgQuery
     end
 
     def deparse_alias(node)
-      node['aliasname']
+      name = node['aliasname']
+      if node['colnames']
+        name + '(' + node['colnames'].join(', ') + ')'
+      else
+        name
+      end
     end
 
     def deparse_paramref(node)
@@ -357,11 +362,12 @@ class PgQuery
     end
 
     def deparse_rangesubselect(node)
-      output = '('
-      output += deparse_item(node['subquery'])
-      output += ')'
-      output += ' ' + node['alias']['ALIAS']['aliasname'] if node['alias']
-      output
+      output = '(' + deparse_item(node['subquery']) + ')'
+      if node['alias']
+        output + ' ' + deparse_item(node['alias'])
+      else
+        output
+      end
     end
 
     def deparse_row(node)
