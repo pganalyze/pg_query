@@ -100,6 +100,8 @@ class PgQuery
         deparse_update(node)
       when 'WHEN'
         deparse_when(node)
+      when 'WINDOWDEF'
+        deparse_windowdef(node)
       when 'WITHCLAUSE'
         deparse_with_clause(node)
       else
@@ -128,7 +130,7 @@ class PgQuery
     end
 
     def deparse_a_const(node)
-      node['val'].inspect.gsub('"', '\'')
+      node['val'].inspect.gsub("'", "''").gsub('"', "'")
     end
 
     def deparse_a_star(_node)
@@ -172,12 +174,37 @@ class PgQuery
     end
 
     def deparse_funccall(node)
+      output = []
+
       # SUM(a, b)
       args = Array(node['args']).map { |arg| deparse_item(arg) }
       # COUNT(*)
       args << '*' if node['agg_star']
 
-      format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+      output << format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+      output << format('OVER (%s)', deparse_item(node['over'])) if node['over']
+
+      output.join(' ')
+    end
+
+    def deparse_windowdef(node)
+      output = []
+
+      if node['partitionClause']
+        output << 'PARTITION BY'
+        output << node['partitionClause'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+
+      if node['orderClause']
+        output << 'ORDER BY'
+        output << node['orderClause'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+
+      output.join(' ')
     end
 
     def deparse_aexpr_in(node)
@@ -244,6 +271,7 @@ class PgQuery
       output = []
       output << deparse_item(node['node'])
       output << 'ASC' if node['sortby_dir'] == 1
+      output << 'DESC' if node['sortby_dir'] == 2
       output.join(' ')
     end
 
