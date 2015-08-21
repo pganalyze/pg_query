@@ -298,10 +298,10 @@ describe PgQuery do
           """
           CREATE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM users WHERE users.id = $1;
-          $$ language sql;
-          """
+          $$ language sql
+          """.strip
         end
-        it { is_expected.to eq oneline_query }
+        it { is_expected.to eq query }
       end
     end
 
