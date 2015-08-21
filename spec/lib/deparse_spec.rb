@@ -32,7 +32,7 @@ describe PgQuery do
         # Taken from http://www.postgresql.org/docs/9.1/static/queries-with.html
         let(:query) do
           """
-          WITH RECURSIVE search_graph(id, link, data, depth, path, cycle) AS (
+          WITH RECURSIVE search_graph (id, link, data, depth, path, cycle) AS (
               SELECT g.id, g.link, g.data, 1,
                 ARRAY[ROW(g.f1, g.f2)],
                 false
@@ -309,7 +309,7 @@ describe PgQuery do
       context 'top-level' do
         let(:query) do
           """
-            CREATE TABLE cities (
+            CREATE UNLOGGED TABLE cities (
                 name            text,
                 population      real,
                 altitude        double,
@@ -387,6 +387,23 @@ describe PgQuery do
       context 'RELEASE' do
         let(:query) { 'RELEASE x' }
         it { is_expected.to eq query }
+      end
+    end
+
+    context 'VIEWS' do
+      context 'with check option' do
+        let(:query) { 'CREATE OR REPLACE TEMPORARY VIEW view_a AS SELECT * FROM a(1) WITH CASCADED CHECK OPTION' }
+        it { is_expected.to eq query }
+      end
+
+      context 'recursive' do
+        let(:shorthand_query) { 'CREATE RECURSIVE VIEW view_a (a, b) AS SELECT * FROM a(1)' }
+        let(:query) { "CREATE VIEW view_a (a, b) AS WITH RECURSIVE view_a (a, b) AS (SELECT * FROM a(1)) SELECT a, b FROM view_a" }
+
+        it 'parses both and deparses into the normalized form' do
+          expect(described_class.deparse(described_class.parse(query).parsetree.first)).to eq(query)
+          expect(described_class.deparse(described_class.parse(shorthand_query).parsetree.first)).to eq(query)
+        end
       end
     end
   end

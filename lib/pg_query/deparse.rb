@@ -63,7 +63,7 @@ class PgQuery
       when 'CREATEFUNCTIONSTMT'
         deparse_create_function(node)
       when 'CREATESTMT'
-        deparse_create(node)
+        deparse_create_table(node)
       when 'DEFELEM'
         deparse_defelem(node)
       when 'DELETE FROM'
@@ -108,6 +108,8 @@ class PgQuery
         deparse_when(node)
       when 'WITHCLAUSE'
         deparse_with_clause(node)
+      when 'VIEWSTMT'
+        deparse_viewstmt(node)
       else
         fail format("Can't deparse: %s: %s", type, node.inspect)
       end
@@ -271,12 +273,36 @@ class PgQuery
       output.join(' ')
     end
 
+    def deparse_viewstmt(node)
+      output = []
+      output << 'CREATE'
+      output << 'OR REPLACE' if node['replace']
+
+      persistence = relpersistence(node['view'])
+      output << persistence if persistence
+
+      output << 'VIEW'
+      output << node['view']['RANGEVAR']['relname']
+      output << format('(%s)', node['aliases'].join(', ')) if node['aliases']
+
+      output << 'AS'
+      output << deparse_item(node['query'])
+
+      case node['withCheckOption']
+      when 1
+        output << 'WITH CHECK OPTION'
+      when 2
+        output << 'WITH CASCADED CHECK OPTION'
+      end
+      output.join(' ')
+    end
+
     def deparse_cte(node)
-      output = ''
-      output += node['ctename']
-      output += format('(%s)', node['aliascolnames'].join(', ')) if node['aliascolnames']
-      output += format(' AS (%s)', deparse_item(node['ctequery']))
-      output
+      output = []
+      output << node['ctename']
+      output << format('(%s)', node['aliascolnames'].join(', ')) if node['aliascolnames']
+      output << format('AS (%s)', deparse_item(node['ctequery']))
+      output.join(' ')
     end
 
     def deparse_case(node)
@@ -324,9 +350,15 @@ class PgQuery
       output.join(' ')
     end
 
-    def deparse_create(node)
+    def deparse_create_table(node)
       output = []
-      output << 'CREATE TABLE'
+      output << 'CREATE'
+
+      persistence = relpersistence(node['relation'])
+      output << persistence if persistence
+
+      output << 'TABLE'
+
       output << deparse_item(node['relation'])
 
       output << '(' + node['tableElts'].map do |item|
@@ -606,6 +638,16 @@ class PgQuery
       end
 
       output.join(' ')
+    end
+
+    # The PG parser adds several pieces of view data onto the RANGEVAR
+    # that need to be printed before deparse_rangevar is called.
+    def relpersistence(rangevar)
+      if rangevar['RANGEVAR']['relpersistence'] == 't'
+        'TEMPORARY'
+      elsif rangevar['RANGEVAR']['relpersistence'] == 'u'
+        'UNLOGGED'
+      end
     end
   end
 end
