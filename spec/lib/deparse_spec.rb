@@ -322,6 +322,25 @@ describe PgQuery do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'with common types' do
+        let(:query) do
+          """
+            CREATE TABLE distributors (
+                name       varchar(40) DEFAULT 'Luso Films',
+                len        interval hour to second(3),
+                name       varchar(40) DEFAULT 'Luso Films',
+                did        int DEFAULT nextval('distributors_serial'),
+                stamp      timestamp DEFAULT pg_catalog.now() NOT NULL,
+                stamptz    timestamp with time zone,
+                time       time NOT NULL,
+                timetz     time with time zone,
+                CONSTRAINT name_len PRIMARY KEY (name, len)
+            );
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'with alternate typecasts' do
         let(:query) do
           """
@@ -477,6 +496,35 @@ describe PgQuery do
         """
       end
       it { is_expected.to eq oneline_query }
+    end
+  end
+
+  describe PgQuery::DeparseInterval do
+    describe '.from_int' do
+      it 'unpacks the parts of the interval' do
+        # Supported combinations taken directly from gram.y
+        {
+          # the SQL form    => what PG stores
+          %w(year)          => %w(YEAR),
+          %w(month)         => %w(MONTH),
+          %w(day)           => %w(DAY),
+          %w(hour)          => %w(HOUR),
+          %w(minute)        => %w(MINUTE),
+          %w(second)        => %w(SECOND),
+          %w(year month)    => %w(YEAR MONTH),
+          %w(day hour)      => %w(DAY HOUR),
+          %w(day minute)    => %w(DAY HOUR MINUTE),
+          %w(day second)    => %w(DAY HOUR MINUTE SECOND),
+          %w(hour minute)   => %w(HOUR MINUTE),
+          %w(hour second)   => %w(HOUR MINUTE SECOND),
+          %w(minute second) => %w(MINUTE SECOND)
+        }.each do |sql_parts, storage_parts|
+          number = storage_parts.reduce(0) do |num, part|
+            num | (1 << described_class::KEYS[part])
+          end
+          expect(described_class.from_int(number).sort).to eq(sql_parts.sort)
+        end
+      end
     end
   end
 end
