@@ -357,9 +357,14 @@ class PgQuery
 
     def deparse_constraint(node)
       output = []
+      if node['conname']
+        output << 'CONSTRAINT'
+        output << node['conname']
+      end
       # NOT_NULL -> NOT NULL
       output << node['contype'].gsub('_', ' ')
       output << deparse_item(node['raw_expr']) if node['raw_expr']
+      output << '(' + node['keys'].join(', ') + ')' if node['keys']
       output.join(' ')
     end
 
