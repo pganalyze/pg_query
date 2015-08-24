@@ -479,4 +479,33 @@ describe PgQuery do
       it { is_expected.to eq oneline_query }
     end
   end
+
+  describe PgQuery::DeparseInterval do
+    describe '.from_int' do
+      it 'unpacks the parts of the interval' do
+        # Supported combinations taken directly from gram.y
+        {
+          # the SQL form    => what PG stores
+          %w(year)          => %w(YEAR),
+          %w(month)         => %w(MONTH),
+          %w(day)           => %w(DAY),
+          %w(hour)          => %w(HOUR),
+          %w(minute)        => %w(MINUTE),
+          %w(second)        => %w(SECOND),
+          %w(year month)    => %w(YEAR MONTH),
+          %w(day hour)      => %w(DAY HOUR),
+          %w(day minute)    => %w(DAY HOUR MINUTE),
+          %w(day second)    => %w(DAY HOUR MINUTE SECOND),
+          %w(hour minute)   => %w(HOUR MINUTE),
+          %w(hour second)   => %w(HOUR MINUTE SECOND),
+          %w(minute second) => %w(MINUTE SECOND)
+        }.each do |sql_parts, storage_parts|
+          number = storage_parts.reduce(0) do |num, part|
+            num | (1 << described_class::KEYS[part])
+          end
+          expect(described_class.from_int(number).sort).to eq(sql_parts.sort)
+        end
+      end
+    end
+  end
 end
