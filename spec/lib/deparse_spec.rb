@@ -322,6 +322,25 @@ describe PgQuery do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'with common types' do
+        let(:query) do
+          """
+            CREATE TABLE distributors (
+                name       varchar(40) DEFAULT 'Luso Films',
+                len        interval hour to second(3),
+                name       varchar(40) DEFAULT 'Luso Films',
+                did        int DEFAULT nextval('distributors_serial'),
+                stamp      timestamp DEFAULT pg_catalog.now() NOT NULL,
+                stamptz    timestamp with time zone,
+                time       time NOT NULL,
+                timetz     time with time zone,
+                CONSTRAINT name_len PRIMARY KEY (name, len)
+            );
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'with alternate typecasts' do
         let(:query) do
           """
