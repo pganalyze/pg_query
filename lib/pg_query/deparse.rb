@@ -39,7 +39,7 @@ class PgQuery
       when 'AEXPR OR'
         deparse_aexpr_or(node)
       when 'AEXPR'
-        deparse_aexpr(node)
+        deparse_aexpr(node, context)
       when 'ALIAS'
         deparse_alias(node)
       when 'ALTER TABLE'
@@ -248,7 +248,8 @@ class PgQuery
       # COUNT(*)
       args << '*' if node['agg_star']
 
-      output << format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+      name = (node['funcname'] - ['pg_catalog']).join('.')
+      output << format('%s(%s)', name, args.join(', '))
       output << format('OVER (%s)', deparse_item(node['over'])) if node['over']
 
       output.join(' ')
@@ -295,11 +296,16 @@ class PgQuery
       output.join(' ')
     end
 
-    def deparse_aexpr(node)
+    def deparse_aexpr(node, context = false)
       output = []
-      output << deparse_item(node['lexpr'])
-      output << deparse_item(node['rexpr'])
-      output.join(' ' + node['name'][0] + ' ')
+      output << deparse_item(node['lexpr'], context || true)
+      output << deparse_item(node['rexpr'], context || true)
+      output = output.join(' ' + node['name'][0] + ' ')
+      if context
+        # This is a nested expression, add parentheses.
+        output = '(' + output + ')'
+      end
+      output
     end
 
     def deparse_aexpr_and(node)
@@ -422,7 +428,12 @@ class PgQuery
       # NOT_NULL -> NOT NULL
       output << node['contype'].gsub('_', ' ')
 
-      output << '(' + deparse_item(node['raw_expr']) + ')' if node['raw_expr']
+      if node['raw_expr']
+        expression = deparse_item(node['raw_expr'])
+        # Unless it's simple, put parentheses around it
+        expression = '(' + expression + ')' if node['raw_expr'].keys == ['AEXPR']
+        output << expression
+      end
       output << '(' + node['keys'].join(', ') + ')' if node['keys']
       output << "USING INDEX #{node['indexname']}" if node['indexname']
       output.join(' ')

@@ -263,6 +263,22 @@ describe PgQuery::Deparse do
         end
         it { is_expected.to eq oneline_query }
       end
+
+      context 'from generated sequence' do
+        let(:query) do
+          """
+            INSERT INTO jackdanger_card_totals (id, amount_cents, created_at)
+            SELECT
+              series.i,
+              random() * 1000,
+              (SELECT
+                 '2015-08-25 00:00:00 -0700'::timestamp +
+                (('2015-08-25 23:59:59 -0700'::timestamp - '2015-08-25 00:00:00 -0700'::timestamp) * random()))
+              FROM generate_series(1, 10000) series(i);
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'DELETE' do
@@ -326,11 +342,11 @@ describe PgQuery::Deparse do
         let(:query) do
           """
             CREATE TABLE distributors (
-                name       varchar(40) DEFAULT ('Luso Films'),
+                name       varchar(40) DEFAULT 'Luso Films',
                 len        interval hour to second(3),
-                name       varchar(40) DEFAULT ('Luso Films'),
-                did        int DEFAULT (nextval('distributors_serial')),
-                stamp      timestamp DEFAULT (pg_catalog.now()) NOT NULL,
+                name       varchar(40) DEFAULT 'Luso Films',
+                did        int DEFAULT nextval('distributors_serial'),
+                stamp      timestamp DEFAULT now() NOT NULL,
                 stamptz    timestamp with time zone,
                 time       time NOT NULL,
                 timetz     time with time zone,
@@ -358,7 +374,7 @@ describe PgQuery::Deparse do
         let(:query) do
           """
           CREATE TABLE tablename (
-              colname int NOT NULL DEFAULT (nextval('tablename_colname_seq'))
+              colname int NOT NULL DEFAULT nextval('tablename_colname_seq')
           );
           """
         end
@@ -399,7 +415,7 @@ describe PgQuery::Deparse do
             ADD CONSTRAINT zipchk CHECK (char_length(zipcode) = 5),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp TYPE timestamp with time zone
-              USING 'epoch'::timestamp with time zone + pg_catalog.date_part('epoch', tstamp) * '1 second'::interval,
+              USING 'epoch'::timestamp with time zone + (date_part('epoch', tstamp) * '1 second'::interval),
             ALTER COLUMN tstamp SET DEFAULT now(),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp SET STATISTICS -5,
