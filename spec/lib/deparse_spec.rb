@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe PgQuery do
+describe PgQuery::Deparse do
   let(:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip.chomp(';') }
   let(:parsetree) { described_class.parse(query).parsetree }
 
-  describe '.deparse' do
-    subject { described_class.deparse(parsetree.first) }
+  describe '.from' do
+    subject { described_class.from(parsetree.first) }
 
     context 'SELECT' do
       context 'basic statement' do
