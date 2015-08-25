@@ -326,11 +326,11 @@ describe PgQuery::Deparse do
         let(:query) do
           """
             CREATE TABLE distributors (
-                name       varchar(40) DEFAULT 'Luso Films',
+                name       varchar(40) DEFAULT ('Luso Films'),
                 len        interval hour to second(3),
-                name       varchar(40) DEFAULT 'Luso Films',
-                did        int DEFAULT nextval('distributors_serial'),
-                stamp      timestamp DEFAULT pg_catalog.now() NOT NULL,
+                name       varchar(40) DEFAULT ('Luso Films'),
+                did        int DEFAULT (nextval('distributors_serial')),
+                stamp      timestamp DEFAULT (pg_catalog.now()) NOT NULL,
                 stamptz    timestamp with time zone,
                 time       time NOT NULL,
                 timetz     time with time zone,
@@ -358,7 +358,7 @@ describe PgQuery::Deparse do
         let(:query) do
           """
           CREATE TABLE tablename (
-              colname int NOT NULL DEFAULT nextval('tablename_colname_seq')
+              colname int NOT NULL DEFAULT (nextval('tablename_colname_seq'))
           );
           """
         end
@@ -373,6 +373,45 @@ describe PgQuery::Deparse do
             ) INHERITS (cities);
           """
         end
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
+    context 'DROP TABLE' do
+      context 'cascade' do
+        let(:query) { 'DROP TABLE IF EXISTS any_table CASCADE;' }
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'restrict' do
+        let(:query) { 'DROP TABLE IF EXISTS any_table;' }
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
+    context 'ALTER TABLE' do
+      context 'with column modifications' do
+        let(:query) do
+          """
+          ALTER TABLE distributors
+            DROP CONSTRAINT distributors_pkey,
+            ADD CONSTRAINT distributors_pkey PRIMARY KEY USING INDEX dist_id_temp_idx,
+            ADD CONSTRAINT zipchk CHECK (char_length(zipcode) = 5),
+            ALTER COLUMN tstamp DROP DEFAULT,
+            ALTER COLUMN tstamp TYPE timestamp with time zone
+              USING 'epoch'::timestamp with time zone + pg_catalog.date_part('epoch', tstamp) * '1 second'::interval,
+            ALTER COLUMN tstamp SET DEFAULT now(),
+            ALTER COLUMN tstamp DROP DEFAULT,
+            ALTER COLUMN tstamp SET STATISTICS -5,
+            ADD COLUMN some_int int NOT NULL,
+            DROP IF EXISTS other_column CASCADE;
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'rename' do
+        let(:query) { 'ALTER TABLE distributors RENAME TO suppliers;' }
         it { is_expected.to eq oneline_query }
       end
     end

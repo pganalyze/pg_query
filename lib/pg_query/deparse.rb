@@ -1,4 +1,5 @@
 require_relative 'deparse/interval'
+require_relative 'deparse/alter_table'
 class PgQuery
   # Reconstruct all of the parsed queries into their original form
   def deparse(tree = @parsetree)
@@ -20,6 +21,7 @@ class PgQuery
 
     def deparse_item(item, context = nil) # rubocop:disable Metrics/CyclomaticComplexity
       return if item.nil?
+      return item if item.is_a?(Fixnum)
 
       type = item.keys[0]
       node = item.values[0]
@@ -39,6 +41,10 @@ class PgQuery
         deparse_aexpr(node)
       when 'ALIAS'
         deparse_alias(node)
+      when 'ALTER TABLE'
+        deparse_alter_table(node)
+      when 'ALTER TABLE CMD'
+        deparse_alter_table_cmd(node)
       when 'A_ARRAYEXPR'
         deparse_a_arrayexp(node)
       when 'A_CONST'
@@ -71,6 +77,8 @@ class PgQuery
         deparse_defelem(node)
       when 'DELETE FROM'
         deparse_delete_from(node)
+      when 'DROP'
+        deparse_drop(node)
       when 'FUNCCALL'
         deparse_funccall(node)
       when 'FUNCTIONPARAMETER'
@@ -89,6 +97,8 @@ class PgQuery
         deparse_rangesubselect(node)
       when 'RANGEVAR'
         deparse_rangevar(node)
+      when 'RENAMESTMT'
+        deparse_renamestmt(node)
       when 'RESTARGET'
         deparse_restarget(node, context)
       when 'ROW'
@@ -125,6 +135,19 @@ class PgQuery
       output << 'ONLY' if node['inhOpt'] == 0
       output << node['relname']
       output << deparse_item(node['alias']) if node['alias']
+      output.join(' ')
+    end
+
+    def deparse_renamestmt(node)
+      output = []
+
+      if node['renameType'] == 26 # table
+        output << 'ALTER TABLE'
+        output << deparse_item(node['relation'])
+        output << 'RENAME TO'
+        output << node['newname']
+      end
+
       output.join(' ')
     end
 
@@ -167,6 +190,33 @@ class PgQuery
       else
         name
       end
+    end
+
+    def deparse_alter_table(node)
+      output = []
+      output << 'ALTER TABLE'
+
+      output << deparse_item(node['relation'])
+
+      output << node['cmds'].map do |item|
+        deparse_item(item)
+      end.join(', ')
+
+      output.join(' ')
+    end
+
+    def deparse_alter_table_cmd(node)
+      command, options = AlterTable.commands(node)
+
+      output = []
+      output << command if command
+      output << 'IF EXISTS' if node['missing_ok']
+      output << node['name']
+      output << options if options
+      output << deparse_item(node['def']) if node['def']
+      output << 'CASCADE' if node['behavior'] == 1
+
+      output.compact.join(' ')
     end
 
     def deparse_paramref(node)
@@ -350,12 +400,16 @@ class PgQuery
     def deparse_columndef(node)
       output = [node['colname']]
       output << deparse_item(node['typeName'])
+      if node['raw_default']
+        output << 'USING'
+        output << deparse_item(node['raw_default'])
+      end
       if node['constraints']
         output += node['constraints'].map do |item|
           deparse_item(item)
         end
       end
-      output.join(' ')
+      output.compact.join(' ')
     end
 
     def deparse_constraint(node)
@@ -366,8 +420,10 @@ class PgQuery
       end
       # NOT_NULL -> NOT NULL
       output << node['contype'].gsub('_', ' ')
-      output << deparse_item(node['raw_expr']) if node['raw_expr']
+
+      output << '(' + deparse_item(node['raw_expr']) + ')' if node['raw_expr']
       output << '(' + node['keys'].join(', ') + ')' if node['keys']
+      output << "USING INDEX #{node['indexname']}" if node['indexname']
       output.join(' ')
     end
 
@@ -617,15 +673,18 @@ class PgQuery
     # `interval hour to second(5)`
     def deparse_interval_type(node)
       type = ['interval']
-      typmods = node['typmods'].map { |typmod| deparse_item(typmod) }
-      type << Interval.from_int(typmods.first.to_i).map do |part|
-        # only the `second` type can take an argument.
-        if part == 'second' && typmods.size == 2
-          "second(#{typmods.last})"
-        else
-          part
-        end.downcase
-      end.join(' to ')
+
+      if node['typmods']
+        typmods = node['typmods'].map { |typmod| deparse_item(typmod) }
+        type << Interval.from_int(typmods.first.to_i).map do |part|
+          # only the `second` type can take an argument.
+          if part == 'second' && typmods.size == 2
+            "second(#{typmods.last})"
+          else
+            part
+          end.downcase
+        end.join(' to ')
+      end
 
       type.join(' ')
     end
@@ -700,6 +759,19 @@ class PgQuery
           deparse_item(item, :select)
         end.join(', ')
       end
+
+      output.join(' ')
+    end
+
+    def deparse_drop(node)
+      output = ['DROP']
+      output << 'TABLE' if node['removeType'] == 26
+      output << 'CONCURRENTLY' if node['concurrent']
+      output << 'IF EXISTS' if node['missing_ok']
+
+      output << node['objects'].join(', ')
+
+      output << 'CASCADE'  if node['behavior'] == 1
 
       output.join(' ')
     end
