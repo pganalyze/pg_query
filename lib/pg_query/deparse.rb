@@ -8,6 +8,7 @@ class PgQuery
     end.join('; ')
   end
 
+  # rubocop:disable Metrics/ModuleLength
   module Deparse
     extend self
 
