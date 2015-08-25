@@ -333,6 +333,7 @@ class PgQuery
       output = []
       output << deparse_item(node['larg'])
       output << 'LEFT' if node['jointype'] == 1
+      output << 'CROSS' if node['jointype'] == 0 && node['quals'].nil?
       output << 'JOIN'
       output << deparse_item(node['rarg'])
 

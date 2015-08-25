@@ -70,6 +70,13 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'CROSS JOIN' do
+        let(:query) do
+          "SELECT x, y FROM a CROSS JOIN b"
+        end
+        it { is_expected.to eq query }
+      end
+
       context 'omitted FROM clause' do
         let(:query) { 'SELECT 2 + 2' }
         it { is_expected.to eq query }
