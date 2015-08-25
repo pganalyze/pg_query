@@ -40,3 +40,8 @@ Metrics/BlockNesting:
 
 Metrics/PerceivedComplexity:
   Enabled: false
+
+# extend self preserves private methods,
+# module_function buggily removes them.
+Style/ModuleFunction:
+  Enabled: false

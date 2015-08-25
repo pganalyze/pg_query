@@ -1,15 +1,20 @@
+require_relative 'deparse/interval'
+require_relative 'deparse/alter_table'
 class PgQuery
   # Reconstruct all of the parsed queries into their original form
   def deparse(tree = @parsetree)
     tree.map do |item|
-      self.class.deparse(item)
+      Deparse.from(item)
     end.join('; ')
   end
 
-  class << self
+  # rubocop:disable Metrics/ModuleLength
+  module Deparse
+    extend self
+
     # Given one element of the PgQuery#parsetree reconstruct it back into the
     # original query.
-    def deparse(item)
+    def from(item)
       deparse_item(item)
     end
 
@@ -17,6 +22,7 @@ class PgQuery
 
     def deparse_item(item, context = nil) # rubocop:disable Metrics/CyclomaticComplexity
       return if item.nil?
+      return item if item.is_a?(Fixnum)
 
       type = item.keys[0]
       node = item.values[0]
@@ -33,9 +39,13 @@ class PgQuery
       when 'AEXPR OR'
         deparse_aexpr_or(node)
       when 'AEXPR'
-        deparse_aexpr(node)
+        deparse_aexpr(node, context)
       when 'ALIAS'
         deparse_alias(node)
+      when 'ALTER TABLE'
+        deparse_alter_table(node)
+      when 'ALTER TABLE CMD'
+        deparse_alter_table_cmd(node)
       when 'A_ARRAYEXPR'
         deparse_a_arrayexp(node)
       when 'A_CONST'
@@ -68,6 +78,8 @@ class PgQuery
         deparse_defelem(node)
       when 'DELETE FROM'
         deparse_delete_from(node)
+      when 'DROP'
+        deparse_drop(node)
       when 'FUNCCALL'
         deparse_funccall(node)
       when 'FUNCTIONPARAMETER'
@@ -86,6 +98,8 @@ class PgQuery
         deparse_rangesubselect(node)
       when 'RANGEVAR'
         deparse_rangevar(node)
+      when 'RENAMESTMT'
+        deparse_renamestmt(node)
       when 'RESTARGET'
         deparse_restarget(node, context)
       when 'ROW'
@@ -122,6 +136,19 @@ class PgQuery
       output << 'ONLY' if node['inhOpt'] == 0
       output << node['relname']
       output << deparse_item(node['alias']) if node['alias']
+      output.join(' ')
+    end
+
+    def deparse_renamestmt(node)
+      output = []
+
+      if node['renameType'] == 26 # table
+        output << 'ALTER TABLE'
+        output << deparse_item(node['relation'])
+        output << 'RENAME TO'
+        output << node['newname']
+      end
+
       output.join(' ')
     end
 
@@ -166,6 +193,33 @@ class PgQuery
       end
     end
 
+    def deparse_alter_table(node)
+      output = []
+      output << 'ALTER TABLE'
+
+      output << deparse_item(node['relation'])
+
+      output << node['cmds'].map do |item|
+        deparse_item(item)
+      end.join(', ')
+
+      output.join(' ')
+    end
+
+    def deparse_alter_table_cmd(node)
+      command, options = AlterTable.commands(node)
+
+      output = []
+      output << command if command
+      output << 'IF EXISTS' if node['missing_ok']
+      output << node['name']
+      output << options if options
+      output << deparse_item(node['def']) if node['def']
+      output << 'CASCADE' if node['behavior'] == 1
+
+      output.compact.join(' ')
+    end
+
     def deparse_paramref(node)
       if node['number'] == 0
         '?'
@@ -194,7 +248,8 @@ class PgQuery
       # COUNT(*)
       args << '*' if node['agg_star']
 
-      output << format('%s(%s)', node['funcname'].join('.'), args.join(', '))
+      name = (node['funcname'] - ['pg_catalog']).join('.')
+      output << format('%s(%s)', name, args.join(', '))
       output << format('OVER (%s)', deparse_item(node['over'])) if node['over']
 
       output.join(' ')
@@ -241,11 +296,16 @@ class PgQuery
       output.join(' ')
     end
 
-    def deparse_aexpr(node)
+    def deparse_aexpr(node, context = false)
       output = []
-      output << deparse_item(node['lexpr'])
-      output << deparse_item(node['rexpr'])
-      output.join(' ' + node['name'][0] + ' ')
+      output << deparse_item(node['lexpr'], context || true)
+      output << deparse_item(node['rexpr'], context || true)
+      output = output.join(' ' + node['name'][0] + ' ')
+      if context
+        # This is a nested expression, add parentheses.
+        output = '(' + output + ')'
+      end
+      output
     end
 
     def deparse_aexpr_and(node)
@@ -347,12 +407,16 @@ class PgQuery
     def deparse_columndef(node)
       output = [node['colname']]
       output << deparse_item(node['typeName'])
+      if node['raw_default']
+        output << 'USING'
+        output << deparse_item(node['raw_default'])
+      end
       if node['constraints']
         output += node['constraints'].map do |item|
           deparse_item(item)
         end
       end
-      output.join(' ')
+      output.compact.join(' ')
     end
 
     def deparse_constraint(node)
@@ -363,8 +427,15 @@ class PgQuery
       end
       # NOT_NULL -> NOT NULL
       output << node['contype'].gsub('_', ' ')
-      output << deparse_item(node['raw_expr']) if node['raw_expr']
+
+      if node['raw_expr']
+        expression = deparse_item(node['raw_expr'])
+        # Unless it's simple, put parentheses around it
+        expression = '(' + expression + ')' if node['raw_expr'].keys == ['AEXPR']
+        output << expression
+      end
       output << '(' + node['keys'].join(', ') + ')' if node['keys']
+      output << "USING INDEX #{node['indexname']}" if node['indexname']
       output.join(' ')
     end
 
@@ -614,15 +685,18 @@ class PgQuery
     # `interval hour to second(5)`
     def deparse_interval_type(node)
       type = ['interval']
-      typmods = node['typmods'].map { |typmod| deparse_item(typmod) }
-      type << DeparseInterval.from_int(typmods.first.to_i).map do |part|
-        # only the `second` type can take an argument.
-        if part == 'second' && typmods.size == 2
-          "second(#{typmods.last})"
-        else
-          part
-        end.downcase
-      end.join(' to ')
+
+      if node['typmods']
+        typmods = node['typmods'].map { |typmod| deparse_item(typmod) }
+        type << Interval.from_int(typmods.first.to_i).map do |part|
+          # only the `second` type can take an argument.
+          if part == 'second' && typmods.size == 2
+            "second(#{typmods.last})"
+          else
+            part
+          end.downcase
+        end.join(' to ')
+      end
 
       type.join(' ')
     end
@@ -701,6 +775,19 @@ class PgQuery
       output.join(' ')
     end
 
+    def deparse_drop(node)
+      output = ['DROP']
+      output << 'TABLE' if node['removeType'] == 26
+      output << 'CONCURRENTLY' if node['concurrent']
+      output << 'IF EXISTS' if node['missing_ok']
+
+      output << node['objects'].join(', ')
+
+      output << 'CASCADE'  if node['behavior'] == 1
+
+      output.join(' ')
+    end
+
     # The PG parser adds several pieces of view data onto the RANGEVAR
     # that need to be printed before deparse_rangevar is called.
     def relpersistence(rangevar)
@@ -709,107 +796,6 @@ class PgQuery
       elsif rangevar['RANGEVAR']['relpersistence'] == 'u'
         'UNLOGGED'
       end
-    end
-  end
-  # A type called 'interval hour to minute' is stored in a compressed way by
-  # simplifying 'hour to minute' to a simple integer. This integer is computed
-  # by looking up the arbitrary number (always a power of two) for 'hour' and
-  # the one for 'minute' and XORing them together.
-  #
-  # For example, when parsing "interval hour to minute":
-  #
-  #   HOUR_MASK = 10
-  #   MINUTE_MASK = 11
-  #   mask = (1 << 10) | (1 << 11)
-  #   mask = 1024 | 2048
-  #   mask =     (010000000000
-  #                   xor
-  #               100000000000)
-  #   mask =      110000000000
-  #   mask = 3072
-  #
-  #   Postgres will store this type as 'interval,3072'
-  #   We deparse it by simply reversing that process.
-
-  module DeparseInterval
-    # From src/include/utils/datetime.h
-    # The number is the power of 2 used for the mask.
-    MASKS = {
-      0  => 'RESERV',
-      1  => 'MONTH',
-      2  => 'YEAR',
-      3  => 'DAY',
-      4  => 'JULIAN',
-      5  => 'TZ',
-      6  => 'DTZ',
-      7  => 'DYNTZ',
-      8  => 'IGNORE_DTF',
-      9  => 'AMPM',
-      10 => 'HOUR',
-      11 => 'MINUTE',
-      12 => 'SECOND',
-      13 => 'MILLISECOND',
-      14 => 'MICROSECOND',
-      15 => 'DOY',
-      16 => 'DOW',
-      17 => 'UNITS',
-      18 => 'ADBC',
-      19 => 'AGO',
-      20 => 'ABS_BEFORE',
-      21 => 'ABS_AFTER',
-      22 => 'ISODATE',
-      23 => 'ISOTIME',
-      24 => 'WEEK',
-      25 => 'DECADE',
-      26 => 'CENTURY',
-      27 => 'MILLENNIUM',
-      28 => 'DTZMOD'
-    }
-    KEYS = MASKS.invert
-
-    # Postgres stores the interval 'day second' as 'day hour minute second' so
-    # we need to reconstruct the sql with only the largest and smallest time
-    # values. Since the rules for this are hardcoded in the grammar (and the
-    # above list is not sorted in any sensible way) it makes sense to hardcode
-    # the patterns here, too.
-    #
-    #  This hash takes the form:
-    #
-    #      { (1 << 1) | (1 << 2) => 'year to month' }
-    #
-    #  Which is:
-    #
-    #      { 6 => 'year to month' }
-    #
-    SQL_BY_MASK = {
-      (1 << KEYS['YEAR'])     => %w(year),
-      (1 << KEYS['MONTH'])    => %w(month),
-      (1 << KEYS['DAY'])      => %w(day),
-      (1 << KEYS['HOUR'])     => %w(hour),
-      (1 << KEYS['MINUTE'])   => %w(minute),
-      (1 << KEYS['SECOND'])   => %w(second),
-      (1 << KEYS['YEAR'] |
-         1 << KEYS['MONTH'])  => %w(year month),
-      (1 << KEYS['DAY'] |
-         1 << KEYS['HOUR'])   => %w(day hour),
-      (1 << KEYS['DAY'] |
-         1 << KEYS['HOUR'] |
-         1 << KEYS['MINUTE']) => %w(day minute),
-      (1 << KEYS['DAY'] |
-         1 << KEYS['HOUR'] |
-         1 << KEYS['MINUTE'] |
-         1 << KEYS['SECOND']) => %w(day second),
-      (1 << KEYS['HOUR'] |
-         1 << KEYS['MINUTE']) => %w(hour minute),
-      (1 << KEYS['HOUR'] |
-         1 << KEYS['MINUTE'] |
-         1 << KEYS['SECOND']) => %w(hour second),
-      (1 << KEYS['MINUTE'] |
-         1 << KEYS['SECOND']) => %w(minute second)
-    }
-
-    def self.from_int(int)
-      SQL_BY_MASK[int]
     end
   end
 end
