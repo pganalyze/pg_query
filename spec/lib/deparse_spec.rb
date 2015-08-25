@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe PgQuery::Deparse do
   let(:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip.chomp(';') }
-  let(:parsetree) { described_class.parse(query).parsetree }
+  let(:parsetree) { PgQuery.parse(query).parsetree }
 
   describe '.from' do
     subject { described_class.from(parsetree.first) }
@@ -453,15 +453,15 @@ describe PgQuery::Deparse do
         let(:query) { "CREATE VIEW view_a (a, b) AS WITH RECURSIVE view_a (a, b) AS (SELECT * FROM a(1)) SELECT a, b FROM view_a" }
 
         it 'parses both and deparses into the normalized form' do
-          expect(described_class.deparse(described_class.parse(query).parsetree.first)).to eq(query)
-          expect(described_class.deparse(described_class.parse(shorthand_query).parsetree.first)).to eq(query)
+          expect(described_class.from(PgQuery.parse(query).parsetree.first)).to eq(query)
+          expect(described_class.from(PgQuery.parse(shorthand_query).parsetree.first)).to eq(query)
         end
       end
     end
   end
 
   describe '#deparse' do
-    subject { described_class.parse(oneline_query).deparse }
+    subject { PgQuery.parse(oneline_query).deparse }
 
     context 'for single query' do
       let(:query) do
@@ -499,7 +499,7 @@ describe PgQuery::Deparse do
     end
   end
 
-  describe PgQuery::DeparseInterval do
+  describe PgQuery::Deparse::Interval do
     describe '.from_int' do
       it 'unpacks the parts of the interval' do
         # Supported combinations taken directly from gram.y
