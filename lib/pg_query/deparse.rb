@@ -564,6 +564,16 @@ class PgQuery
         end.join(', ')
       end
 
+      if node['limitCount']
+        output << 'LIMIT'
+        output << deparse_item(node['limitCount'])
+      end
+
+      if node['limitOffset']
+        output << 'OFFSET'
+        output << deparse_item(node['limitOffset'])
+      end
+
       output.join(' ')
     end
 
