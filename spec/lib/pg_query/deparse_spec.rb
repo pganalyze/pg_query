@@ -191,6 +191,16 @@ describe PgQuery::Deparse do
         let(:query) { "SELECT a, b, max(c) FROM c WHERE d = 1 GROUP BY a, b" }
         it { is_expected.to eq query }
       end
+
+      context 'LIMIT' do
+        let(:query) { "SELECT * FROM x LIMIT 50" }
+        it { is_expected.to eq query }
+      end
+
+      context 'OFFSET' do
+        let(:query) { "SELECT * FROM x OFFSET 50" }
+        it { is_expected.to eq query }
+      end
     end
 
     context 'type cast' do
