@@ -1,8 +1,17 @@
 # Changelog
 
-## 0.6.4    UNRELEASED
+## 0.6.5    UNRELEASED
 
 * ...
+
+
+## 0.6.4    2015-10-01
+
+* Deparsing
+  * Constraints & Interval Types [#28](https://github.com/lfittl/pg_query/pull/28) [@JackDanger](https://github.com/JackDanger)
+  * Cross joins [#29](https://github.com/lfittl/pg_query/pull/29) [@mme](https://github.com/mme)
+  * ALTER TABLE [#30](https://github.com/lfittl/pg_query/pull/30) [@JackDanger](https://github.com/JackDanger)
+  * LIMIT and OFFSET [#33](https://github.com/lfittl/pg_query/pull/33) [@jcsjcs](https://github.com/jcsjcs)
 
 
 ## 0.6.3    2015-08-20
