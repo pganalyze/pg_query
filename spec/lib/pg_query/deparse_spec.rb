@@ -358,7 +358,7 @@ describe PgQuery::Deparse do
       context 'with common types' do
         let(:query) do
           """
-            CREATE TABLE distributors (
+            CREATE TABLE IF NOT EXISTS distributors (
                 name       varchar(40) DEFAULT 'Luso Films',
                 len        interval hour to second(3),
                 name       varchar(40) DEFAULT 'Luso Films',
