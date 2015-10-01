@@ -464,6 +464,8 @@ class PgQuery
 
       output << 'TABLE'
 
+      output << 'IF NOT EXISTS' if node['if_not_exists']
+
       output << deparse_item(node['relation'])
 
       output << '(' + node['tableElts'].map do |item|
