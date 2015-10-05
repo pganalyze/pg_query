@@ -6,6 +6,8 @@ require 'open-uri'
 workdir = Dir.pwd
 pgdir = File.join(workdir, 'postgres')
 
+PG_VERSION = '9.4.4'
+
 # Limit the objects we build to speed up compilation times
 PG_OBJS = {
   'backend/utils' => [
@@ -32,14 +34,20 @@ PG_OBJS = {
 unless Dir.exist?(pgdir)
   unless File.exist?("#{workdir}/postgres.tar.gz")
     File.open("#{workdir}/postgres.tar.gz", 'wb') do |target_file|
-      open('https://codeload.github.com/pganalyze/postgres/tar.gz/pg_query', 'rb') do |read_file|
+      open(format('https://ftp.postgresql.org/pub/source/v%s/postgresql-%s.tar.bz2', PG_VERSION, PG_VERSION), 'rb') do |read_file|
         target_file.write(read_file.read)
       end
     end
   end
   system("tar -xf #{workdir}/postgres.tar.gz") || fail('ERROR')
-  system("mv #{workdir}/postgres-pg_query #{pgdir}") || fail('ERROR')
-  system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q") || fail('ERROR')
+  system("mv #{workdir}/postgresql-#{PG_VERSION} #{pgdir}") || fail('ERROR')
+
+  # Apply patches
+  Dir[File.join(File.absolute_path(File.dirname(__FILE__)), 'patches/*')].each do |patch|
+    system("cd #{pgdir}; patch -p1 < #{patch}")
+  end
+
+  system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q --without-readline --without-zlib") || fail('ERROR')
   system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
   PG_OBJS.each do |directory, objs|
     system("cd #{pgdir}; make -C src/#{directory} #{objs.join(' ')}") || fail('ERROR')
