@@ -28,17 +28,16 @@ PG_OBJS = {
   'timezone'    => ['pgtz.o']
 }
 
-# Download & compile PostgreSQL if we don't have it yet
-#
-# Note: We intentionally use a patched version that fixes bugs in outfuncs.c
-unless Dir.exist?(pgdir)
-  unless File.exist?("#{workdir}/postgres.tar.gz")
-    File.open("#{workdir}/postgres.tar.gz", 'wb') do |target_file|
-      open(format('https://ftp.postgresql.org/pub/source/v%s/postgresql-%s.tar.bz2', PG_VERSION, PG_VERSION), 'rb') do |read_file|
-        target_file.write(read_file.read)
-      end
+# Download PostgreSQL if we don't have it yet
+unless File.exist?("#{workdir}/postgres.tar.gz")
+  File.open("#{workdir}/postgres.tar.gz", 'wb') do |target_file|
+    open(format('https://ftp.postgresql.org/pub/source/v%s/postgresql-%s.tar.bz2', PG_VERSION, PG_VERSION), 'rb') do |read_file|
+      target_file.write(read_file.read)
     end
   end
+end
+
+unless Dir.exist?(pgdir)
   system("tar -xf #{workdir}/postgres.tar.gz") || fail('ERROR')
   system("mv #{workdir}/postgresql-#{PG_VERSION} #{pgdir}") || fail('ERROR')
 
@@ -46,12 +45,13 @@ unless Dir.exist?(pgdir)
   Dir[File.join(File.absolute_path(File.dirname(__FILE__)), 'patches/*')].each do |patch|
     system("cd #{pgdir}; patch -p1 < #{patch}")
   end
+end
 
-  system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q --without-readline --without-zlib") || fail('ERROR')
-  system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
-  PG_OBJS.each do |directory, objs|
-    system("cd #{pgdir}; make -C src/#{directory} #{objs.join(' ')}") || fail('ERROR')
-  end
+# We always run the build process in case this was cached between build (e.g. on Heroku)
+system("cd #{pgdir}; CFLAGS=-fPIC ./configure -q --without-readline --without-zlib") || fail('ERROR')
+system("cd #{pgdir}; make -C src/backend lib-recursive") # Ensures headers are generated
+PG_OBJS.each do |directory, objs|
+  system("cd #{pgdir}; make -C src/#{directory} #{objs.join(' ')}") || fail('ERROR')
 end
 
 $objs = PG_OBJS.map { |directory, objs| objs.map { |obj| "#{pgdir}/src/#{directory}/#{obj}" } }.flatten
