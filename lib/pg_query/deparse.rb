@@ -88,6 +88,8 @@ class PgQuery
         deparse_insert_into(node)
       when 'JOINEXPR'
         deparse_joinexpr(node)
+      when 'LOCKINGCLAUSE'
+        deparse_lockingclause(node)
       when 'NULLTEST'
         deparse_nulltest(node)
       when 'PARAMREF'
@@ -345,6 +347,16 @@ class PgQuery
       output.join(' ')
     end
 
+    LOCK_CLAUSE_STRENGTH = [
+      'FOR KEY SHARE',
+      'FOR SHARE',
+      'FOR NO KEY UPDATE',
+      'FOR UPDATE'
+    ]
+    def deparse_lockingclause(node)
+      LOCK_CLAUSE_STRENGTH[node['strength']]
+    end
+
     def deparse_sortby(node)
       output = []
       output << deparse_item(node['node'])
@@ -559,6 +571,11 @@ class PgQuery
         end.join(', ')
       end
 
+      if node['havingClause']
+        output << 'HAVING'
+        output << deparse_item(node['havingClause'])
+      end
+
       if node['sortClause']
         output << 'ORDER BY'
         output << node['sortClause'].map do |item|
@@ -574,6 +591,12 @@ class PgQuery
       if node['limitOffset']
         output << 'OFFSET'
         output << deparse_item(node['limitOffset'])
+      end
+
+      if node['lockingClause']
+        node['lockingClause'].map do |item|
+          output << deparse_item(item)
+        end
       end
 
       output.join(' ')

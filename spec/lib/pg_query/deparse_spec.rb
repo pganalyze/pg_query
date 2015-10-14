@@ -252,6 +252,23 @@ describe PgQuery::Deparse do
         end
         it { is_expected.to eq oneline_query }
       end
+
+      context 'HAVING' do
+        let(:query) do
+          """
+          INSERT INTO employees
+          SELECT * FROM people
+          WHERE 1 = 1
+          GROUP BY name
+          HAVING count(name) > 1
+          ORDER BY name DESC
+          LIMIT 10
+          OFFSET 15
+          FOR UPDATE
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'UPDATE' do
