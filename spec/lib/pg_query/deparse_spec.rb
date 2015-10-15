@@ -137,6 +137,11 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'NOT IN expression' do
+        let(:query) { "SELECT * FROM x WHERE id NOT IN (1, 2, 3)" }
+        it { is_expected.to eq query }
+      end
+
       context 'Subselect JOIN' do
         let(:query) { "SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id" }
         it { is_expected.to eq query }

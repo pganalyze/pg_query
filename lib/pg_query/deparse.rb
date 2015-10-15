@@ -283,7 +283,8 @@ class PgQuery
 
     def deparse_aexpr_in(node)
       rexpr = Array(node['rexpr']).map { |arg| deparse_item(arg) }
-      format('%s IN (%s)', deparse_item(node['lexpr']), rexpr.join(', '))
+      operator = node['name'] == ['='] ? 'IN' : 'NOT IN'
+      format('%s %s (%s)', deparse_item(node['lexpr']), operator, rexpr.join(', '))
     end
 
     def deparse_aexpr_not(node)
