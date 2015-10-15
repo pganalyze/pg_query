@@ -354,7 +354,15 @@ class PgQuery
       'FOR UPDATE'
     ]
     def deparse_lockingclause(node)
-      LOCK_CLAUSE_STRENGTH[node['strength']]
+      output = []
+      output << LOCK_CLAUSE_STRENGTH[node['strength']]
+      if node['lockedRels']
+        output << 'OF'
+        output << node['lockedRels'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+      output.join(' ')
     end
 
     def deparse_sortby(node)

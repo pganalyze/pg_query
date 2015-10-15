@@ -269,6 +269,15 @@ describe PgQuery::Deparse do
         end
         it { is_expected.to eq oneline_query }
       end
+
+      context 'with locks' do
+        let(:query) do
+          """
+          SELECT * FROM people FOR UPDATE OF name, email
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'UPDATE' do
