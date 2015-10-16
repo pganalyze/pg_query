@@ -88,6 +88,8 @@ class PgQuery
         deparse_insert_into(node)
       when 'JOINEXPR'
         deparse_joinexpr(node)
+      when 'LOCKINGCLAUSE'
+        deparse_lockingclause(node)
       when 'NULLTEST'
         deparse_nulltest(node)
       when 'PARAMREF'
@@ -281,7 +283,8 @@ class PgQuery
 
     def deparse_aexpr_in(node)
       rexpr = Array(node['rexpr']).map { |arg| deparse_item(arg) }
-      format('%s IN (%s)', deparse_item(node['lexpr']), rexpr.join(', '))
+      operator = node['name'] == ['='] ? 'IN' : 'NOT IN'
+      format('%s %s (%s)', deparse_item(node['lexpr']), operator, rexpr.join(', '))
     end
 
     def deparse_aexpr_not(node)
@@ -342,6 +345,24 @@ class PgQuery
         output << deparse_item(node['quals'])
       end
 
+      output.join(' ')
+    end
+
+    LOCK_CLAUSE_STRENGTH = [
+      'FOR KEY SHARE',
+      'FOR SHARE',
+      'FOR NO KEY UPDATE',
+      'FOR UPDATE'
+    ]
+    def deparse_lockingclause(node)
+      output = []
+      output << LOCK_CLAUSE_STRENGTH[node['strength']]
+      if node['lockedRels']
+        output << 'OF'
+        output << node['lockedRels'].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
       output.join(' ')
     end
 
@@ -559,6 +580,11 @@ class PgQuery
         end.join(', ')
       end
 
+      if node['havingClause']
+        output << 'HAVING'
+        output << deparse_item(node['havingClause'])
+      end
+
       if node['sortClause']
         output << 'ORDER BY'
         output << node['sortClause'].map do |item|
@@ -574,6 +600,12 @@ class PgQuery
       if node['limitOffset']
         output << 'OFFSET'
         output << deparse_item(node['limitOffset'])
+      end
+
+      if node['lockingClause']
+        node['lockingClause'].map do |item|
+          output << deparse_item(item)
+        end
       end
 
       output.join(' ')

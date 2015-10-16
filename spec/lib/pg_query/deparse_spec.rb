@@ -137,6 +137,11 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'NOT IN expression' do
+        let(:query) { "SELECT * FROM x WHERE id NOT IN (1, 2, 3)" }
+        it { is_expected.to eq query }
+      end
+
       context 'Subselect JOIN' do
         let(:query) { "SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id" }
         it { is_expected.to eq query }
@@ -248,6 +253,32 @@ describe PgQuery::Deparse do
           )
           INSERT INTO employees_of_mary
           SELECT * FROM moved;
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'HAVING' do
+        let(:query) do
+          """
+          INSERT INTO employees
+          SELECT * FROM people
+          WHERE 1 = 1
+          GROUP BY name
+          HAVING count(name) > 1
+          ORDER BY name DESC
+          LIMIT 10
+          OFFSET 15
+          FOR UPDATE
+          """
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with locks' do
+        let(:query) do
+          """
+          SELECT * FROM people FOR UPDATE OF name, email
           """
         end
         it { is_expected.to eq oneline_query }
