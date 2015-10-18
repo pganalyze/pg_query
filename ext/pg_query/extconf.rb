@@ -6,7 +6,7 @@ require 'open-uri'
 workdir = Dir.pwd
 pgdir = File.join(workdir, 'postgres')
 
-PG_VERSION = '9.4.4'
+PG_VERSION = '9.4.5'
 
 # Limit the objects we build to speed up compilation times
 PG_OBJS = {
