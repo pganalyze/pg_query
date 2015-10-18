@@ -154,15 +154,14 @@ PgQuery.parse("SELECT 2; --- comment").fingerprint
 
 ## Differences from Upstream PostgreSQL
 
-**This gem uses a [patched version of the latest PostgreSQL stable](https://github.com/pganalyze/postgres/compare/REL9_4_STABLE...pg_query).**
+**This gem is based on the latest stable PostgreSQL version, but applies a few [patches](https://github.com/lfittl/pg_query/tree/master/ext/pg_query/patches) to make this library work:**
 
-Changes:
-
-* **scan.l/gram.y:** Modified to support parsing normalized queries
+* **01_output_nodes_as_json.patch:** Auto-generated outfuncs that outputs a parsetree as JSON (called through nodeToJSONString)
+* **02_parse_replacement_char.patch:** Modify scan.l/gram.y to support parsing normalized queries
  * Known regression: Removed support for custom operators containing "?" (doesn't affect hstore/JSON/geometric operators)
-* **outfuncs_json.c:** Auto-generated outfuncs that outputs a parsetree as JSON (called through nodeToJSONString)
+* **03_regenerate_bison_flex_files.patch:** Regenerate scan.c/gram.c to avoid bison/flex dependency on deployment
 
-Unit tests for these patches are inside this library - the tests will break if run against upstream.
+High-level unit tests for these patches are inside this library.
 
 
 ## Original Author

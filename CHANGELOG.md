@@ -1,8 +1,17 @@
 # Changelog
 
-## 0.6.5    UNRELEASED
+## 0.7.1    UNRELEASED
 
 * ...
+
+
+## 0.7.0    2015-10-17
+
+* Restructure build process to use upstream tarballs [#35](https://github.com/lfittl/pg_query/pull/35)
+  * Avoid bison/flex dependency to make deployment easier [#31](https://github.com/lfittl/pg_query/issues/31)
+* Solve issues with deployments to Heroku [#32](https://github.com/lfittl/pg_query/issues/32)
+* Deparsing
+  * HAVING and FOR UPDATE [#36](https://github.com/lfittl/pg_query/pull/36) [@JackDanger](https://github.com/JackDanger)
 
 
 ## 0.6.4    2015-10-01
