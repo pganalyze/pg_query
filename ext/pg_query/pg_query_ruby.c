@@ -30,6 +30,7 @@ void raise_ruby_error(PgQueryError* error)
 	args[3] = INT2NUM(error->cursorpos);
 
 	free(error->message);
+	free(error->filename);
 	free(error);
 
 	rb_exc_raise(rb_class_new_instance(4, args, cParseError));
