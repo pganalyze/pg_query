@@ -21,8 +21,10 @@ end
 # Build libpg_query (and parts of PostgreSQL)
 system("cd #{libdir}; make")
 
-$objs = ["#{libdir}/libpg_query.a", 'pg_query_ruby.o']
+$objs = ['pg_query_ruby.o']
 
+$LOCAL_LIBS << '-lpg_query'
+$LIBPATH << libdir
 $CFLAGS << " -I #{libdir} -O2 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv"
 
 SYMFILE = File.join(File.dirname(__FILE__), 'pg_query_ruby.sym')
