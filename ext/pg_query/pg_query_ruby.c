@@ -1,6 +1,7 @@
 #include "pg_query_ruby.h"
 
-void raise_ruby_error(PgQueryError* error);
+void raise_ruby_parse_error(PgQueryParseResult result);
+void raise_ruby_normalize_error(PgQueryNormalizeResult result);
 VALUE pg_query_ruby_parse(VALUE self, VALUE input);
 VALUE pg_query_ruby_normalize(VALUE self, VALUE input);
 
@@ -16,7 +17,7 @@ void Init_pg_query(void)
 	rb_define_singleton_method(cPgQuery, "normalize", pg_query_ruby_normalize, 1);
 }
 
-void raise_ruby_error(PgQueryError* error)
+void raise_ruby_parse_error(PgQueryParseResult result)
 {
 	VALUE cPgQuery, cParseError;
 	VALUE args[4];
@@ -24,14 +25,30 @@ void raise_ruby_error(PgQueryError* error)
 	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
-	args[0] = rb_str_new2(error->message);
-	args[1] = rb_str_new2(error->filename);
-	args[2] = INT2NUM(error->lineno);
-	args[3] = INT2NUM(error->cursorpos);
+	args[0] = rb_str_new2(result.error->message);
+	args[1] = rb_str_new2(result.error->filename);
+	args[2] = INT2NUM(result.error->lineno);
+	args[3] = INT2NUM(result.error->cursorpos);
 
-	free(error->message);
-	free(error->filename);
-	free(error);
+	pg_query_free_parse_result(result);
+
+	rb_exc_raise(rb_class_new_instance(4, args, cParseError));
+}
+
+void raise_ruby_normalize_error(PgQueryNormalizeResult result)
+{
+	VALUE cPgQuery, cParseError;
+	VALUE args[4];
+
+	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
+	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
+
+	args[0] = rb_str_new2(result.error->message);
+	args[1] = rb_str_new2(result.error->filename);
+	args[2] = INT2NUM(result.error->lineno);
+	args[3] = INT2NUM(result.error->cursorpos);
+
+	pg_query_free_normalize_result(result);
 
 	rb_exc_raise(rb_class_new_instance(4, args, cParseError));
 }
@@ -43,15 +60,14 @@ VALUE pg_query_ruby_parse(VALUE self, VALUE input)
 	VALUE output;
 	PgQueryParseResult result = pg_query_parse(StringValueCStr(input));
 
-	if (result.error) raise_ruby_error(result.error);
+	if (result.error) raise_ruby_parse_error(result);
 
 	output = rb_ary_new();
 
 	rb_ary_push(output, rb_str_new2(result.parse_tree));
 	rb_ary_push(output, rb_str_new2(result.stderr_buffer));
 
-	free(result.parse_tree);
-	free(result.stderr_buffer);
+	pg_query_free_parse_result(result);
 
 	return output;
 }
@@ -63,11 +79,11 @@ VALUE pg_query_ruby_normalize(VALUE self, VALUE input)
 	VALUE output;
 	PgQueryNormalizeResult result = pg_query_normalize(StringValueCStr(input));
 
-	if (result.error) raise_ruby_error(result.error);
+	if (result.error) raise_ruby_normalize_error(result);
 
 	output = rb_str_new2(result.normalized_query);
 
-	free(result.normalized_query);
+	pg_query_free_normalize_result(result);
 
 	return output;
 }

@@ -43,7 +43,7 @@ describe PgQuery do
     expect(expr).to eq("TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
                                       "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
                                                                 "setof"=>false, "pct_type"=>false,
-                                                                "typmods"=>[{"A_CONST"=>{"val"=>0, "location"=>-1}}],
+                                                                "typmods"=>[{"A_CONST"=>{"type" => "integer", "val"=>0, "location"=>-1}}],
                                                                 "typemod"=>-1, "arrayBounds"=>nil, "location"=>7}},
                                        "location"=>-1})
   end

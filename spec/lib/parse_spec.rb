@@ -3,7 +3,7 @@ require 'spec_helper'
 describe PgQuery, '.parse' do
   it "parses a simple query" do
     query = described_class.parse("SELECT 1")
-    expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>false, "larg"=>nil, "rarg"=>nil}}]
+    expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil, "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"A_CONST"=>{"type" => "integer", "val"=>1, "location"=>7}}, "location"=>7}}], "fromClause"=>nil, "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>false, "larg"=>nil, "rarg"=>nil}}]
   end
 
   it "handles errors" do
@@ -30,13 +30,25 @@ describe PgQuery, '.parse' do
   it "parses floats with leading dot" do
     q = described_class.parse("SELECT .1")
     expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq("A_CONST" => {"val"=>0.1, "location"=>7})
+    expect(expr).to eq("A_CONST" => {"type" => "float", "val"=>0.1, "location"=>7})
   end
 
   it "parses floats with trailing dot" do
     q = described_class.parse("SELECT 1.")
     expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq("A_CONST" => {"val"=>1.0, "location"=>7})
+    expect(expr).to eq("A_CONST" => {"type" => "float", "val"=>1.0, "location"=>7})
+  end
+
+  it 'parses bit strings (binary notation)' do
+    q = described_class.parse("SELECT B'0101'")
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq("A_CONST" => {"type" => "bitstring", "val"=>"b0101", "location"=>7})
+  end
+
+  it 'parses bit strings (hex notation)' do
+    q = described_class.parse("SELECT X'EFFF'")
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq("A_CONST" => {"type" => "bitstring", "val"=>"xEFFF", "location"=>7})
   end
 
   it "parses ALTER TABLE" do
@@ -80,7 +92,7 @@ describe PgQuery, '.parse' do
     expect(query.parsetree).to eq [{"SET"=>
           {"kind"=>0,
            "name"=>"statement_timeout",
-           "args"=>[{"A_CONST"=>{"val"=>0, "location"=>22}}],
+           "args"=>[{"A_CONST"=>{"type"=>"integer", "val"=>0, "location"=>22}}],
            "is_local"=>false}}]
   end
 
@@ -193,7 +205,7 @@ describe PgQuery, '.parse' do
                 [{"RESTARGET"=>
                    {"name"=>nil,
                     "indirection"=>nil,
-                    "val"=>{"A_CONST"=>{"val"=>1, "location"=>33}},
+                    "val"=>{"A_CONST"=>{"type"=>"integer", "val"=>1, "location"=>33}},
                     "location"=>33}}],
                "fromClause"=>nil,
                "whereClause"=>nil,
@@ -710,7 +722,7 @@ describe PgQuery, '.parse' do
                          "lexpr"=>
                           {"COLUMNREF"=>
                             {"fields"=>["x", "z"], "location"=>45}},
-                         "rexpr"=>{"A_CONST"=>{"val"=>1, "location"=>51}},
+                         "rexpr"=>{"A_CONST"=>{"type"=>"integer", "val"=>1, "location"=>51}},
                          "location"=>49}},
                      "location"=>41}},
                  "groupClause"=>nil,
