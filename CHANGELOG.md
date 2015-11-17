@@ -1,8 +1,11 @@
 # Changelog
 
-## 0.7.1    UNRELEASED
+## 0.7.1    2015-11-17
 
-* ...
+* Abstracted parser access into libpg_query [#24](https://github.com/lfittl/pg_query/pull/35)
+* libpg_query
+  * Use UTF-8 encoding for parsing [#4](https://github.com/lfittl/libpg_query/pull/4) [@zhm](https://github.com/zhm)
+  * Add type to A_CONST nodes[#5](https://github.com/lfittl/libpg_query/pull/5) [@zhm](https://github.com/zhm)
 
 
 ## 0.7.0    2015-10-17
