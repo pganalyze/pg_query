@@ -1,0 +1,1158 @@
+{
+  "CONSTRAINT": [
+    {
+      "var": {
+        "var_name": "result",
+        "type": "string_list"
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "conname"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "CONSTRAINT"
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "input_var_name": [
+                "node",
+                "conname"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "append": {
+        "var_name": "result",
+        "cmds": [
+          {
+            "replace": {
+              "var_name": [
+                "node",
+                "contype"
+              ],
+              "pattern": "_",
+              "substitute": " "
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "raw_expr"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "condition": {
+              "var_name": [
+                "node",
+                "raw_expr"
+              ],
+              "op": "node_type",
+              "rarg": "AEXPR",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "result",
+                    "cmds": [
+                      {
+                        "format": {
+                          "format_string": "(%s)",
+                          "cmd": {
+                            "deparse": {
+                              "var_name": [
+                                "node",
+                                "raw_expr"
+                              ],
+                              "context": null
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "condition": {
+              "var_name": [
+                "node",
+                "raw_expr"
+              ],
+              "op": "not_node_type",
+              "rarg": "AEXPR",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "result",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": [
+                            "node",
+                            "raw_expr"
+                          ],
+                          "context": null
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "keys"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "format": {
+                    "format_string": "(%s)",
+                    "cmd": {
+                      "join": {
+                        "var_name": [
+                          "node",
+                          "keys"
+                        ],
+                        "seperator": ", "
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "indexname"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "format": {
+                    "format_string": "USING INDEX %s",
+                    "var_name": [
+                      "node",
+                      "indexname"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "cmds": [
+          {
+            "join": {
+              "var_name": "result",
+              "seperator": " "
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "DROP": [
+    {
+      "var": {
+        "var_name": "result",
+        "type": "string_list"
+      }
+    },
+    {
+      "append": {
+        "var_name": "result",
+        "value": "DROP"
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "removeType"
+        ],
+        "op": "eq",
+        "rarg": 26,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "TABLE"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "concurrent"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "CONCURRENTLY"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "missing_ok"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "IF EXISTS"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "append": {
+        "var_name": "result",
+        "cmds": [
+          {
+            "join": {
+              "var_name": [
+                "node",
+                "objects"
+              ],
+              "seperator": ", "
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "behavior"
+        ],
+        "op": "eq",
+        "rarg": 1,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "CASCADE"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "cmds": [
+          {
+            "join": {
+              "var_name": "result",
+              "seperator": " "
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "SELECT": [
+    {
+      "var": {
+        "var_name": "result",
+        "type": "string_list"
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "op"
+        ],
+        "op": "eq",
+        "rarg": 1,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "larg"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "value": "UNION"
+            }
+          },
+          {
+            "condition": {
+              "var_name": [
+                "node",
+                "all"
+              ],
+              "op": null,
+              "rarg": null,
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "result",
+                    "value": "ALL"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "rarg"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "result": {
+              "cmds": [
+                {
+                  "join": {
+                    "var_name": "result",
+                    "seperator": " "
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "withClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "withClause"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "targetList"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "SELECT"
+            }
+          },
+          {
+            "var": {
+              "var_name": "target_list",
+              "type": "string_list"
+            }
+          },
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "targetList"
+              ],
+              "value_name": "item",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "target_list",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": "item",
+                          "context": "select"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "join": {
+                    "var_name": "target_list",
+                    "seperator": ", "
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "fromClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "FROM"
+            }
+          },
+          {
+            "var": {
+              "var_name": "from_list",
+              "type": "string_list"
+            }
+          },
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "fromClause"
+              ],
+              "value_name": "item",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "from_list",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": "item",
+                          "context": null
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "join": {
+                    "var_name": "from_list",
+                    "seperator": ", "
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "whereClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "WHERE"
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "whereClause"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "valuesLists"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "VALUES"
+            }
+          },
+          {
+            "var": {
+              "var_name": "value_lists",
+              "type": "string_list"
+            }
+          },
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "valuesLists"
+              ],
+              "value_name": "value_list",
+              "cmds": [
+                {
+                  "var": {
+                    "var_name": "parts",
+                    "type": "string_list"
+                  }
+                },
+                {
+                  "each": {
+                    "var_name": "value_list",
+                    "value_name": "item",
+                    "cmds": [
+                      {
+                        "append": {
+                          "var_name": "parts",
+                          "cmds": [
+                            {
+                              "deparse": {
+                                "var_name": "item",
+                                "context": null
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "append": {
+                    "var_name": "value_lists",
+                    "cmds": [
+                      {
+                        "format": {
+                          "format_string": "(%s)",
+                          "cmd": {
+                            "join": {
+                              "var_name": "parts",
+                              "seperator": ", "
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "join": {
+                    "var_name": "value_lists",
+                    "seperator": ", "
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "groupClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "GROUP BY"
+            }
+          },
+          {
+            "var": {
+              "var_name": "parts",
+              "type": "string_list"
+            }
+          },
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "groupClause"
+              ],
+              "value_name": "item",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "parts",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": "item",
+                          "context": null
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "join": {
+                    "var_name": "parts",
+                    "seperator": ", "
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "havingClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "HAVING"
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "havingClause"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "sortClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "ORDER BY"
+            }
+          },
+          {
+            "var": {
+              "var_name": "parts",
+              "type": "string_list"
+            }
+          },
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "sortClause"
+              ],
+              "value_name": "item",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "parts",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": "item",
+                          "context": null
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "join": {
+                    "var_name": "parts",
+                    "seperator": ", "
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "limitCount"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "LIMIT"
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "limitCount"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "limitOffset"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "OFFSET"
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "limitOffset"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "lockingClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "lockingClause"
+              ],
+              "value_name": "item",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "result",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": "item",
+                          "context": null
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "cmds": [
+          {
+            "join": {
+              "var_name": "result",
+              "seperator": " "
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "UPDATE": [
+    {
+      "var": {
+        "var_name": "result",
+        "type": "string_list"
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "withClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "withClause"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "append": {
+        "var_name": "result",
+        "value": "UPDATE"
+      }
+    },
+    {
+      "append": {
+        "var_name": "result",
+        "cmds": [
+          {
+            "deparse": {
+              "var_name": [
+                "node",
+                "relation"
+              ],
+              "context": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "targetList"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "SET"
+            }
+          },
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "targetList"
+              ],
+              "value_name": "item",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "result",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": "item",
+                          "context": "update"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "whereClause"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "WHERE"
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "deparse": {
+                    "var_name": [
+                      "node",
+                      "whereClause"
+                    ],
+                    "context": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": {
+        "var_name": [
+          "node",
+          "returningList"
+        ],
+        "op": null,
+        "rarg": null,
+        "cmds": [
+          {
+            "append": {
+              "var_name": "result",
+              "value": "RETURNING"
+            }
+          },
+          {
+            "var": {
+              "var_name": "parts",
+              "type": "string_list"
+            }
+          },
+          {
+            "each": {
+              "var_name": [
+                "node",
+                "returningList"
+              ],
+              "value_name": "item",
+              "cmds": [
+                {
+                  "append": {
+                    "var_name": "parts",
+                    "cmds": [
+                      {
+                        "deparse": {
+                          "var_name": "item",
+                          "context": "select"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "append": {
+              "var_name": "result",
+              "cmds": [
+                {
+                  "join": {
+                    "var_name": "parts",
+                    "seperator": ", "
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "result": {
+        "cmds": [
+          {
+            "join": {
+              "var_name": "result",
+              "seperator": " "
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-require_relative 'deparse/interval'
-require_relative 'deparse/alter_table'
+Dir[File.dirname(__FILE__) + '/deparse/*.rb'].each { |file| require file }
+
 class PgQuery
   # Reconstruct all of the parsed queries into their original form
   def deparse(tree = @parsetree)
@@ -12,20 +12,20 @@ class PgQuery
   module Deparse
     extend self
 
-    # Given one element of the PgQuery#parsetree reconstruct it back into the
-    # original query.
-    def from(item)
-      deparse_item(item)
+    # Deprecated
+    def deparse_item(item, context = nil)
+      from(item, context)
     end
 
-    private
-
-    def deparse_item(item, context = nil) # rubocop:disable Metrics/CyclomaticComplexity
+    # Given one element of the PgQuery#parsetree reconstruct it back into the
+    # original query.
+    def from(item, context = nil) # rubocop:disable Metrics/CyclomaticComplexity
       return if item.nil?
       return item if item.is_a?(Fixnum)
 
       type = item.keys[0]
       node = item.values[0]
+      context = context.to_sym if context.is_a?(String)
 
       case type
       when 'AEXPR AND'
@@ -69,7 +69,7 @@ class PgQuery
       when 'COMMONTABLEEXPR'
         deparse_cte(node)
       when 'CONSTRAINT'
-        deparse_constraint(node)
+        CONSTRAINT.call(node)
       when 'CREATEFUNCTIONSTMT'
         deparse_create_function(node)
       when 'CREATESTMT'
@@ -79,7 +79,7 @@ class PgQuery
       when 'DELETE FROM'
         deparse_delete_from(node)
       when 'DROP'
-        deparse_drop(node)
+        DROP.call(node)
       when 'FUNCCALL'
         deparse_funccall(node)
       when 'FUNCTIONPARAMETER'
@@ -107,7 +107,7 @@ class PgQuery
       when 'ROW'
         deparse_row(node)
       when 'SELECT'
-        deparse_select(node)
+        SELECT.call(node)
       when 'SORTBY'
         deparse_sortby(node)
       when 'SUBLINK'
@@ -119,7 +119,7 @@ class PgQuery
       when 'TYPENAME'
         deparse_typename(node)
       when 'UPDATE'
-        deparse_update(node)
+        UPDATE.call(node)
       when 'WHEN'
         deparse_when(node)
       when 'WINDOWDEF'
@@ -441,26 +441,6 @@ class PgQuery
       output.compact.join(' ')
     end
 
-    def deparse_constraint(node)
-      output = []
-      if node['conname']
-        output << 'CONSTRAINT'
-        output << node['conname']
-      end
-      # NOT_NULL -> NOT NULL
-      output << node['contype'].gsub('_', ' ')
-
-      if node['raw_expr']
-        expression = deparse_item(node['raw_expr'])
-        # Unless it's simple, put parentheses around it
-        expression = '(' + expression + ')' if node['raw_expr'].keys == ['AEXPR']
-        output << expression
-      end
-      output << '(' + node['keys'].join(', ') + ')' if node['keys']
-      output << "USING INDEX #{node['indexname']}" if node['indexname']
-      output.join(' ')
-    end
-
     def deparse_create_function(node)
       output = []
       output << 'CREATE FUNCTION'
@@ -534,83 +514,6 @@ class PgQuery
       'ROW(' + node['args'].map { |arg| deparse_item(arg) }.join(', ') + ')'
     end
 
-    def deparse_select(node) # rubocop:disable Metrics/CyclomaticComplexity
-      output = []
-
-      if node['op'] == 1
-        output << deparse_item(node['larg'])
-        output << 'UNION'
-        output << 'ALL' if node['all']
-        output << deparse_item(node['rarg'])
-        return output.join(' ')
-      end
-
-      output << deparse_item(node['withClause']) if node['withClause']
-
-      if node['targetList']
-        output << 'SELECT'
-        output << node['targetList'].map do |item|
-          deparse_item(item, :select)
-        end.join(', ')
-      end
-
-      if node['fromClause']
-        output << 'FROM'
-        output << node['fromClause'].map do |item|
-          deparse_item(item)
-        end.join(', ')
-      end
-
-      if node['whereClause']
-        output << 'WHERE'
-        output << deparse_item(node['whereClause'])
-      end
-
-      if node['valuesLists']
-        output << 'VALUES'
-        output << node['valuesLists'].map do |value_list|
-          '(' + value_list.map { |v| deparse_item(v) }.join(', ') + ')'
-        end.join(', ')
-      end
-
-      if node['groupClause']
-        output << 'GROUP BY'
-        output << node['groupClause'].map do |item|
-          deparse_item(item)
-        end.join(', ')
-      end
-
-      if node['havingClause']
-        output << 'HAVING'
-        output << deparse_item(node['havingClause'])
-      end
-
-      if node['sortClause']
-        output << 'ORDER BY'
-        output << node['sortClause'].map do |item|
-          deparse_item(item)
-        end.join(', ')
-      end
-
-      if node['limitCount']
-        output << 'LIMIT'
-        output << deparse_item(node['limitCount'])
-      end
-
-      if node['limitOffset']
-        output << 'OFFSET'
-        output << deparse_item(node['limitOffset'])
-      end
-
-      if node['lockingClause']
-        node['lockingClause'].map do |item|
-          output << deparse_item(item)
-        end
-      end
-
-      output.join(' ')
-    end
-
     def deparse_insert_into(node)
       output = []
       output << deparse_item(node['withClause']) if node['withClause']
@@ -625,36 +528,6 @@ class PgQuery
       end
 
       output << deparse_item(node['selectStmt'])
-
-      output.join(' ')
-    end
-
-    def deparse_update(node)
-      output = []
-      output << deparse_item(node['withClause']) if node['withClause']
-
-      output << 'UPDATE'
-      output << deparse_item(node['relation'])
-
-      if node['targetList']
-        output << 'SET'
-        node['targetList'].each do |item|
-          output << deparse_item(item, :update)
-        end
-      end
-
-      if node['whereClause']
-        output << 'WHERE'
-        output << deparse_item(node['whereClause'])
-      end
-
-      if node['returningList']
-        output << 'RETURNING'
-        output << node['returningList'].map do |item|
-          # RETURNING is formatted like a SELECT
-          deparse_item(item, :select)
-        end.join(', ')
-      end
 
       output.join(' ')
     end
@@ -816,19 +689,6 @@ class PgQuery
           deparse_item(item, :select)
         end.join(', ')
       end
-
-      output.join(' ')
-    end
-
-    def deparse_drop(node)
-      output = ['DROP']
-      output << 'TABLE' if node['removeType'] == 26
-      output << 'CONCURRENTLY' if node['concurrent']
-      output << 'IF EXISTS' if node['missing_ok']
-
-      output << node['objects'].join(', ')
-
-      output << 'CASCADE'  if node['behavior'] == 1
 
       output.join(' ')
     end
