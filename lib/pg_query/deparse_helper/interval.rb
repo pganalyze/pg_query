@@ -1,6 +1,26 @@
 class PgQuery
-  module Deparse
-    module Interval
+  module DeparseHelper
+    class INTERVAL
+      # Deparses interval type expressions like `interval year to month` or
+      # `interval hour to second(5)`
+      def self.call(node)
+        type = ['interval']
+
+        if node['typmods']
+          typmods = node['typmods'].map { |typmod| PgQuery::Deparse.from(typmod) }
+          type << from_int(typmods.first.to_i).map do |part|
+            # only the `second` type can take an argument.
+            if part == 'second' && typmods.size == 2
+              "second(#{typmods.last})"
+            else
+              part
+            end.downcase
+          end.join(' to ')
+        end
+
+        type.join(' ')
+      end
+
       # A type called 'interval hour to minute' is stored in a compressed way by
       # simplifying 'hour to minute' to a simple integer. This integer is computed
       # by looking up the arbitrary number (always a power of two) for 'hour' and

@@ -602,7 +602,7 @@ describe PgQuery::Deparse do
     end
   end
 
-  describe PgQuery::Deparse::Interval do
+  describe PgQuery::DeparseHelper::INTERVAL do
     describe '.from_int' do
       it 'unpacks the parts of the interval' do
         # Supported combinations taken directly from gram.y
