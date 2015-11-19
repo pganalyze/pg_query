@@ -2,26 +2,26 @@
 
 # rubocop:disable all
 class PgQuery::Deparse::DROP
-  def self.call(node)
+  def self.call(node, context)
     result = []
 
     result << 'DROP'
 
-    if node['removeType'] == 26
+    if node["removeType"] == 26
       result << 'TABLE'
     end
 
-    if node['concurrent']
+    if node["concurrent"]
       result << 'CONCURRENTLY'
     end
 
-    if node['missing_ok']
+    if node["missing_ok"]
       result << 'IF EXISTS'
     end
 
-    result << node['objects'].join(', ')
+    result << node["objects"].join(', ')
 
-    if node['behavior'] == 1
+    if node["behavior"] == 1
       result << 'CASCADE'
     end
 

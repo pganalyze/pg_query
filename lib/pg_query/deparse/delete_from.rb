@@ -1,7 +1,7 @@
 # AUTO GENERATED - DO NOT EDIT
 
 # rubocop:disable all
-class PgQuery::Deparse::UPDATE
+class PgQuery::Deparse::DELETE_FROM
   def self.call(node, context)
     result = []
 
@@ -9,15 +9,17 @@ class PgQuery::Deparse::UPDATE
       result << PgQuery::Deparse.from(node["withClause"])
     end
 
-    result << 'UPDATE'
+    result << 'DELETE FROM'
 
     result << PgQuery::Deparse.from(node["relation"])
 
-    if node["targetList"]
-      result << 'SET'
-      node["targetList"].each do |item|
-        result << PgQuery::Deparse.from(item, 'update')
+    if node["usingClause"]
+      result << 'USING'
+      parts = []
+      node["usingClause"].each do |item|
+        parts << PgQuery::Deparse.from(item)
       end
+      result << parts.join(', ')
     end
 
     if node["whereClause"]
