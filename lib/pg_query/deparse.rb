@@ -156,7 +156,7 @@ class PgQuery
 
     def deparse_columnref(node)
       node['fields'].map do |field|
-        field.is_a?(String) ? field : deparse_item(field)
+        field.is_a?(String) ? '"' + field + '"' : deparse_item(field)
       end.join('.')
     end
 
