@@ -5,7 +5,17 @@ def fingerprint(qstr)
   q.fingerprint
 end
 
+def fingerprint_new(qstr)
+  q = PgQuery.parse(qstr)
+  q.fingerprint_new
+end
+
 describe PgQuery, "#fingerprint" do
+  it "returns expected hash values" do
+    expect(fingerprint_new('SELECT 1')).to eq '4a76edca1a5766d542e5bde019dc8a7ee4f51726'
+    expect(fingerprint_new('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq 'feb7587c16f46a5fd771c841cf8cb66aa21c692a'
+  end
+
   it "works for basic cases" do
     expect(fingerprint("SELECT 1")).to eq fingerprint("SELECT 2")
     expect(fingerprint("SELECT  1")).to eq fingerprint("SELECT 2")
