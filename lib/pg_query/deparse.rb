@@ -251,7 +251,8 @@ class PgQuery
       args << '*' if node['agg_star']
 
       name = (node['funcname'] - ['pg_catalog']).join('.')
-      output << format('%s(%s)', name, args.join(', '))
+      distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
+      output << format('%s(%s%s)', name, distinct, args.join(', '))
       output << format('OVER (%s)', deparse_item(node['over'])) if node['over']
 
       output.join(' ')
