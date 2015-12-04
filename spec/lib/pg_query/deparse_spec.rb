@@ -9,12 +9,12 @@ describe PgQuery::Deparse do
 
     context 'SELECT' do
       context 'basic statement' do
-        let(:query) { 'SELECT a AS b FROM x WHERE y = 5 AND z = y' }
+        let(:query) { 'SELECT "a" AS b FROM x WHERE "y" = 5 AND "z" = "y"' }
         it { is_expected.to eq query }
       end
 
       context 'complex SELECT statement' do
-        let(:query) { "SELECT memory_total_bytes, memory_swap_total_bytes - memory_swap_free_bytes AS swap, date_part(?, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON snapshot_id = s.id WHERE s.database_id = ? AND s.collected_at >= ? AND s.collected_at <= ? ORDER BY collected_at ASC" }
+        let(:query) { 'SELECT "memory_total_bytes", "memory_swap_total_bytes" - "memory_swap_free_bytes" AS swap, date_part(?, "s"."collected_at") AS collected_at FROM snapshots s JOIN system_snapshots ON "snapshot_id" = "s"."id" WHERE "s"."database_id" = ? AND "s"."collected_at" >= ? AND "s"."collected_at" <= ? ORDER BY "collected_at" ASC' }
         it { is_expected.to eq query }
       end
 
@@ -31,48 +31,48 @@ describe PgQuery::Deparse do
       context 'complex WITH statement' do
         # Taken from http://www.postgresql.org/docs/9.1/static/queries-with.html
         let(:query) do
-          """
+          '''
           WITH RECURSIVE search_graph (id, link, data, depth, path, cycle) AS (
-              SELECT g.id, g.link, g.data, 1,
-                ARRAY[ROW(g.f1, g.f2)],
+              SELECT "g"."id", "g"."link", "g"."data", 1,
+                ARRAY[ROW("g"."f1", "g"."f2")],
                 false
               FROM graph g
             UNION ALL
-              SELECT g.id, g.link, g.data, sg.depth + 1,
-                path || ROW(g.f1, g.f2),
-                ROW(g.f1, g.f2) = ANY(path)
+              SELECT "g"."id", "g"."link", "g"."data", "sg"."depth" + 1,
+                "path" || ROW("g"."f1", "g"."f2"),
+                ROW("g"."f1", "g"."f2") = ANY("path")
               FROM graph g, search_graph sg
-              WHERE g.id = sg.link AND NOT cycle
+              WHERE "g"."id" = "sg"."link" AND NOT "cycle"
           )
-          SELECT id, data, link FROM search_graph;
-          """
+          SELECT "id", "data", "link" FROM search_graph;
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
 
       context 'SUM' do
-        let(:query) { 'SELECT sum(price_cents) FROM products' }
+        let(:query) { 'SELECT sum("price_cents") FROM products' }
         it { is_expected.to eq query }
       end
 
       context 'LATERAL' do
-        let(:query) { 'SELECT m.name AS mname, pname FROM manufacturers m, LATERAL get_product_names(m.id) pname' }
+        let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM manufacturers m, LATERAL get_product_names("m"."id") pname' }
         it { is_expected.to eq query }
       end
 
       context 'LATERAL JOIN' do
         let(:query) do
-          """
-          SELECT m.name AS mname, pname
-            FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
-          """
+          '''
+          SELECT "m"."name" AS mname, "pname"
+            FROM manufacturers m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
 
       context 'CROSS JOIN' do
         let(:query) do
-          "SELECT x, y FROM a CROSS JOIN b"
+          'SELECT "x", "y" FROM a CROSS JOIN b'
         end
         it { is_expected.to eq query }
       end
@@ -83,17 +83,17 @@ describe PgQuery::Deparse do
       end
 
       context 'IS NULL' do
-        let(:query) { 'SELECT * FROM x WHERE y IS NULL' }
+        let(:query) { 'SELECT * FROM x WHERE "y" IS NULL' }
         it { is_expected.to eq query }
       end
 
       context 'IS NOT NULL' do
-        let(:query) { 'SELECT * FROM x WHERE y IS NOT NULL' }
+        let(:query) { 'SELECT * FROM x WHERE "y" IS NOT NULL' }
         it { is_expected.to eq query }
       end
 
       context 'COUNT' do
-        let(:query) { 'SELECT count(*) FROM x WHERE y IS NOT NULL' }
+        let(:query) { 'SELECT count(*) FROM x WHERE "y" IS NOT NULL' }
         it { is_expected.to eq query }
       end
 
@@ -103,17 +103,17 @@ describe PgQuery::Deparse do
       end
 
       context 'basic CASE WHEN statements' do
-        let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' END FROM accounts a" }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM accounts a' }
         it { is_expected.to eq query }
       end
 
       context 'CASE WHEN statements with ELSE clause' do
-        let(:query) { "SELECT CASE WHEN a.status = 1 THEN 'active' WHEN a.status = 2 THEN 'inactive' ELSE 'unknown' END FROM accounts a" }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM accounts a' }
         it { is_expected.to eq query }
       end
 
       context 'CASE WHEN statements in WHERE clause' do
-        let(:query) { "SELECT * FROM accounts WHERE status = CASE WHEN x = 1 THEN 'active' ELSE 'inactive' END" }
+        let(:query) { 'SELECT * FROM accounts WHERE "status" = CASE WHEN "x" = 1 THEN \'active\' ELSE \'inactive\' END' }
         it { is_expected.to eq query }
       end
 
@@ -133,42 +133,42 @@ describe PgQuery::Deparse do
       end
 
       context 'IN expression' do
-        let(:query) { "SELECT * FROM x WHERE id IN (1, 2, 3)" }
+        let(:query) { 'SELECT * FROM x WHERE "id" IN (1, 2, 3)' }
         it { is_expected.to eq query }
       end
 
       context 'IN expression Subselect' do
-        let(:query) { "SELECT * FROM x WHERE id IN (SELECT id FROM account)" }
+        let(:query) { 'SELECT * FROM x WHERE "id" IN (SELECT "id" FROM account)' }
         it { is_expected.to eq query }
       end
 
       context 'NOT IN expression' do
-        let(:query) { "SELECT * FROM x WHERE id NOT IN (1, 2, 3)" }
+        let(:query) { 'SELECT * FROM x WHERE "id" NOT IN (1, 2, 3)' }
         it { is_expected.to eq query }
       end
 
       context 'Subselect JOIN' do
-        let(:query) { "SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id" }
+        let(:query) { 'SELECT * FROM x JOIN (SELECT "n" FROM z) b ON "a"."id" = "b"."id"' }
         it { is_expected.to eq query }
       end
 
       context 'simple indirection' do
-        let(:query) { "SELECT * FROM x WHERE y = z[?]" }
+        let(:query) { 'SELECT * FROM x WHERE "y" = "z"[?]' }
         it { is_expected.to eq query }
       end
 
       context 'complex indirection' do
-        let(:query) { "SELECT * FROM x WHERE y = z[?][?]" }
+        let(:query) { 'SELECT * FROM x WHERE "y" = "z"[?][?]' }
         it { is_expected.to eq query }
       end
 
       context 'NOT' do
-        let(:query) { "SELECT * FROM x WHERE NOT y" }
+        let(:query) { 'SELECT * FROM x WHERE NOT "y"' }
         it { is_expected.to eq query }
       end
 
       context 'OR' do
-        let(:query) { "SELECT * FROM x WHERE x OR y" }
+        let(:query) { 'SELECT * FROM x WHERE "x" OR "y"' }
         it { is_expected.to eq query }
       end
 
@@ -188,17 +188,17 @@ describe PgQuery::Deparse do
       end
 
       context 'ANY' do
-        let(:query) { "SELECT * FROM x WHERE x = ANY(?)" }
+        let(:query) { 'SELECT * FROM x WHERE "x" = ANY(?)' }
         it { is_expected.to eq query }
       end
 
       context 'COALESCE' do
-        let(:query) { "SELECT * FROM x WHERE x = COALESCE(y, ?)" }
+        let(:query) { 'SELECT * FROM x WHERE "x" = COALESCE("y", ?)' }
         it { is_expected.to eq query }
       end
 
       context 'GROUP BY' do
-        let(:query) { "SELECT a, b, max(c) FROM c WHERE d = 1 GROUP BY a, b" }
+        let(:query) { 'SELECT "a", "b", max("c") FROM c WHERE "d" = 1 GROUP BY "a", "b"' }
         it { is_expected.to eq query }
       end
 
@@ -250,41 +250,41 @@ describe PgQuery::Deparse do
 
       context 'WITH' do
         let(:query) do
-          """
+          '''
           WITH moved AS (
             DELETE
             FROM employees
-            WHERE manager_name = 'Mary'
+            WHERE "manager_name" = \'Mary\'
           )
           INSERT INTO employees_of_mary
           SELECT * FROM moved;
-          """
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
 
       context 'HAVING' do
         let(:query) do
-          """
+          '''
           INSERT INTO employees
           SELECT * FROM people
           WHERE 1 = 1
-          GROUP BY name
-          HAVING count(name) > 1
-          ORDER BY name DESC
+          GROUP BY "name"
+          HAVING count("name") > 1
+          ORDER BY "name" DESC
           LIMIT 10
           OFFSET 15
           FOR UPDATE
-          """
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
 
       context 'with locks' do
         let(:query) do
-          """
+          '''
           SELECT * FROM people FOR UPDATE OF name, email
-          """
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
@@ -292,43 +292,43 @@ describe PgQuery::Deparse do
 
     context 'UPDATE' do
       context 'basic' do
-        let(:query) { "UPDATE x SET y = 1 WHERE z = 'abc'" }
+        let(:query) { 'UPDATE x SET y = 1 WHERE "z" = \'abc\'' }
         it { is_expected.to eq query }
       end
 
       context 'elaborate' do
         let(:query) do
-          "UPDATE ONLY x table_x SET y = 1 WHERE z = 'abc' RETURNING y AS changed_y"
+          'UPDATE ONLY x table_x SET y = 1 WHERE "z" = \'abc\' RETURNING "y" AS changed_y'
         end
         it { is_expected.to eq query }
       end
 
       context 'WITH' do
         let(:query) do
-          """
+          '''
           WITH archived AS (
             DELETE
             FROM employees
-            WHERE manager_name = 'Mary'
+            WHERE "manager_name" = \'Mary\'
           )
-          UPDATE users SET archived = true WHERE users.id IN (SELECT user_id FROM moved)
-          """
+          UPDATE users SET archived = true WHERE "users"."id" IN (SELECT "user_id" FROM moved)
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
 
       context 'from generated sequence' do
         let(:query) do
-          """
+          '''
             INSERT INTO jackdanger_card_totals (id, amount_cents, created_at)
             SELECT
-              series.i,
+              "series"."i",
               random() * 1000,
               (SELECT
-                 '2015-08-25 00:00:00 -0700'::timestamp +
-                (('2015-08-25 23:59:59 -0700'::timestamp - '2015-08-25 00:00:00 -0700'::timestamp) * random()))
+                 \'2015-08-25 00:00:00 -0700\'::timestamp +
+                ((\'2015-08-25 23:59:59 -0700\'::timestamp - \'2015-08-25 00:00:00 -0700\'::timestamp) * random()))
               FROM generate_series(1, 10000) series(i);
-          """
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
@@ -336,25 +336,25 @@ describe PgQuery::Deparse do
 
     context 'DELETE' do
       context 'basic' do
-        let(:query) { "DELETE FROM x WHERE y = 1" }
+        let(:query) { 'DELETE FROM x WHERE "y" = 1' }
         it { is_expected.to eq query }
       end
 
       context 'elaborate' do
-        let(:query) { "DELETE FROM ONLY x table_x USING table_z WHERE y = 1 RETURNING *" }
+        let(:query) { 'DELETE FROM ONLY x table_x USING table_z WHERE "y" = 1 RETURNING *' }
         it { is_expected.to eq query }
       end
 
       context 'WITH' do
         let(:query) do
-          """
+          '''
           WITH archived AS (
             DELETE
             FROM employees
-            WHERE manager_name = 'Mary'
+            WHERE "manager_name" = \'Mary\'
           )
-          DELETE FROM users WHERE users.id IN (SELECT user_id FROM moved)
-          """
+          DELETE FROM users WHERE "users"."id" IN (SELECT "user_id" FROM moved)
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
@@ -461,20 +461,20 @@ describe PgQuery::Deparse do
     context 'ALTER TABLE' do
       context 'with column modifications' do
         let(:query) do
-          """
+          '''
           ALTER TABLE distributors
             DROP CONSTRAINT distributors_pkey,
             ADD CONSTRAINT distributors_pkey PRIMARY KEY USING INDEX dist_id_temp_idx,
-            ADD CONSTRAINT zipchk CHECK (char_length(zipcode) = 5),
+            ADD CONSTRAINT zipchk CHECK (char_length("zipcode") = 5),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp TYPE timestamp with time zone
-              USING 'epoch'::timestamp with time zone + (date_part('epoch', tstamp) * '1 second'::interval),
+              USING \'epoch\'::timestamp with time zone + (date_part(\'epoch\', "tstamp") * \'1 second\'::interval),
             ALTER COLUMN tstamp SET DEFAULT now(),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp SET STATISTICS -5,
             ADD COLUMN some_int int NOT NULL,
             DROP IF EXISTS other_column CASCADE;
-          """
+          '''
         end
         it { is_expected.to eq oneline_query }
       end
@@ -535,17 +535,17 @@ describe PgQuery::Deparse do
       end
 
       context 'OVER with PARTITION BY' do
-        let(:query) { "SELECT rank(*) OVER (PARTITION BY id)" }
+        let(:query) { 'SELECT rank(*) OVER (PARTITION BY "id")' }
         it { is_expected.to eq query }
       end
 
       context 'OVER with ORDER BY' do
-        let(:query) { "SELECT rank(*) OVER (ORDER BY id)" }
+        let(:query) { 'SELECT rank(*) OVER (ORDER BY "id")' }
         it { is_expected.to eq query }
       end
 
       context 'complex OVER' do
-        let(:query) { "SELECT rank(*) OVER (PARTITION BY id, id2 ORDER BY id DESC, id2)" }
+        let(:query) { 'SELECT rank(*) OVER (PARTITION BY "id", "id2" ORDER BY "id" DESC, "id2")' }
         it { is_expected.to eq query }
       end
     end
@@ -558,7 +558,7 @@ describe PgQuery::Deparse do
 
       context 'recursive' do
         let(:shorthand_query) { 'CREATE RECURSIVE VIEW view_a (a, b) AS SELECT * FROM a(1)' }
-        let(:query) { "CREATE VIEW view_a (a, b) AS WITH RECURSIVE view_a (a, b) AS (SELECT * FROM a(1)) SELECT a, b FROM view_a" }
+        let(:query) { 'CREATE VIEW view_a (a, b) AS WITH RECURSIVE view_a (a, b) AS (SELECT * FROM a(1)) SELECT "a", "b" FROM view_a' }
 
         it 'parses both and deparses into the normalized form' do
           expect(described_class.from(PgQuery.parse(query).parsetree.first)).to eq(query)
@@ -573,35 +573,35 @@ describe PgQuery::Deparse do
 
     context 'for single query' do
       let(:query) do
-        """
-        SELECT m.name AS mname, pname
-          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
-        """
+        '''
+        SELECT "m"."name" AS mname, "pname"
+          FROM manufacturers m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+        '''
       end
       it { is_expected.to eq oneline_query }
     end
 
     context 'for multiple queries' do
       let(:query) do
-        """
-        SELECT m.name AS mname, pname
-          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
+        '''
+        SELECT "m"."name" AS mname, "pname"
+          FROM manufacturers m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
         INSERT INTO manufacturers_daily (a, b)
-          SELECT a, b FROM manufacturers;
-        """
+          SELECT "a", "b" FROM manufacturers;
+        '''
       end
       it { is_expected.to eq oneline_query }
     end
 
     context 'for multiple queries with a semicolon inside a value' do
       let(:query) do
-        """
-        SELECT m.name AS mname, pname
-          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
-        UPDATE users SET name = 'bobby; drop tables';
+        '''
+        SELECT "m"."name" AS mname, "pname"
+          FROM manufacturers m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
+        UPDATE users SET name = \'bobby; drop tables\';
         INSERT INTO manufacturers_daily (a, b)
-          SELECT a, b FROM manufacturers;
-        """
+          SELECT "a", "b" FROM manufacturers;
+        '''
       end
       it { is_expected.to eq oneline_query }
     end
