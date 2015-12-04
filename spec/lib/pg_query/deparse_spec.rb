@@ -97,6 +97,11 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'COUNT' do
+        let(:query) { 'SELECT count(DISTINCT "a") FROM x WHERE "y" IS NOT NULL' }
+        it { is_expected.to eq query }
+      end
+
       context 'basic CASE WHEN statements' do
         let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM accounts a' }
         it { is_expected.to eq query }
