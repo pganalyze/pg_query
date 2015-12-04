@@ -98,7 +98,7 @@ describe PgQuery::Deparse do
       end
 
       context 'COUNT DISTINCT' do
-        let(:query) { 'SELECT count(distinct a) FROM x WHERE y IS NOT NULL' }
+        let(:query) { 'SELECT count(DISTINCT "a") FROM x WHERE "y" IS NOT NULL' }
         it { is_expected.to eq query }
       end
 
