@@ -35,15 +35,14 @@ class PgQuery
     Digest::SHA1.hexdigest(normalized_parsetree.to_s)
   end
 
-  def fingerprint_new
+  def fingerprint_new(hash: Digest::SHA1.new)
     exprs = parsetree.dup
-    hash = Digest::SHA1.new
 
     loop do
       expr = exprs.shift
 
       if expr.is_a?(Hash)
-        expr.sort_by {|k,v| k }.reverse.each do |k, v|
+        expr.sort_by { |k, _| k }.reverse_each do |k, v|
           next if %w(A_CONST ALIAS PARAMREF location).include?(k)
 
           if v.is_a?(Hash)
@@ -54,14 +53,11 @@ class PgQuery
             exprs.unshift(v)
           end
 
-          if k[/^[A-Z_ ]+$/]
-            exprs.unshift(k)
-          end
+          exprs.unshift(k) if k[/^[A-Z_ ]+$/]
         end
       elsif expr.is_a?(Array)
         exprs = expr + exprs
       else
-        #puts expr.inspect
         hash.update expr.to_s
       end
 

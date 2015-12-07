@@ -2,18 +2,43 @@ require 'spec_helper'
 
 def fingerprint(qstr)
   q = PgQuery.parse(qstr)
-  q.fingerprint
+  q.fingerprint_new
 end
 
-def fingerprint_new(qstr)
+class FingerprintTestHash
+  def initialize
+    @parts = []
+  end
+
+  def update(part)
+    @parts << part
+  end
+
+  def hexdigest
+    @parts
+  end
+end
+
+def fingerprint_parts(qstr)
   q = PgQuery.parse(qstr)
-  q.fingerprint_new
+  q.fingerprint_new(hash: FingerprintTestHash.new)
 end
 
 describe PgQuery, "#fingerprint" do
   it "returns expected hash values" do
-    expect(fingerprint_new('SELECT 1')).to eq '4a76edca1a5766d542e5bde019dc8a7ee4f51726'
-    expect(fingerprint_new('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq 'feb7587c16f46a5fd771c841cf8cb66aa21c692a'
+    expect(fingerprint('SELECT 1')).to eq '4a76edca1a5766d542e5bde019dc8a7ee4f51726'
+    expect(fingerprint('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq 'feb7587c16f46a5fd771c841cf8cb66aa21c692a'
+  end
+
+  it "returns expected hash parts" do
+    expect(fingerprint_parts('SELECT 1')).to eq ["SELECT", "false", "0", "RESTARGET"]
+    expect(fingerprint_parts('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq([
+      "SELECT", "false", "RANGEVAR", "2", "targets", "p", "0", "RESTARGET", "FUNCCALL",
+      "true", "false", "false", "COLUMNREF", "id", "false", "count", "RESTARGET",
+      "COLUMNREF", "A_STAR", "AEXPR AND", "NULLTEST", "COLUMNREF", "something", "false",
+      "1", "AEXPR", "TYPECAST", "COLUMNREF", "elsewhere", "TYPENAME", "pg_catalog", "interval",
+      "false", "false", "0", "-1", "<", "FUNCCALL", "false", "false", "false", "false", "now"
+    ])
   end
 
   it "works for basic cases" do
