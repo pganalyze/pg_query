@@ -35,7 +35,7 @@ class PgQuery
     Digest::SHA1.hexdigest(normalized_parsetree.to_s)
   end
 
-  def fingerprint_new(hash: Digest::SHA1.new)
+  def fingerprint_new(hash: Digest::SHA1.new) # rubocop:disable Metrics/CyclomaticComplexity
     exprs = parsetree.dup
 
     loop do
@@ -43,7 +43,7 @@ class PgQuery
 
       if expr.is_a?(Hash)
         expr.sort_by { |k, _| k }.reverse_each do |k, v|
-          next if %w(A_CONST ALIAS PARAMREF location).include?(k)
+          next if %w(A_Const Alias ParamRef location).include?(k)
 
           if v.is_a?(Hash)
             exprs.unshift(v)
@@ -53,7 +53,7 @@ class PgQuery
             exprs.unshift(v)
           end
 
-          exprs.unshift(k) if k[/^[A-Z_ ]+$/]
+          exprs.unshift(k) if k[/^[A-Z]+/]
         end
       elsif expr.is_a?(Array)
         exprs = expr + exprs

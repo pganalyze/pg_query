@@ -28,106 +28,121 @@ class PgQuery
       node = item.values[0]
 
       case type
-      when 'AEXPR AND'
-        deparse_aexpr_and(node)
-      when 'AEXPR ANY'
-        deparse_aexpr_any(node)
-      when 'AEXPR IN'
-        deparse_aexpr_in(node)
-      when 'AEXPR NOT'
-        deparse_aexpr_not(node)
-      when 'AEXPR OR'
-        deparse_aexpr_or(node)
-      when 'AEXPR'
-        deparse_aexpr(node, context)
-      when 'ALIAS'
+      when 'A_Expr'
+        case node['kind']
+        when 0 # AEXPR_OP
+          deparse_aexpr(node, context)
+        when 1 # AEXPR_AND
+          deparse_aexpr_and(node)
+        when 2 # AEXPR_OR
+          deparse_aexpr_or(node)
+        when 3 # AEXPR_NOT
+          deparse_aexpr_not(node)
+        when 4 # AEXPR_OP_ANY
+          deparse_aexpr_any(node)
+        when 5 # AEXPR_OP_ALL
+          # FIXME
+        when 6 # AEXPR_DISTINCT
+          # FIXME
+        when 7 # AEXPR_NULLIF
+          # FIXME
+        when 8 # AEXPR_OF
+          # FIXME
+        when 9 # AEXPR_IN
+          deparse_aexpr_in(node)
+        end
+      when 'Alias'
         deparse_alias(node)
-      when 'ALTER TABLE'
+      when 'AlterTableStmt'
         deparse_alter_table(node)
-      when 'ALTER TABLE CMD'
+      when 'AlterTableCmd'
         deparse_alter_table_cmd(node)
-      when 'A_ARRAYEXPR'
+      when 'A_ArrayExpr'
         deparse_a_arrayexp(node)
-      when 'A_CONST'
+      when 'A_Const'
         deparse_a_const(node)
-      when 'A_INDICES'
+      when 'A_Indices'
         deparse_a_indices(node)
-      when 'A_INDIRECTION'
+      when 'A_Indirection'
         deparse_a_indirection(node)
-      when 'A_STAR'
+      when 'A_Star'
         deparse_a_star(node)
-      when 'A_TRUNCATED'
+      when 'A_Truncated'
         '...' # pg_query internal
-      when 'CASE'
+      when 'CaseExpr'
         deparse_case(node)
-      when 'COALESCE'
+      when 'Coalesce'
         deparse_coalesce(node)
-      when 'COLUMNDEF'
+      when 'ColumnDef'
         deparse_columndef(node)
-      when 'COLUMNREF'
+      when 'ColumnRef'
         deparse_columnref(node)
-      when 'COMMONTABLEEXPR'
+      when 'CommonTableExpr'
         deparse_cte(node)
-      when 'CONSTRAINT'
+      when 'Constraint'
         deparse_constraint(node)
-      when 'CREATEFUNCTIONSTMT'
+      when 'CreateFunctionStmt'
         deparse_create_function(node)
-      when 'CREATESTMT'
+      when 'CreateStmt'
         deparse_create_table(node)
-      when 'DEFELEM'
+      when 'DefElem'
         deparse_defelem(node)
-      when 'DELETE FROM'
+      when 'DeleteStmt'
         deparse_delete_from(node)
-      when 'DROP'
+      when 'DropStmt'
         deparse_drop(node)
-      when 'FUNCCALL'
+      when 'FuncCall'
         deparse_funccall(node)
-      when 'FUNCTIONPARAMETER'
+      when 'FunctionParameter'
         deparse_functionparameter(node)
-      when 'INSERT INTO'
+      when 'InsertStmt'
         deparse_insert_into(node)
-      when 'JOINEXPR'
+      when 'JoinExpr'
         deparse_joinexpr(node)
-      when 'LOCKINGCLAUSE'
+      when 'LockingClause'
         deparse_lockingclause(node)
-      when 'NULLTEST'
+      when 'NullTest'
         deparse_nulltest(node)
-      when 'PARAMREF'
+      when 'ParamRef'
         deparse_paramref(node)
-      when 'RANGEFUNCTION'
+      when 'RangeFunction'
         deparse_range_function(node)
-      when 'RANGESUBSELECT'
+      when 'RangeSubselect'
         deparse_rangesubselect(node)
-      when 'RANGEVAR'
+      when 'RangeVar'
         deparse_rangevar(node)
-      when 'RENAMESTMT'
+      when 'RenameStmt'
         deparse_renamestmt(node)
-      when 'RESTARGET'
+      when 'ResTarget'
         deparse_restarget(node, context)
-      when 'ROW'
+      when 'RowExpr'
         deparse_row(node)
-      when 'SELECT'
+      when 'SelectStmt'
         deparse_select(node)
-      when 'SORTBY'
+      when 'SortBy'
         deparse_sortby(node)
-      when 'SUBLINK'
+      when 'SubLink'
         deparse_sublink(node)
-      when 'TRANSACTION'
+      when 'TransactionStmt'
         deparse_transaction(node)
-      when 'TYPECAST'
+      when 'TypeCast'
         deparse_typecast(node)
-      when 'TYPENAME'
+      when 'TypeName'
         deparse_typename(node)
-      when 'UPDATE'
+      when 'UpdateStmt'
         deparse_update(node)
-      when 'WHEN'
+      when 'CaseWhen'
         deparse_when(node)
-      when 'WINDOWDEF'
+      when 'WindowDef'
         deparse_windowdef(node)
-      when 'WITHCLAUSE'
+      when 'WithClause'
         deparse_with_clause(node)
-      when 'VIEWSTMT'
+      when 'ViewStmt'
         deparse_viewstmt(node)
+      when 'String'
+        node['str'].inspect.gsub("'", "''").gsub('"', "'")
+      when 'Integer'
+        node['ival'].to_s
       else
         fail format("Can't deparse: %s: %s", type, node.inspect)
       end
@@ -167,7 +182,7 @@ class PgQuery
     end
 
     def deparse_a_const(node)
-      node['val'].inspect.gsub("'", "''").gsub('"', "'")
+      deparse_item(node['val'])
     end
 
     def deparse_a_star(_node)
@@ -304,7 +319,7 @@ class PgQuery
       output = []
       output << deparse_item(node['lexpr'], context || true)
       output << deparse_item(node['rexpr'], context || true)
-      output = output.join(' ' + node['name'][0] + ' ')
+      output = output.join(' ' + deparse_item(node['name'][0]) + ' ')
       if context
         # This is a nested expression, add parentheses.
         output = '(' + output + ')'
@@ -664,7 +679,7 @@ class PgQuery
       if deparse_item(node['typeName']) == 'boolean'
         deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
       else
-        deparse_item(node['arg']) + '::' + deparse_typename(node['typeName']['TYPENAME'])
+        deparse_item(node['arg']) + '::' + deparse_typename(node['typeName']['TypeName'])
       end
     end
 

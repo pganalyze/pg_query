@@ -13,61 +13,61 @@ class PgQuery
     loop do
       statement = statements.shift
       if statement
-        if statement['SELECT']
-          if statement['SELECT']['op'] == 0
-            if statement['SELECT']['fromClause']
+        if statement['SelectStmt']
+          if statement['SelectStmt']['op'] == 0
+            if statement['SelectStmt']['fromClause']
               # FROM subselects
-              statement['SELECT']['fromClause'].each do |item|
-                next unless item['RANGESUBSELECT']
-                statements << item['RANGESUBSELECT']['subquery']
+              statement['SelectStmt']['fromClause'].each do |item|
+                next unless item['RangeSubselect']
+                statements << item['RangeSubselect']['subquery']
               end
 
               # JOIN ON conditions
-              condition_items += conditions_from_join_clauses(statement['SELECT']['fromClause'])
+              condition_items += conditions_from_join_clauses(statement['SelectStmt']['fromClause'])
             end
 
             # WHERE clause
-            condition_items << statement['SELECT']['whereClause'] if statement['SELECT']['whereClause']
+            condition_items << statement['SelectStmt']['whereClause'] if statement['SelectStmt']['whereClause']
 
             # CTEs
-            if statement['SELECT']['withClause']
-              statement['SELECT']['withClause']['WITHCLAUSE']['ctes'].each do |item|
-                statements << item['COMMONTABLEEXPR']['ctequery'] if item['COMMONTABLEEXPR']
+            if statement['SelectStmt']['withClause']
+              statement['SelectStmt']['withClause']['WithClause']['ctes'].each do |item|
+                statements << item['CommonTableExpr']['ctequery'] if item['CommonTableExpr']
               end
             end
-          elsif statement['SELECT']['op'] == 1
-            statements << statement['SELECT']['larg'] if statement['SELECT']['larg']
-            statements << statement['SELECT']['rarg'] if statement['SELECT']['rarg']
+          elsif statement['SelectStmt']['op'] == 1
+            statements << statement['SelectStmt']['larg'] if statement['SelectStmt']['larg']
+            statements << statement['SelectStmt']['rarg'] if statement['SelectStmt']['rarg']
           end
-        elsif statement['UPDATE']
-          condition_items << statement['UPDATE']['whereClause'] if statement['UPDATE']['whereClause']
-        elsif statement['DELETE FROM']
-          condition_items << statement['DELETE FROM']['whereClause'] if statement['DELETE FROM']['whereClause']
+        elsif statement['UpdateStmt']
+          condition_items << statement['UpdateStmt']['whereClause'] if statement['UpdateStmt']['whereClause']
+        elsif statement['DeleteStmt']
+          condition_items << statement['DeleteStmt']['whereClause'] if statement['DeleteStmt']['whereClause']
         end
       end
 
       # Process both JOIN and WHERE conditions here
       next_item = condition_items.shift
       if next_item
-        if next_item.keys[0].start_with?('AEXPR') || next_item['ANY']
+        if next_item['A_Expr']
           %w(lexpr rexpr).each do |side|
             expr = next_item.values[0][side]
             next unless expr && expr.is_a?(Hash)
             condition_items << expr
           end
-        elsif next_item['ROW']
-          condition_items += next_item['ROW']['args']
-        elsif next_item['COLUMNREF']
-          column, table = next_item['COLUMNREF']['fields'].reverse
+        elsif next_item['RowExpr']
+          condition_items += next_item['RowExpr']['args']
+        elsif next_item['ColumnRef']
+          column, table = next_item['ColumnRef']['fields'].map { |f| f['String']['str'] }.reverse
           filter_columns << [@aliases[table] || table, column]
-        elsif next_item['NULLTEST']
-          condition_items << next_item['NULLTEST']['arg']
-        elsif next_item['FUNCCALL']
+        elsif next_item['NullTest']
+          condition_items << next_item['NullTest']['arg']
+        elsif next_item['FuncCall']
           # FIXME: This should actually be extracted as a funccall and be compared with those indices
-          condition_items += next_item['FUNCCALL']['args'] if next_item['FUNCCALL']['args']
-        elsif next_item['SUBLINK']
-          condition_items << next_item['SUBLINK']['testexpr']
-          statements << next_item['SUBLINK']['subselect']
+          condition_items += next_item['FuncCall']['args'] if next_item['FuncCall']['args']
+        elsif next_item['SubLink']
+          condition_items << next_item['SubLink']['testexpr']
+          statements << next_item['SubLink']['subselect']
         end
       end
 

@@ -5,19 +5,19 @@ class PgQuery
     treewalker! parsetree do |_, _, v|
       next unless v.is_a?(Hash)
 
-      if v['PARAMREF']
-        results << { 'location' => v['PARAMREF']['location'],
-                     'length' => param_ref_length(v['PARAMREF']) }
-      elsif v['TYPECAST']
-        next unless v['TYPECAST']['arg'] && v['TYPECAST']['typeName']
+      if v['ParamRef']
+        results << { 'location' => v['ParamRef']['location'],
+                     'length' => param_ref_length(v['ParamRef']) }
+      elsif v['TypeCast']
+        next unless v['TypeCast']['arg'] && v['TypeCast']['typeName']
 
-        p = v['TYPECAST']['arg'].delete('PARAMREF')
-        t = v['TYPECAST']['typeName'].delete('TYPENAME')
+        p = v['TypeCast']['arg'].delete('ParamRef')
+        t = v['TypeCast']['typeName'].delete('TypeName')
         next unless p && t
 
         location = p['location']
         typeloc  = t['location']
-        typename = t['names'].join('.')
+        typename = t['names']
         length   = param_ref_length(p)
 
         if typeloc < location
