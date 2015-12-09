@@ -19,7 +19,7 @@ describe PgQuery::Deparse do
       end
 
       context 'with specific column alias' do
-        let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(first, last)" }
+        let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(\"first\", \"last\")" }
         it { is_expected.to eq oneline_query }
       end
 
@@ -32,7 +32,7 @@ describe PgQuery::Deparse do
         # Taken from http://www.postgresql.org/docs/9.1/static/queries-with.html
         let(:query) do
           '''
-          WITH RECURSIVE search_graph (id, link, data, depth, path, cycle) AS (
+          WITH RECURSIVE search_graph ("id", "link", "data", "depth", "path", "cycle") AS (
               SELECT "g"."id", "g"."link", "g"."data", 1,
                 ARRAY[ROW("g"."f1", "g"."f2")],
                 false
@@ -327,7 +327,7 @@ describe PgQuery::Deparse do
               (SELECT
                  \'2015-08-25 00:00:00 -0700\'::timestamp +
                 ((\'2015-08-25 23:59:59 -0700\'::timestamp - \'2015-08-25 00:00:00 -0700\'::timestamp) * random()))
-              FROM generate_series(1, 10000) series(i);
+              FROM generate_series(1, 10000) series("i");
           '''
         end
         it { is_expected.to eq oneline_query }
@@ -364,11 +364,11 @@ describe PgQuery::Deparse do
       # Taken from http://www.postgresql.org/docs/8.3/static/queries-table-expressions.html
       context 'with inline function definition' do
         let(:query) do
-          '''
-          CREATE FUNCTION getfoo(int) RETURNS SETOF users AS $$
-              SELECT * FROM "users" WHERE users.id = $1;
-          $$ language sql
-          '''.strip
+          """
+          CREATE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+              SELECT * FROM \"users\" WHERE users.id = $1;
+          $$ language \"sql\"
+          """.strip
         end
         it { is_expected.to eq query }
       end
@@ -403,7 +403,7 @@ describe PgQuery::Deparse do
                 stamptz    timestamp with time zone,
                 time       time NOT NULL,
                 timetz     time with time zone,
-                CONSTRAINT name_len PRIMARY KEY (name, len)
+                CONSTRAINT name_len PRIMARY KEY (\"name\", \"len\")
             );
           '''
         end
@@ -448,12 +448,12 @@ describe PgQuery::Deparse do
 
     context 'DROP TABLE' do
       context 'cascade' do
-        let(:query) { 'DROP TABLE IF EXISTS any_table CASCADE;' }
+        let(:query) { 'DROP TABLE IF EXISTS "any_table" CASCADE;' }
         it { is_expected.to eq oneline_query }
       end
 
       context 'restrict' do
-        let(:query) { 'DROP TABLE IF EXISTS any_table;' }
+        let(:query) { 'DROP TABLE IF EXISTS "any_table";' }
         it { is_expected.to eq oneline_query }
       end
     end
@@ -502,17 +502,17 @@ describe PgQuery::Deparse do
       end
 
       context 'SAVEPOINT' do
-        let(:query) { 'SAVEPOINT x' }
+        let(:query) { 'SAVEPOINT "x"' }
         it { is_expected.to eq query }
       end
 
       context 'ROLLBACK TO SAFEPOINT' do
-        let(:query) { 'ROLLBACK TO SAVEPOINT x' }
+        let(:query) { 'ROLLBACK TO SAVEPOINT "x"' }
         it { is_expected.to eq query }
       end
 
       context 'RELEASE' do
-        let(:query) { 'RELEASE x' }
+        let(:query) { 'RELEASE "x"' }
         it { is_expected.to eq query }
       end
     end
@@ -558,7 +558,7 @@ describe PgQuery::Deparse do
 
       context 'recursive' do
         let(:shorthand_query) { 'CREATE RECURSIVE VIEW view_a (a, b) AS SELECT * FROM a(1)' }
-        let(:query) { 'CREATE VIEW view_a (a, b) AS WITH RECURSIVE view_a (a, b) AS (SELECT * FROM a(1)) SELECT "a", "b" FROM "view_a"' }
+        let(:query) { 'CREATE VIEW view_a ("a", "b") AS WITH RECURSIVE view_a ("a", "b") AS (SELECT * FROM a(1)) SELECT "a", "b" FROM "view_a"' }
 
         it 'parses both and deparses into the normalized form' do
           expect(described_class.from(PgQuery.parse(query).parsetree.first)).to eq(query)

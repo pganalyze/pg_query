@@ -4,33 +4,33 @@ describe PgQuery do
   def parse_expr(expr)
     q = described_class.parse("SELECT " + expr + " FROM x")
     expect(q.parsetree).not_to be_nil
-    r = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(r["AEXPR"]).not_to be_nil
-    r["AEXPR"]
+    r = q.parsetree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expect(r[described_class::A_EXPR]).not_to be_nil
+    r[described_class::A_EXPR]
   end
 
   it "parses a normalized query" do
     query = described_class.parse("SELECT ? FROM x")
-    expect(query.parsetree).to eq [{"SELECT"=>{"distinctClause"=>nil, "intoClause"=>nil,
-                                    "targetList"=>[{"RESTARGET"=>{"name"=>nil, "indirection"=>nil, "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}}, "location"=>7}}],
-                                    "fromClause"=>[{"RANGEVAR"=>{"schemaname"=>nil, "relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "alias"=>nil, "location"=>14}}],
+    expect(query.parsetree).to eq [{described_class::SELECT_STMT=>{"distinctClause"=>nil, "intoClause"=>nil,
+                                    "targetList"=>[{described_class::RES_TARGET=>{"name"=>nil, "indirection"=>nil, "val"=>{described_class::PARAM_REF=>{"number"=>0, "location"=>7}}, "location"=>7}}],
+                                    "fromClause"=>[{described_class::RANGE_VAR=>{"schemaname"=>nil, "relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "alias"=>nil, "location"=>14}}],
                                     "whereClause"=>nil, "groupClause"=>nil, "havingClause"=>nil, "windowClause"=>nil, "valuesLists"=>nil, "sortClause"=>nil, "limitOffset"=>nil, "limitCount"=>nil, "lockingClause"=>nil, "withClause"=>nil, "op"=>0, "all"=>false, "larg"=>nil, "rarg"=>nil}}]
     expect(query.query).to eq "SELECT ? FROM x"
   end
 
   it 'keep locations correct' do
     query = described_class.parse("SELECT ?, 123")
-    targetlist = query.parsetree[0]["SELECT"]["targetList"]
-    expect(targetlist[0]["RESTARGET"]["location"]).to eq 7
-    expect(targetlist[1]["RESTARGET"]["location"]).to eq 10
+    targetlist = query.parsetree[0][described_class::SELECT_STMT]["targetList"]
+    expect(targetlist[0][described_class::RES_TARGET]["location"]).to eq 7
+    expect(targetlist[1][described_class::RES_TARGET]["location"]).to eq 10
   end
 
   it "parses INTERVAL ?" do
     query = described_class.parse("SELECT INTERVAL ?")
     expect(query.parsetree).not_to be_nil
-    targetlist = query.parsetree[0]["SELECT"]["targetList"]
-    expect(targetlist[0]["RESTARGET"]["val"]).to eq("TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
-                                                    "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
+    targetlist = query.parsetree[0][described_class::SELECT_STMT]["targetList"]
+    expect(targetlist[0][described_class::RES_TARGET]["val"]).to eq(described_class::TYPE_CAST => {"arg"=>{described_class::PARAM_REF => {"number"=>0, "location"=>16}},
+                                                    "typeName"=>{described_class::TYPE_NAME=>{"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"interval"}}], "typeOid"=>0,
                                                                  "setof"=>false, "pct_type"=>false, "typmods"=>nil,
                                                                  "typemod"=>-1, "arrayBounds"=>nil, "location"=>7}},
                                                     "location"=>-1})
@@ -39,11 +39,11 @@ describe PgQuery do
   it "parses INTERVAL ? hour" do
     q = described_class.parse("SELECT INTERVAL ? hour")
     expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq("TYPECAST" => {"arg"=>{"PARAMREF" => {"number"=>0, "location"=>16}},
-                                      "typeName"=>{"TYPENAME"=>{"names"=>["pg_catalog", "interval"], "typeOid"=>0,
+    expr = q.parsetree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expect(expr).to eq(described_class::TYPE_CAST => {"arg"=>{described_class::PARAM_REF => {"number"=>0, "location"=>16}},
+                                      "typeName"=>{described_class::TYPE_NAME=>{"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"interval"}}], "typeOid"=>0,
                                                                 "setof"=>false, "pct_type"=>false,
-                                                                "typmods"=>[{"A_CONST"=>{"type" => "integer", "val"=>0, "location"=>-1}}],
+                                                                "typmods"=>[{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 0}}, "location"=>-1}}],
                                                                 "typemod"=>-1, "arrayBounds"=>nil, "location"=>7}},
                                        "location"=>-1})
   end
@@ -56,9 +56,11 @@ describe PgQuery do
   it "parses 'a ? b' in target list" do
     q = described_class.parse("SELECT a ? b")
     expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq("AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>7}},
-                                                  "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>11}},
+    expr = q.parsetree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expect(expr).to eq(described_class::A_EXPR => {"kind"=>0,
+                                                   "name"=>[{"String"=>{"str"=>"?"}}],
+                                                   "lexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"a"}}], "location"=>7}},
+                                                   "rexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"b"}}], "location"=>11}},
                                     "location"=>9})
   end
 
@@ -80,30 +82,44 @@ describe PgQuery do
     # but we can't avoid that.
     q = described_class.parse("SELECT ? a")
     expect(q.parsetree).not_to be_nil
-    restarget = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]
+    restarget = q.parsetree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]
     expect(restarget).to eq("name"=>"a", "indirection"=>nil,
-                            "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}},
+                            "val"=>{described_class::PARAM_REF=>{"number"=>0, "location"=>7}},
                             "location"=>7)
   end
 
   it "parses 'a ?, b' in target list" do
     q = described_class.parse("SELECT a ?, b")
     expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq("AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>7}},
-                                                  "rexpr"=>nil,
-                                   "location"=>9})
+    expr = q.parsetree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expect(expr).to eq(described_class::A_EXPR =>
+    {
+      "kind"=>0,
+      "name"=>[{"String"=>{"str"=>"?"}}],
+      "lexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"a"}}], "location"=>7}},
+      "rexpr"=>nil,
+      "location"=>9
+    })
   end
 
   it "parses 'a ? AND b' in where clause" do
     q = described_class.parse("SELECT * FROM x WHERE a ? AND b")
     expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["whereClause"]
-    expect(expr).to eq("AEXPR AND"=>{"lexpr"=>{"AEXPR"=>{"name"=>["?"],
-                                               "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>22}},
-                                               "rexpr"=>nil, "location"=>24}},
-                                     "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>30}},
-                                     "location"=>26})
+    expr = q.parsetree[0][described_class::SELECT_STMT]["whereClause"]
+    expect(expr).to eq(described_class::A_EXPR=>
+    {
+      "kind"=>1,
+      "name"=>nil,
+      "lexpr"=>{
+        described_class::A_EXPR=>{
+          "kind"=>0,
+          "name"=>[{"String"=>{"str"=>"?"}}],
+          "lexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"a"}}], "location"=>22}},
+          "rexpr"=>nil, "location"=>24
+        }
+      },
+      "rexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"b"}}], "location"=>30}},
+      "location"=>26})
   end
 
   it "parses 'JOIN y ON a = ? JOIN z ON c = d'" do
@@ -115,10 +131,15 @@ describe PgQuery do
   it "parses 'a ? b' in where clause" do
     q = described_class.parse("SELECT * FROM x WHERE a ? b")
     expect(q.parsetree).not_to be_nil
-    expr = q.parsetree[0]["SELECT"]["whereClause"]
-    expect(expr).to eq("AEXPR" => {"name"=>["?"], "lexpr"=>{"COLUMNREF"=>{"fields"=>["a"], "location"=>22}},
-                                                  "rexpr"=>{"COLUMNREF"=>{"fields"=>["b"], "location"=>26}},
-                                   "location"=>24})
+    expr = q.parsetree[0][described_class::SELECT_STMT]["whereClause"]
+    expect(expr).to eq(described_class::A_EXPR =>
+    {
+      "kind"=>0,
+      "name"=>[{"String"=>{"str"=>"?"}}],
+      "lexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"a"}}], "location"=>22}},
+      "rexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"b"}}], "location"=>26}},
+      "location"=>24
+    })
   end
 
   it "parses BETWEEN ? AND ?" do
@@ -128,200 +149,203 @@ describe PgQuery do
 
   it "parses ?=?" do
     e = parse_expr("?=?")
-    expect(e["name"]).to eq ["="]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"="}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses ?=x" do
     e = parse_expr("?=x")
-    expect(e["name"]).to eq ["="]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["COLUMNREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"="}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::COLUMN_REF]).not_to be_nil
   end
 
   it "parses x=?" do
     e = parse_expr("x=?")
-    expect(e["name"]).to eq ["="]
-    expect(e["lexpr"]["COLUMNREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"="}}]
+    expect(e["lexpr"][described_class::COLUMN_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses ?!=?" do
     e = parse_expr("?!=?")
-    expect(e["name"]).to eq ["<>"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"<>"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses ?!=x" do
     e = parse_expr("?!=x")
-    expect(e["name"]).to eq ["<>"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["COLUMNREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"<>"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::COLUMN_REF]).not_to be_nil
   end
 
   it "parses x!=?" do
     e = parse_expr("x!=?")
-    expect(e["name"]).to eq ["<>"]
-    expect(e["lexpr"]["COLUMNREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"<>"}}]
+    expect(e["lexpr"][described_class::COLUMN_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses ?-?" do
     e = parse_expr("?-?")
-    expect(e["name"]).to eq ["-"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"-"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses ?<?-?" do
     e = parse_expr("?<?-?")
-    expect(e["name"]).to eq ["<"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["AEXPR"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"<"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::A_EXPR]).not_to be_nil
   end
 
   it "parses ?+?" do
     e = parse_expr("?+?")
-    expect(e["name"]).to eq ["+"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"+"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses ?*?" do
     e = parse_expr("?*?")
-    expect(e["name"]).to eq ["*"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"*"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses ?/?" do
     e = parse_expr("?/?")
-    expect(e["name"]).to eq ["/"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"/"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   # http://www.postgresql.org/docs/devel/static/functions-json.html
   # http://www.postgresql.org/docs/devel/static/hstore.html
   it "parses hstore/JSON operators containing ?" do
     e = parse_expr("'{\"a\":1, \"b\":2}'::jsonb ? 'b'")
-    expect(e["name"]).to eq ["?"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["A_CONST"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::A_CONST]).not_to be_nil
 
     e = parse_expr("? ? ?")
-    expect(e["name"]).to eq ["?"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("'{\"a\":1, \"b\":2, \"c\":3}'::jsonb ?| array['b', 'c']")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["A_ARRAYEXPR"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?|"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::A_ARRAY_EXPR]).not_to be_nil
 
     e = parse_expr("? ?| ?")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?|"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("'[\"a\", \"b\"]'::jsonb ?& array['a', 'b']")
-    expect(e["name"]).to eq ["?&"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["A_ARRAYEXPR"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?&"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::A_ARRAY_EXPR]).not_to be_nil
 
     e = parse_expr("? ?& ?")
-    expect(e["name"]).to eq ["?&"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?&"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   # http://www.postgresql.org/docs/devel/static/functions-geometry.html
   it "parses geometric operators containing ?" do
     e = parse_expr("lseg '((-1,0),(1,0))' ?# box '((-2,-2),(2,2))'")
-    expect(e["name"]).to eq ["?#"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?#"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::TYPE_CAST]).not_to be_nil
 
     e = parse_expr("? ?# ?")
-    expect(e["name"]).to eq ["?#"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?#"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("?- lseg '((-1,0),(1,0))'")
-    expect(e["name"]).to eq ["?-"]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?-"}}]
     expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"][described_class::TYPE_CAST]).not_to be_nil
 
     e = parse_expr("?- ?")
-    expect(e["name"]).to eq ["?-"]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?-"}}]
     expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("point '(1,0)' ?- point '(0,0)'")
-    expect(e["name"]).to eq ["?-"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?-"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::TYPE_CAST]).not_to be_nil
 
     e = parse_expr("? ?- ?")
-    expect(e["name"]).to eq ["?-"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?-"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("?| lseg '((-1,0),(1,0))'")
-    expect(e["name"]).to eq ["?|"]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?|"}}]
     expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["rexpr"][described_class::TYPE_CAST]).not_to be_nil
 
     e = parse_expr("?| ?")
-    expect(e["name"]).to eq ["?|"]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?|"}}]
     expect(e["lexpr"]).to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("point '(0,1)' ?| point '(0,0)'")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?|"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::TYPE_CAST]).not_to be_nil
 
     e = parse_expr("? ?| ?")
-    expect(e["name"]).to eq ["?|"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?|"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("lseg '((0,0),(0,1))' ?-| lseg '((0,0),(1,0))'")
-    expect(e["name"]).to eq ["?-|"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?-|"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::TYPE_CAST]).not_to be_nil
 
     e = parse_expr("? ?-| ?")
-    expect(e["name"]).to eq ["?-|"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?-|"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
 
     e = parse_expr("lseg '((-1,0),(1,0))' ?|| lseg '((-1,2),(1,2))'")
-    expect(e["name"]).to eq ["?||"]
-    expect(e["lexpr"]["TYPECAST"]).not_to be_nil
-    expect(e["rexpr"]["TYPECAST"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?||"}}]
+    expect(e["lexpr"][described_class::TYPE_CAST]).not_to be_nil
+    expect(e["rexpr"][described_class::TYPE_CAST]).not_to be_nil
 
     e = parse_expr("? ?|| ?")
-    expect(e["name"]).to eq ["?||"]
-    expect(e["lexpr"]["PARAMREF"]).not_to be_nil
-    expect(e["rexpr"]["PARAMREF"]).not_to be_nil
+    expect(e["name"]).to eq [{"String"=>{"str"=>"?||"}}]
+    expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
+    expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
 
   it "parses substituted pseudo keywords in extract()" do
     q = described_class.parse("SELECT extract(? from NOW())")
-    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
-    expect(expr).to eq("FUNCCALL" => {"funcname"=>["pg_catalog", "date_part"],
-                                      "args"=>[{"PARAMREF"=>{"number"=>0, "location"=>15}},
-                                               {"FUNCCALL"=>{"funcname"=>["now"], "args"=>nil, "agg_order"=>nil,
-                                                             "agg_filter"=>nil, "agg_within_group"=>false,
-                                                             "agg_star"=>false, "agg_distinct"=>false,
-                                                             "func_variadic"=>false, "over"=>nil, "location"=>22}}],
-                                      "agg_order"=>nil, "agg_filter"=>nil, "agg_within_group"=>false,
-                                      "agg_star"=>false, "agg_distinct"=>false,
-                                      "func_variadic"=>false, "over"=>nil, "location"=>7})
+    expr = q.parsetree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expect(expr).to eq(described_class::FUNC_CALL =>
+    {
+      "funcname"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"date_part"}}],
+      "args"=>[{described_class::PARAM_REF=>{"number"=>0, "location"=>15}},
+               {described_class::FUNC_CALL=>{"funcname"=>[{"String"=>{"str"=>"now"}}], "args"=>nil, "agg_order"=>nil,
+                             "agg_filter"=>nil, "agg_within_group"=>false,
+                             "agg_star"=>false, "agg_distinct"=>false,
+                             "func_variadic"=>false, "over"=>nil, "location"=>22}}],
+      "agg_order"=>nil, "agg_filter"=>nil, "agg_within_group"=>false,
+      "agg_star"=>false, "agg_distinct"=>false,
+      "func_variadic"=>false, "over"=>nil, "location"=>7
+    })
   end
 
   it "parses $1?" do

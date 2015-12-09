@@ -28,7 +28,7 @@ class PgQuery
       node = item.values[0]
 
       case type
-      when 'A_Expr'
+      when A_EXPR
         case node['kind']
         when 0 # AEXPR_OP
           deparse_aexpr(node, context)
@@ -51,101 +51,111 @@ class PgQuery
         when 9 # AEXPR_IN
           deparse_aexpr_in(node)
         end
-      when 'Alias'
+      when ALIAS
         deparse_alias(node)
-      when 'AlterTableStmt'
+      when ALTER_TABLE_STMT
         deparse_alter_table(node)
-      when 'AlterTableCmd'
+      when ALTER_TABLE_CMD
         deparse_alter_table_cmd(node)
-      when 'A_ArrayExpr'
+      when A_ARRAY_EXPR
         deparse_a_arrayexp(node)
-      when 'A_Const'
+      when A_CONST
         deparse_a_const(node)
-      when 'A_Indices'
+      when A_INDICES
         deparse_a_indices(node)
-      when 'A_Indirection'
+      when A_INDIRECTION
         deparse_a_indirection(node)
-      when 'A_Star'
+      when A_STAR
         deparse_a_star(node)
-      when 'A_Truncated'
+      when A_TRUNCATED
         '...' # pg_query internal
-      when 'CaseExpr'
+      when CASE_EXPR
         deparse_case(node)
-      when 'Coalesce'
+      when COALESCE_EXPR
         deparse_coalesce(node)
-      when 'ColumnDef'
+      when COLUMN_DEF
         deparse_columndef(node)
-      when 'ColumnRef'
+      when COLUMN_REF
         deparse_columnref(node)
-      when 'CommonTableExpr'
+      when COMMON_TABLE_EXPR
         deparse_cte(node)
-      when 'Constraint'
+      when CONSTRAINT
         deparse_constraint(node)
-      when 'CreateFunctionStmt'
+      when CREATE_FUNCTION_STMT
         deparse_create_function(node)
-      when 'CreateStmt'
+      when CREATE_STMT_INFO
         deparse_create_table(node)
-      when 'DefElem'
+      when DEF_ELEM
         deparse_defelem(node)
-      when 'DeleteStmt'
+      when DELETE_STMT
         deparse_delete_from(node)
-      when 'DropStmt'
+      when DROP_STMT
         deparse_drop(node)
-      when 'FuncCall'
+      when FUNC_CALL
         deparse_funccall(node)
-      when 'FunctionParameter'
+      when FUNCTION_PARAMETER
         deparse_functionparameter(node)
-      when 'InsertStmt'
+      when INSERT_STMT
         deparse_insert_into(node)
-      when 'JoinExpr'
+      when JOIN_EXPR
         deparse_joinexpr(node)
-      when 'LockingClause'
+      when LOCKING_CLAUSE
         deparse_lockingclause(node)
-      when 'NullTest'
+      when NULL_TEST
         deparse_nulltest(node)
-      when 'ParamRef'
+      when PARAM_REF
         deparse_paramref(node)
-      when 'RangeFunction'
+      when RANGE_FUNCTION
         deparse_range_function(node)
-      when 'RangeSubselect'
+      when RANGE_SUBSELECT
         deparse_rangesubselect(node)
-      when 'RangeVar'
+      when RANGE_VAR
         deparse_rangevar(node)
-      when 'RenameStmt'
+      when RENAME_STMT
         deparse_renamestmt(node)
-      when 'ResTarget'
+      when RES_TARGET
         deparse_restarget(node, context)
-      when 'RowExpr'
+      when ROW_EXPR
         deparse_row(node)
-      when 'SelectStmt'
+      when SELECT_STMT
         deparse_select(node)
-      when 'SortBy'
+      when SORT_BY
         deparse_sortby(node)
-      when 'SubLink'
+      when SUB_LINK
         deparse_sublink(node)
-      when 'TransactionStmt'
+      when TRANSACTION_STMT
         deparse_transaction(node)
-      when 'TypeCast'
+      when TYPE_CAST
         deparse_typecast(node)
-      when 'TypeName'
+      when TYPE_NAME
         deparse_typename(node)
-      when 'UpdateStmt'
+      when UPDATE_STMT
         deparse_update(node)
-      when 'CaseWhen'
+      when CASE_WHEN
         deparse_when(node)
-      when 'WindowDef'
+      when WINDOW_DEF
         deparse_windowdef(node)
-      when 'WithClause'
+      when WITH_CLAUSE
         deparse_with_clause(node)
-      when 'ViewStmt'
+      when VIEW_STMT
         deparse_viewstmt(node)
-      when 'String'
-        node['str'].inspect.gsub("'", "''").gsub('"', "'")
-      when 'Integer'
+      when STRING
+        if context == A_CONST
+          format("'%s'", node['str'].gsub("'", "''"))
+        elsif [FUNC_CALL, TYPE_NAME, :operator, :defname_as].include?(context)
+          node['str']
+        else
+          format('"%s"', node['str'].gsub('"', '""'))
+        end
+      when INTEGER
         node['ival'].to_s
       else
         fail format("Can't deparse: %s: %s", type, node.inspect)
       end
+    end
+
+    def deparse_item_list(nodes, context = nil)
+      nodes.map { |n| deparse_item(n, context) }
     end
 
     def deparse_rangevar(node)
@@ -182,7 +192,7 @@ class PgQuery
     end
 
     def deparse_a_const(node)
-      deparse_item(node['val'])
+      deparse_item(node['val'], A_CONST)
     end
 
     def deparse_a_star(_node)
@@ -204,7 +214,7 @@ class PgQuery
     def deparse_alias(node)
       name = node['aliasname']
       if node['colnames']
-        name + '(' + node['colnames'].join(', ') + ')'
+        name + '(' + deparse_item_list(node['colnames']).join(', ') + ')'
       else
         name
       end
@@ -265,7 +275,7 @@ class PgQuery
       # COUNT(*)
       args << '*' if node['agg_star']
 
-      name = (node['funcname'] - ['pg_catalog']).join('.')
+      name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) } - ['pg_catalog']).join('.')
       distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
       output << format('%s(%s%s)', name, distinct, args.join(', '))
       output << format('OVER (%s)', deparse_item(node['over'])) if node['over']
@@ -299,7 +309,7 @@ class PgQuery
 
     def deparse_aexpr_in(node)
       rexpr = Array(node['rexpr']).map { |arg| deparse_item(arg) }
-      operator = node['name'] == ['='] ? 'IN' : 'NOT IN'
+      operator = node['name'].map { |n| deparse_item(n, :operator) } == ['='] ? 'IN' : 'NOT IN'
       format('%s %s (%s)', deparse_item(node['lexpr']), operator, rexpr.join(', '))
     end
 
@@ -319,7 +329,7 @@ class PgQuery
       output = []
       output << deparse_item(node['lexpr'], context || true)
       output << deparse_item(node['rexpr'], context || true)
-      output = output.join(' ' + deparse_item(node['name'][0]) + ' ')
+      output = output.join(' ' + deparse_item(node['name'][0], :operator) + ' ')
       if context
         # This is a nested expression, add parentheses.
         output = '(' + output + ')'
@@ -327,17 +337,20 @@ class PgQuery
       output
     end
 
+    A_EXPR_AND = 1
+    A_EXPR_OR = 2
+
     def deparse_aexpr_and(node)
       # Only put parantheses around OR nodes that are inside this one
-      lexpr = format(['AEXPR OR'].include?(node['lexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['lexpr']))
-      rexpr = format(['AEXPR OR'].include?(node['rexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['rexpr']))
+      lexpr = format([A_EXPR_OR].include?(node['lexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['lexpr']))
+      rexpr = format([A_EXPR_OR].include?(node['rexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['rexpr']))
       format('%s AND %s', lexpr, rexpr)
     end
 
     def deparse_aexpr_or(node)
       # Put parantheses around AND + OR nodes that are inside
-      lexpr = format(['AEXPR AND', 'AEXPR OR'].include?(node['lexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['lexpr']))
-      rexpr = format(['AEXPR AND', 'AEXPR OR'].include?(node['rexpr'].keys[0]) ? '(%s)' : '%s', deparse_item(node['rexpr']))
+      lexpr = format([A_EXPR_AND, A_EXPR_OR].include?(node['lexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['lexpr']))
+      rexpr = format([A_EXPR_AND, A_EXPR_OR].include?(node['rexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['rexpr']))
       format('%s OR %s', lexpr, rexpr)
     end
 
@@ -345,7 +358,7 @@ class PgQuery
       output = []
       output << deparse_item(node['lexpr'])
       output << format('ANY(%s)', deparse_item(node['rexpr']))
-      output.join(' ' + node['name'][0] + ' ')
+      output.join(' ' + deparse_item(node['name'][0], :operator) + ' ')
     end
 
     def deparse_joinexpr(node)
@@ -408,8 +421,8 @@ class PgQuery
       output << persistence if persistence
 
       output << 'VIEW'
-      output << node['view']['RANGEVAR']['relname']
-      output << format('(%s)', node['aliases'].join(', ')) if node['aliases']
+      output << node['view'][RANGE_VAR]['relname']
+      output << format('(%s)', deparse_item_list(node['aliases']).join(', ')) if node['aliases']
 
       output << 'AS'
       output << deparse_item(node['query'])
@@ -426,7 +439,7 @@ class PgQuery
     def deparse_cte(node)
       output = []
       output << node['ctename']
-      output << format('(%s)', node['aliascolnames'].join(', ')) if node['aliascolnames']
+      output << format('(%s)', node['aliascolnames'].map { |n| deparse_item(n) }.join(', ')) if node['aliascolnames']
       output << format('AS (%s)', deparse_item(node['ctequery']))
       output.join(' ')
     end
@@ -457,22 +470,38 @@ class PgQuery
       output.compact.join(' ')
     end
 
-    def deparse_constraint(node)
+    def deparse_constraint(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = []
       if node['conname']
         output << 'CONSTRAINT'
         output << node['conname']
       end
-      # NOT_NULL -> NOT NULL
-      output << node['contype'].gsub('_', ' ')
+      case node['contype']
+      when 0 # CONSTR_NULL
+        output << 'NULL'
+      when 1 # CONSTR_NOTNULL
+        output << 'NOT NULL'
+      when 2 # CONSTR_DEFAULT
+        output << 'DEFAULT'
+      when 3 # CONSTR_CHECK
+        output << 'CHECK'
+      when 4 # CONSTR_PRIMARY
+        output << 'PRIMARY KEY'
+      when 5 # CONSTR_UNIQUE
+        output << 'UNIQUE'
+      when 6 # CONSTR_EXCLUSION
+        output << 'EXCLUSION'
+      when 7 # CONSTR_FOREIGN
+        output << 'FOREIGN KEY'
+      end
 
       if node['raw_expr']
         expression = deparse_item(node['raw_expr'])
         # Unless it's simple, put parentheses around it
-        expression = '(' + expression + ')' if node['raw_expr'].keys == ['AEXPR']
+        expression = '(' + expression + ')' if node['raw_expr'][A_EXPR] && node['raw_expr'][A_EXPR]['kind'] == 0 # AEXPR_OP
         output << expression
       end
-      output << '(' + node['keys'].join(', ') + ')' if node['keys']
+      output << '(' + deparse_item_list(node['keys']).join(', ') + ')' if node['keys']
       output << "USING INDEX #{node['indexname']}" if node['indexname']
       output.join(' ')
     end
@@ -481,9 +510,9 @@ class PgQuery
       output = []
       output << 'CREATE FUNCTION'
 
-      arguments = node['parameters'].map { |item| deparse_item(item) }.join(', ')
+      arguments = deparse_item_list(node['parameters']).join(', ')
 
-      output << node['funcname'].first + '(' + arguments + ')'
+      output << deparse_item_list(node['funcname']).join('.') + '(' + arguments + ')'
 
       output << 'RETURNS'
       output << deparse_item(node['returnType'])
@@ -528,7 +557,7 @@ class PgQuery
     end
 
     def deparse_sublink(node)
-      if node['subLinkType'] == 2 && node['operName'] == ['=']
+      if node['subLinkType'] == 2 && deparse_item_list(node['operName'], :operator) == ['=']
         return format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
       elsif node['subLinkType'] == 0
         return format('EXISTS(%s)', deparse_item(node['subselect']))
@@ -679,14 +708,16 @@ class PgQuery
       if deparse_item(node['typeName']) == 'boolean'
         deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
       else
-        deparse_item(node['arg']) + '::' + deparse_typename(node['typeName']['TypeName'])
+        deparse_item(node['arg']) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
       end
     end
 
     def deparse_typename(node)
+      names = node['names'].map { |n| deparse_item(n, TYPE_NAME) }
+
       # Intervals are tricky and should be handled in a separate method because
       # they require performing some bitmask operations.
-      return deparse_interval_type(node) if node['names'] == %w(pg_catalog interval)
+      return deparse_interval_type(node) if names == %w(pg_catalog interval)
 
       output = []
       output << 'SETOF' if node['setof']
@@ -696,7 +727,7 @@ class PgQuery
           deparse_item(item)
         end.join(', ')
       end
-      output << deparse_typename_cast(node['names'], arguments)
+      output << deparse_typename_cast(names, arguments)
 
       output.join(' ')
     end
@@ -798,11 +829,11 @@ class PgQuery
     def deparse_defelem(node)
       case node['defname']
       when 'as'
-        "AS $$#{node['arg'].join("\n")}$$"
+        "AS $$#{deparse_item_list(node['arg'], :defname_as).join("\n")}$$"
       when 'language'
-        "language #{node['arg']}"
+        "language #{deparse_item(node['arg'])}"
       else
-        node['arg']
+        deparse_item(node['arg'])
       end
     end
 
@@ -842,9 +873,9 @@ class PgQuery
       output << 'CONCURRENTLY' if node['concurrent']
       output << 'IF EXISTS' if node['missing_ok']
 
-      output << node['objects'].join(', ')
+      output << node['objects'].map { |list| list.map { |object| deparse_item(object) } }.join(', ')
 
-      output << 'CASCADE'  if node['behavior'] == 1
+      output << 'CASCADE' if node['behavior'] == 1
 
       output.join(' ')
     end
@@ -852,9 +883,9 @@ class PgQuery
     # The PG parser adds several pieces of view data onto the RANGEVAR
     # that need to be printed before deparse_rangevar is called.
     def relpersistence(rangevar)
-      if rangevar['RANGEVAR']['relpersistence'] == 't'
+      if rangevar[RANGE_VAR]['relpersistence'] == 't'
         'TEMPORARY'
-      elsif rangevar['RANGEVAR']['relpersistence'] == 'u'
+      elsif rangevar[RANGE_VAR]['relpersistence'] == 'u'
         'UNLOGGED'
       end
     end

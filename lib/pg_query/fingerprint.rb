@@ -43,7 +43,7 @@ class PgQuery
 
       if expr.is_a?(Hash)
         expr.sort_by { |k, _| k }.reverse_each do |k, v|
-          next if %w(A_Const Alias ParamRef location).include?(k)
+          next if [A_CONST, ALIAS, PARAM_REF, 'location'].include?(k)
 
           if v.is_a?(Hash)
             exprs.unshift(v)

@@ -13,31 +13,31 @@ class PgQuery
     loop do
       statement = statements.shift
       if statement
-        if statement['SelectStmt']
-          if statement['SelectStmt']['op'] == 0
-            if statement['SelectStmt']['fromClause']
+        if statement[SELECT_STMT]
+          if statement[SELECT_STMT]['op'] == 0
+            if statement[SELECT_STMT]['fromClause']
               # FROM subselects
-              statement['SelectStmt']['fromClause'].each do |item|
+              statement[SELECT_STMT]['fromClause'].each do |item|
                 next unless item['RangeSubselect']
                 statements << item['RangeSubselect']['subquery']
               end
 
               # JOIN ON conditions
-              condition_items += conditions_from_join_clauses(statement['SelectStmt']['fromClause'])
+              condition_items += conditions_from_join_clauses(statement[SELECT_STMT]['fromClause'])
             end
 
             # WHERE clause
-            condition_items << statement['SelectStmt']['whereClause'] if statement['SelectStmt']['whereClause']
+            condition_items << statement[SELECT_STMT]['whereClause'] if statement[SELECT_STMT]['whereClause']
 
             # CTEs
-            if statement['SelectStmt']['withClause']
-              statement['SelectStmt']['withClause']['WithClause']['ctes'].each do |item|
+            if statement[SELECT_STMT]['withClause']
+              statement[SELECT_STMT]['withClause']['WithClause']['ctes'].each do |item|
                 statements << item['CommonTableExpr']['ctequery'] if item['CommonTableExpr']
               end
             end
-          elsif statement['SelectStmt']['op'] == 1
-            statements << statement['SelectStmt']['larg'] if statement['SelectStmt']['larg']
-            statements << statement['SelectStmt']['rarg'] if statement['SelectStmt']['rarg']
+          elsif statement[SELECT_STMT]['op'] == 1
+            statements << statement[SELECT_STMT]['larg'] if statement[SELECT_STMT]['larg']
+            statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
         elsif statement['UpdateStmt']
           condition_items << statement['UpdateStmt']['whereClause'] if statement['UpdateStmt']['whereClause']
@@ -49,25 +49,25 @@ class PgQuery
       # Process both JOIN and WHERE conditions here
       next_item = condition_items.shift
       if next_item
-        if next_item['A_Expr']
+        if next_item[A_EXPR]
           %w(lexpr rexpr).each do |side|
             expr = next_item.values[0][side]
             next unless expr && expr.is_a?(Hash)
             condition_items << expr
           end
-        elsif next_item['RowExpr']
-          condition_items += next_item['RowExpr']['args']
-        elsif next_item['ColumnRef']
-          column, table = next_item['ColumnRef']['fields'].map { |f| f['String']['str'] }.reverse
+        elsif next_item[ROW_EXPR]
+          condition_items += next_item[ROW_EXPR]['args']
+        elsif next_item[COLUMN_REF]
+          column, table = next_item[COLUMN_REF]['fields'].map { |f| f['String']['str'] }.reverse
           filter_columns << [@aliases[table] || table, column]
-        elsif next_item['NullTest']
-          condition_items << next_item['NullTest']['arg']
-        elsif next_item['FuncCall']
+        elsif next_item[NULL_TEST]
+          condition_items << next_item[NULL_TEST]['arg']
+        elsif next_item[FUNC_CALL]
           # FIXME: This should actually be extracted as a funccall and be compared with those indices
-          condition_items += next_item['FuncCall']['args'] if next_item['FuncCall']['args']
-        elsif next_item['SubLink']
-          condition_items << next_item['SubLink']['testexpr']
-          statements << next_item['SubLink']['subselect']
+          condition_items += next_item[FUNC_CALL]['args'] if next_item[FUNC_CALL]['args']
+        elsif next_item[SUB_LINK]
+          condition_items << next_item[SUB_LINK]['testexpr']
+          statements << next_item[SUB_LINK]['subselect']
         end
       end
 
@@ -82,16 +82,16 @@ class PgQuery
   def conditions_from_join_clauses(from_clause)
     condition_items = []
     from_clause.each do |item|
-      next unless item['JOINEXPR']
+      next unless item[JOIN_EXPR]
 
-      joinexpr_items = [item['JOINEXPR']]
+      joinexpr_items = [item[JOIN_EXPR]]
       loop do
         next_item = joinexpr_items.shift
         break unless next_item
         condition_items << next_item['quals'] if next_item['quals']
         %w(larg rarg).each do |side|
-          next unless next_item[side]['JOINEXPR']
-          joinexpr_items << next_item[side]['JOINEXPR']
+          next unless next_item[side][JOIN_EXPR]
+          joinexpr_items << next_item[side][JOIN_EXPR]
         end
       end
     end
