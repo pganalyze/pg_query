@@ -2,7 +2,7 @@ require 'spec_helper'
 
 def fingerprint(qstr)
   q = PgQuery.parse(qstr)
-  q.fingerprint_new
+  q.fingerprint
 end
 
 class FingerprintTestHash
@@ -21,23 +21,24 @@ end
 
 def fingerprint_parts(qstr)
   q = PgQuery.parse(qstr)
-  q.fingerprint_new(hash: FingerprintTestHash.new)
+  q.fingerprint(hash: FingerprintTestHash.new)
 end
 
 describe PgQuery, "#fingerprint" do
   it "returns expected hash values" do
-    expect(fingerprint('SELECT 1')).to eq '4a76edca1a5766d542e5bde019dc8a7ee4f51726'
-    expect(fingerprint('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq 'feb7587c16f46a5fd771c841cf8cb66aa21c692a'
+    expect(fingerprint('SELECT 1')).to eq '31dc5500dc27777a26160cb1b0faa11495f150d8'
+    expect(fingerprint('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq '1e014ccea580bb5dea8b4a66893b3c508d6261f0'
   end
 
   it "returns expected hash parts" do
-    expect(fingerprint_parts('SELECT 1')).to eq ["SELECT", "false", "0", "RESTARGET"]
+    expect(fingerprint_parts('SELECT 1')).to eq ["SelectStmt", "false", "0", "ResTarget"]
     expect(fingerprint_parts('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq([
-      "SELECT", "false", "RANGEVAR", "2", "targets", "p", "0", "RESTARGET", "FUNCCALL",
-      "true", "false", "false", "COLUMNREF", "id", "false", "count", "RESTARGET",
-      "COLUMNREF", "A_STAR", "AEXPR AND", "NULLTEST", "COLUMNREF", "something", "false",
-      "1", "AEXPR", "TYPECAST", "COLUMNREF", "elsewhere", "TYPENAME", "pg_catalog", "interval",
-      "false", "false", "0", "-1", "<", "FUNCCALL", "false", "false", "false", "false", "now"
+      "SelectStmt", "false", "RangeVar", "2", "targets", "p", "0", "ResTarget", "ColumnRef",
+      "A_Star", "ResTarget", "FuncCall", "true", "false", "false", "ColumnRef", "String",
+      "id", "false", "String", "count", "A_Expr", "1", "NullTest", "ColumnRef", "String",
+      "something", "false", "1", "A_Expr", "0", "TypeCast", "ColumnRef", "String", "elsewhere",
+      "TypeName", "String", "pg_catalog", "String", "interval", "false", "false", "0", "-1",
+      "String", "<", "FuncCall", "false", "false", "false", "false", "String", "now"
     ])
   end
 
