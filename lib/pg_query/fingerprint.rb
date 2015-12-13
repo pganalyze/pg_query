@@ -1,8 +1,6 @@
 require 'digest'
 
 class PgQuery
-  A_EXPR_IN = 9
-
   def fingerprint(hash: Digest::SHA1.new) # rubocop:disable Metrics/CyclomaticComplexity
     exprs = parsetree.dup
 
@@ -28,7 +26,7 @@ class PgQuery
             end
             values.sort_by!(&:to_s)
             exprs.unshift(values)
-          elsif k == A_EXPR && v['kind'] == A_EXPR_IN && !v['rexpr'].nil?
+          elsif k == A_EXPR && v['rexpr'].is_a?(Array)
             # Compact identical IN list elements to one
             hsh = deep_dup(v)
             treewalker! hsh['rexpr'] do |expr2, k2, _v|
