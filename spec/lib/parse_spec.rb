@@ -279,7 +279,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE TABLE test (a int4)')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.parsetree).to eq [{described_class::CREATE_STMT_INFO=>
+    expect(query.parsetree).to eq [{described_class::CREATE_STMT=>
        {"relation"=>
          {described_class::RANGE_VAR=>
            {"schemaname"=>nil,
@@ -326,7 +326,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE TABLE test (a int4) WITH OIDS')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.parsetree).to eq [{described_class::CREATE_STMT_INFO=>
+    expect(query.parsetree).to eq [{described_class::CREATE_STMT=>
        {"relation"=>
          {described_class::RANGE_VAR=>
            {"schemaname"=>nil,

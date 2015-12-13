@@ -73,7 +73,7 @@ class PgQuery
             statements << statement[SELECT_STMT]['larg'] if statement[SELECT_STMT]['larg']
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
-        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, VACUUM_STMT, COPY_STMT, ALTER_TABLE_STMT, CREATE_STMT_INFO, INDEX_STMT, RULE_STMT, CREATE_TRIG_STMT
+        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, VACUUM_STMT, COPY_STMT, ALTER_TABLE_STMT, CREATE_STMT, INDEX_STMT, RULE_STMT, CREATE_TRIG_STMT
           from_clause_items << statement.values[0]['relation']
         when VIEW_STMT
           from_clause_items << statement[VIEW_STMT]['view']

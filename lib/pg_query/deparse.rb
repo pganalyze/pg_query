@@ -83,7 +83,7 @@ class PgQuery
         deparse_constraint(node)
       when CREATE_FUNCTION_STMT
         deparse_create_function(node)
-      when CREATE_STMT_INFO
+      when CREATE_STMT
         deparse_create_table(node)
       when DEF_ELEM
         deparse_defelem(node)

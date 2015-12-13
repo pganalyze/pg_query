@@ -21,7 +21,7 @@ class PgQuery
   COPY_STMT = 'CopyStmt'.freeze
   CREATE_FUNCTION_STMT = 'CreateFunctionStmt'.freeze
   CREATE_SCHEMA_STMT = 'CreateSchemaStmt'.freeze
-  CREATE_STMT_INFO = 'CreateStmtInfo'.freeze
+  CREATE_STMT = 'CreateStmt'.freeze
   CREATE_TABLE_AS_STMT = 'CreateTableAsStmt'.freeze
   CREATE_TRIG_STMT = 'CreateTrigStmt'.freeze
   DEF_ELEM = 'DefElem'.freeze
