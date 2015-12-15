@@ -136,7 +136,7 @@ class PgQuery
     def deparse_rangevar(node)
       output = []
       output << 'ONLY' if node['inhOpt'] == 0
-      output << node['relname']
+      output << '"' + node['relname'] + '"'
       output << deparse_item(node['alias']) if node['alias']
       output.join(' ')
     end
