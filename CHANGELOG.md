@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.2    2015-12-20
+
+* Deparsing
+  * Quote all column refs [#40](https://github.com/lfittl/pg_query/pull/40) [@avinoamr](https://github.com/avinoamr)
+  * Quote all range vars [#43](https://github.com/lfittl/pg_query/pull/43) [@avinoamr](https://github.com/avinoamr)
+  * Support for COUNT(DISTINCT ...) [#42](https://github.com/lfittl/pg_query/pull/42) [@avinoamr](https://github.com/avinoamr)
+
+
 ## 0.7.1    2015-11-17
 
 * Abstracted parser access into libpg_query [#24](https://github.com/lfittl/pg_query/pull/35)
