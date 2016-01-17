@@ -6,7 +6,7 @@ class PgQuery
   # Truncates the query string to be below the specified length, first trying to
   # omit less important parts of the query, and only then cutting off the end.
   def truncate(max_length)
-    output = deparse(parsetree)
+    output = deparse(@tree)
 
     # Early exit if we're already below the max length
     return output if output.size <= max_length
@@ -16,7 +16,7 @@ class PgQuery
     # Truncate the deepest possible truncation that is the longest first
     truncations.sort_by! { |t| [-t.location.size, -t.length] }
 
-    tree = deep_dup(parsetree)
+    tree = deep_dup(@tree)
     truncations.each do |truncation|
       next if truncation.length < 3
 
@@ -38,7 +38,7 @@ class PgQuery
   def find_possible_truncations
     truncations = []
 
-    treewalker! parsetree do |_expr, k, v, location|
+    treewalker! @tree do |_expr, k, v, location|
       case k
       when 'targetList'
         length = deparse([{ SELECT_STMT => { k => v } }]).size - 'SELECT '.size

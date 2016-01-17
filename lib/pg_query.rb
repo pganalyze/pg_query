@@ -7,6 +7,8 @@ require 'pg_query/treewalker'
 require 'pg_query/node_types'
 require 'pg_query/deep_dup'
 
+require 'pg_query/legacy_parsetree'
+
 require 'pg_query/filter_columns'
 require 'pg_query/fingerprint'
 require 'pg_query/param_refs'

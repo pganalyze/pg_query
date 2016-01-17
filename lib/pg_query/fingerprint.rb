@@ -2,7 +2,7 @@ require 'digest'
 
 class PgQuery
   def fingerprint(hash: Digest::SHA1.new) # rubocop:disable Metrics/CyclomaticComplexity
-    exprs = parsetree.dup
+    exprs = @tree.dup
 
     loop do
       expr = exprs.shift

@@ -67,4 +67,13 @@ class PgQuery
   WITH_CLAUSE = 'WithClause'.freeze
   STRING = 'String'.freeze
   INTEGER = 'Integer'.freeze
+
+  # FIXME
+  CONSTRAINT_TYPES = [
+    nil, # 0
+    nil, # 1
+    nil, # 2
+    nil, # 3
+    'PRIMARY_KEY'
+  ]
 end

@@ -2,10 +2,10 @@ require 'json'
 
 class PgQuery
   def self.parse(query)
-    parsetree, stderr = _raw_parse(query)
+    tree, stderr = _raw_parse(query)
 
     begin
-      parsetree = JSON.parse(parsetree, max_nesting: 1000)
+      tree = JSON.parse(tree, max_nesting: 1000)
     rescue JSON::ParserError
       raise ParseError.new('Failed to parse JSON', __FILE__, __LINE__, -1)
     end
@@ -16,16 +16,16 @@ class PgQuery
       warnings << line.strip
     end
 
-    PgQuery.new(query, parsetree, warnings)
+    PgQuery.new(query, tree, warnings)
   end
 
   attr_reader :query
-  attr_reader :parsetree
+  attr_reader :tree
   attr_reader :warnings
 
-  def initialize(query, parsetree, warnings = [])
+  def initialize(query, tree, warnings = [])
     @query = query
-    @parsetree = parsetree
+    @tree = tree
     @warnings = warnings
   end
 
@@ -45,7 +45,7 @@ class PgQuery
     @tables = []
     @aliases = {}
 
-    statements = @parsetree.dup
+    statements = @tree.dup
     from_clause_items = []
     where_clause_items = []
 

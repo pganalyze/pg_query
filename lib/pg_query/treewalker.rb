@@ -29,4 +29,25 @@ class PgQuery
       block.call(expr, k, v)
     end
   end
+
+  def transform_nodes!(parsetree, &block)
+    result = deep_dup(parsetree)
+    exprs = result.dup
+
+    loop do
+      expr = exprs.shift
+
+      if expr.is_a?(Hash)
+        block.call(expr) if expr.size == 1 && expr.keys[0][/^[A-Z]+/]
+
+        exprs += expr.values.compact
+      elsif expr.is_a?(Array)
+        exprs += expr
+      end
+
+      break if exprs.empty?
+    end
+
+    result
+  end
 end

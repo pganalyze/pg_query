@@ -7,7 +7,7 @@ class PgQuery
     load_tables_and_aliases! if @aliases.nil?
 
     # Get condition items from the parsetree
-    statements = @parsetree.dup
+    statements = @tree.dup
     condition_items = []
     filter_columns = []
     loop do

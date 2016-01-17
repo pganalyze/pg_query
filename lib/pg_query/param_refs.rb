@@ -2,7 +2,7 @@ class PgQuery
   def param_refs # rubocop:disable Metrics/CyclomaticComplexity
     results = []
 
-    treewalker! parsetree do |_, _, v|
+    treewalker! @tree do |_, _, v|
       next unless v.is_a?(Hash)
 
       if v[PARAM_REF]

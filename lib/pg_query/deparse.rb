@@ -2,7 +2,7 @@ require_relative 'deparse/interval'
 require_relative 'deparse/alter_table'
 class PgQuery
   # Reconstruct all of the parsed queries into their original form
-  def deparse(tree = @parsetree)
+  def deparse(tree = @tree)
     tree.map do |item|
       Deparse.from(item)
     end.join('; ')
@@ -248,7 +248,7 @@ class PgQuery
     end
 
     def deparse_paramref(node)
-      if node['number'] == 0
+      if node['number'].nil?
         '?'
       else
         format('$%d', node['number'])

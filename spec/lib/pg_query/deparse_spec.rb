@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe PgQuery::Deparse do
   let(:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip.chomp(';') }
-  let(:parsetree) { PgQuery.parse(query).parsetree }
+  let(:parsetree) { PgQuery.parse(query).tree }
 
   describe '.from' do
     subject { described_class.from(parsetree.first) }
@@ -403,7 +403,7 @@ describe PgQuery::Deparse do
                 stamptz    timestamp with time zone,
                 time       time NOT NULL,
                 timetz     time with time zone,
-                CONSTRAINT name_len PRIMARY KEY (\"name\", \"len\")
+                CONSTRAINT name_len PRIMARY KEY ("name", "len")
             );
           '''
         end
@@ -561,8 +561,8 @@ describe PgQuery::Deparse do
         let(:query) { 'CREATE VIEW view_a ("a", "b") AS WITH RECURSIVE view_a ("a", "b") AS (SELECT * FROM a(1)) SELECT "a", "b" FROM "view_a"' }
 
         it 'parses both and deparses into the normalized form' do
-          expect(described_class.from(PgQuery.parse(query).parsetree.first)).to eq(query)
-          expect(described_class.from(PgQuery.parse(shorthand_query).parsetree.first)).to eq(query)
+          expect(described_class.from(PgQuery.parse(query).tree.first)).to eq(query)
+          expect(described_class.from(PgQuery.parse(shorthand_query).tree.first)).to eq(query)
         end
       end
     end

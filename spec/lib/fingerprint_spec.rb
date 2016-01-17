@@ -26,47 +26,47 @@ end
 
 describe PgQuery, "#fingerprint" do
   it "returns expected hash values" do
-    expect(fingerprint('SELECT 1')).to eq '31dc5500dc27777a26160cb1b0faa11495f150d8'
-    expect(fingerprint('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq '1e014ccea580bb5dea8b4a66893b3c508d6261f0'
-    expect(fingerprint('INSERT INTO test (a, b) VALUES (?, ?)')).to eq 'f3f2847a56d9b67f11e1905d2365bc627f852220'
-    expect(fingerprint('INSERT INTO test (b, a) VALUES (?, ?)')).to eq 'f3f2847a56d9b67f11e1905d2365bc627f852220'
-    expect(fingerprint('SELECT b AS x, a AS y FROM z')).to eq '7c361dd7a746418464fdf666cfae7be6a0f873aa'
-    expect(fingerprint('SELECT * FROM x WHERE y IN (?)')).to eq 'd15431e54000f340c2bfca70ed3a0f31b2e55061'
-    expect(fingerprint('SELECT * FROM x WHERE y IN (?, ?, ?)')).to eq 'd15431e54000f340c2bfca70ed3a0f31b2e55061'
-    expect(fingerprint('SELECT * FROM x WHERE y IN ( ?::uuid )')).to eq 'bd7dcab89d5a8ad04b5f7e352030f47d5abd1eab'
-    expect(fingerprint('SELECT * FROM x WHERE y IN ( ?::uuid, ?::uuid, ?::uuid )')).to eq 'bd7dcab89d5a8ad04b5f7e352030f47d5abd1eab'
+    expect(fingerprint('SELECT 1')).to eq 'f6896cf5c913b43e12713519e6dd932d5bba19ef'
+    expect(fingerprint('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq '5fd30a147ad4d9851cb8a06816bfe30e8c20605c'
+    expect(fingerprint('INSERT INTO test (a, b) VALUES (?, ?)')).to eq '8cd42877003c14e824ca237d5cc59c16ac3c33fa'
+    expect(fingerprint('INSERT INTO test (b, a) VALUES (?, ?)')).to eq '8cd42877003c14e824ca237d5cc59c16ac3c33fa'
+    expect(fingerprint('SELECT b AS x, a AS y FROM z')).to eq '836c1a419a21422f08df261eca3ecfbdd9dd1082'
+    expect(fingerprint('SELECT * FROM x WHERE y IN (?)')).to eq 'aeafc881fb0bd6ff3d56a25ce30f291bf5c1ee93'
+    expect(fingerprint('SELECT * FROM x WHERE y IN (?, ?, ?)')).to eq 'aeafc881fb0bd6ff3d56a25ce30f291bf5c1ee93'
+    expect(fingerprint('SELECT * FROM x WHERE y IN ( ?::uuid )')).to eq 'f9751ace7942f0874d77c8d625aca65bce3c7230'
+    expect(fingerprint('SELECT * FROM x WHERE y IN ( ?::uuid, ?::uuid, ?::uuid )')).to eq 'f9751ace7942f0874d77c8d625aca65bce3c7230'
   end
 
   it "returns expected hash parts" do
-    expect(fingerprint_parts('SELECT 1')).to eq ["SelectStmt", "false", "0", "ResTarget"]
+    expect(fingerprint_parts('SELECT 1')).to eq ["SelectStmt", "0", "ResTarget"]
     expect(fingerprint_parts('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq([
-      "SelectStmt", "false", "RangeVar", "2", "targets", "p", "0", "ResTarget", "ColumnRef",
-      "A_Star", "ResTarget", "FuncCall", "true", "false", "false", "ColumnRef", "String",
-      "id", "false", "String", "count", "A_Expr", "1", "NullTest", "ColumnRef", "String",
-      "something", "false", "1", "A_Expr", "0", "TypeCast", "ColumnRef", "String", "elsewhere",
-      "TypeName", "String", "pg_catalog", "String", "interval", "false", "false", "0", "-1",
-      "String", "<", "FuncCall", "false", "false", "false", "false", "String", "now"
+      "SelectStmt", "RangeVar", "2", "targets", "p", "0", "ResTarget", "ColumnRef",
+      "A_Star", "ResTarget", "FuncCall", "true", "ColumnRef", "String",
+      "id", "String", "count", "A_Expr", "1", "NullTest", "ColumnRef", "String",
+      "something", "1", "A_Expr", "0", "TypeCast", "ColumnRef", "String", "elsewhere",
+      "TypeName", "String", "pg_catalog", "String", "interval", "-1",
+      "String", "<", "FuncCall", "String", "now"
     ])
     expect(fingerprint_parts('INSERT INTO test (a, b) VALUES (?, ?)')).to eq([
-      "InsertStmt", "ResTarget", "a", "ResTarget", "b", "RangeVar", "2", "test", "p", "SelectStmt", "false", "0"
+      "InsertStmt", "ResTarget", "a", "ResTarget", "b", "RangeVar", "2", "test", "p", "SelectStmt", "0"
     ])
     expect(fingerprint_parts('INSERT INTO test (b, a) VALUES (?, ?)')).to eq([
-      "InsertStmt", "ResTarget", "a", "ResTarget", "b", "RangeVar", "2", "test", "p", "SelectStmt", "false", "0"
+      "InsertStmt", "ResTarget", "a", "ResTarget", "b", "RangeVar", "2", "test", "p", "SelectStmt", "0"
     ])
     expect(fingerprint_parts('SELECT b AS x, a AS y FROM z')).to eq([
-      "SelectStmt", "false", "RangeVar", "2", "z", "p", "0", "ResTarget", "ColumnRef", "String", "a", "ResTarget", "ColumnRef", "String", "b"
+      "SelectStmt", "RangeVar", "2", "z", "p", "0", "ResTarget", "ColumnRef", "String", "a", "ResTarget", "ColumnRef", "String", "b"
     ])
     expect(fingerprint_parts('SELECT * FROM x WHERE y IN (?)')).to eq([
-      "SelectStmt", "false", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "="
+      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "="
     ])
     expect(fingerprint_parts('SELECT * FROM x WHERE y IN (?, ?, ?)')).to eq([
-      "SelectStmt", "false", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "="
+      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "="
     ])
     expect(fingerprint_parts('SELECT * FROM x WHERE y IN ( ?::uuid )')).to eq([
-      "SelectStmt", "false", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "=", "TypeCast", "TypeName", "String", "uuid", "false", "false", "0", "-1"
+      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "=", "TypeCast", "TypeName", "String", "uuid", "-1"
     ])
     expect(fingerprint_parts('SELECT * FROM x WHERE y IN ( ?::uuid, ?::uuid, ?::uuid )')).to eq([
-      "SelectStmt", "false", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "=", "TypeCast", "TypeName", "String", "uuid", "false", "false", "0", "-1"
+      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "=", "TypeCast", "TypeName", "String", "uuid", "-1"
     ])
   end
 
