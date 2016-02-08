@@ -2,58 +2,95 @@ require 'digest'
 
 class PgQuery
   def fingerprint(hash: Digest::SHA1.new) # rubocop:disable Metrics/CyclomaticComplexity
-    exprs = @tree.dup
-
-    loop do
-      expr = exprs.shift
-
-      if expr.is_a?(Hash)
-        expr.sort_by { |k, _| k }.reverse_each do |k, v|
-          next if [A_CONST, ALIAS, PARAM_REF, 'location'].include?(k)
-
-          if k == 'targetList' && !v.nil?
-            values = deep_dup(v)
-            values.each do |v2|
-              v2[RES_TARGET].delete('location')
-              v2[RES_TARGET].delete('name')
-            end
-            values.sort_by!(&:to_s)
-            exprs.unshift(values)
-          elsif k == 'cols' && !v.nil?
-            values = deep_dup(v)
-            values.each do |v2|
-              v2[RES_TARGET].delete('location')
-            end
-            values.sort_by!(&:to_s)
-            exprs.unshift(values)
-          elsif k == A_EXPR && v['rexpr'].is_a?(Array)
-            # Compact identical IN list elements to one
-            hsh = deep_dup(v)
-            treewalker! hsh['rexpr'] do |expr2, k2, _v|
-              next unless k2 == 'location'
-              expr2.delete(k2)
-            end
-            hsh['rexpr'].uniq!
-            exprs.unshift(hsh)
-          elsif v.is_a?(Hash)
-            exprs.unshift(v)
-          elsif v.is_a?(Array)
-            exprs = v + exprs
-          elsif !v.nil?
-            exprs.unshift(v)
-          end
-
-          exprs.unshift(k) if k[/^[A-Z]+/]
-        end
-      elsif expr.is_a?(Array)
-        exprs = expr + exprs
-      else
-        hash.update expr.to_s
-      end
-
-      break if exprs.empty?
+    @tree.each do |node|
+      fingerprint_node(node, hash)
     end
 
     hash.hexdigest
+  end
+
+  private
+
+  class FingerprintSubHash
+    attr_reader :parts
+
+    def initialize
+      @parts = []
+    end
+
+    def update(part)
+      @parts << part
+    end
+
+    def flush_to(hash)
+      parts.each do |part|
+        hash.update part
+      end
+    end
+  end
+
+  def ignored_fingerprint_value?(val)
+    [nil, 0, false, [], ''].include?(val)
+  end
+
+  def fingerprint_value(val, hash, field_name, need_to_write_name)
+    return if ignored_fingerprint_value?(val)
+
+    subhash = FingerprintSubHash.new
+
+    if val.is_a?(Hash)
+      fingerprint_node(val, subhash, field_name)
+    elsif val.is_a?(Array)
+      fingerprint_list(val, subhash, field_name)
+    else
+      subhash.update val.to_s
+    end
+
+    return if subhash.parts.empty?
+
+    hash.update(field_name) if need_to_write_name
+    subhash.flush_to(hash)
+  end
+
+  def fingerprint_node(node, hash, parent_field_name = nil)
+    node_name = node.keys.first
+    return if [A_CONST, ALIAS, PARAM_REF, SET_TO_DEFAULT].include?(node_name)
+
+    hash.update node_name
+
+    node.values.first.sort_by { |k, _| k }.each do |field_name, val|
+      next if ignored_fingerprint_value?(val)
+
+      case field_name
+      when 'location'
+        next
+      when 'name'
+        next if node_name == RES_TARGET && parent_field_name == 'targetList'
+        next if [PREPARE_STMT, EXECUTE_STMT, DEALLOCATE_STMT].include?(node_name)
+      end
+
+      fingerprint_value(val, hash, field_name, true)
+    end
+  end
+
+  def fingerprint_list(values, hash, parent_field_name)
+    if ['fromClause', 'targetList', 'cols', 'rexpr'].include?(parent_field_name)
+      values_subhashes = values.map do |val|
+        subhash = FingerprintSubHash.new
+        fingerprint_value(val, subhash, parent_field_name, false)
+        subhash
+      end
+
+      values_subhashes.uniq!(&:parts)
+      values_subhashes.sort_by!(&:parts)
+
+      values_subhashes.each do |subhash|
+        subhash.flush_to(hash)
+      end
+    else
+      values.each do |val|
+        fingerprint_value(val, hash, parent_field_name, false)
+      end
+    end
   end
 end

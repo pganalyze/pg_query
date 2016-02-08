@@ -7,6 +7,7 @@ LIB_PG_QUERY_TAG = '9.5-latest'
 
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
+gemdir = File.join(File.dirname(__FILE__), '../..')
 
 unless File.exist?("#{workdir}/libpg_query.tar.gz")
   File.open("#{workdir}/libpg_query.tar.gz", 'wb') do |target_file|
@@ -22,6 +23,9 @@ end
 
 # Build libpg_query (and parts of PostgreSQL)
 system("cd #{libdir}; make DEBUG=0")
+
+# Copy test files (this intentionally overwrites existing files!)
+system("cp #{libdir}/tests/* #{gemdir}/spec/files/")
 
 $objs = ['pg_query_ruby.o']
 

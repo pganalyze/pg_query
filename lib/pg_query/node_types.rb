@@ -67,6 +67,10 @@ class PgQuery
   WITH_CLAUSE = 'WithClause'.freeze
   STRING = 'String'.freeze
   INTEGER = 'Integer'.freeze
+  SET_TO_DEFAULT = 'SetToDefault'.freeze
+  PREPARE_STMT = 'PrepareStmt'.freeze
+  EXECUTE_STMT = 'ExecuteStmt'.freeze
+  DEALLOCATE_STMT = 'DeallocateStmt'.freeze
 
   # FIXME
   CONSTRAINT_TYPES = [

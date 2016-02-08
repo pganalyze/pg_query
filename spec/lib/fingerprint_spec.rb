@@ -24,50 +24,19 @@ def fingerprint_parts(qstr)
   q.fingerprint(hash: FingerprintTestHash.new)
 end
 
-describe PgQuery, "#fingerprint" do
-  it "returns expected hash values" do
-    expect(fingerprint('SELECT 1')).to eq 'f6896cf5c913b43e12713519e6dd932d5bba19ef'
-    expect(fingerprint('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq '5fd30a147ad4d9851cb8a06816bfe30e8c20605c'
-    expect(fingerprint('INSERT INTO test (a, b) VALUES (?, ?)')).to eq '8cd42877003c14e824ca237d5cc59c16ac3c33fa'
-    expect(fingerprint('INSERT INTO test (b, a) VALUES (?, ?)')).to eq '8cd42877003c14e824ca237d5cc59c16ac3c33fa'
-    expect(fingerprint('SELECT b AS x, a AS y FROM z')).to eq '836c1a419a21422f08df261eca3ecfbdd9dd1082'
-    expect(fingerprint('SELECT * FROM x WHERE y IN (?)')).to eq 'aeafc881fb0bd6ff3d56a25ce30f291bf5c1ee93'
-    expect(fingerprint('SELECT * FROM x WHERE y IN (?, ?, ?)')).to eq 'aeafc881fb0bd6ff3d56a25ce30f291bf5c1ee93'
-    expect(fingerprint('SELECT * FROM x WHERE y IN ( ?::uuid )')).to eq 'f9751ace7942f0874d77c8d625aca65bce3c7230'
-    expect(fingerprint('SELECT * FROM x WHERE y IN ( ?::uuid, ?::uuid, ?::uuid )')).to eq 'f9751ace7942f0874d77c8d625aca65bce3c7230'
-  end
+def fingerprint_defs
+  @fingerprint_defs ||= JSON.parse File.read(File.join(File.dirname(__FILE__), '../files/fingerprint.json'))
+end
 
-  it "returns expected hash parts" do
-    expect(fingerprint_parts('SELECT 1')).to eq ["SelectStmt", "0", "ResTarget"]
-    expect(fingerprint_parts('SELECT COUNT(DISTINCT id), * FROM targets WHERE something IS NOT NULL AND elsewhere::interval < now()')).to eq([
-      "SelectStmt", "RangeVar", "2", "targets", "p", "0", "ResTarget", "ColumnRef",
-      "A_Star", "ResTarget", "FuncCall", "true", "ColumnRef", "String",
-      "id", "String", "count", "A_Expr", "1", "NullTest", "ColumnRef", "String",
-      "something", "1", "A_Expr", "0", "TypeCast", "ColumnRef", "String", "elsewhere",
-      "TypeName", "String", "pg_catalog", "String", "interval", "-1",
-      "String", "<", "FuncCall", "String", "now"
-    ])
-    expect(fingerprint_parts('INSERT INTO test (a, b) VALUES (?, ?)')).to eq([
-      "InsertStmt", "ResTarget", "a", "ResTarget", "b", "RangeVar", "2", "test", "p", "SelectStmt", "0"
-    ])
-    expect(fingerprint_parts('INSERT INTO test (b, a) VALUES (?, ?)')).to eq([
-      "InsertStmt", "ResTarget", "a", "ResTarget", "b", "RangeVar", "2", "test", "p", "SelectStmt", "0"
-    ])
-    expect(fingerprint_parts('SELECT b AS x, a AS y FROM z')).to eq([
-      "SelectStmt", "RangeVar", "2", "z", "p", "0", "ResTarget", "ColumnRef", "String", "a", "ResTarget", "ColumnRef", "String", "b"
-    ])
-    expect(fingerprint_parts('SELECT * FROM x WHERE y IN (?)')).to eq([
-      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "="
-    ])
-    expect(fingerprint_parts('SELECT * FROM x WHERE y IN (?, ?, ?)')).to eq([
-      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "="
-    ])
-    expect(fingerprint_parts('SELECT * FROM x WHERE y IN ( ?::uuid )')).to eq([
-      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "=", "TypeCast", "TypeName", "String", "uuid", "-1"
-    ])
-    expect(fingerprint_parts('SELECT * FROM x WHERE y IN ( ?::uuid, ?::uuid, ?::uuid )')).to eq([
-      "SelectStmt", "RangeVar", "2", "x", "p", "0", "ResTarget", "ColumnRef", "A_Star", "A_Expr", "9", "ColumnRef", "String", "y", "String", "=", "TypeCast", "TypeName", "String", "uuid", "-1"
-    ])
+describe PgQuery, "#fingerprint" do
+  fingerprint_defs.each do |testdef|
+    it format("returns expected hash value for '%s'", testdef['input']) do
+      expect(fingerprint(testdef['input'])).to eq(testdef['expectedHash'])
+    end
+
+    it format("returns expected hash parts for '%s'", testdef['input']) do
+      expect(fingerprint_parts(testdef['input'])).to eq(testdef['expectedParts'])
+    end
   end
 
   it "works for basic cases" do
