@@ -1,7 +1,7 @@
 require 'digest'
 
 class PgQuery
-  def fingerprint(hash: Digest::SHA1.new) # rubocop:disable Metrics/CyclomaticComplexity
+  def fingerprint(hash: Digest::SHA1.new)
     @tree.each do |node|
       fingerprint_node(node, hash)
     end
@@ -52,7 +52,7 @@ class PgQuery
     subhash.flush_to(hash)
   end
 
-  def fingerprint_node(node, hash, parent_field_name = nil)
+  def fingerprint_node(node, hash, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
     node_name = node.keys.first
     return if [A_CONST, ALIAS, PARAM_REF, SET_TO_DEFAULT].include?(node_name)
 
@@ -65,7 +65,7 @@ class PgQuery
       when 'location'
         next
       when 'name'
-        next if node_name == RES_TARGET && parent_field_name == 'targetList'
+        next if node_name == RES_TARGET && parent_field_name == TARGET_LIST_FIELD
         next if [PREPARE_STMT, EXECUTE_STMT, DEALLOCATE_STMT].include?(node_name)
       end
 
@@ -74,7 +74,7 @@ class PgQuery
   end
 
   def fingerprint_list(values, hash, parent_field_name)
-    if ['fromClause', 'targetList', 'cols', 'rexpr'].include?(parent_field_name)
+    if [FROM_CLAUSE_FIELD, TARGET_LIST_FIELD, COLS_FIELD, REXPR_FIELD].include?(parent_field_name)
       values_subhashes = values.map do |val|
         subhash = FingerprintSubHash.new
         fingerprint_value(val, subhash, parent_field_name, false)

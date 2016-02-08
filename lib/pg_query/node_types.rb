@@ -72,6 +72,11 @@ class PgQuery
   EXECUTE_STMT = 'ExecuteStmt'.freeze
   DEALLOCATE_STMT = 'DeallocateStmt'.freeze
 
+  FROM_CLAUSE_FIELD = 'fromClause'.freeze
+  TARGET_LIST_FIELD = 'targetList'.freeze
+  COLS_FIELD = 'cols'.freeze
+  REXPR_FIELD = 'rexpr'.freeze
+
   # FIXME
   CONSTRAINT_TYPES = [
     nil, # 0

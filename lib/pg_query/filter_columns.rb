@@ -15,15 +15,15 @@ class PgQuery
       if statement
         if statement[SELECT_STMT]
           if statement[SELECT_STMT]['op'] == 0
-            if statement[SELECT_STMT]['fromClause']
+            if statement[SELECT_STMT][FROM_CLAUSE_FIELD]
               # FROM subselects
-              statement[SELECT_STMT]['fromClause'].each do |item|
+              statement[SELECT_STMT][FROM_CLAUSE_FIELD].each do |item|
                 next unless item['RangeSubselect']
                 statements << item['RangeSubselect']['subquery']
               end
 
               # JOIN ON conditions
-              condition_items += conditions_from_join_clauses(statement[SELECT_STMT]['fromClause'])
+              condition_items += conditions_from_join_clauses(statement[SELECT_STMT][FROM_CLAUSE_FIELD])
             end
 
             # WHERE clause

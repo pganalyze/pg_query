@@ -4,14 +4,14 @@ describe PgQuery do
   def parse_expr(expr)
     q = described_class.parse("SELECT " + expr + " FROM x")
     expect(q.tree).not_to be_nil
-    r = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    r = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(r[described_class::A_EXPR]).not_to be_nil
     r[described_class::A_EXPR]
   end
 
   it "parses a normalized query" do
     query = described_class.parse("SELECT ? FROM x")
-    expect(query.tree).to eq [{described_class::SELECT_STMT=>{"targetList"=>[{described_class::RES_TARGET=>{"val"=>{described_class::PARAM_REF=>{"location"=>7}}, "location"=>7}}],
+    expect(query.tree).to eq [{described_class::SELECT_STMT=>{described_class::TARGET_LIST_FIELD=>[{described_class::RES_TARGET=>{"val"=>{described_class::PARAM_REF=>{"location"=>7}}, "location"=>7}}],
                                     "fromClause"=>[{described_class::RANGE_VAR=>{"relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "location"=>14}}],
                                     "op"=>0}}]
     expect(query.query).to eq "SELECT ? FROM x"
@@ -19,7 +19,7 @@ describe PgQuery do
 
   it 'keep locations correct' do
     query = described_class.parse("SELECT ?, 123")
-    targetlist = query.tree[0][described_class::SELECT_STMT]["targetList"]
+    targetlist = query.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD]
     expect(targetlist[0][described_class::RES_TARGET]["location"]).to eq 7
     expect(targetlist[1][described_class::RES_TARGET]["location"]).to eq 10
   end
@@ -27,7 +27,7 @@ describe PgQuery do
   it "parses INTERVAL ?" do
     query = described_class.parse("SELECT INTERVAL ?")
     expect(query.tree).not_to be_nil
-    targetlist = query.tree[0][described_class::SELECT_STMT]["targetList"]
+    targetlist = query.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD]
     expect(targetlist[0][described_class::RES_TARGET]["val"]).to eq(described_class::TYPE_CAST => {"arg"=>{described_class::PARAM_REF => {"location"=>16}},
                                                     "typeName"=>{described_class::TYPE_NAME=>{"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"interval"}}],
                                                                  "typemod"=>-1, "location"=>7}},
@@ -37,7 +37,7 @@ describe PgQuery do
   it "parses INTERVAL ? hour" do
     q = described_class.parse("SELECT INTERVAL ? hour")
     expect(q.tree).not_to be_nil
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::TYPE_CAST => {"arg"=>{described_class::PARAM_REF => {"location"=>16}},
                                       "typeName"=>{described_class::TYPE_NAME=>{"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"interval"}}],
                                                                 "typmods"=>[{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 0}}, "location"=>-1}}],
@@ -53,7 +53,7 @@ describe PgQuery do
   it "parses 'a ? b' in target list" do
     q = described_class.parse("SELECT a ? b")
     expect(q.tree).not_to be_nil
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::A_EXPR => {"kind"=>0,
                                                    "name"=>[{"String"=>{"str"=>"?"}}],
                                                    "lexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"a"}}], "location"=>7}},
@@ -79,7 +79,7 @@ describe PgQuery do
     # but we can't avoid that.
     q = described_class.parse("SELECT ? a")
     expect(q.tree).not_to be_nil
-    restarget = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]
+    restarget = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]
     expect(restarget).to eq("name"=>"a",
                             "val"=>{described_class::PARAM_REF=>{"location"=>7}},
                             "location"=>7)
@@ -88,7 +88,7 @@ describe PgQuery do
   it "parses 'a ?, b' in target list" do
     q = described_class.parse("SELECT a ?, b")
     expect(q.tree).not_to be_nil
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::A_EXPR =>
     {
       "kind"=>0,
@@ -328,7 +328,7 @@ describe PgQuery do
 
   it "parses substituted pseudo keywords in extract()" do
     q = described_class.parse("SELECT extract(? from NOW())")
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::FUNC_CALL =>
     {
       "funcname"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"date_part"}}],

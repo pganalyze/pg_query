@@ -55,7 +55,7 @@ class PgQuery
         case statement.keys[0]
         when SELECT_STMT
           if statement[SELECT_STMT]['op'] == 0
-            (statement[SELECT_STMT]['fromClause'] || []).each do |item|
+            (statement[SELECT_STMT][FROM_CLAUSE_FIELD] || []).each do |item|
               if item[RANGE_SUBSELECT]
                 statements << item[RANGE_SUBSELECT]['subquery']
               else

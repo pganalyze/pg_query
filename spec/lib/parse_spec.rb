@@ -3,7 +3,7 @@ require 'spec_helper'
 describe PgQuery, '.parse' do
   it "parses a simple query" do
     query = described_class.parse("SELECT 1")
-    expect(query.tree).to eq [{described_class::SELECT_STMT=>{"targetList"=>[{described_class::RES_TARGET=>{"val"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>7}}, "location"=>7}}], "op"=>0}}]
+    expect(query.tree).to eq [{described_class::SELECT_STMT=>{described_class::TARGET_LIST_FIELD=>[{described_class::RES_TARGET=>{"val"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>7}}, "location"=>7}}], "op"=>0}}]
   end
 
   it "handles errors" do
@@ -29,25 +29,25 @@ describe PgQuery, '.parse' do
 
   it "parses floats with leading dot" do
     q = described_class.parse("SELECT .1")
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::FLOAT => {"str" => ".1"}}, "location"=>7})
   end
 
   it "parses floats with trailing dot" do
     q = described_class.parse("SELECT 1.")
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::FLOAT => {"str" => "1."}}, "location"=>7})
   end
 
   it 'parses bit strings (binary notation)' do
     q = described_class.parse("SELECT B'0101'")
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::BIT_STRING => {"str" => "b0101"}}, "location"=>7})
   end
 
   it 'parses bit strings (hex notation)' do
     q = described_class.parse("SELECT X'EFFF'")
-    expr = q.tree[0][described_class::SELECT_STMT]["targetList"][0][described_class::RES_TARGET]["val"]
+    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
     expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::BIT_STRING => {"str" => "xEFFF"}}, "location"=>7})
   end
 
@@ -167,7 +167,7 @@ describe PgQuery, '.parse' do
     expect(query.tree).to eq [{described_class::CREATE_TABLE_AS_STMT=>
           {"query"=>
             {described_class::SELECT_STMT=>
-              {"targetList"=>
+              {described_class::TARGET_LIST_FIELD=>
                 [{described_class::RES_TARGET=>
                    {"val"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>33}},
                     "location"=>33}}],
@@ -291,7 +291,7 @@ describe PgQuery, '.parse' do
           "location"=>12}},
       "query"=>
        {described_class::SELECT_STMT=>
-         {"targetList"=>
+         {described_class::TARGET_LIST_FIELD=>
            [{described_class::RES_TARGET=>
               {"val"=>
                 {described_class::COLUMN_REF=>{"fields"=>[{described_class::A_STAR=>{}}], "location"=>29}},
@@ -465,7 +465,7 @@ describe PgQuery, '.parse' do
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['a', 'x']
     expect(query.tree).to eq [{described_class::SELECT_STMT=>
-   {"targetList"=>
+   {described_class::TARGET_LIST_FIELD=>
      [{described_class::RES_TARGET=>
         {"val"=>{described_class::COLUMN_REF=>{"fields"=>[{described_class::A_STAR=>{}}], "location"=>61}},
          "location"=>61}}],
@@ -482,7 +482,7 @@ describe PgQuery, '.parse' do
             {"ctename"=>"a",
              "ctequery"=>
               {described_class::SELECT_STMT=>
-                {"targetList"=>
+                {described_class::TARGET_LIST_FIELD=>
                   [{described_class::RES_TARGET=>
                      {"val"=>
                        {described_class::COLUMN_REF=>

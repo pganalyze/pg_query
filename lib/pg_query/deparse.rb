@@ -592,16 +592,16 @@ class PgQuery
 
       output << deparse_item(node['withClause']) if node['withClause']
 
-      if node['targetList']
+      if node[TARGET_LIST_FIELD]
         output << 'SELECT'
-        output << node['targetList'].map do |item|
+        output << node[TARGET_LIST_FIELD].map do |item|
           deparse_item(item, :select)
         end.join(', ')
       end
 
-      if node['fromClause']
+      if node[FROM_CLAUSE_FIELD]
         output << 'FROM'
-        output << node['fromClause'].map do |item|
+        output << node[FROM_CLAUSE_FIELD].map do |item|
           deparse_item(item)
         end.join(', ')
       end
@@ -681,9 +681,9 @@ class PgQuery
       output << 'UPDATE'
       output << deparse_item(node['relation'])
 
-      if node['targetList']
+      if node[TARGET_LIST_FIELD]
         output << 'SET'
-        node['targetList'].each do |item|
+        node[TARGET_LIST_FIELD].each do |item|
           output << deparse_item(item, :update)
         end
       end
