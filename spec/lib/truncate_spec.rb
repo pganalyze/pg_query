@@ -25,4 +25,9 @@ describe PgQuery, '#truncate' do
     query = 'SELECT * FROM t'
     expect(described_class.parse(query).truncate(10)).to eq 'SELECT ...'
   end
+
+  it 'works problematic cases' do
+    query = 'SELECT CASE WHEN $2.typtype = ? THEN $2.typtypmod ELSE $1.atttypmod END'
+    expect(described_class.parse(query).truncate(50)).to eq 'SELECT ...'
+  end
 end
