@@ -3,12 +3,14 @@
 require 'mkmf'
 require 'open-uri'
 
+LIB_PG_QUERY_TAG = '9.4-1.0.0'
+
 workdir = Dir.pwd
-libdir = File.join(workdir, 'libpg_query-master')
+libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
 
 unless File.exist?("#{workdir}/libpg_query.tar.gz")
   File.open("#{workdir}/libpg_query.tar.gz", 'wb') do |target_file|
-    open('https://codeload.github.com/lfittl/libpg_query/tar.gz/master', 'rb') do |read_file|
+    open('https://codeload.github.com/lfittl/libpg_query/tar.gz/' + LIB_PG_QUERY_TAG, 'rb') do |read_file|
       target_file.write(read_file.read)
     end
   end

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0    2016-03-06
+
+* Use fixed git version for libpg_query (PostgreSQL 9.4 based)
+* NOTE: 0.8 will be the last series with the initial parse tree format, 0.9 will
+        introduce a newer, more stable, but backwards incompatible parse tree format
+
+
 ## 0.7.2    2015-12-20
 
 * Deparsing
