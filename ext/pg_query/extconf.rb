@@ -25,7 +25,7 @@ end
 system("cd #{libdir}; make DEBUG=0")
 
 # Copy test files (this intentionally overwrites existing files!)
-system("cp #{libdir}/tests/* #{gemdir}/spec/files/")
+system("cp #{libdir}/testdata/* #{gemdir}/spec/files/")
 
 $objs = ['pg_query_ruby.o']
 
