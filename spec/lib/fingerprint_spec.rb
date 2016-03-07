@@ -5,7 +5,40 @@ def fingerprint(qstr)
   q.fingerprint
 end
 
+class FingerprintTestHash
+  def initialize
+    @parts = []
+  end
+
+  def update(part)
+    @parts << part
+  end
+
+  def hexdigest
+    @parts
+  end
+end
+
+def fingerprint_parts(qstr)
+  q = PgQuery.parse(qstr)
+  q.fingerprint(hash: FingerprintTestHash.new)
+end
+
+def fingerprint_defs
+  @fingerprint_defs ||= JSON.parse File.read(File.join(File.dirname(__FILE__), '../files/fingerprint.json'))
+end
+
 describe PgQuery, "#fingerprint" do
+  fingerprint_defs.each do |testdef|
+    it format("returns expected hash value for '%s'", testdef['input']) do
+      expect(fingerprint(testdef['input'])).to eq(testdef['expectedHash'])
+    end
+
+    it format("returns expected hash parts for '%s'", testdef['input']) do
+      expect(fingerprint_parts(testdef['input'])).to eq(testdef['expectedParts'])
+    end
+  end
+
   it "works for basic cases" do
     expect(fingerprint("SELECT 1")).to eq fingerprint("SELECT 2")
     expect(fingerprint("SELECT  1")).to eq fingerprint("SELECT 2")

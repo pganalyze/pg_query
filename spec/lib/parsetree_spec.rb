@@ -1,75 +1,59 @@
 require 'spec_helper'
 
-describe PgQuery, '.parse' do
+describe PgQuery, '#parsetree' do
   it "parses a simple query" do
     query = described_class.parse("SELECT 1")
-    expect(query.tree).to eq [{described_class::SELECT_STMT=>{described_class::TARGET_LIST_FIELD=>[{described_class::RES_TARGET=>{"val"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>7}}, "location"=>7}}], "op"=>0}}]
-  end
-
-  it "handles errors" do
-    expect { described_class.parse("SELECT 'ERR") }.to raise_error { |error|
-      expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1116)"
-      expect(error.location).to eq 8 # 8th character in query string
-    }
-  end
-
-  it "parses real queries" do
-    query = described_class.parse("SELECT memory_total_bytes, memory_free_bytes, memory_pagecache_bytes, memory_buffers_bytes, memory_applications_bytes, (memory_swap_total_bytes - memory_swap_free_bytes) AS swap, date_part($0, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON (snapshot_id = s.id) WHERE s.database_id = $0 AND s.collected_at BETWEEN $0 AND $0 ORDER BY collected_at")
-    expect(query.tree).not_to be_nil
-    expect(query.tables).to eq ['snapshots', 'system_snapshots']
+    expect(query.parsetree).to eq [{"SELECT"=>{"targetList"=>[{"RESTARGET"=>{"val"=>{"A_CONST"=>{"type" => "integer", "val"=>1, "location"=>7}}, "location"=>7}}], "op"=>0}}]
   end
 
   it "parses empty queries" do
     query = described_class.parse("-- nothing")
-    expect(query.tree).to eq []
-    expect(query.tables).to eq []
-    expect(query.warnings).to be_empty
+    expect(query.parsetree).to eq []
   end
 
   it "parses floats with leading dot" do
     q = described_class.parse("SELECT .1")
-    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
-    expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::FLOAT => {"str" => ".1"}}, "location"=>7})
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq("A_CONST" => {"type" => "float", "val"=>0.1, "location"=>7})
   end
 
   it "parses floats with trailing dot" do
     q = described_class.parse("SELECT 1.")
-    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
-    expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::FLOAT => {"str" => "1."}}, "location"=>7})
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq("A_CONST" => {"type" => "float", "val"=>1.0, "location"=>7})
   end
 
   it 'parses bit strings (binary notation)' do
     q = described_class.parse("SELECT B'0101'")
-    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
-    expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::BIT_STRING => {"str" => "b0101"}}, "location"=>7})
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq("A_CONST" => {"type" => "bitstring", "val"=>"b0101", "location"=>7})
   end
 
   it 'parses bit strings (hex notation)' do
     q = described_class.parse("SELECT X'EFFF'")
-    expr = q.tree[0][described_class::SELECT_STMT][described_class::TARGET_LIST_FIELD][0][described_class::RES_TARGET]["val"]
-    expect(expr).to eq(described_class::A_CONST => {"val"=>{described_class::BIT_STRING => {"str" => "xEFFF"}}, "location"=>7})
+    expr = q.parsetree[0]["SELECT"]["targetList"][0]["RESTARGET"]["val"]
+    expect(expr).to eq("A_CONST" => {"type" => "bitstring", "val"=>"xEFFF", "location"=>7})
   end
 
   it "parses ALTER TABLE" do
     query = described_class.parse("ALTER TABLE test ADD PRIMARY KEY (gid)")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.tree).to eq [{described_class::ALTER_TABLE_STMT=>
+    expect(query.parsetree).to eq [{"ALTER TABLE"=>
           {"relation"=>
-            {described_class::RANGE_VAR=>
+            {"RANGEVAR"=>
               {"relname"=>"test",
                "inhOpt"=>2,
                "relpersistence"=>"p",
                "location"=>12}},
            "cmds"=>
-            [{described_class::ALTER_TABLE_CMD=>
+            [{"ALTER TABLE CMD"=>
                {"subtype"=>14,
                 "def"=>
-                 {described_class::CONSTRAINT=>
-                   {"contype"=>4,
+                 {"CONSTRAINT"=>
+                   {"contype"=>"PRIMARY_KEY",
                     "location"=>21,
-                    "keys"=>[{"String" => {"str" => "gid"}}]}},
+                    "keys"=>["gid"]}},
                 "behavior"=>0}}],
            "relkind"=>described_class::OBJECT_TYPE_TABLE}}]
   end
@@ -78,39 +62,39 @@ describe PgQuery, '.parse' do
     query = described_class.parse("SET statement_timeout=0")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::VARIABLE_SET_STMT=>
+    expect(query.parsetree).to eq [{"SET"=>
           {"kind"=>0,
            "name"=>"statement_timeout",
-           "args"=>[{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 0}}, "location"=>22}}]}}]
+           "args"=>[{"A_CONST"=>{"type"=>"integer", "val"=>0, "location"=>22}}]}}]
   end
 
   it "parses SHOW" do
     query = described_class.parse("SHOW work_mem")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::VARIABLE_SHOW_STMT=>{"name"=>"work_mem"}}]
+    expect(query.parsetree).to eq [{"SHOW"=>{"name"=>"work_mem"}}]
   end
 
   it "parses COPY" do
     query = described_class.parse("COPY test (id) TO stdout")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.tree).to eq [{described_class::COPY_STMT=>
+    expect(query.parsetree).to eq [{"COPY"=>
           {"relation"=>
-            {described_class::RANGE_VAR=>
+            {"RANGEVAR"=>
               {"relname"=>"test",
                "inhOpt"=>2,
                "relpersistence"=>"p",
                "location"=>5}},
-           "attlist"=>[{"String"=>{"str"=>"id"}}]}}]
+           "attlist"=>["id"]}}]
   end
 
   it "parses DROP TABLE" do
     query = described_class.parse("drop table abc.test123 cascade")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['abc.test123']
-    expect(query.tree).to eq [{described_class::DROP_STMT=>
-          {"objects"=>[[{"String"=>{"str"=>"abc"}}, {"String"=>{"str"=>"test123"}}]],
+    expect(query.parsetree).to eq [{"DROP"=>
+          {"objects"=>[["abc", "test123"]],
            "removeType"=>described_class::OBJECT_TYPE_TABLE,
            "behavior"=>1}}]
   end
@@ -118,23 +102,23 @@ describe PgQuery, '.parse' do
   it "parses COMMIT" do
     query = described_class.parse("COMMIT")
     expect(query.warnings).to eq []
-    expect(query.tree).to eq [{described_class::TRANSACTION_STMT=>{"kind"=>2}}]
+    expect(query.parsetree).to eq [{"TRANSACTION"=>{"kind"=>2}}]
   end
 
   it "parses CHECKPOINT" do
     query = described_class.parse("CHECKPOINT")
     expect(query.warnings).to eq []
-    expect(query.tree).to eq [{described_class::CHECK_POINT_STMT=>{}}]
+    expect(query.parsetree).to eq [{"CHECKPOINT"=>{}}]
   end
 
   it "parses VACUUM" do
     query = described_class.parse("VACUUM my_table")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['my_table']
-    expect(query.tree).to eq [{described_class::VACUUM_STMT=>
+    expect(query.parsetree).to eq [{"VACUUM"=>
           {"options"=>1,
            "relation"=>
-            {described_class::RANGE_VAR=>
+            {"RANGEVAR"=>
               {"relname"=>"my_table",
                "inhOpt"=>2,
                "relpersistence"=>"p",
@@ -145,11 +129,11 @@ describe PgQuery, '.parse' do
     query = described_class.parse("EXPLAIN DELETE FROM test")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.tree).to eq [{described_class::EXPLAIN_STMT=>
+    expect(query.parsetree).to eq [{"EXPLAIN"=>
           {"query"=>
-            {described_class::DELETE_STMT=>
+            {"DELETE FROM"=>
               {"relation"=>
-                {described_class::RANGE_VAR=>
+                {"RANGEVAR"=>
                   {"relname"=>"test",
                    "inhOpt"=>2,
                    "relpersistence"=>"p",
@@ -160,18 +144,18 @@ describe PgQuery, '.parse' do
     query = described_class.parse("CREATE TEMP TABLE test AS SELECT 1")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.tree).to eq [{described_class::CREATE_TABLE_AS_STMT=>
+    expect(query.parsetree).to eq [{"CREATE TABLE AS"=>
           {"query"=>
-            {described_class::SELECT_STMT=>
-              {described_class::TARGET_LIST_FIELD=>
-                [{described_class::RES_TARGET=>
-                   {"val"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>33}},
+            {"SELECT"=>
+              {"targetList"=>
+                [{"RESTARGET"=>
+                   {"val"=>{"A_CONST"=>{"val"=>1, "location"=>33, "type" => "integer"}},
                     "location"=>33}}],
                "op"=>0}},
            "into"=>
-            {described_class::INTO_CLAUSE=>
+            {"INTOCLAUSE"=>
               {"rel"=>
-                {described_class::RANGE_VAR=>
+                {"RANGEVAR"=>
                   {"relname"=>"test",
                    "inhOpt"=>2,
                    "relpersistence"=>"t",
@@ -184,9 +168,9 @@ describe PgQuery, '.parse' do
     query = described_class.parse("LOCK TABLE public.schema_migrations IN ACCESS SHARE MODE")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['public.schema_migrations']
-    expect(query.tree).to eq [{described_class::LOCK_STMT=>
+    expect(query.parsetree).to eq [{"LOCK"=>
           {"relations"=>
-            [{described_class::RANGE_VAR=>
+            [{"RANGEVAR"=>
                {"schemaname"=>"public",
                 "relname"=>"schema_migrations",
                 "inhOpt"=>2,
@@ -199,19 +183,19 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE TABLE test (a int4)')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.tree).to eq [{described_class::CREATE_STMT=>
+    expect(query.parsetree).to eq [{"CREATESTMT"=>
        {"relation"=>
-         {described_class::RANGE_VAR=>
+         {"RANGEVAR"=>
            {"relname"=>"test",
             "inhOpt"=>2,
             "relpersistence"=>"p",
             "location"=>13}},
         "tableElts"=>
-         [{described_class::COLUMN_DEF=>
+         [{"COLUMNDEF"=>
             {"colname"=>"a",
              "typeName"=>
-              {described_class::TYPE_NAME=>
-                {"names"=>[{"String"=>{"str"=>"int4"}}],
+              {"TYPENAME"=>
+                {"names"=>["int4"],
                  "typemod"=>-1,
                  "location"=>21}},
              "is_local"=>true,
@@ -223,24 +207,24 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE TABLE test (a int4) WITH OIDS')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.tree).to eq [{described_class::CREATE_STMT=>
+    expect(query.parsetree).to eq [{"CREATESTMT"=>
        {"relation"=>
-         {described_class::RANGE_VAR=>
+         {"RANGEVAR"=>
            {"relname"=>"test",
             "inhOpt"=>2,
             "relpersistence"=>"p",
             "location"=>13}},
         "tableElts"=>
-         [{described_class::COLUMN_DEF=>
+         [{"COLUMNDEF"=>
             {"colname"=>"a",
              "typeName"=>
-              {described_class::TYPE_NAME=>
-                {"names"=>[{"String"=>{"str"=>"int4"}}],
+              {"TYPENAME"=>
+                {"names"=>["int4"],
                  "typemod"=>-1,
                  "location"=>21}},
              "is_local"=>true,
              "location"=>19}}],
-        "options"=> [{described_class::DEF_ELEM=> {"defname"=>"oids", "arg"=>{"Integer"=>{"ival"=>1}}, "defaction"=>0}}],
+        "options"=> [{"DEFELEM"=> {"defname"=>"oids", "arg"=>1, "defaction"=>0}}],
         "oncommit"=>0}}]
   end
 
@@ -248,17 +232,17 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE INDEX testidx ON test USING gist (a)')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.tree).to eq [{described_class::INDEX_STMT=>
+    expect(query.parsetree).to eq [{"INDEXSTMT"=>
        {"idxname"=>"testidx",
         "relation"=>
-         {described_class::RANGE_VAR=>
+         {"RANGEVAR"=>
            {"relname"=>"test",
             "inhOpt"=>2,
             "relpersistence"=>"p",
             "location"=>24}},
         "accessMethod"=>"gist",
         "indexParams"=>
-         [{described_class::INDEX_ELEM=>
+         [{"INDEXELEM"=>
             {"name"=>"a",
              "ordering"=>0,
              "nulls_ordering"=>0}}]}}]
@@ -268,9 +252,9 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::CREATE_SCHEMA_STMT=>
+    expect(query.parsetree).to eq [{"CREATE SCHEMA"=>
        {"schemaname"=>"test",
-        "authrole"=>{described_class::ROLE_SPEC=>{"roletype"=>0, "rolename"=>"joe", "location"=>47}},
+        "authrole"=>{"ROLESPEC"=>{"roletype"=>0, "rolename"=>"joe", "location"=>47}},
         "if_not_exists"=>true}}]
   end
 
@@ -278,22 +262,22 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE VIEW myview AS SELECT * FROM mytab')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['myview', 'mytab']
-    expect(query.tree).to eq [{described_class::VIEW_STMT=>
+    expect(query.parsetree).to eq [{"VIEWSTMT"=>
      {"view"=>
-       {described_class::RANGE_VAR=>
+       {"RANGEVAR"=>
          {"relname"=>"myview",
           "inhOpt"=>2,
           "relpersistence"=>"p",
           "location"=>12}},
       "query"=>
-       {described_class::SELECT_STMT=>
-         {described_class::TARGET_LIST_FIELD=>
-           [{described_class::RES_TARGET=>
+       {"SELECT"=>
+         {"targetList"=>
+           [{"RESTARGET"=>
               {"val"=>
-                {described_class::COLUMN_REF=>{"fields"=>[{described_class::A_STAR=>{}}], "location"=>29}},
+                {"COLUMNREF"=>{"fields"=>[{"A_STAR"=>{}}], "location"=>29}},
                "location"=>29}}],
           "fromClause"=>
-           [{described_class::RANGE_VAR=>
+           [{"RANGEVAR"=>
               {"relname"=>"mytab",
                "inhOpt"=>2,
                "relpersistence"=>"p",
@@ -306,9 +290,9 @@ describe PgQuery, '.parse' do
     query = described_class.parse('REFRESH MATERIALIZED VIEW myview')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['myview']
-    expect(query.tree).to eq [{described_class::REFRESH_MAT_VIEW_STMT=>
+    expect(query.parsetree).to eq [{"REFRESHMATVIEWSTMT"=>
    {"relation"=>
-     {described_class::RANGE_VAR=>
+     {"RANGEVAR"=>
        {"relname"=>"myview",
         "inhOpt"=>2,
         "relpersistence"=>"p",
@@ -320,9 +304,9 @@ describe PgQuery, '.parse' do
                            DO INSTEAD NOTHING')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['shoe']
-    expect(query.tree).to eq [{described_class::RULE_STMT=>
+    expect(query.parsetree).to eq [{"RULESTMT"=>
      {"relation"=>
-       {described_class::RANGE_VAR=>
+       {"RANGEVAR"=>
          {"relname"=>"shoe",
           "inhOpt"=>2,
           "relpersistence"=>"p",
@@ -339,15 +323,15 @@ describe PgQuery, '.parse' do
                            EXECUTE PROCEDURE check_account_update()')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['accounts']
-    expect(query.tree).to eq [{described_class::CREATE_TRIG_STMT=>
+    expect(query.parsetree).to eq [{"CREATETRIGSTMT"=>
        {"trigname"=>"check_update",
         "relation"=>
-         {described_class::RANGE_VAR=>
+         {"RANGEVAR"=>
            {"relname"=>"accounts",
             "inhOpt"=>2,
             "relpersistence"=>"p",
             "location"=>72}},
-        "funcname"=>[{"String"=>{"str"=>"check_account_update"}}],
+        "funcname"=>["check_account_update"],
         "row"=>true,
         "timing"=>2,
         "events"=>16}}]
@@ -357,8 +341,8 @@ describe PgQuery, '.parse' do
     query = described_class.parse('DROP SCHEMA myschema')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::DROP_STMT=>
-      {"objects"=>[[{"String"=>{"str"=>"myschema"}}]],
+    expect(query.parsetree).to eq [{"DROP"=>
+      {"objects"=>[["myschema"]],
         "removeType"=>described_class::OBJECT_TYPE_SCHEMA,
         "behavior"=>0}}]
   end
@@ -367,8 +351,8 @@ describe PgQuery, '.parse' do
     query = described_class.parse('DROP VIEW myview, myview2')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::DROP_STMT=>
-      {"objects"=>[[{"String"=>{"str"=>"myview"}}], [{"String"=>{"str"=>"myview2"}}]],
+    expect(query.parsetree).to eq [{"DROP"=>
+      {"objects"=>[["myview"], ["myview2"]],
         "removeType"=>described_class::OBJECT_TYPE_VIEW,
         "behavior"=>0}}]
   end
@@ -377,8 +361,8 @@ describe PgQuery, '.parse' do
     query = described_class.parse('DROP INDEX CONCURRENTLY myindex')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::DROP_STMT=>
-      {"objects"=>[[{"String"=>{"str"=>"myindex"}}]],
+    expect(query.parsetree).to eq [{"DROP"=>
+      {"objects"=>[["myindex"]],
         "removeType"=>described_class::OBJECT_TYPE_INDEX,
         "behavior"=>0,
         "concurrent"=>true}}]
@@ -388,8 +372,8 @@ describe PgQuery, '.parse' do
     query = described_class.parse('DROP RULE myrule ON mytable CASCADE')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['mytable']
-    expect(query.tree).to eq [{described_class::DROP_STMT=>
-      {"objects"=>[[{"String"=>{"str"=>"mytable"}}, {"String"=>{"str"=>"myrule"}}]],
+    expect(query.parsetree).to eq [{"DROP"=>
+      {"objects"=>[["mytable", "myrule"]],
        "removeType"=>described_class::OBJECT_TYPE_RULE,
        "behavior"=>1}}]
   end
@@ -398,8 +382,8 @@ describe PgQuery, '.parse' do
     query = described_class.parse('DROP TRIGGER IF EXISTS mytrigger ON mytable RESTRICT')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['mytable']
-    expect(query.tree).to eq [{described_class::DROP_STMT=>
-      {"objects"=>[[{"String"=>{"str"=>"mytable"}}, {"String"=>{"str"=>"mytrigger"}}]],
+    expect(query.parsetree).to eq [{"DROP"=>
+      {"objects"=>[["mytable", "mytrigger"]],
        "removeType"=>described_class::OBJECT_TYPE_TRIGGER,
        "behavior"=>0,
        "missing_ok"=>true}}]
@@ -409,20 +393,20 @@ describe PgQuery, '.parse' do
     query = described_class.parse('GRANT INSERT, UPDATE ON mytable TO myuser')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['mytable']
-    expect(query.tree).to eq [{described_class::GRANT_STMT=>
+    expect(query.parsetree).to eq [{"GRANTSTMT"=>
        {"is_grant"=>true,
         "targtype"=>0,
         "objtype"=>1,
         "objects"=>
-         [{described_class::RANGE_VAR=>
+         [{"RANGEVAR"=>
             {"relname"=>"mytable",
              "inhOpt"=>2,
              "relpersistence"=>"p",
              "location"=>24}}],
         "privileges"=>
-         [{described_class::ACCESS_PRIV=>{"priv_name"=>"insert"}},
-          {described_class::ACCESS_PRIV=>{"priv_name"=>"update"}}],
-        "grantees"=>[{described_class::ROLE_SPEC=>{"roletype"=>0, "rolename"=>"myuser", "location"=>35}}],
+         [{"ACCESSPRIV"=>{"priv_name"=>"insert"}},
+          {"ACCESSPRIV"=>{"priv_name"=>"update"}}],
+        "grantees"=>[{"ROLESPEC"=>{"roletype"=>0, "rolename"=>"myuser", "location"=>35}}],
         "behavior"=>0}}]
   end
 
@@ -430,9 +414,9 @@ describe PgQuery, '.parse' do
     query = described_class.parse('REVOKE admins FROM joe')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::GRANT_ROLE_STMT=>
-      {"granted_roles"=>[{described_class::ACCESS_PRIV=>{"priv_name"=>"admins"}}],
-       "grantee_roles"=>[{described_class::ROLE_SPEC=>{"roletype"=>0, "rolename"=>"joe", "location"=>19}}],
+    expect(query.parsetree).to eq [{"GRANTROLESTMT"=>
+      {"granted_roles"=>[{"ACCESSPRIV"=>{"priv_name"=>"admins"}}],
+       "grantee_roles"=>[{"ROLESPEC"=>{"roletype"=>0, "rolename"=>"joe", "location"=>19}}],
        "behavior"=>0}}]
   end
 
@@ -440,14 +424,14 @@ describe PgQuery, '.parse' do
     query = described_class.parse('TRUNCATE bigtable, fattable RESTART IDENTITY')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['bigtable', 'fattable']
-    expect(query.tree).to eq [{described_class::TRUNCATE_STMT=>
+    expect(query.parsetree).to eq [{"TRUNCATE"=>
       {"relations"=>
-         [{described_class::RANGE_VAR=>
+         [{"RANGEVAR"=>
              {"relname"=>"bigtable",
               "inhOpt"=>2,
               "relpersistence"=>"p",
               "location"=>9}},
-          {described_class::RANGE_VAR=>
+          {"RANGEVAR"=>
              {"relname"=>"fattable",
               "inhOpt"=>2,
               "relpersistence"=>"p",
@@ -460,55 +444,53 @@ describe PgQuery, '.parse' do
     query = described_class.parse('WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['a', 'x']
-    expect(query.tree).to eq [{described_class::SELECT_STMT=>
-   {described_class::TARGET_LIST_FIELD=>
-     [{described_class::RES_TARGET=>
-        {"val"=>{described_class::COLUMN_REF=>{"fields"=>[{described_class::A_STAR=>{}}], "location"=>61}},
+    expect(query.parsetree).to eq [{"SELECT"=>
+   {"targetList"=>
+     [{"RESTARGET"=>
+        {"val"=>{"COLUMNREF"=>{"fields"=>[{"A_STAR"=>{}}], "location"=>61}},
          "location"=>61}}],
     "fromClause"=>
-     [{described_class::RANGE_VAR=>
+     [{"RANGEVAR"=>
         {"relname"=>"a",
          "inhOpt"=>2,
          "relpersistence"=>"p",
          "location"=>68}}],
     "withClause"=>
-     {described_class::WITH_CLAUSE=>
+     {"WITHCLAUSE"=>
        {"ctes"=>
-         [{described_class::COMMON_TABLE_EXPR=>
+         [{"COMMONTABLEEXPR"=>
             {"ctename"=>"a",
              "ctequery"=>
-              {described_class::SELECT_STMT=>
-                {described_class::TARGET_LIST_FIELD=>
-                  [{described_class::RES_TARGET=>
+              {"SELECT"=>
+                {"targetList"=>
+                  [{"RESTARGET"=>
                      {"val"=>
-                       {described_class::COLUMN_REF=>
-                         {"fields"=>[{described_class::A_STAR=>{}}], "location"=>18}},
+                       {"COLUMNREF"=>
+                         {"fields"=>[{"A_STAR"=>{}}], "location"=>18}},
                       "location"=>18}}],
                  "fromClause"=>
-                  [{described_class::RANGE_VAR=>
+                  [{"RANGEVAR"=>
                      {"relname"=>"x",
                       "inhOpt"=>2,
                       "relpersistence"=>"p",
                       "location"=>25}}],
                  "whereClause"=>
-                  {described_class::BOOL_EXPR=>
-                    {"boolop"=>0,
+                  {"BOOLEXPR"=>
+                    {"boolop" => 0,
                      "args"=>
-                      [{described_class::A_EXPR=>
-                        {"kind" => 0,
-                         "name"=>[{"String"=>{"str"=>"="}}],
+                      [{"AEXPR"=>
+                        {"name"=>["="],
                          "lexpr"=>
-                          {described_class::COLUMN_REF=>
-                            {"fields"=>[{"String"=>{"str"=>"x"}}, {"String"=>{"str"=>"y"}}], "location"=>33}},
-                         "rexpr"=>{described_class::PARAM_REF=>{"location"=>39}},
+                          {"COLUMNREF"=>
+                            {"fields"=>["x", "y"], "location"=>33}},
+                         "rexpr"=>{"PARAMREF"=>{"location"=>39}},
                          "location"=>37}},
-                       {described_class::A_EXPR=>
-                        {"kind" => 0,
-                         "name"=>[{"String"=>{"str"=>"="}}],
+                       {"AEXPR"=>
+                        {"name"=>["="],
                          "lexpr"=>
-                          {described_class::COLUMN_REF=>
-                            {"fields"=>[{"String"=>{"str"=>"x"}}, {"String"=>{"str"=>"z"}}], "location"=>45}},
-                         "rexpr"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>51}},
+                          {"COLUMNREF"=>
+                            {"fields"=>["x", "z"], "location"=>45}},
+                         "rexpr"=>{"A_CONST"=>{"type"=>"integer", "val"=>1, "location"=>51}},
                          "location"=>49}}],
                      "location"=>41}},
                  "op"=>0}},
@@ -537,37 +519,36 @@ $BODY$
   LANGUAGE plpgsql STABLE')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::CREATE_FUNCTION_STMT=>
+    expect(query.parsetree).to eq [{"CREATEFUNCTIONSTMT"=>
      {"replace"=>true,
-      "funcname"=>[{"String"=>{"str"=>"thing"}}],
+      "funcname"=>["thing"],
       "parameters"=>
-       [{described_class::FUNCTION_PARAMETER=>
+       [{"FUNCTIONPARAMETER"=>
           {"name"=>"parameter_thing",
            "argType"=>
-            {described_class::TYPE_NAME=>
-              {"names"=>[{"String"=>{"str"=>"text"}}],
+            {"TYPENAME"=>
+              {"names"=>["text"],
                "typemod"=>-1,
                "location"=>49}},
            "mode"=>105}}],
       "returnType"=>
-       {described_class::TYPE_NAME=>
-         {"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"int8"}}],
+       {"TYPENAME"=>
+         {"names"=>["pg_catalog", "int8"],
           "typemod"=>-1,
           "location"=>65}},
       "options"=>
-       [{described_class::DEF_ELEM=>
+       [{"DEFELEM"=>
           {"defname"=>"as",
            "arg"=>
-           [{"String"=>
-            {"str"=>"\nDECLARE\n        local_thing_id BIGINT := 0;\nBEGIN\n        SELECT thing_id INTO local_thing_id FROM thing_map\n        WHERE\n                thing_map_field = parameter_thing\n        ORDER BY 1 LIMIT 1;\n\n        IF NOT FOUND THEN\n                local_thing_id = 0;\n        END IF;\n        RETURN local_thing_id;\nEND;\n"}}],
+            ["\nDECLARE\n        local_thing_id BIGINT := 0;\nBEGIN\n        SELECT thing_id INTO local_thing_id FROM thing_map\n        WHERE\n                thing_map_field = parameter_thing\n        ORDER BY 1 LIMIT 1;\n\n        IF NOT FOUND THEN\n                local_thing_id = 0;\n        END IF;\n        RETURN local_thing_id;\nEND;\n"],
            "defaction"=>0}},
-        {described_class::DEF_ELEM=>
+        {"DEFELEM"=>
           {"defname"=>"language",
-           "arg"=>{"String"=>{"str"=>"plpgsql"}},
+           "arg"=>"plpgsql",
            "defaction"=>0}},
-        {described_class::DEF_ELEM=>
+        {"DEFELEM"=>
           {"defname"=>"volatility",
-           "arg"=>{"String"=>{"str"=>"stable"}},
+           "arg"=>"stable",
            "defaction"=>0}}]}}]
   end
 
@@ -577,38 +558,38 @@ $BODY$
 ' LANGUAGE SQL")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{described_class::CREATE_FUNCTION_STMT=>
-    {"funcname"=>[{"String"=>{"str"=>"getfoo"}}],
+    expect(query.parsetree).to eq [{"CREATEFUNCTIONSTMT"=>
+    {"funcname"=>["getfoo"],
     "parameters"=>
-     [{described_class::FUNCTION_PARAMETER=>
+     [{"FUNCTIONPARAMETER"=>
         {"argType"=>
-          {described_class::TYPE_NAME=>
-            {"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"int4"}}],
+          {"TYPENAME"=>
+            {"names"=>["pg_catalog", "int4"],
              "typemod"=>-1,
              "location"=>23}},
          "mode"=>105}},
-      {described_class::FUNCTION_PARAMETER=>
+      {"FUNCTIONPARAMETER"=>
         {"name"=>"f1",
          "argType"=>
-          {described_class::TYPE_NAME=>
-            {"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"int4"}}],
+          {"TYPENAME"=>
+            {"names"=>["pg_catalog", "int4"],
              "typemod"=>-1,
              "location"=>46}},
          "mode"=>116}}],
     "returnType"=>
-     {described_class::TYPE_NAME=>
-       {"names"=>[{"String"=>{"str"=>"pg_catalog"}}, {"String"=>{"str"=>"int4"}}],
+     {"TYPENAME"=>
+       {"names"=>["pg_catalog", "int4"],
         "setof"=>true,
         "typemod"=>-1,
         "location"=>36}},
     "options"=>
-     [{described_class::DEF_ELEM=>
+     [{"DEFELEM"=>
         {"defname"=>"as",
-         "arg"=>[{"String"=>{"str"=>"\n    SELECT * FROM foo WHERE fooid = $1;\n"}}],
+         "arg"=>["\n    SELECT * FROM foo WHERE fooid = $1;\n"],
          "defaction"=>0}},
-      {described_class::DEF_ELEM=>
+      {"DEFELEM"=>
         {"defname"=>"language",
-         "arg"=>{"String"=>{"str"=>"sql"}},
+         "arg"=>"sql",
          "defaction"=>0}}]}}]
   end
 end

@@ -2,22 +2,22 @@ class PgQuery
   def param_refs # rubocop:disable Metrics/CyclomaticComplexity
     results = []
 
-    treewalker! parsetree do |_, _, v|
+    treewalker! @tree do |_, _, v|
       next unless v.is_a?(Hash)
 
-      if v['PARAMREF']
-        results << { 'location' => v['PARAMREF']['location'],
-                     'length' => param_ref_length(v['PARAMREF']) }
-      elsif v['TYPECAST']
-        next unless v['TYPECAST']['arg'] && v['TYPECAST']['typeName']
+      if v[PARAM_REF]
+        results << { 'location' => v[PARAM_REF]['location'],
+                     'length' => param_ref_length(v[PARAM_REF]) }
+      elsif v[TYPE_CAST]
+        next unless v[TYPE_CAST]['arg'] && v[TYPE_CAST]['typeName']
 
-        p = v['TYPECAST']['arg'].delete('PARAMREF')
-        t = v['TYPECAST']['typeName'].delete('TYPENAME')
+        p = v[TYPE_CAST]['arg'].delete(PARAM_REF)
+        t = v[TYPE_CAST]['typeName'].delete(TYPE_NAME)
         next unless p && t
 
         location = p['location']
         typeloc  = t['location']
-        typename = t['names'].join('.')
+        typename = t['names']
         length   = param_ref_length(p)
 
         if typeloc < location

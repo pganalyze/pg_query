@@ -11,8 +11,8 @@ describe PgQuery, '#param_refs' do
   context 'queries with typecasts' do
     let(:query) { 'SELECT * FROM x WHERE y = ?::text AND z < now() - INTERVAL ?' }
     it do
-      is_expected.to eq [{"location"=>26, "length"=>1, "typename"=>"text"},
-                         {"location"=>50, "length"=>10, "typename"=>"pg_catalog.interval"}]
+      is_expected.to eq [{"location"=>26, "length"=>1, "typename"=>[{"String" => {"str" => "text"}}]},
+                         {"location"=>50, "length"=>10, "typename"=>[{"String" => {"str" => "pg_catalog"}}, {"String" => {"str" => "interval"}}]}]
     end
   end
 

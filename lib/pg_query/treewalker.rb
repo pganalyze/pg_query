@@ -30,18 +30,24 @@ class PgQuery
     end
   end
 
-  def deep_dup(obj)
-    case obj
-    when Hash
-      obj.each_with_object(obj.dup) do |(key, value), hash|
-        hash[deep_dup(key)] = deep_dup(value)
+  def transform_nodes!(parsetree, &block)
+    result = deep_dup(parsetree)
+    exprs = result.dup
+
+    loop do
+      expr = exprs.shift
+
+      if expr.is_a?(Hash)
+        block.call(expr) if expr.size == 1 && expr.keys[0][/^[A-Z]+/]
+
+        exprs += expr.values.compact
+      elsif expr.is_a?(Array)
+        exprs += expr
       end
-    when Array
-      obj.map { |it| deep_dup(it) }
-    when NilClass, FalseClass, TrueClass, Symbol, Numeric
-      obj # Can't be duplicated
-    else
-      obj.dup
+
+      break if exprs.empty?
     end
+
+    result
   end
 end
