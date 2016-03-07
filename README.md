@@ -47,36 +47,30 @@ PgQuery.parse("SELECT 1")
 parsed_query = PgQuery.parse("SELECT * FROM users")
 
 => #<PgQuery:0x007ff3e956c8b0
- @parsetree=
-  [{"SELECT"=>{"distinctClause"=>nil,
-               "intoClause"=>nil,
-               "targetList"=>
-               [{"RESTARGET"=>
-                 {"name"=>nil,
-                  "indirection"=>nil,
-                  "val"=>
-                  {"COLUMNREF"=>
-                    {"fields"=>[{"A_STAR"=>{}}],
+ @tree=
+  [{"SelectStmt"=>{"targetList"=>
+               [{"ResTarget"=>
+                 {"val"=>
+                  {"ColumnRef"=>
+                    {"fields"=>[{"A_Star"=>{}}],
                      "location"=>7}},
                   "location"=>7}}],
                "fromClause"=>
-               [{"RANGEVAR"=>
-                 {"schemaname"=>nil,
-                  "relname"=>"users",
+               [{"RangeVar"=>
+                 {"relname"=>"users",
                   "inhOpt"=>2,
                   "relpersistence"=>"p",
-                  "alias"=>nil,
                   "location"=>14}}],
                ...}}],
  @query="SELECT * FROM users",
  @warnings=[]>
 
 # Modify the parse tree in some way
-parsed_query.parsetree[0]['SELECT']['fromClause'][0]['RANGEVAR']['relname'] = 'other_users'
+parsed_query.tree[0]['SelectStmt']['fromClause'][0]['RangeVar']['relname'] = 'other_users'
 
 # Turn it into SQL again
 parsed_query.deparse
-=> "SELECT * FROM other_users"
+=> "SELECT * FROM \"other_users\""
 ```
 
 Note: The deparsing feature is experimental and does not support outputting all SQL yet.
@@ -94,28 +88,23 @@ PgQuery.parse("SELECT ? FROM x WHERE y = ?")
 
 => #<PgQuery:0x007fb99455a438
  @parsetree=
-  [{"SELECT"=>
-     {"distinctClause"=>nil,
-      "intoClause"=>nil,
-      "targetList"=>
-       [{"RESTARGET"=>
-          {"name"=>nil,
-           "indirection"=>nil,
-           "val"=>{"PARAMREF"=>{"number"=>0, "location"=>7}},
+  [{"SelectStmt"=>
+     {"targetList"=>
+       [{"ResTarget"=>
+          {"val"=>{"ParamRef"=>{"location"=>7}},
            "location"=>7}}],
       "fromClause"=>
-       [{"RANGEVAR"=>
-          {"schemaname"=>nil,
-           "relname"=>"x",
+       [{"RangeVar"=>
+          {"relname"=>"x",
            "inhOpt"=>2,
            "relpersistence"=>"p",
-           "alias"=>nil,
            "location"=>14}}],
       "whereClause"=>
-       {"AEXPR"=>
-         {"name"=>["="],
-          "lexpr"=>{"COLUMNREF"=>{"fields"=>["y"], "location"=>22}},
-          "rexpr"=>{"PARAMREF"=>{"number"=>0, "location"=>26}},
+       {"A_Expr"=>
+         {"kind"=>0,
+          "name"=>[{"String"=>{"str"=>"="}}],
+          "lexpr"=>{"ColumnRef"=>{"fields"=>[{"String"=>{"str"=>"y"}}], "location"=>22}},
+          "rexpr"=>{"ParamRef"=>{"location"=>26}},
           "location"=>24}},
       ...}}],
  @query="SELECT ? FROM x WHERE y = ?",
@@ -143,23 +132,23 @@ PgQuery.parse("SELECT ? FROM x WHERE x.y = ? AND z = ?").filter_columns
 ```ruby
 PgQuery.parse("SELECT 1").fingerprint
 
-=> "db76551255b7861b99bd384cf8096a3dd5162ab3"
+=> "8e1acac181c6d28f4a923392cf1c4eda49ee4cd2"
 
 PgQuery.parse("SELECT 2; --- comment").fingerprint
 
-=> "db76551255b7861b99bd384cf8096a3dd5162ab3"
+=> "8e1acac181c6d28f4a923392cf1c4eda49ee4cd2"
+
+# Faster fingerprint method that is implemented inside the native library
+PgQuery.fingerprint("SELECT ?")
+
+=> "8e1acac181c6d28f4a923392cf1c4eda49ee4cd2"
 ```
 
 ## Differences from Upstream PostgreSQL
 
-**This gem is based on the latest stable PostgreSQL version, but applies a few [patches](https://github.com/lfittl/pg_query/tree/master/ext/pg_query/patches) to make this library work:**
-
-* **01_output_nodes_as_json.patch:** Auto-generated outfuncs that outputs a parsetree as JSON (called through nodeToJSONString)
-* **02_parse_replacement_char.patch:** Modify scan.l/gram.y to support parsing normalized queries
- * Known regression: Removed support for custom operators containing "?" (doesn't affect hstore/JSON/geometric operators)
-* **03_regenerate_bison_flex_files.patch:** Regenerate scan.c/gram.c to avoid bison/flex dependency on deployment
-
-High-level unit tests for these patches are inside this library.
+This gem is based on [libpg_query](https://github.com/lfittl/libpg_query),
+which uses the latest stable PostgreSQL version, but with a patch applied
+to support parsing normalized queries containing `?` replacement characters.
 
 
 ## Original Author

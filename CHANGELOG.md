@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.0    UNRELEASED
+
+* Based on PostgreSQL 9.5.1
+* NOTE: Output format for the parse tree has changed (backwards incompatible!),
+        it is recommended you extensively test any direct reading/modification of
+        the tree data in your own code
+  * You can use the `.parsetree` translator method to ease the transition, note
+    however that there are still a few incompatible changes
+* New `.fingerprint` method (backwards incompatible as well), see https://github.com/lfittl/libpg_query/wiki/Fingerprinting
+
+
 ## 0.8.0    2016-03-06
 
 * Use fixed git version for libpg_query (PostgreSQL 9.4 based)
