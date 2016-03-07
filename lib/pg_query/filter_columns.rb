@@ -55,6 +55,8 @@ class PgQuery
             next unless expr && expr.is_a?(Hash)
             condition_items << expr
           end
+        elsif next_item[BOOL_EXPR]
+          condition_items += next_item[BOOL_EXPR]['args']
         elsif next_item[ROW_EXPR]
           condition_items += next_item[ROW_EXPR]['args']
         elsif next_item[COLUMN_REF]

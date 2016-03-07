@@ -9,7 +9,7 @@ describe PgQuery, '.parse' do
   it "handles errors" do
     expect { described_class.parse("SELECT 'ERR") }.to raise_error { |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1087)"
+      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1116)"
       expect(error.location).to eq 8 # 8th character in query string
     }
   end
@@ -71,7 +71,7 @@ describe PgQuery, '.parse' do
                     "location"=>21,
                     "keys"=>[{"String" => {"str" => "gid"}}]}},
                 "behavior"=>0}}],
-           "relkind"=>26}}]
+           "relkind"=>described_class::OBJECT_TYPE_TABLE}}]
   end
 
   it "parses SET" do
@@ -111,7 +111,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq ['abc.test123']
     expect(query.tree).to eq [{described_class::DROP_STMT=>
           {"objects"=>[[{"String"=>{"str"=>"abc"}}, {"String"=>{"str"=>"test123"}}]],
-           "removeType"=>26,
+           "removeType"=>described_class::OBJECT_TYPE_TABLE,
            "behavior"=>1}}]
   end
 
@@ -133,16 +133,12 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq ['my_table']
     expect(query.tree).to eq [{described_class::VACUUM_STMT=>
           {"options"=>1,
-           "freeze_min_age"=>-1,
-           "freeze_table_age"=>-1,
            "relation"=>
             {described_class::RANGE_VAR=>
               {"relname"=>"my_table",
                "inhOpt"=>2,
                "relpersistence"=>"p",
-               "location"=>7}},
-           "multixact_freeze_min_age"=>-1,
-           "multixact_freeze_table_age"=>-1}}]
+               "location"=>7}}}}]
   end
 
   it "parses EXPLAIN" do
@@ -181,7 +177,7 @@ describe PgQuery, '.parse' do
                    "relpersistence"=>"t",
                    "location"=>18}},
                "onCommit"=>0}},
-           "relkind"=>26}}]
+           "relkind"=>described_class::OBJECT_TYPE_TABLE}}]
   end
 
   it "parses LOCK" do
@@ -274,7 +270,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq []
     expect(query.tree).to eq [{described_class::CREATE_SCHEMA_STMT=>
        {"schemaname"=>"test",
-        "authid"=>"joe",
+        "authrole"=>{described_class::ROLE_SPEC=>{"roletype"=>0, "rolename"=>"joe", "location"=>47}},
         "if_not_exists"=>true}}]
   end
 
@@ -363,7 +359,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq []
     expect(query.tree).to eq [{described_class::DROP_STMT=>
       {"objects"=>[[{"String"=>{"str"=>"myschema"}}]],
-        "removeType"=>24,
+        "removeType"=>described_class::OBJECT_TYPE_SCHEMA,
         "behavior"=>0}}]
   end
 
@@ -373,7 +369,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq []
     expect(query.tree).to eq [{described_class::DROP_STMT=>
       {"objects"=>[[{"String"=>{"str"=>"myview"}}], [{"String"=>{"str"=>"myview2"}}]],
-        "removeType"=>34,
+        "removeType"=>described_class::OBJECT_TYPE_VIEW,
         "behavior"=>0}}]
   end
 
@@ -383,7 +379,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq []
     expect(query.tree).to eq [{described_class::DROP_STMT=>
       {"objects"=>[[{"String"=>{"str"=>"myindex"}}]],
-        "removeType"=>15,
+        "removeType"=>described_class::OBJECT_TYPE_INDEX,
         "behavior"=>0,
         "concurrent"=>true}}]
   end
@@ -394,7 +390,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq ['mytable']
     expect(query.tree).to eq [{described_class::DROP_STMT=>
       {"objects"=>[[{"String"=>{"str"=>"mytable"}}, {"String"=>{"str"=>"myrule"}}]],
-       "removeType"=>23,
+       "removeType"=>described_class::OBJECT_TYPE_RULE,
        "behavior"=>1}}]
   end
 
@@ -404,7 +400,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq ['mytable']
     expect(query.tree).to eq [{described_class::DROP_STMT=>
       {"objects"=>[[{"String"=>{"str"=>"mytable"}}, {"String"=>{"str"=>"mytrigger"}}]],
-       "removeType"=>28,
+       "removeType"=>described_class::OBJECT_TYPE_TRIGGER,
        "behavior"=>0,
        "missing_ok"=>true}}]
   end
@@ -426,7 +422,7 @@ describe PgQuery, '.parse' do
         "privileges"=>
          [{described_class::ACCESS_PRIV=>{"priv_name"=>"insert"}},
           {described_class::ACCESS_PRIV=>{"priv_name"=>"update"}}],
-        "grantees"=>[{described_class::PRIV_GRANTEE=>{"rolname"=>"myuser"}}],
+        "grantees"=>[{described_class::ROLE_SPEC=>{"roletype"=>0, "rolename"=>"myuser", "location"=>35}}],
         "behavior"=>0}}]
   end
 
@@ -436,7 +432,7 @@ describe PgQuery, '.parse' do
     expect(query.tables).to eq []
     expect(query.tree).to eq [{described_class::GRANT_ROLE_STMT=>
       {"granted_roles"=>[{described_class::ACCESS_PRIV=>{"priv_name"=>"admins"}}],
-       "grantee_roles"=>[{"String"=>{"str"=>"joe"}}],
+       "grantee_roles"=>[{described_class::ROLE_SPEC=>{"roletype"=>0, "rolename"=>"joe", "location"=>19}}],
        "behavior"=>0}}]
   end
 
@@ -495,10 +491,10 @@ describe PgQuery, '.parse' do
                       "relpersistence"=>"p",
                       "location"=>25}}],
                  "whereClause"=>
-                  {described_class::A_EXPR=>
-                    {"kind"=>1,
-                     "lexpr"=>
-                      {described_class::A_EXPR=>
+                  {described_class::BOOL_EXPR=>
+                    {"boolop"=>0,
+                     "args"=>
+                      [{described_class::A_EXPR=>
                         {"kind" => 0,
                          "name"=>[{"String"=>{"str"=>"="}}],
                          "lexpr"=>
@@ -506,15 +502,14 @@ describe PgQuery, '.parse' do
                             {"fields"=>[{"String"=>{"str"=>"x"}}, {"String"=>{"str"=>"y"}}], "location"=>33}},
                          "rexpr"=>{described_class::PARAM_REF=>{"location"=>39}},
                          "location"=>37}},
-                     "rexpr"=>
-                      {described_class::A_EXPR=>
+                       {described_class::A_EXPR=>
                         {"kind" => 0,
                          "name"=>[{"String"=>{"str"=>"="}}],
                          "lexpr"=>
                           {described_class::COLUMN_REF=>
                             {"fields"=>[{"String"=>{"str"=>"x"}}, {"String"=>{"str"=>"z"}}], "location"=>45}},
                          "rexpr"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>51}},
-                         "location"=>49}},
+                         "location"=>49}}],
                      "location"=>41}},
                  "op"=>0}},
              "location"=>5}}]}},

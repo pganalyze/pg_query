@@ -19,7 +19,7 @@ class PgQuery
       when CREATE_TRIG_STMT
         transform_string_list(node[CREATE_TRIG_STMT]['funcname'])
       when CONSTRAINT
-        node[CONSTRAINT]['contype'] = CONSTRAINT_TYPES[node[CONSTRAINT]['contype']]
+        node[CONSTRAINT]['contype'] = LEGACY_CONSTRAINT_TYPES[node[CONSTRAINT]['contype']]
         transform_string_list(node[CONSTRAINT]['keys'])
       when COPY_STMT
         transform_string_list(node[COPY_STMT]['attlist'])
@@ -36,10 +36,6 @@ class PgQuery
       end
 
       node[new_key] = node.delete(key)
-
-      # Transform
-      # - UPCASE node names (and rename some of them)
-      # - Fix up value nodes
     end
   end
 
@@ -69,6 +65,14 @@ class PgQuery
     'AEXPR',
     'AEXPR AND'
     # FIXME
+  ]
+
+  LEGACY_CONSTRAINT_TYPES = [
+    nil, # 0
+    nil, # 1
+    nil, # 2
+    nil, # 3
+    'PRIMARY_KEY'
   ]
 
   def transform_parsetree_a_const(node)

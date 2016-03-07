@@ -31,7 +31,7 @@ describe PgQuery::Deparse do
       context 'complex WITH statement' do
         # Taken from http://www.postgresql.org/docs/9.1/static/queries-with.html
         let(:query) do
-          '''
+          %(
           WITH RECURSIVE search_graph ("id", "link", "data", "depth", "path", "cycle") AS (
               SELECT "g"."id", "g"."link", "g"."data", 1,
                 ARRAY[ROW("g"."f1", "g"."f2")],
@@ -45,7 +45,7 @@ describe PgQuery::Deparse do
               WHERE "g"."id" = "sg"."link" AND NOT "cycle"
           )
           SELECT "id", "data", "link" FROM "search_graph";
-          '''
+          )
         end
         it { is_expected.to eq oneline_query }
       end
@@ -62,10 +62,10 @@ describe PgQuery::Deparse do
 
       context 'LATERAL JOIN' do
         let(:query) do
-          '''
+          %(
           SELECT "m"."name" AS mname, "pname"
             FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
-          '''
+          )
         end
         it { is_expected.to eq oneline_query }
       end
@@ -183,7 +183,7 @@ describe PgQuery::Deparse do
       end
 
       context 'OR with nested OR' do
-        let(:query) { "SELECT 1 WHERE (1 = 1 OR 2 = 2) OR 2 = 3" }
+        let(:query) { "SELECT 1 WHERE 1 = 1 OR 2 = 2 OR 2 = 3" }
         it { is_expected.to eq query }
       end
 

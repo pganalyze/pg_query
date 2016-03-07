@@ -30,26 +30,14 @@ class PgQuery
       case type
       when A_EXPR
         case node['kind']
-        when 0 # AEXPR_OP
+        when AEXPR_OP
           deparse_aexpr(node, context)
-        when 1 # AEXPR_AND
-          deparse_aexpr_and(node)
-        when 2 # AEXPR_OR
-          deparse_aexpr_or(node)
-        when 3 # AEXPR_NOT
-          deparse_aexpr_not(node)
-        when 4 # AEXPR_OP_ANY
+        when AEXPR_OP_ANY
           deparse_aexpr_any(node)
-        when 5 # AEXPR_OP_ALL
-          # FIXME
-        when 6 # AEXPR_DISTINCT
-          # FIXME
-        when 7 # AEXPR_NULLIF
-          # FIXME
-        when 8 # AEXPR_OF
-          # FIXME
-        when 9 # AEXPR_IN
+        when AEXPR_IN
           deparse_aexpr_in(node)
+        else
+          fail format("Can't deparse: %s: %s", type, node.inspect)
         end
       when ALIAS
         deparse_alias(node)
@@ -69,6 +57,15 @@ class PgQuery
         deparse_a_star(node)
       when A_TRUNCATED
         '...' # pg_query internal
+      when BOOL_EXPR
+        case node['boolop']
+        when BOOL_EXPR_AND
+          deparse_bool_expr_and(node)
+        when BOOL_EXPR_OR
+          deparse_bool_expr_or(node)
+        when BOOL_EXPR_NOT
+          deparse_bool_expr_not(node)
+        end
       when CASE_EXPR
         deparse_case(node)
       when COALESCE_EXPR
@@ -169,11 +166,13 @@ class PgQuery
     def deparse_renamestmt(node)
       output = []
 
-      if node['renameType'] == 26 # table
+      if node['renameType'] == OBJECT_TYPE_TABLE
         output << 'ALTER TABLE'
         output << deparse_item(node['relation'])
         output << 'RENAME TO'
         output << node['newname']
+      else
+        fail format("Can't deparse: %s", node.inspect)
       end
 
       output.join(' ')
@@ -313,8 +312,8 @@ class PgQuery
       format('%s %s (%s)', deparse_item(node['lexpr']), operator, rexpr.join(', '))
     end
 
-    def deparse_aexpr_not(node)
-      format('NOT %s', deparse_item(node['rexpr']))
+    def deparse_bool_expr_not(node)
+      format('NOT %s', deparse_item(node['args'][0]))
     end
 
     def deparse_range_function(node)
@@ -337,21 +336,26 @@ class PgQuery
       output
     end
 
-    A_EXPR_AND = 1
-    A_EXPR_OR = 2
-
-    def deparse_aexpr_and(node)
+    def deparse_bool_expr_and(node)
       # Only put parantheses around OR nodes that are inside this one
-      lexpr = format([A_EXPR_OR].include?(node['lexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['lexpr']))
-      rexpr = format([A_EXPR_OR].include?(node['rexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['rexpr']))
-      format('%s AND %s', lexpr, rexpr)
+      node['args'].map do |arg|
+        if [BOOL_EXPR_OR].include?(arg.values[0]['boolop'])
+          format('(%s)', deparse_item(arg))
+        else
+          deparse_item(arg)
+        end
+      end.join(' AND ')
     end
 
-    def deparse_aexpr_or(node)
+    def deparse_bool_expr_or(node)
       # Put parantheses around AND + OR nodes that are inside
-      lexpr = format([A_EXPR_AND, A_EXPR_OR].include?(node['lexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['lexpr']))
-      rexpr = format([A_EXPR_AND, A_EXPR_OR].include?(node['rexpr'].values[0]['kind']) ? '(%s)' : '%s', deparse_item(node['rexpr']))
-      format('%s OR %s', lexpr, rexpr)
+      node['args'].map do |arg|
+        if [BOOL_EXPR_AND, BOOL_EXPR_OR].include?(arg.values[0]['boolop'])
+          format('(%s)', deparse_item(arg))
+        else
+          deparse_item(arg)
+        end
+      end.join(' OR ')
     end
 
     def deparse_aexpr_any(node)
@@ -377,12 +381,12 @@ class PgQuery
       output.join(' ')
     end
 
-    LOCK_CLAUSE_STRENGTH = [
-      'FOR KEY SHARE',
-      'FOR SHARE',
-      'FOR NO KEY UPDATE',
-      'FOR UPDATE'
-    ]
+    LOCK_CLAUSE_STRENGTH = {
+      LCS_FORKEYSHARE => 'FOR KEY SHARE',
+      LCS_FORSHARE => 'FOR SHARE',
+      LCS_FORNOKEYUPDATE => 'FOR NO KEY UPDATE',
+      LCS_FORUPDATE => 'FOR UPDATE'
+    }
     def deparse_lockingclause(node)
       output = []
       output << LOCK_CLAUSE_STRENGTH[node['strength']]
@@ -477,28 +481,28 @@ class PgQuery
         output << node['conname']
       end
       case node['contype']
-      when 0 # CONSTR_NULL
+      when CONSTR_TYPE_NULL
         output << 'NULL'
-      when 1 # CONSTR_NOTNULL
+      when CONSTR_TYPE_NOTNULL
         output << 'NOT NULL'
-      when 2 # CONSTR_DEFAULT
+      when CONSTR_TYPE_DEFAULT
         output << 'DEFAULT'
-      when 3 # CONSTR_CHECK
+      when CONSTR_TYPE_CHECK
         output << 'CHECK'
-      when 4 # CONSTR_PRIMARY
+      when CONSTR_TYPE_PRIMARY
         output << 'PRIMARY KEY'
-      when 5 # CONSTR_UNIQUE
+      when CONSTR_TYPE_UNIQUE
         output << 'UNIQUE'
-      when 6 # CONSTR_EXCLUSION
+      when CONSTR_TYPE_EXCLUSION
         output << 'EXCLUSION'
-      when 7 # CONSTR_FOREIGN
+      when CONSTR_TYPE_FOREIGN
         output << 'FOREIGN KEY'
       end
 
       if node['raw_expr']
         expression = deparse_item(node['raw_expr'])
         # Unless it's simple, put parentheses around it
-        expression = '(' + expression + ')' if node['raw_expr'][A_EXPR] && node['raw_expr'][A_EXPR]['kind'] == 0 # AEXPR_OP
+        expression = '(' + expression + ')' if node['raw_expr'][A_EXPR] && node['raw_expr'][A_EXPR]['kind'] == AEXPR_OP
         output << expression
       end
       output << '(' + deparse_item_list(node['keys']).join(', ') + ')' if node['keys']
@@ -557,9 +561,9 @@ class PgQuery
     end
 
     def deparse_sublink(node)
-      if node['subLinkType'] == 2 && deparse_item_list(node['operName'], :operator) == ['=']
+      if node['subLinkType'] == SUBLINK_TYPE_ANY
         return format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
-      elsif node['subLinkType'] == 0
+      elsif node['subLinkType'] == SUBLINK_TYPE_EXISTS
         return format('EXISTS(%s)', deparse_item(node['subselect']))
       else
         return format('(%s)', deparse_item(node['subselect']))
@@ -804,12 +808,12 @@ class PgQuery
     end
 
     TRANSACTION_CMDS = {
-      0 => 'BEGIN',
-      2 => 'COMMIT',
-      3 => 'ROLLBACK',
-      4 => 'SAVEPOINT',
-      5 => 'RELEASE',
-      6 => 'ROLLBACK TO SAVEPOINT'
+      TRANS_STMT_BEGIN => 'BEGIN',
+      TRANS_STMT_COMMIT => 'COMMIT',
+      TRANS_STMT_ROLLBACK => 'ROLLBACK',
+      TRANS_STMT_SAVEPOINT => 'SAVEPOINT',
+      TRANS_STMT_RELEASE => 'RELEASE',
+      TRANS_STMT_ROLLBACK_TO => 'ROLLBACK TO SAVEPOINT'
     }
     def deparse_transaction(node)
       output = []
@@ -869,7 +873,7 @@ class PgQuery
 
     def deparse_drop(node)
       output = ['DROP']
-      output << 'TABLE' if node['removeType'] == 26
+      output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
       output << 'CONCURRENTLY' if node['concurrent']
       output << 'IF EXISTS' if node['missing_ok']
 

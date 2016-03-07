@@ -101,11 +101,9 @@ class PgQuery
         when DROP_STMT
           objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String']['str'] } }
           case statement[DROP_STMT]['removeType']
-          when 26 # Table
+          when OBJECT_TYPE_TABLE
             @tables += objects.map { |r| r.join('.') }
-          when 23 # Rule
-            @tables += objects.map { |r| r[0..-2].join('.') }
-          when 28 # Trigger
+          when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
             @tables += objects.map { |r| r[0..-2].join('.') }
           end
         end

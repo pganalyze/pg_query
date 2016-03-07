@@ -6,25 +6,9 @@ describe PgQuery, '#parsetree' do
     expect(query.parsetree).to eq [{"SELECT"=>{"targetList"=>[{"RESTARGET"=>{"val"=>{"A_CONST"=>{"type" => "integer", "val"=>1, "location"=>7}}, "location"=>7}}], "op"=>0}}]
   end
 
-  it "handles errors" do
-    expect { described_class.parse("SELECT 'ERR") }.to raise_error {|error|
-      expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1087)"
-      expect(error.location).to eq 8 # 8th character in query string
-    }
-  end
-
-  it "parses real queries" do
-    query = described_class.parse("SELECT memory_total_bytes, memory_free_bytes, memory_pagecache_bytes, memory_buffers_bytes, memory_applications_bytes, (memory_swap_total_bytes - memory_swap_free_bytes) AS swap, date_part($0, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON (snapshot_id = s.id) WHERE s.database_id = $0 AND s.collected_at BETWEEN $0 AND $0 ORDER BY collected_at")
-    expect(query.parsetree).not_to be_nil
-    expect(query.tables).to eq ['snapshots', 'system_snapshots']
-  end
-
   it "parses empty queries" do
     query = described_class.parse("-- nothing")
     expect(query.parsetree).to eq []
-    expect(query.tables).to eq []
-    expect(query.warnings).to be_empty
   end
 
   it "parses floats with leading dot" do
@@ -67,11 +51,11 @@ describe PgQuery, '#parsetree' do
                {"subtype"=>14,
                 "def"=>
                  {"CONSTRAINT"=>
-                   {"location"=>21,
-                    "contype"=>"PRIMARY_KEY",
+                   {"contype"=>"PRIMARY_KEY",
+                    "location"=>21,
                     "keys"=>["gid"]}},
                 "behavior"=>0}}],
-           "relkind"=>26}}]
+           "relkind"=>described_class::OBJECT_TYPE_TABLE}}]
   end
 
   it "parses SET" do
@@ -111,7 +95,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq ['abc.test123']
     expect(query.parsetree).to eq [{"DROP"=>
           {"objects"=>[["abc", "test123"]],
-           "removeType"=>26,
+           "removeType"=>described_class::OBJECT_TYPE_TABLE,
            "behavior"=>1}}]
   end
 
@@ -133,16 +117,12 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq ['my_table']
     expect(query.parsetree).to eq [{"VACUUM"=>
           {"options"=>1,
-           "freeze_min_age"=>-1,
-           "freeze_table_age"=>-1,
            "relation"=>
             {"RANGEVAR"=>
               {"relname"=>"my_table",
                "inhOpt"=>2,
                "relpersistence"=>"p",
-               "location"=>7}},
-           "multixact_freeze_min_age"=>-1,
-           "multixact_freeze_table_age"=>-1}}]
+               "location"=>7}}}}]
   end
 
   it "parses EXPLAIN" do
@@ -181,7 +161,7 @@ describe PgQuery, '#parsetree' do
                    "relpersistence"=>"t",
                    "location"=>18}},
                "onCommit"=>0}},
-           "relkind"=>26}}]
+           "relkind"=>described_class::OBJECT_TYPE_TABLE}}]
   end
 
   it "parses LOCK" do
@@ -274,7 +254,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"CREATE SCHEMA"=>
        {"schemaname"=>"test",
-        "authid"=>"joe",
+        "authrole"=>{"ROLESPEC"=>{"roletype"=>0, "rolename"=>"joe", "location"=>47}},
         "if_not_exists"=>true}}]
   end
 
@@ -363,7 +343,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"DROP"=>
       {"objects"=>[["myschema"]],
-        "removeType"=>24,
+        "removeType"=>described_class::OBJECT_TYPE_SCHEMA,
         "behavior"=>0}}]
   end
 
@@ -373,7 +353,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"DROP"=>
       {"objects"=>[["myview"], ["myview2"]],
-        "removeType"=>34,
+        "removeType"=>described_class::OBJECT_TYPE_VIEW,
         "behavior"=>0}}]
   end
 
@@ -383,7 +363,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"DROP"=>
       {"objects"=>[["myindex"]],
-        "removeType"=>15,
+        "removeType"=>described_class::OBJECT_TYPE_INDEX,
         "behavior"=>0,
         "concurrent"=>true}}]
   end
@@ -394,7 +374,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq ['mytable']
     expect(query.parsetree).to eq [{"DROP"=>
       {"objects"=>[["mytable", "myrule"]],
-       "removeType"=>23,
+       "removeType"=>described_class::OBJECT_TYPE_RULE,
        "behavior"=>1}}]
   end
 
@@ -404,7 +384,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq ['mytable']
     expect(query.parsetree).to eq [{"DROP"=>
       {"objects"=>[["mytable", "mytrigger"]],
-       "removeType"=>28,
+       "removeType"=>described_class::OBJECT_TYPE_TRIGGER,
        "behavior"=>0,
        "missing_ok"=>true}}]
   end
@@ -426,7 +406,7 @@ describe PgQuery, '#parsetree' do
         "privileges"=>
          [{"ACCESSPRIV"=>{"priv_name"=>"insert"}},
           {"ACCESSPRIV"=>{"priv_name"=>"update"}}],
-        "grantees"=>[{"PRIVGRANTEE"=>{"rolname"=>"myuser"}}],
+        "grantees"=>[{"ROLESPEC"=>{"roletype"=>0, "rolename"=>"myuser", "location"=>35}}],
         "behavior"=>0}}]
   end
 
@@ -436,7 +416,7 @@ describe PgQuery, '#parsetree' do
     expect(query.tables).to eq []
     expect(query.parsetree).to eq [{"GRANTROLESTMT"=>
       {"granted_roles"=>[{"ACCESSPRIV"=>{"priv_name"=>"admins"}}],
-       "grantee_roles"=>["joe"],
+       "grantee_roles"=>[{"ROLESPEC"=>{"roletype"=>0, "rolename"=>"joe", "location"=>19}}],
        "behavior"=>0}}]
   end
 
@@ -495,23 +475,23 @@ describe PgQuery, '#parsetree' do
                       "relpersistence"=>"p",
                       "location"=>25}}],
                  "whereClause"=>
-                  {"AEXPR AND"=>
-                    {"lexpr"=>
-                      {"AEXPR"=>
+                  {"BOOLEXPR"=>
+                    {"boolop" => 0,
+                     "args"=>
+                      [{"AEXPR"=>
                         {"name"=>["="],
                          "lexpr"=>
                           {"COLUMNREF"=>
                             {"fields"=>["x", "y"], "location"=>33}},
                          "rexpr"=>{"PARAMREF"=>{"location"=>39}},
                          "location"=>37}},
-                     "rexpr"=>
-                      {"AEXPR"=>
+                       {"AEXPR"=>
                         {"name"=>["="],
                          "lexpr"=>
                           {"COLUMNREF"=>
                             {"fields"=>["x", "z"], "location"=>45}},
                          "rexpr"=>{"A_CONST"=>{"type"=>"integer", "val"=>1, "location"=>51}},
-                         "location"=>49}},
+                         "location"=>49}}],
                      "location"=>41}},
                  "op"=>0}},
              "location"=>5}}]}},

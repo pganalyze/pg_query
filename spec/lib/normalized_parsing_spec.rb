@@ -68,7 +68,7 @@ describe PgQuery do
     # support that due to keyword/function duality (e.g. JOIN)
     expect { described_class.parse("SELECT ? 10") }.to raise_error do |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1087)"
+      expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1116)"
     end
   end
 
@@ -102,18 +102,24 @@ describe PgQuery do
     q = described_class.parse("SELECT * FROM x WHERE a ? AND b")
     expect(q.tree).not_to be_nil
     expr = q.tree[0][described_class::SELECT_STMT]["whereClause"]
-    expect(expr).to eq(described_class::A_EXPR=>
+    expect(expr).to eq(described_class::BOOL_EXPR=>
     {
-      "kind"=>1,
-      "lexpr"=>{
-        described_class::A_EXPR=>{
-          "kind"=>0,
-          "name"=>[{"String"=>{"str"=>"?"}}],
-          "lexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"a"}}], "location"=>22}},
-          "location"=>24
+      "boolop"=>0,
+      "args"=>[
+        {
+          described_class::A_EXPR=>{
+            "kind"=>0,
+            "name"=>[{"String"=>{"str"=>"?"}}],
+            "lexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"a"}}], "location"=>22}},
+            "location"=>24
+          }
+        },
+        {
+          described_class::COLUMN_REF=>{
+            "fields"=>[{"String"=>{"str"=>"b"}}], "location"=>30
+          }
         }
-      },
-      "rexpr"=>{described_class::COLUMN_REF=>{"fields"=>[{"String"=>{"str"=>"b"}}], "location"=>30}},
+      ],
       "location"=>26})
   end
 
@@ -165,7 +171,7 @@ describe PgQuery do
 
   it "parses ?!=?" do
     e = parse_expr("?!=?")
-    expect(e["name"]).to eq [{"String"=>{"str"=>"<>"}}]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"!="}}]
     expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
     expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
@@ -179,7 +185,7 @@ describe PgQuery do
 
   it "parses x!=?" do
     e = parse_expr("x!=?")
-    expect(e["name"]).to eq [{"String"=>{"str"=>"<>"}}]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"!="}}]
     expect(e["lexpr"][described_class::COLUMN_REF]).not_to be_nil
     expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
