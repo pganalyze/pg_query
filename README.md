@@ -27,16 +27,13 @@ PgQuery.parse("SELECT 1")
 
 => #<PgQuery:0x007fe92b27ea18
  @parsetree=
-  [{"SELECT"=>
-     {"distinctClause"=>nil,
-      "intoClause"=>nil,
-      "targetList"=>
-       [{"RESTARGET"=>
-          {"name"=>nil,
-           "indirection"=>nil,
-           "val"=>{"A_CONST"=>{"val"=>1, "location"=>7}},
+  [{"SelectStmt"=>
+     {"targetList"=>
+       [{"ResTarget"=>
+          {"val"=>{"A_Const"=>{"val"=>{"Integer"=>{"ival"=>1}}, "location"=>7}},
            "location"=>7}}],
-      ...}}],
+      "op"=>0,
+  }}],
  @query="SELECT 1",
  @warnings=[]>
 ```
@@ -48,20 +45,20 @@ parsed_query = PgQuery.parse("SELECT * FROM users")
 
 => #<PgQuery:0x007ff3e956c8b0
  @tree=
-  [{"SelectStmt"=>{"targetList"=>
-               [{"ResTarget"=>
-                 {"val"=>
-                  {"ColumnRef"=>
-                    {"fields"=>[{"A_Star"=>{}}],
-                     "location"=>7}},
-                  "location"=>7}}],
-               "fromClause"=>
-               [{"RangeVar"=>
-                 {"relname"=>"users",
-                  "inhOpt"=>2,
-                  "relpersistence"=>"p",
-                  "location"=>14}}],
-               ...}}],
+  [{"SelectStmt"=>
+    {"targetList"=>
+      [{"ResTarget"=>
+        {"val"=>
+          {"ColumnRef"=> {"fields"=>[{"A_Star"=>{}}], "location"=>7}},
+         "location"=>7}
+      }],
+     "fromClause"=>
+      [{"RangeVar"=>
+        {"relname"=>"users",
+         "inhOpt"=>2,
+         "relpersistence"=>"p",
+         "location"=>14}}],
+   }}],
  @query="SELECT * FROM users",
  @warnings=[]>
 
@@ -106,7 +103,7 @@ PgQuery.parse("SELECT ? FROM x WHERE y = ?")
           "lexpr"=>{"ColumnRef"=>{"fields"=>[{"String"=>{"str"=>"y"}}], "location"=>22}},
           "rexpr"=>{"ParamRef"=>{"location"=>26}},
           "location"=>24}},
-      ...}}],
+  }}],
  @query="SELECT ? FROM x WHERE y = ?",
  @warnings=[]>
 ```
