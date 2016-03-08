@@ -26,7 +26,7 @@ Due to compiling parts of PostgreSQL, installation might take a while on slower 
 PgQuery.parse("SELECT 1")
 
 => #<PgQuery:0x007fe92b27ea18
- @parsetree=
+ @tree=
   [{"SelectStmt"=>
      {"targetList"=>
        [{"ResTarget"=>
@@ -84,7 +84,7 @@ PgQuery.normalize("SELECT 1 FROM x WHERE y = 'foo'")
 PgQuery.parse("SELECT ? FROM x WHERE y = ?")
 
 => #<PgQuery:0x007fb99455a438
- @parsetree=
+ @tree=
   [{"SelectStmt"=>
      {"targetList"=>
        [{"ResTarget"=>
