@@ -54,7 +54,7 @@ class PgQuery
 
   def fingerprint_node(node, hash, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
     node_name = node.keys.first
-    return if [A_CONST, ALIAS, PARAM_REF, SET_TO_DEFAULT].include?(node_name)
+    return if [A_CONST, ALIAS, PARAM_REF, SET_TO_DEFAULT, INT_LIST, OID_LIST, NULL].include?(node_name)
 
     hash.update node_name
 

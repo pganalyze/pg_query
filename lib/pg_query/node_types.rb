@@ -75,6 +75,9 @@ class PgQuery
   PREPARE_STMT = 'PrepareStmt'.freeze
   EXECUTE_STMT = 'ExecuteStmt'.freeze
   DEALLOCATE_STMT = 'DeallocateStmt'.freeze
+  NULL = 'Null'.freeze
+  INT_LIST = 'IntList'.freeze
+  OID_LIST = 'OidList'.freeze
 
   # FIELDS
 
