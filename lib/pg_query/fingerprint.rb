@@ -1,15 +1,15 @@
 require 'digest'
 
 class PgQuery
-  def fingerprint(hash: Digest::SHA1.new)
-    @tree.each do |node|
-      fingerprint_node(node, hash)
-    end
-
-    hash.hexdigest
+  def fingerprint
+    hash = Digest::SHA1.new
+    fingerprint_tree(hash)
+    format('%02x', FINGERPRINT_VERSION) + hash.hexdigest
   end
 
   private
+
+  FINGERPRINT_VERSION = 1
 
   class FingerprintSubHash
     attr_reader :parts
@@ -91,6 +91,12 @@ class PgQuery
       values.each do |val|
         fingerprint_value(val, hash, parent_field_name, false)
       end
+    end
+  end
+
+  def fingerprint_tree(hash)
+    @tree.each do |node|
+      fingerprint_node(node, hash)
     end
   end
 end

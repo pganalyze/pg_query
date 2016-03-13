@@ -6,6 +6,8 @@ def fingerprint(qstr)
 end
 
 class FingerprintTestHash
+  attr_reader :parts
+
   def initialize
     @parts = []
   end
@@ -13,15 +15,13 @@ class FingerprintTestHash
   def update(part)
     @parts << part
   end
-
-  def hexdigest
-    @parts
-  end
 end
 
 def fingerprint_parts(qstr)
+  hash = FingerprintTestHash.new
   q = PgQuery.parse(qstr)
-  q.fingerprint(hash: FingerprintTestHash.new)
+  q.send(:fingerprint_tree, hash)
+  hash.parts
 end
 
 def fingerprint_defs
