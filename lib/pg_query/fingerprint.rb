@@ -67,6 +67,10 @@ class PgQuery
       when 'name'
         next if node_name == RES_TARGET && parent_field_name == TARGET_LIST_FIELD
         next if [PREPARE_STMT, EXECUTE_STMT, DEALLOCATE_STMT].include?(node_name)
+      when 'gid'
+        next if node_name == TRANSACTION_STMT
+      when 'options'
+        next if node_name == TRANSACTION_STMT
       end
 
       fingerprint_value(val, hash, field_name, true)
