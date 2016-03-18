@@ -119,7 +119,11 @@ VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input)
 
 	if (result.error) raise_ruby_fingerprint_error(result);
 
-	output = rb_str_new2(result.hexdigest);
+	if (result.hexdigest) {
+		output = rb_str_new2(result.hexdigest);
+	} else {
+		output = Qnil;
+	}
 
 	pg_query_free_fingerprint_result(result);
 
