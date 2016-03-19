@@ -29,6 +29,8 @@ class PgQuery
         transform_string_list(node[DEF_ELEM]['arg']) if node[DEF_ELEM]['arg'].is_a?(Array)
       when DROP_STMT
         node[DROP_STMT]['objects'].each { |obj| transform_string_list(obj) }
+      when FUNC_CALL
+        transform_string_list(node[FUNC_CALL]['funcname'])
       when GRANT_ROLE_STMT
         transform_string_list(node[GRANT_ROLE_STMT]['grantee_roles'])
       when TYPE_NAME
@@ -61,21 +63,40 @@ class PgQuery
     VARIABLE_SET_STMT => 'SET',
     VARIABLE_SHOW_STMT => 'SHOW'
     # All others default to simply upper-casing the input name
-  }
+  }.freeze
 
-  LEGACY_A_EXPR_NAMES = [
-    'AEXPR',
-    'AEXPR AND'
-    # FIXME
-  ]
+  LEGACY_A_EXPR_NAMES = {
+    AEXPR_OP => 'AEXPR',
+    # AEXPR_OP_ANY = 1           # normal operator
+    # AEXPR_OP_ALL = 2           # scalar op ALL (array)
+    # AEXPR_DISTINCT = 3         # IS DISTINCT FROM - name must be "="
+    # AEXPR_NULLIF = 4           # NULLIF - name must be "="
+    # AEXPR_OF = 5               # IS [NOT] OF - name must be "=" or "<>"
+    # AEXPR_IN = 6               # [NOT] IN - name must be "=" or "<>"
+    # AEXPR_LIKE = 7             # [NOT] LIKE - name must be "~~" or "!~~"
+    # AEXPR_ILIKE = 8            # [NOT] ILIKE - name must be "~~*" or "!~~*"
+    AEXPR_SIMILAR => 'AEXPR',
+    # AEXPR_BETWEEN = 10         # name must be "BETWEEN"
+    # AEXPR_NOT_BETWEEN = 11     # name must be "NOT BETWEEN"
+    # AEXPR_BETWEEN_SYM = 12     # name must be "BETWEEN SYMMETRIC"
+    # AEXPR_NOT_BETWEEN_SYM = 13 # name must be "NOT BETWEEN SYMMETRIC"
+    # AEXPR_PAREN = 14           # nameless dummy node for parentheses
+  }.freeze
 
-  LEGACY_CONSTRAINT_TYPES = [
-    nil, # 0
-    nil, # 1
-    nil, # 2
-    nil, # 3
-    'PRIMARY_KEY'
-  ]
+  LEGACY_CONSTRAINT_TYPES = {
+    # CONSTR_TYPE_NULL = 0 # not standard SQL, but a lot of people expect it
+    # CONSTR_TYPE_NOTNULL = 1
+    # CONSTR_TYPE_DEFAULT = 2
+    # CONSTR_TYPE_CHECK = 3
+    CONSTR_TYPE_PRIMARY => 'PRIMARY_KEY',
+    # CONSTR_TYPE_UNIQUE = 5
+    # CONSTR_TYPE_EXCLUSION = 6
+    # CONSTR_TYPE_FOREIGN = 7
+    # CONSTR_TYPE_ATTR_DEFERRABLE = 8 # attributes for previous constraint node
+    # CONSTR_TYPE_ATTR_NOT_DEFERRABLE = 9
+    # CONSTR_TYPE_ATTR_DEFERRED = 10
+    # CONSTR_TYPE_ATTR_IMMEDIATE = 11
+  }.freeze
 
   def transform_parsetree_a_const(node)
     type_key = node[A_CONST]['val'].keys[0]
@@ -93,11 +114,9 @@ class PgQuery
     when BIT_STRING
       node[A_CONST]['type'] = 'bitstring'
       node[A_CONST]['val'] = node[A_CONST]['val'][BIT_STRING]['str']
-    else
-      puts node
-      puts type_key
-      fail ArgumentError
-      # ...
+    when NULL
+      node[A_CONST]['type'] = 'null'
+      node[A_CONST]['val'] = nil
     end
   end
 

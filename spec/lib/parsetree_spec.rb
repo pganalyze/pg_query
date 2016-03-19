@@ -592,4 +592,32 @@ $BODY$
          "arg"=>"sql",
          "defaction"=>0}}]}}]
   end
+
+  it 'transforms NULL values correctly' do
+    query = described_class.parse("SELECT * FROM x WHERE object_id SIMILAR TO ?")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['x']
+    expect(query.parsetree).to eq [{"SELECT"=>
+      {"targetList"=>
+        [{"RESTARGET"=>
+            {"val"=>{"COLUMNREF"=>{"fields"=>[{"A_STAR"=>{}}], "location"=>7}},
+             "location"=>7}}],
+       "fromClause"=>
+        [{"RANGEVAR"=>
+           {"relname"=>"x", "inhOpt"=>2, "relpersistence"=>"p", "location"=>14}}],
+       "whereClause"=>
+        {"AEXPR"=>
+          {"name"=>["~"],
+           "lexpr"=>{"COLUMNREF"=>{"fields"=>["object_id"], "location"=>22}},
+           "rexpr"=>
+            {"FUNCCALL"=>
+              {"funcname"=>["pg_catalog", "similar_escape"],
+               "args"=>
+                [{"PARAMREF"=>{"location"=>43}},
+                 {"A_CONST"=>
+                   {"type"=>"null", "val"=>nil, "location"=>-1}}],
+               "location"=>32}},
+           "location"=>32}},
+       "op"=>0}}]
+  end
 end
