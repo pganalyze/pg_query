@@ -24,6 +24,10 @@ end
 # Build libpg_query (and parts of PostgreSQL)
 system("cd #{libdir}; make DEBUG=0")
 
+# Cleanup the Postgres install inside libpg_query to reduce the installed size
+system("rm -rf #{libdir}/postgres")
+system("rm -f #{libdir}/postgres.tar.bz2")
+
 # Copy test files (this intentionally overwrites existing files!)
 system("cp #{libdir}/testdata/* #{gemdir}/spec/files/")
 

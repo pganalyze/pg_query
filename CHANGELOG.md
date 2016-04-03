@@ -9,6 +9,8 @@
   * You can use the `.parsetree` translator method to ease the transition, note
     however that there are still a few incompatible changes
 * New `.fingerprint` method (backwards incompatible as well), see https://github.com/lfittl/libpg_query/wiki/Fingerprinting
+* Removes PostgreSQL source and tarball after build process has finished, to reduce
+  diskspace requirements of the installed gem
 
 
 ## 0.8.0    2016-03-06
