@@ -8,6 +8,7 @@ LIB_PG_QUERY_TAG = '9.5-latest'
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
 gemdir = File.join(File.dirname(__FILE__), '../..')
+libfile = libdir + '/libpg_query.a'
 
 unless File.exist?("#{workdir}/libpg_query.tar.gz")
   File.open("#{workdir}/libpg_query.tar.gz", 'wb') do |target_file|
@@ -21,12 +22,14 @@ unless Dir.exist?(libdir)
   system("tar -xf #{workdir}/libpg_query.tar.gz") || fail('ERROR')
 end
 
-# Build libpg_query (and parts of PostgreSQL)
-system("cd #{libdir}; make DEBUG=0")
+unless Dir.exist?(libfile)
+  # Build libpg_query (and parts of PostgreSQL)
+  system("cd #{libdir}; make DEBUG=0")
 
-# Cleanup the Postgres install inside libpg_query to reduce the installed size
-system("rm -rf #{libdir}/postgres")
-system("rm -f #{libdir}/postgres.tar.bz2")
+  # Cleanup the Postgres install inside libpg_query to reduce the installed size
+  system("rm -rf #{libdir}/postgres")
+  system("rm -f #{libdir}/postgres.tar.bz2")
+end
 
 # Copy test files (this intentionally overwrites existing files!)
 system("cp #{libdir}/testdata/* #{gemdir}/spec/files/")
