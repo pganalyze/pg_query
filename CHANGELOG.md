@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.9.0    UNRELEASED
+## 0.9.0    2016-04-17
 
-* Based on PostgreSQL 9.5.1
+* Based on PostgreSQL 9.5.2
 * NOTE: Output format for the parse tree has changed (backwards incompatible!),
         it is recommended you extensively test any direct reading/modification of
         the tree data in your own code

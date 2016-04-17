@@ -3,7 +3,7 @@
 require 'mkmf'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '9.5-latest'
+LIB_PG_QUERY_TAG = '9.5-1.1.0'
 
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
