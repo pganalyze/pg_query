@@ -147,6 +147,36 @@ This gem is based on [libpg_query](https://github.com/lfittl/libpg_query),
 which uses the latest stable PostgreSQL version, but with a patch applied
 to support parsing normalized queries containing `?` replacement characters.
 
+## Supported Ruby Versions
+
+Currently tested and officially supported Ruby versions:
+
+* MRI 1.9
+* MRI 2.0
+* MRI 2.1
+* MRI 2.2
+* MRI 2.3
+* Rubinius 2.11
+* Rubinius 3.20
+
+
+## Resources
+
+Products, tools and libraries built on pg_query:
+
+* [pganalyze](https://pganalyze.com/)
+* [hsql](https://github.com/JackDanger/hsql)
+* [sqlint](https://github.com/purcell/sqlint)
+* [pghero](https://github.com/ankane/pghero)
+
+pg_query for other languages:
+
+* C: [libpg_query](https://github.com/lfittl/libpg_query)
+* Go: [pg_query_go](https://github.com/lfittl/pg_query_go)
+* Javascript: [pg-query-parser](https://github.com/zhm/pg-query-parser)
+
+Please feel free to [open a PR](https://github.com/lfittl/pg_query/pull/new/master) to add yours! :)
+
 
 ## Original Author
 
