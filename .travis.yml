@@ -1,6 +1,10 @@
 language: ruby
 rvm:
- - 2.0.0
- - 2.1.7
- - 2.2.3
+ - 1.9.3-p551
+ - 2.0.0-p648
+ - 2.1.9
+ - 2.2.4
+ - 2.3.0
+ - rbx-2.2.10
+ - rbx-3.20
 script: bundle exec rake
