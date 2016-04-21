@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.1    UNRELEASED
+
+* Add support for Ruby 1.9 (Fixes [#44](https://github.com/lfittl/pg_query/issues/44))
+
+
 ## 0.9.0    2016-04-17
 
 * Based on PostgreSQL 9.5.2
