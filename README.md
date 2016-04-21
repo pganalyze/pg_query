@@ -156,7 +156,6 @@ Currently tested and officially supported Ruby versions:
 * MRI 2.1
 * MRI 2.2
 * MRI 2.3
-* Rubinius 2.11
 * Rubinius 3.20
 
 
