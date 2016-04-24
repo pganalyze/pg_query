@@ -18,4 +18,8 @@ describe PgQuery, '#filter_columns' do
     query = 'WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a WHERE b = 5'
     expect(filter_columns(query)).to match_array [['x', 'y'], ['x', 'z'], [nil, 'b']]
   end
+
+  it 'recognizes boolean tests' do
+    expect(filter_columns('SELECT * FROM x WHERE x.y IS TRUE AND x.z IS NOT FALSE')).to eq [['x', 'y'], ['x', 'z']]
+  end
 end

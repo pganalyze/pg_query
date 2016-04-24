@@ -14,6 +14,7 @@ class PgQuery
   ALTER_TABLE_STMT = 'AlterTableStmt'.freeze
   BIT_STRING = 'BitString'.freeze
   BOOL_EXPR = 'BoolExpr'.freeze
+  BOOLEAN_TEST = 'BooleanTest'.freeze
   CASE_EXPR = 'CaseExpr'.freeze
   CASE_WHEN = 'CaseWhen'.freeze
   CHECK_POINT_STMT = 'CheckPointStmt'.freeze

@@ -64,6 +64,8 @@ class PgQuery
           filter_columns << [@aliases[table] || table, column]
         elsif next_item[NULL_TEST]
           condition_items << next_item[NULL_TEST]['arg']
+        elsif next_item[BOOLEAN_TEST]
+          condition_items << next_item[BOOLEAN_TEST]['arg']
         elsif next_item[FUNC_CALL]
           # FIXME: This should actually be extracted as a funccall and be compared with those indices
           condition_items += next_item[FUNC_CALL]['args'] if next_item[FUNC_CALL]['args']
