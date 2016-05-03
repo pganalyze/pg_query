@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.2    2016-05-03
+
+* Fix issue with A_CONST string values in `.parsetree` compatibility layer (Fixes [#47](https://github.com/lfittl/pg_query/issues/47))
+
+
 ## 0.9.1    2016-04-20
 
 * Add support for Ruby 1.9 (Fixes [#44](https://github.com/lfittl/pg_query/issues/44))
