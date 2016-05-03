@@ -1,5 +1,6 @@
 require 'spec_helper'
 
+# .parsetree is the compatibility layer to ease transitions from 0.7 and earlier versions of pg_query
 describe PgQuery, '#parsetree' do
   it "parses a simple query" do
     query = described_class.parse("SELECT 1")
@@ -619,5 +620,23 @@ $BODY$
                "location"=>32}},
            "location"=>32}},
        "op"=>0}}]
+  end
+
+  # https://github.com/lfittl/pg_query/issues/47
+  it 'transforms A_CONST in functions correctly (bug case)' do
+    query = described_class.parse("SELECT concat(p.firstname, ' ', p.lastname) AS a")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq []
+    expect(query.parsetree).to eq [{"SELECT"=>
+      {"targetList"=>
+        [{"RESTARGET"=>
+          {"name"=>"a", "val"=>
+            {"FUNCCALL"=>{"funcname"=>["concat"], "args"=>[
+              {"COLUMNREF"=>{"fields"=>["p", "firstname"], "location"=>14}},
+               {"A_CONST"=>{"type"=>"string", "val"=>" ", "location"=>27}},
+               {"COLUMNREF"=>{"fields"=>["p", "lastname"], "location"=>32}}],
+             "location"=>7}},
+           "location"=>7}}],
+         "op"=>0}}]
   end
 end

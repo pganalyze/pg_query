@@ -106,8 +106,8 @@ class PgQuery
       node[A_CONST]['type'] = 'integer'
       node[A_CONST]['val'] = node[A_CONST]['val'][INTEGER]['ival']
     when STRING
-      node[A_CONST]['type'] = 'integer'
-      node[A_CONST]['val'] = node[A_CONST]['val'][STRING]['ival']
+      node[A_CONST]['type'] = 'string'
+      node[A_CONST]['val'] = node[A_CONST]['val'][STRING]['str']
     when FLOAT
       node[A_CONST]['type'] = 'float'
       node[A_CONST]['val'] = node[A_CONST]['val'][FLOAT]['str'].to_f
