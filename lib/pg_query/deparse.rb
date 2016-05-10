@@ -136,6 +136,8 @@ class PgQuery
         deparse_with_clause(node)
       when VIEW_STMT
         deparse_viewstmt(node)
+      when VARIABLE_SET_STMT
+        deparse_variable_set_stmt(node)
       when STRING
         if context == A_CONST
           format("'%s'", node['str'].gsub("'", "''"))
@@ -437,6 +439,16 @@ class PgQuery
       when 2
         output << 'WITH CASCADED CHECK OPTION'
       end
+      output.join(' ')
+    end
+
+    def deparse_variable_set_stmt(node)
+      output = []
+      output << "SET"
+      output << "LOCAL" if node["is_local"]
+      output << node['name']
+      output << "TO"
+      output << node['args'].map { |arg| deparse_item(arg) }.join(', ')
       output.join(' ')
     end
 

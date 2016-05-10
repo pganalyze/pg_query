@@ -566,6 +566,43 @@ describe PgQuery::Deparse do
         end
       end
     end
+
+    context 'SET' do
+      context 'with integer value' do
+        let(:query) do
+          '''
+          SET statement_timeout TO 10000;
+          '''
+        end
+        it { is_expected.to eq oneline_query }
+      end
+      context 'with string value' do
+        let(:query) do
+          '''
+          SET search_path TO \'my_schema\', \'public\';
+          '''
+        end
+        it { is_expected.to eq oneline_query }
+      end
+      context 'with local scope' do
+        let(:query) do
+          '''
+          SET LOCAL search_path TO \'my_schema\', \'public\';
+          '''
+        end
+        it { is_expected.to eq oneline_query }
+      end
+      # Because SESSION is default, it is removed by the query parser.
+      context 'with session scope' do
+        let(:query) do
+          '''
+          SET SESSION search_path TO 10000;
+          '''
+        end
+        it { is_expected.to eq "SET search_path TO 10000" }
+      end
+    end
+
   end
 
   describe '#deparse' do
