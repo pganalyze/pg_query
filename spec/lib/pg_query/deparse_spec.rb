@@ -23,6 +23,16 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'with LIKE filter' do
+        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" LIKE 'postgresql:%';" }
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with NOT LIKE filter' do
+        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" NOT LIKE 'postgresql:%';" }
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'simple WITH statement' do
         let(:query) { 'WITH t AS (SELECT random() AS x FROM generate_series(1, 3)) SELECT * FROM "t"' }
         it { is_expected.to eq query }

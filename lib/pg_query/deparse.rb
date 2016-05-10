@@ -36,6 +36,8 @@ class PgQuery
           deparse_aexpr_any(node)
         when AEXPR_IN
           deparse_aexpr_in(node)
+        when CONSTR_TYPE_FOREIGN
+          deparse_aexpr_like(node)
         else
           fail format("Can't deparse: %s: %s", type, node.inspect)
         end
@@ -310,6 +312,12 @@ class PgQuery
       rexpr = Array(node['rexpr']).map { |arg| deparse_item(arg) }
       operator = node['name'].map { |n| deparse_item(n, :operator) } == ['='] ? 'IN' : 'NOT IN'
       format('%s %s (%s)', deparse_item(node['lexpr']), operator, rexpr.join(', '))
+    end
+
+    def deparse_aexpr_like(node)
+      value = deparse_item(node['rexpr'])
+      operator = node['name'].map { |n| deparse_item(n, :operator) } == ['~~'] ? 'LIKE' : 'NOT LIKE'
+      format('%s %s %s', deparse_item(node['lexpr']), operator, value)
     end
 
     def deparse_bool_expr_not(node)
