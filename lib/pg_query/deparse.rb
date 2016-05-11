@@ -444,10 +444,10 @@ class PgQuery
 
     def deparse_variable_set_stmt(node)
       output = []
-      output << "SET"
-      output << "LOCAL" if node["is_local"]
+      output << 'SET'
+      output << 'LOCAL' if node['is_local']
       output << node['name']
-      output << "TO"
+      output << 'TO'
       output << node['args'].map { |arg| deparse_item(arg) }.join(', ')
       output.join(' ')
     end

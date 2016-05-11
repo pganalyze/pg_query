@@ -602,7 +602,6 @@ describe PgQuery::Deparse do
         it { is_expected.to eq "SET search_path TO 10000" }
       end
     end
-
   end
 
   describe '#deparse' do
