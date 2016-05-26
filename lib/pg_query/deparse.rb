@@ -532,7 +532,9 @@ class PgQuery
 
     def deparse_create_function(node)
       output = []
-      output << 'CREATE FUNCTION'
+      output << 'CREATE'
+      output << 'OR REPLACE' if node['replace']
+      output << 'FUNCTION'
 
       arguments = deparse_item_list(node['parameters']).join(', ')
 
@@ -856,6 +858,10 @@ class PgQuery
         "AS $$#{deparse_item_list(node['arg'], :defname_as).join("\n")}$$"
       when 'language'
         "language #{deparse_item(node['arg'])}"
+      when 'volatility'
+        node['arg']['String']['str'].upcase # volatility does not need to be quoted
+      when 'strict'
+        deparse_item(node['arg']) == '1' ? 'RETURNS NULL ON NULL INPUT' : 'CALLED ON NULL INPUT'
       else
         deparse_item(node['arg'])
       end
