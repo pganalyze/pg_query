@@ -382,6 +382,50 @@ describe PgQuery::Deparse do
         end
         it { is_expected.to eq query }
       end
+
+      context 'with or replace' do
+        let(:query) do
+          """
+          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+              SELECT * FROM \"users\" WHERE users.id = $1;
+          $$ language \"sql\"
+          """.strip
+        end
+        it { is_expected.to eq query }
+      end
+
+      context 'with immutable' do
+        let(:query) do
+          """
+          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+              SELECT * FROM \"users\" WHERE users.id = $1;
+          $$ language \"sql\" IMMUTABLE
+          """.strip
+        end
+        it { is_expected.to eq query }
+      end
+
+      context 'with STRICT (aka return null on null input)' do
+        let(:query) do
+          """
+          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+              SELECT * FROM \"users\" WHERE users.id = $1;
+          $$ language \"sql\" IMMUTABLE RETURNS NULL ON NULL INPUT
+          """.strip
+        end
+        it { is_expected.to eq query }
+      end
+
+      context 'with called on null input' do
+        let(:query) do
+          """
+          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+              SELECT * FROM \"users\" WHERE users.id = $1;
+          $$ language \"sql\" IMMUTABLE CALLED ON NULL INPUT
+          """.strip
+        end
+        it { is_expected.to eq query }
+      end
     end
 
     context 'CREATE TABLE' do
