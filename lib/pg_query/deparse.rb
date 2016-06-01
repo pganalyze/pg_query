@@ -526,6 +526,9 @@ class PgQuery
         output << expression
       end
       output << '(' + deparse_item_list(node['keys']).join(', ') + ')' if node['keys']
+      output << '(' + deparse_item_list(node['fk_attrs']).join(', ') + ')' if node['fk_attrs']
+      output << 'REFERENCES ' + deparse_item(node['pktable']) + ' (' + deparse_item_list(node['pk_attrs']).join(', ') + ')' if node['pktable']
+      output << 'NOT VALID' if node['skip_validation']
       output << "USING INDEX #{node['indexname']}" if node['indexname']
       output.join(' ')
     end
