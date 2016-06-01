@@ -537,6 +537,16 @@ describe PgQuery::Deparse do
         let(:query) { 'ALTER TABLE "distributors" RENAME TO suppliers;' }
         it { is_expected.to eq oneline_query }
       end
+
+      context 'FOREIGN KEY' do
+        let(:query) { 'ALTER TABLE "distributors" ADD CONSTRAINT distfk FOREIGN KEY ("address") REFERENCES "addresses" ("address");' }
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FOREIGN KEY NOT VALID' do
+        let(:query) { 'ALTER TABLE "distributors" ADD CONSTRAINT distfk FOREIGN KEY ("address") REFERENCES "addresses" ("address") NOT VALID;' }
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'TRANSACTION' do
