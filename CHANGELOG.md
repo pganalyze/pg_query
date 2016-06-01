@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.10.0    2016-05-31
+
+* Based on PostgreSQL 9.5.3
+* Use LLVM extracted parser for significantly improved build times (via libpg_query)
+* Deparsing Improvements
+  * SET statements [#48](https://github.com/lfittl/pg_query/pull/48) [@Winslett](https://github.com/Winslett)
+  * LIKE/NOT LIKE [#49](https://github.com/lfittl/pg_query/pull/49) [@Winslett](https://github.com/Winslett)
+  * CREATE FUNCTION improvements [#50](https://github.com/lfittl/pg_query/pull/50) [@Winslett](https://github.com/Winslett)
+
+
 ## 0.9.2    2016-05-03
 
 * Fix issue with A_CONST string values in `.parsetree` compatibility layer (Fixes [#47](https://github.com/lfittl/pg_query/issues/47))
