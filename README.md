@@ -4,7 +4,7 @@ This Ruby extension uses the actual PostgreSQL server source to parse SQL querie
 
 In addition the extension allows you to normalize queries (replacing constant values with ?) and parse these normalized queries into a parsetree again.
 
-When you build this extension, it fetches a copy of the PostgreSQL server source and builds parts of it, and then statically links it into this extension.
+When you build this extension, it builds parts of the PostgreSQL server source (see [libpg_query](https://github.com/lfittl/libpg_query)), and then statically links it into this extension.
 
 This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
 
