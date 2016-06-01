@@ -3,7 +3,7 @@
 require 'mkmf'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '9.5-1.1.0'
+LIB_PG_QUERY_TAG = '9.5-1.3.0'
 
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
@@ -24,11 +24,7 @@ end
 
 unless Dir.exist?(libfile)
   # Build libpg_query (and parts of PostgreSQL)
-  system("cd #{libdir}; make DEBUG=0")
-
-  # Cleanup the Postgres install inside libpg_query to reduce the installed size
-  system("rm -rf #{libdir}/postgres")
-  system("rm -f #{libdir}/postgres.tar.bz2")
+  system("cd #{libdir}; make build")
 end
 
 # Copy test files (this intentionally overwrites existing files!)
@@ -38,7 +34,7 @@ $objs = ['pg_query_ruby.o']
 
 $LOCAL_LIBS << '-lpg_query'
 $LIBPATH << libdir
-$CFLAGS << " -I #{libdir} -O3 -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv"
+$CFLAGS << " -I #{libdir} -O3 -Wall -fno-strict-aliasing -fwrapv"
 
 SYMFILE = File.join(File.dirname(__FILE__), 'pg_query_ruby.sym')
 if RUBY_PLATFORM =~ /darwin/
