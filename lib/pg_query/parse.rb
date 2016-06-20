@@ -117,11 +117,16 @@ class PgQuery
           end
         end
 
-        subselect_items += statement.values[0]['targetList'] if !statement.empty? && statement.values[0]['targetList']
-        subselect_items << statement.values[0]['whereClause'] if !statement.empty? && statement.values[0]['whereClause']
+        statement_value = statement.values[0]
+        unless statement.empty?
+          subselect_items.concat(statement_value['targetList']) if statement_value['targetList']
+          subselect_items << statement_value['whereClause'] if statement_value['whereClause']
+          subselect_items.concat(statement_value['sortClause'].collect { |h| h[SORT_BY]['node'] }) if statement_value['sortClause']
+          subselect_items.concat(statement_value['groupClause']) if statement_value['groupClause']
+          subselect_items << statement_value['havingClause'] if statement_value['havingClause']
+        end
       end
 
-      # Find subselects in WHERE clause
       next_item = subselect_items.shift
       if next_item
         case next_item.keys[0]
@@ -135,6 +140,8 @@ class PgQuery
               subselect_items << elem
             end
           end
+        when BOOL_EXPR
+          subselect_items.concat(next_item.values[0]['args'])
         when RES_TARGET
           subselect_items << next_item[RES_TARGET]['val']
         when SUB_LINK
