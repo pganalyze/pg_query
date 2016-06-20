@@ -34,6 +34,11 @@ class PgQuery
     @tables
   end
 
+  def cte_names
+    load_tables_and_aliases! if @cte_names.nil?
+    @cte_names
+  end
+
   def aliases
     load_tables_and_aliases! if @aliases.nil?
     @aliases
@@ -43,11 +48,12 @@ class PgQuery
 
   def load_tables_and_aliases! # rubocop:disable Metrics/CyclomaticComplexity
     @tables = []
+    @cte_names = []
     @aliases = {}
 
     statements = @tree.dup
     from_clause_items = []
-    where_clause_items = []
+    subselect_items = []
 
     loop do
       statement = statements.shift
@@ -64,9 +70,12 @@ class PgQuery
             end
 
             # CTEs
-            if statement[SELECT_STMT]['withClause']
-              statement[SELECT_STMT]['withClause'][WITH_CLAUSE]['ctes'].each do |item|
-                statements << item[COMMON_TABLE_EXPR]['ctequery'] if item[COMMON_TABLE_EXPR]
+            with_clause = statement[SELECT_STMT]['withClause']
+            if with_clause
+              with_clause[WITH_CLAUSE]['ctes'].each do |item|
+                next unless item[COMMON_TABLE_EXPR]
+                @cte_names << item[COMMON_TABLE_EXPR]['ctename']
+                statements << item[COMMON_TABLE_EXPR]['ctequery']
               end
             end
           elsif statement[SELECT_STMT]['op'] == 1
@@ -99,7 +108,7 @@ class PgQuery
             # FIXME
           end
         when DROP_STMT
-          objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String']['str'] } }
+          objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String'] && obj['String']['str'] } }
           case statement[DROP_STMT]['removeType']
           when OBJECT_TYPE_TABLE
             @tables += objects.map { |r| r.join('.') }
@@ -108,11 +117,12 @@ class PgQuery
           end
         end
 
-        where_clause_items << statement.values[0]['whereClause'] if !statement.empty? && statement.values[0]['whereClause']
+        subselect_items += statement.values[0]['targetList'] if !statement.empty? && statement.values[0]['targetList']
+        subselect_items << statement.values[0]['whereClause'] if !statement.empty? && statement.values[0]['whereClause']
       end
 
       # Find subselects in WHERE clause
-      next_item = where_clause_items.shift
+      next_item = subselect_items.shift
       if next_item
         case next_item.keys[0]
         when A_EXPR
@@ -120,17 +130,19 @@ class PgQuery
             elem = next_item.values[0][side]
             next unless elem
             if elem.is_a?(Array)
-              where_clause_items += elem
+              subselect_items += elem
             else
-              where_clause_items << elem
+              subselect_items << elem
             end
           end
+        when RES_TARGET
+          subselect_items << next_item[RES_TARGET]['val']
         when SUB_LINK
           statements << next_item[SUB_LINK]['subselect']
         end
       end
 
-      break if where_clause_items.empty? && statements.empty?
+      break if subselect_items.empty? && statements.empty?
     end
 
     loop do
@@ -146,6 +158,8 @@ class PgQuery
         from_clause_items += next_item[ROW_EXPR]['args']
       when RANGE_VAR
         rangevar = next_item[RANGE_VAR]
+        next if !rangevar['schemaname'] && @cte_names.include?(rangevar['relname'])
+
         table = [rangevar['schemaname'], rangevar['relname']].compact.join('.')
         @tables << table
         @aliases[rangevar['alias'][ALIAS]['aliasname']] = table if rangevar['alias']

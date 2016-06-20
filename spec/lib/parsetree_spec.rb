@@ -443,8 +443,6 @@ describe PgQuery, '#parsetree' do
 
   it 'parses WITH' do
     query = described_class.parse('WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a')
-    expect(query.warnings).to eq []
-    expect(query.tables).to eq ['a', 'x']
     expect(query.parsetree).to eq [{"SELECT"=>
    {"targetList"=>
      [{"RESTARGET"=>

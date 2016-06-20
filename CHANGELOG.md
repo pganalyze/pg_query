@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.0    UNRELEASED
+
+* Improved table name analysis (#tables method)
+  * Don't include CTE names, make them accessible as #cte_names instead [#52](https://github.com/lfittl/pg_query/issues/52)
+  * Include table names in target list sub selects [#38](https://github.com/lfittl/pg_query/issues/38)
+  * Fix parsing of DROP TYPE statements
+
 ## 0.10.0    2016-05-31
 
 * Based on PostgreSQL 9.5.3

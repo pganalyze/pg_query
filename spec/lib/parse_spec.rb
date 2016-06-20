@@ -459,7 +459,8 @@ describe PgQuery, '.parse' do
   it 'parses WITH' do
     query = described_class.parse('WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a')
     expect(query.warnings).to eq []
-    expect(query.tables).to eq ['a', 'x']
+    expect(query.tables).to eq ['x']
+    expect(query.cte_names).to eq ['a']
     expect(query.tree).to eq [{described_class::SELECT_STMT=>
    {described_class::TARGET_LIST_FIELD=>
      [{described_class::RES_TARGET=>
@@ -610,5 +611,38 @@ $BODY$
         {"defname"=>"language",
          "arg"=>{"String"=>{"str"=>"sql"}},
          "defaction"=>0}}]}}]
+  end
+
+  # https://github.com/lfittl/pg_query/issues/38
+  it 'correctly finds nested tables' do
+    query = described_class.parse("select u.email, (select count(*) from enrollments e where e.user_id = u.id) as num_enrollments from users u")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'enrollments']
+  end
+
+  # https://github.com/lfittl/pg_query/issues/52
+  it 'correctly separates CTE names from table names' do
+    query = described_class.parse("WITH cte_name AS (SELECT 1) SELECT * FROM table_name, cte_name")
+    expect(query.cte_names).to eq ['cte_name']
+    expect(query.tables).to eq ['table_name']
+  end
+
+  it 'handles DROP TYPE' do
+    query = described_class.parse("DROP TYPE IF EXISTS repack.pk_something")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq []
+    expect(query.tree).to eq [
+      {"DropStmt"=>
+        {"objects"=>
+          [[{"TypeName"=>
+              {"names"=>
+                [{"String"=>{"str"=>"repack"}},
+                 {"String"=>{"str"=>"pk_something"}}],
+               "typemod"=>-1,
+               "location"=>20}}]],
+         "removeType"=>40,
+         "behavior"=>0,
+         "missing_ok"=>true}}
+    ]
   end
 end
