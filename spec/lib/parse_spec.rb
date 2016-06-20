@@ -614,7 +614,7 @@ $BODY$
   end
 
   # https://github.com/lfittl/pg_query/issues/38
-  it 'correctly finds nested tables' do
+  it 'correctly finds nested tables in select clause' do
     query = described_class.parse("select u.email, (select count(*) from enrollments e where e.user_id = u.id) as num_enrollments from users u")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['users', 'enrollments']
@@ -625,6 +625,125 @@ $BODY$
     query = described_class.parse("WITH cte_name AS (SELECT 1) SELECT * FROM table_name, cte_name")
     expect(query.cte_names).to eq ['cte_name']
     expect(query.tables).to eq ['table_name']
+  end
+
+  it 'correctly finds nested tables in from clause' do
+    query = described_class.parse("select u.* from (select * from users) u")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users']
+  end
+
+  it 'correctly finds nested tables in where clause' do
+    query = described_class.parse("select users.id from users where 1 = (select count(*) from user_roles)")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles']
+  end
+
+  it 'traverse boolean expressions in where clause' do
+    query = described_class.parse(<<-SQL)
+      select users.*
+      from users
+      where users.id IN (
+        select user_roles.user_id
+        from user_roles
+      ) and (users.created_at between '2016-06-01' and '2016-06-30')
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles']
+  end
+
+  it 'correctly finds nested tables in the order by clause' do
+    query = described_class.parse(<<-SQL)
+      select users.*
+      from users
+      order by (
+        select max(user_roles.role_id)
+        from user_roles
+        where user_roles.user_id = users.id
+      )
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles']
+  end
+
+  it 'correctly finds nested tables in the order by clause with multiple entries' do
+    query = described_class.parse(<<-SQL)
+      select users.*
+      from users
+      order by (
+        select max(user_roles.role_id)
+        from user_roles
+        where user_roles.user_id = users.id
+      ) asc, (
+        select max(user_logins.role_id)
+        from user_logins
+        where user_logins.user_id = users.id
+      ) desc
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles', 'user_logins']
+  end
+
+  it 'correctly finds nested tables in the group by clause' do
+    query = described_class.parse(<<-SQL)
+      select users.*
+      from users
+      group by (
+        select max(user_roles.role_id)
+        from user_roles
+        where user_roles.user_id = users.id
+      )
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles']
+  end
+
+  it 'correctly finds nested tables in the group by clause with multiple entries' do
+    query = described_class.parse(<<-SQL)
+      select users.*
+      from users
+      group by (
+        select max(user_roles.role_id)
+        from user_roles
+        where user_roles.user_id = users.id
+      ), (
+        select max(user_logins.role_id)
+        from user_logins
+        where user_logins.user_id = users.id
+      )
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles', 'user_logins']
+  end
+
+  it 'correctly finds nested tables in the having clause' do
+    query = described_class.parse(<<-SQL)
+      select users.*
+      from users
+      group by users.id
+      having 1 > (
+        select count(user_roles.role_id)
+        from user_roles
+        where user_roles.user_id = users.id
+      )
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles']
+  end
+
+  it 'correctly finds nested tables in the having clause with a boolean expression' do
+    query = described_class.parse(<<-SQL)
+      select users.*
+      from users
+      group by users.id
+      having true and 1 > (
+        select count(user_roles.role_id)
+        from user_roles
+        where user_roles.user_id = users.id
+      )
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['users', 'user_roles']
   end
 
   it 'handles DROP TYPE' do
