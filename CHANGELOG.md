@@ -1,11 +1,13 @@
 # Changelog
 
-## 0.11.0    UNRELEASED
+## 0.11.0    2016-06-22
 
 * Improved table name analysis (#tables method)
   * Don't include CTE names, make them accessible as #cte_names instead [#52](https://github.com/lfittl/pg_query/issues/52)
   * Include table names in target list sub selects [#38](https://github.com/lfittl/pg_query/issues/38)
+  * Add support for ORDER/GROUP BY, HAVING, and booleans in WHERE [#53](https://github.com/lfittl/pg_query/pull/53) [@jcoleman](https://github.com/jcoleman)
   * Fix parsing of DROP TYPE statements
+
 
 ## 0.10.0    2016-05-31
 
