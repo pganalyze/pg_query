@@ -240,7 +240,7 @@ describe PgQuery, '.parse' do
                  "location"=>21}},
              "is_local"=>true,
              "location"=>19}}],
-        "options"=> [{described_class::DEF_ELEM=> {"defname"=>"oids", "arg"=>{"Integer"=>{"ival"=>1}}, "defaction"=>0}}],
+        "options"=> [{described_class::DEF_ELEM=> {"defname"=>"oids", "arg"=>{"Integer"=>{"ival"=>1}}, "defaction"=>0, "location"=>-1}}],
         "oncommit"=>0}}]
   end
 
@@ -561,15 +561,18 @@ $BODY$
            "arg"=>
            [{"String"=>
             {"str"=>"\nDECLARE\n        local_thing_id BIGINT := 0;\nBEGIN\n        SELECT thing_id INTO local_thing_id FROM thing_map\n        WHERE\n                thing_map_field = parameter_thing\n        ORDER BY 1 LIMIT 1;\n\n        IF NOT FOUND THEN\n                local_thing_id = 0;\n        END IF;\n        RETURN local_thing_id;\nEND;\n"}}],
-           "defaction"=>0}},
+           "defaction"=>0,
+           "location"=>-1}},
         {described_class::DEF_ELEM=>
           {"defname"=>"language",
            "arg"=>{"String"=>{"str"=>"plpgsql"}},
-           "defaction"=>0}},
+           "defaction"=>0,
+           "location"=>-1}},
         {described_class::DEF_ELEM=>
           {"defname"=>"volatility",
            "arg"=>{"String"=>{"str"=>"stable"}},
-           "defaction"=>0}}]}}]
+           "defaction"=>0,
+           "location"=>-1}}]}}]
   end
 
   it 'parses table functions' do
@@ -606,11 +609,13 @@ $BODY$
      [{described_class::DEF_ELEM=>
         {"defname"=>"as",
          "arg"=>[{"String"=>{"str"=>"\n    SELECT * FROM foo WHERE fooid = $1;\n"}}],
-         "defaction"=>0}},
+         "defaction"=>0,
+         "location"=>-1}},
       {described_class::DEF_ELEM=>
         {"defname"=>"language",
          "arg"=>{"String"=>{"str"=>"sql"}},
-         "defaction"=>0}}]}}]
+         "defaction"=>0,
+         "location"=>-1}}]}}]
   end
 
   # https://github.com/lfittl/pg_query/issues/38

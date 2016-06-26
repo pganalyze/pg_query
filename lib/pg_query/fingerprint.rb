@@ -33,26 +33,26 @@ class PgQuery
     [nil, 0, false, [], ''].include?(val)
   end
 
-  def fingerprint_value(val, hash, field_name, need_to_write_name)
+  def fingerprint_value(val, hash, parent_node_name, parent_field_name, need_to_write_name)
     return if ignored_fingerprint_value?(val)
 
     subhash = FingerprintSubHash.new
 
     if val.is_a?(Hash)
-      fingerprint_node(val, subhash, field_name)
+      fingerprint_node(val, subhash, parent_node_name, parent_field_name)
     elsif val.is_a?(Array)
-      fingerprint_list(val, subhash, field_name)
+      fingerprint_list(val, subhash, parent_node_name, parent_field_name)
     else
       subhash.update val.to_s
     end
 
     return if subhash.parts.empty?
 
-    hash.update(field_name) if need_to_write_name
+    hash.update(parent_field_name) if need_to_write_name
     subhash.flush_to(hash)
   end
 
-  def fingerprint_node(node, hash, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
+  def fingerprint_node(node, hash, parent_node_name = nil, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
     node_name = node.keys.first
     return if [A_CONST, ALIAS, PARAM_REF, SET_TO_DEFAULT, INT_LIST, OID_LIST, NULL].include?(node_name)
 
@@ -65,7 +65,7 @@ class PgQuery
       when 'location'
         next
       when 'name'
-        next if node_name == RES_TARGET && parent_field_name == TARGET_LIST_FIELD
+        next if node_name == RES_TARGET && parent_node_name == SELECT_STMT && parent_field_name == TARGET_LIST_FIELD
         next if [PREPARE_STMT, EXECUTE_STMT, DEALLOCATE_STMT].include?(node_name)
       when 'gid'
         next if node_name == TRANSACTION_STMT
@@ -73,15 +73,15 @@ class PgQuery
         next if node_name == TRANSACTION_STMT
       end
 
-      fingerprint_value(val, hash, field_name, true)
+      fingerprint_value(val, hash, node_name, field_name, true)
     end
   end
 
-  def fingerprint_list(values, hash, parent_field_name)
+  def fingerprint_list(values, hash, parent_node_name, parent_field_name)
     if [FROM_CLAUSE_FIELD, TARGET_LIST_FIELD, COLS_FIELD, REXPR_FIELD].include?(parent_field_name)
       values_subhashes = values.map do |val|
         subhash = FingerprintSubHash.new
-        fingerprint_value(val, subhash, parent_field_name, false)
+        fingerprint_value(val, subhash, parent_node_name, parent_field_name, false)
         subhash
       end
 
@@ -93,7 +93,7 @@ class PgQuery
       end
     else
       values.each do |val|
-        fingerprint_value(val, hash, parent_field_name, false)
+        fingerprint_value(val, hash, parent_node_name, parent_field_name, false)
       end
     end
   end
