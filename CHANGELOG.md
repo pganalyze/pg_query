@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.1    2016-06-26
+
+* Updated fingerprinting logic to version 1.1
+  * Fixes an issue with UpdateStmt target lists being ignored
+* Update to newest libpg_query version (9.5-1.4.0)
+
+
 ## 0.11.0    2016-06-22
 
 * Improved table name analysis (#tables method)
