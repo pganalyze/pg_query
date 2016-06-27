@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.2    2016-06-27
+
+* Update to newest libpg_query version (9.5-1.4.1)
+  * This release makes sure we work correctly in threaded environments
+
+
 ## 0.11.1    2016-06-26
 
 * Updated fingerprinting logic to version 1.1
