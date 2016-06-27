@@ -551,7 +551,6 @@ $BODY$
           {"defname"=>"volatility",
            "arg"=>"stable",
            "defaction"=>0,
-           "location"=>-1,
            "location"=>-1}}]}}]
   end
 

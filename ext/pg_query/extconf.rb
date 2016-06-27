@@ -3,7 +3,7 @@
 require 'mkmf'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '9.5-1.4.0'
+LIB_PG_QUERY_TAG = '9.5-1.4.1'
 
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
@@ -34,7 +34,7 @@ $objs = ['pg_query_ruby.o']
 
 $LOCAL_LIBS << '-lpg_query'
 $LIBPATH << libdir
-$CFLAGS << " -I #{libdir} -O3 -Wall -fno-strict-aliasing -fwrapv"
+$CFLAGS << " -I #{libdir} -O3 -Wall -fno-strict-aliasing -fwrapv -g"
 
 SYMFILE = File.join(File.dirname(__FILE__), 'pg_query_ruby.sym')
 if RUBY_PLATFORM =~ /darwin/

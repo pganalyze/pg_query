@@ -12,8 +12,6 @@ void Init_pg_query(void)
 {
 	VALUE cPgQuery;
 
-	pg_query_init();
-
 	cPgQuery = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 
 	rb_define_singleton_method(cPgQuery, "_raw_parse", pg_query_ruby_parse, 1);
