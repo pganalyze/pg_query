@@ -221,6 +221,11 @@ describe PgQuery::Deparse do
         let(:query) { 'SELECT * FROM "x" OFFSET 50' }
         it { is_expected.to eq query }
       end
+
+      context 'FLOAT' do
+        let(:query) { 'SELECT "amount" * 0.5' }
+        it { is_expected.to eq query }
+      end
     end
 
     context 'type cast' do

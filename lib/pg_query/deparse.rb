@@ -150,6 +150,8 @@ class PgQuery
         end
       when INTEGER
         node['ival'].to_s
+      when FLOAT
+        node['str']
       else
         fail format("Can't deparse: %s: %s", type, node.inspect)
       end
