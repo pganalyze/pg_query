@@ -38,6 +38,8 @@ class PgQuery
           deparse_aexpr_in(node)
         when CONSTR_TYPE_FOREIGN
           deparse_aexpr_like(node)
+        when AEXPR_BETWEEN, AEXPR_NOT_BETWEEN, AEXPR_BETWEEN_SYM, AEXPR_NOT_BETWEEN_SYM
+          deparse_aexpr_between(node)
         else
           fail format("Can't deparse: %s: %s", type, node.inspect)
         end
@@ -375,6 +377,22 @@ class PgQuery
       output << deparse_item(node['lexpr'])
       output << format('ANY(%s)', deparse_item(node['rexpr']))
       output.join(' ' + deparse_item(node['name'][0], :operator) + ' ')
+    end
+
+    def deparse_aexpr_between(node)
+      between = case node['kind']
+      when AEXPR_BETWEEN
+        ' BETWEEN '
+      when AEXPR_NOT_BETWEEN
+        ' NOT BETWEEN '
+      when AEXPR_BETWEEN_SYM
+        ' BETWEEN SYMMETRIC '
+      when AEXPR_NOT_BETWEEN_SYM
+        ' NOT BETWEEN SYMMETRIC '
+      end
+      name   = deparse_item(node['lexpr'])
+      output = node['rexpr'].map {|n| deparse_item(n) }
+      name << between << output.join(' AND ')
     end
 
     def deparse_joinexpr(node)
