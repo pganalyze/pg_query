@@ -226,6 +226,26 @@ describe PgQuery::Deparse do
         let(:query) { 'SELECT "amount" * 0.5' }
         it { is_expected.to eq query }
       end
+
+      context 'BETWEEN' do
+        let(:query) { 'SELECT * FROM "x" WHERE "x" BETWEEN \'2016-01-01\' AND \'2016-02-02\'' }
+        it { is_expected.to eq query }
+      end
+
+      context 'NOT BETWEEN' do
+        let(:query) { 'SELECT * FROM "x" WHERE "x" NOT BETWEEN \'2016-01-01\' AND \'2016-02-02\'' }
+        it { is_expected.to eq query }
+      end
+
+      context 'BETWEEN SYMMETRIC' do
+        let(:query) { 'SELECT * FROM "x" WHERE "x" BETWEEN SYMMETRIC 20 AND 10' }
+        it { is_expected.to eq query }
+      end
+
+      context 'NOT BETWEEN SYMMETRIC' do
+        let(:query) { 'SELECT * FROM "x" WHERE "x" NOT BETWEEN SYMMETRIC 20 AND 10' }
+        it { is_expected.to eq query }
+      end
     end
 
     context 'type cast' do
