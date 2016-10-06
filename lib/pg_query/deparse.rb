@@ -381,17 +381,17 @@ class PgQuery
 
     def deparse_aexpr_between(node)
       between = case node['kind']
-      when AEXPR_BETWEEN
-        ' BETWEEN '
-      when AEXPR_NOT_BETWEEN
-        ' NOT BETWEEN '
-      when AEXPR_BETWEEN_SYM
-        ' BETWEEN SYMMETRIC '
-      when AEXPR_NOT_BETWEEN_SYM
-        ' NOT BETWEEN SYMMETRIC '
-      end
+                when AEXPR_BETWEEN
+                  ' BETWEEN '
+                when AEXPR_NOT_BETWEEN
+                  ' NOT BETWEEN '
+                when AEXPR_BETWEEN_SYM
+                  ' BETWEEN SYMMETRIC '
+                when AEXPR_NOT_BETWEEN_SYM
+                  ' NOT BETWEEN SYMMETRIC '
+                end
       name   = deparse_item(node['lexpr'])
-      output = node['rexpr'].map {|n| deparse_item(n) }
+      output = node['rexpr'].map { |n| deparse_item(n) }
       name << between << output.join(' AND ')
     end
 
