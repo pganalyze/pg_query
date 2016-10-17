@@ -40,6 +40,8 @@ class PgQuery
           deparse_aexpr_like(node)
         when AEXPR_BETWEEN, AEXPR_NOT_BETWEEN, AEXPR_BETWEEN_SYM, AEXPR_NOT_BETWEEN_SYM
           deparse_aexpr_between(node)
+        when AEXPR_NULLIF
+          deparse_aexpr_nullif(node)
         else
           fail format("Can't deparse: %s: %s", type, node.inspect)
         end
@@ -393,6 +395,12 @@ class PgQuery
       name   = deparse_item(node['lexpr'])
       output = node['rexpr'].map { |n| deparse_item(n) }
       name << between << output.join(' AND ')
+    end
+
+    def deparse_aexpr_nullif(node)
+      lexpr = deparse_item(node['lexpr'])
+      rexpr = deparse_item(node['rexpr'])
+      format('NULLIF(%s, %s)', lexpr, rexpr)
     end
 
     def deparse_joinexpr(node)

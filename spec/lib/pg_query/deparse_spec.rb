@@ -246,6 +246,11 @@ describe PgQuery::Deparse do
         let(:query) { 'SELECT * FROM "x" WHERE "x" NOT BETWEEN SYMMETRIC 20 AND 10' }
         it { is_expected.to eq query }
       end
+
+      context 'NULLIF' do
+        let(:query) { 'SELECT NULLIF("id", 0) AS id FROM "x"' }
+        it { is_expected.to eq query }
+      end
     end
 
     context 'type cast' do
