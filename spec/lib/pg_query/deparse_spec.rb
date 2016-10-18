@@ -258,22 +258,22 @@ describe PgQuery::Deparse do
       end
 
       context 'IS true' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS true' }
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS TRUE' }
         it { is_expected.to eq query }
       end
 
       context 'IS NOT true' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT true' }
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT TRUE' }
         it { is_expected.to eq query }
       end
 
       context 'IS false' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS false' }
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS FALSE' }
         it { is_expected.to eq query }
       end
 
       context 'IS NOT false' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT false' }
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT FALSE' }
         it { is_expected.to eq query }
       end
     end

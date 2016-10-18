@@ -339,13 +339,13 @@ class PgQuery
     def deparse_boolean_test(node)
       test = case node['booltesttype']
              when BOOLEAN_TEST_TRUE
-               ' IS true'
+               ' IS TRUE'
              when BOOLEAN_TEST_NOT_TRUE
-               ' IS NOT true'
+               ' IS NOT TRUE'
              when BOOLEAN_TEST_FALSE
-               ' IS false'
+               ' IS FALSE'
              when BOOLEAN_TEST_NOT_FALSE
-               ' IS NOT false'
+               ' IS NOT FALSE'
              end
       deparse_item(node['arg']) + test
     end
