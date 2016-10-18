@@ -276,6 +276,16 @@ describe PgQuery::Deparse do
         let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT FALSE' }
         it { is_expected.to eq query }
       end
+
+      context 'IS unknown' do
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS UNKNOWN' }
+        it { is_expected.to eq query }
+      end
+
+      context 'IS NOT unknown' do
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT UNKNOWN' }
+        it { is_expected.to eq query }
+      end
     end
 
     context 'type cast' do

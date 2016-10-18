@@ -346,6 +346,10 @@ class PgQuery
                ' IS FALSE'
              when BOOLEAN_TEST_NOT_FALSE
                ' IS NOT FALSE'
+             when BOOLEAN_TEST_UNKNOWN
+               ' IS UNKNOWN'
+             when BOOLEAN_TEST_NOT_UNKNOWN
+               ' IS NOT UNKNOWN'
              end
       deparse_item(node['arg']) + test
     end
