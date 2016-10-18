@@ -337,21 +337,13 @@ class PgQuery
     end
 
     def deparse_boolean_test(node)
-      test = case node['booltesttype']
-             when BOOLEAN_TEST_TRUE
-               ' IS TRUE'
-             when BOOLEAN_TEST_NOT_TRUE
-               ' IS NOT TRUE'
-             when BOOLEAN_TEST_FALSE
-               ' IS FALSE'
-             when BOOLEAN_TEST_NOT_FALSE
-               ' IS NOT FALSE'
-             when BOOLEAN_TEST_UNKNOWN
-               ' IS UNKNOWN'
-             when BOOLEAN_TEST_NOT_UNKNOWN
-               ' IS NOT UNKNOWN'
-             end
-      deparse_item(node['arg']) + test
+      tests = { BOOLEAN_TEST_TRUE        => ' IS TRUE',
+                BOOLEAN_TEST_NOT_TRUE    => ' IS NOT TRUE',
+                BOOLEAN_TEST_FALSE       => ' IS FALSE',
+                BOOLEAN_TEST_NOT_FALSE   => ' IS NOT FALSE',
+                BOOLEAN_TEST_UNKNOWN     => ' IS UNKNOWN',
+                BOOLEAN_TEST_NOT_UNKNOWN => ' IS NOT UNKNOWN' }
+      deparse_item(node['arg']) + tests[node['booltesttype']]
     end
 
     def deparse_range_function(node)
