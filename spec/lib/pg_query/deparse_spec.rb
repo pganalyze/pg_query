@@ -251,6 +251,31 @@ describe PgQuery::Deparse do
         let(:query) { 'SELECT NULLIF("id", 0) AS id FROM "x"' }
         it { is_expected.to eq query }
       end
+
+      context 'return NULL' do
+        let(:query) { 'SELECT NULL FROM "x"' }
+        it { is_expected.to eq query }
+      end
+
+      context 'IS true' do
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS true' }
+        it { is_expected.to eq query }
+      end
+
+      context 'IS NOT true' do
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT true' }
+        it { is_expected.to eq query }
+      end
+
+      context 'IS false' do
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS false' }
+        it { is_expected.to eq query }
+      end
+
+      context 'IS NOT false' do
+        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT false' }
+        it { is_expected.to eq query }
+      end
     end
 
     context 'type cast' do
