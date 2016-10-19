@@ -72,6 +72,8 @@ class PgQuery
         when BOOL_EXPR_NOT
           deparse_bool_expr_not(node)
         end
+      when BOOLEAN_TEST
+        deparse_boolean_test(node)
       when CASE_EXPR
         deparse_case(node)
       when COALESCE_EXPR
@@ -156,6 +158,8 @@ class PgQuery
         node['ival'].to_s
       when FLOAT
         node['str']
+      when NULL
+        'NULL'
       else
         fail format("Can't deparse: %s: %s", type, node.inspect)
       end
@@ -330,6 +334,18 @@ class PgQuery
 
     def deparse_bool_expr_not(node)
       format('NOT %s', deparse_item(node['args'][0]))
+    end
+
+    BOOLEAN_TEST_TYPE_TO_STRING = {
+      BOOLEAN_TEST_TRUE        => ' IS TRUE',
+      BOOLEAN_TEST_NOT_TRUE    => ' IS NOT TRUE',
+      BOOLEAN_TEST_FALSE       => ' IS FALSE',
+      BOOLEAN_TEST_NOT_FALSE   => ' IS NOT FALSE',
+      BOOLEAN_TEST_UNKNOWN     => ' IS UNKNOWN',
+      BOOLEAN_TEST_NOT_UNKNOWN => ' IS NOT UNKNOWN'
+    }.freeze
+    def deparse_boolean_test(node)
+      deparse_item(node['arg']) + BOOLEAN_TEST_TYPE_TO_STRING[node['booltesttype']]
     end
 
     def deparse_range_function(node)

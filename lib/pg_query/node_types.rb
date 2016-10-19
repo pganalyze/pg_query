@@ -113,6 +113,13 @@ class PgQuery
   BOOL_EXPR_OR = 1
   BOOL_EXPR_NOT = 2
 
+  BOOLEAN_TEST_TRUE = 0
+  BOOLEAN_TEST_NOT_TRUE = 1
+  BOOLEAN_TEST_FALSE = 2
+  BOOLEAN_TEST_NOT_FALSE = 3
+  BOOLEAN_TEST_UNKNOWN = 4
+  BOOLEAN_TEST_NOT_UNKNOWN = 5
+
   AEXPR_OP = 0               # normal operator
   AEXPR_OP_ANY = 1           # scalar op ANY (array)
   AEXPR_OP_ALL = 2           # scalar op ALL (array)
