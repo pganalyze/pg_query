@@ -336,14 +336,16 @@ class PgQuery
       format('NOT %s', deparse_item(node['args'][0]))
     end
 
+    BOOLEAN_TEST_TYPE_TO_STRING = {
+      BOOLEAN_TEST_TRUE        => ' IS TRUE',
+      BOOLEAN_TEST_NOT_TRUE    => ' IS NOT TRUE',
+      BOOLEAN_TEST_FALSE       => ' IS FALSE',
+      BOOLEAN_TEST_NOT_FALSE   => ' IS NOT FALSE',
+      BOOLEAN_TEST_UNKNOWN     => ' IS UNKNOWN',
+      BOOLEAN_TEST_NOT_UNKNOWN => ' IS NOT UNKNOWN'
+    }.freeze
     def deparse_boolean_test(node)
-      tests = { BOOLEAN_TEST_TRUE        => ' IS TRUE',
-                BOOLEAN_TEST_NOT_TRUE    => ' IS NOT TRUE',
-                BOOLEAN_TEST_FALSE       => ' IS FALSE',
-                BOOLEAN_TEST_NOT_FALSE   => ' IS NOT FALSE',
-                BOOLEAN_TEST_UNKNOWN     => ' IS UNKNOWN',
-                BOOLEAN_TEST_NOT_UNKNOWN => ' IS NOT UNKNOWN' }
-      deparse_item(node['arg']) + tests[node['booltesttype']]
+      deparse_item(node['arg']) + BOOLEAN_TEST_TYPE_TO_STRING[node['booltesttype']]
     end
 
     def deparse_range_function(node)
