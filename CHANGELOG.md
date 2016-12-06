@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.11.3    2016-12-06
+
+* Update to newest libpg_query version (9.5-1.4.2)
+  * Cut off fingerprints at 100 nodes deep to avoid excessive runtimes/memory
+  * Fix warning on Linux due to missing asprintf include
+* Improved deparsing [@jcsjcs](https://github.com/jcsjcs)
+  * Float [#54](https://github.com/lfittl/pg_query/pull/54)
+  * BETWEEN [#55](https://github.com/lfittl/pg_query/pull/55)
+  * NULLIF [#56](https://github.com/lfittl/pg_query/pull/56)
+  * SELECT NULL and BooleanTest [#57](https://github.com/lfittl/pg_query/pull/57)
+* Fix build on BSD systems [#58](https://github.com/lfittl/pg_query/pull/58) [@myfreeweb](https://github.com/myfreeweb)
+
+
 ## 0.11.2    2016-06-27
 
 * Update to newest libpg_query version (9.5-1.4.1)
