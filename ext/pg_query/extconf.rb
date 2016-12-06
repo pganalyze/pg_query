@@ -24,7 +24,7 @@ end
 
 unless Dir.exist?(libfile)
   # Build libpg_query (and parts of PostgreSQL)
-  system("cd #{libdir}; make build")
+  system("cd #{libdir}; #{ENV['MAKE'] || (RUBY_PLATFORM =~ /bsd/ ? 'gmake' : 'make')} build")
 end
 
 # Copy test files (this intentionally overwrites existing files!)
