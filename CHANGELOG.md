@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.4    2017-01-18
+
+* Compatibility with Ruby 2.4 [#59](https://github.com/lfittl/pg_query/pull/59) [@merqlove](https://github.com/merqlove)
+* Deparse varchar and numeric casts without arguments [#61](https://github.com/lfittl/pg_query/pull/61) [@jcsjcs](https://github.com/jcsjcs)
+
+
 ## 0.11.3    2016-12-06
 
 * Update to newest libpg_query version (9.5-1.4.2)
