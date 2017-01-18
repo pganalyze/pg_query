@@ -363,6 +363,42 @@ describe PgQuery::Deparse do
         end
         it { is_expected.to eq oneline_query }
       end
+
+      context 'with cast varchar' do
+        let(:query) do
+          '''
+          SELECT "name"::varchar(255) FROM "people"
+          '''
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with cast varchar and no arguments' do
+        let(:query) do
+          '''
+          SELECT "name"::varchar FROM "people"
+          '''
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with cast numeric' do
+        let(:query) do
+          '''
+          SELECT "age"::numeric(5, 2) FROM "people"
+          '''
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with cast numeric and no arguments' do
+        let(:query) do
+          '''
+          SELECT "age"::numeric FROM "people"
+          '''
+        end
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'UPDATE' do
