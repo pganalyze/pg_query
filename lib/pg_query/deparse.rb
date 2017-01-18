@@ -817,10 +817,10 @@ class PgQuery
         # char(2) or char(9)
         "char(#{arguments})"
       when 'varchar'
-        "varchar(#{arguments})"
+        arguments.nil? ? 'varchar' : "varchar(#{arguments})"
       when 'numeric'
         # numeric(3, 5)
-        "numeric(#{arguments})"
+        arguments.nil? ? 'numeric' : "numeric(#{arguments})"
       when 'bool'
         'boolean'
       when 'int2'
