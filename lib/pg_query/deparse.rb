@@ -22,7 +22,7 @@ class PgQuery
 
     def deparse_item(item, context = nil) # rubocop:disable Metrics/CyclomaticComplexity
       return if item.nil?
-      return item if item.is_a?(Fixnum)
+      return item if item.is_a?(Integer)
 
       type = item.keys[0]
       node = item.values[0]
