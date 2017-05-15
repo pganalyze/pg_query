@@ -286,6 +286,42 @@ describe PgQuery::Deparse do
         let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT UNKNOWN' }
         it { is_expected.to eq query }
       end
+
+      context 'with columndef list' do
+        let(:query) do
+          %q{
+          SELECT * FROM crosstab(
+          'SELECT "department", "role", COUNT("id") FROM "users" GROUP BY "department", "role" ORDER BY "department", "role"',
+          'VALUES (''admin''::text), (''ordinary''::text)')
+          AS (department varchar, admin int, ordinary int)
+          }
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with columndef list and alias' do
+        let(:query) do
+          %q{
+          SELECT * FROM crosstab(
+          'SELECT "department", "role", COUNT("id") FROM "users" GROUP BY "department", "role" ORDER BY "department", "role"',
+          'VALUES (''admin''::text), (''ordinary''::text)')
+          ctab (department varchar, admin int, ordinary int)
+          }
+        end
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with columndef list returning an array' do
+        let(:query) do
+          %q{
+          SELECT "row_cols"[0] AS dept, "row_cols"[1] AS sub, "admin", "ordinary" FROM crosstab(
+          'SELECT ARRAY["department", "sub"] AS row_cols, "role", COUNT("id") FROM "users" GROUP BY "department", "role" ORDER BY "department", "role"',
+          'VALUES (''admin''::text), (''ordinary''::text)')
+          AS (row_cols varchar[], admin int, ordinary int)
+          }
+        end
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'type cast' do

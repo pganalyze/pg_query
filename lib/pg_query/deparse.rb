@@ -353,6 +353,7 @@ class PgQuery
       output << 'LATERAL' if node['lateral']
       output << deparse_item(node['functions'][0][0]) # FIXME: Needs more test cases
       output << deparse_item(node['alias']) if node['alias']
+      output << "#{node['alias'] ? '' : 'AS '}(#{deparse_item_list(node['coldeflist']).join(', ')})" if node['coldeflist']
       output.join(' ')
     end
 
@@ -801,6 +802,7 @@ class PgQuery
         end.join(', ')
       end
       output << deparse_typename_cast(names, arguments)
+      output.last << '[]' if node['arrayBounds']
 
       output.join(' ')
     end
