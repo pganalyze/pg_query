@@ -1,7 +1,7 @@
 class PgQuery
   private
 
-  def treewalker!(normalized_parsetree, &block)
+  def treewalker!(normalized_parsetree)
     exprs = normalized_parsetree.dup.map { |e| [e, []] }
 
     loop do
@@ -11,7 +11,7 @@ class PgQuery
         expr.each do |k, v|
           location = parent_location + [k]
 
-          block.call(expr, k, v, location)
+          yield(expr, k, v, location)
 
           exprs << [v, location] unless v.nil?
         end
@@ -23,14 +23,14 @@ class PgQuery
     end
   end
 
-  def find_tree_location(normalized_parsetree, searched_location, &block)
+  def find_tree_location(normalized_parsetree, searched_location)
     treewalker! normalized_parsetree do |expr, k, v, location|
       next unless location == searched_location
-      block.call(expr, k, v)
+      yield(expr, k, v)
     end
   end
 
-  def transform_nodes!(parsetree, &block)
+  def transform_nodes!(parsetree)
     result = deep_dup(parsetree)
     exprs = result.dup
 
@@ -38,7 +38,7 @@ class PgQuery
       expr = exprs.shift
 
       if expr.is_a?(Hash)
-        block.call(expr) if expr.size == 1 && expr.keys[0][/^[A-Z]+/]
+        yield(expr) if expr.size == 1 && expr.keys[0][/^[A-Z]+/]
 
         exprs += expr.values.compact
       elsif expr.is_a?(Array)

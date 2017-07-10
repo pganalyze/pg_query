@@ -41,7 +41,7 @@ class PgQuery
     treewalker! @tree do |_expr, k, v, location|
       case k
       when TARGET_LIST_FIELD
-        length = deparse([{ SELECT_STMT => { k => v } }]).size - 'SELECT '.size
+        length = deparse([{ SELECT_STMT => { k => v } }]).size - 7 # 'SELECT '.size
 
         truncations << PossibleTruncation.new(location, TARGET_LIST_FIELD, length, true)
       when 'whereClause'

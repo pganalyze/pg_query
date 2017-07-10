@@ -120,7 +120,8 @@ describe PgQuery do
           }
         }
       ],
-      "location"=>26})
+      "location"=>26
+    })
   end
 
   it "parses 'JOIN y ON a = ? JOIN z ON c = d'" do

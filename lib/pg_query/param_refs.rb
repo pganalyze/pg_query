@@ -36,7 +36,7 @@ class PgQuery
   private
 
   def param_ref_length(paramref_node)
-    if paramref_node['number'] == 0
+    if paramref_node['number'] == 0 # rubocop:disable Style/NumericPredicate
       1 # Actually a ? replacement character
     else
       ('$' + paramref_node['number'].to_s).size

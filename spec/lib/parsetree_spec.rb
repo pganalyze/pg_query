@@ -637,7 +637,8 @@ $BODY$
             {"FUNCCALL"=>{"funcname"=>["concat"], "args"=>[
               {"COLUMNREF"=>{"fields"=>["p", "firstname"], "location"=>14}},
               {"A_CONST"=>{"type"=>"string", "val"=>" ", "location"=>27}},
-              {"COLUMNREF"=>{"fields"=>["p", "lastname"], "location"=>32}}],
+              {"COLUMNREF"=>{"fields"=>["p", "lastname"], "location"=>32}}
+            ],
              "location"=>7}},
            "location"=>7}}],
          "op"=>0}}]

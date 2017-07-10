@@ -60,7 +60,8 @@ class PgQuery
       if statement
         case statement.keys[0]
         when SELECT_STMT
-          if statement[SELECT_STMT]['op'] == 0
+          case statement[SELECT_STMT]['op']
+          when 0
             (statement[SELECT_STMT][FROM_CLAUSE_FIELD] || []).each do |item|
               if item[RANGE_SUBSELECT]
                 statements << item[RANGE_SUBSELECT]['subquery']
@@ -78,7 +79,7 @@ class PgQuery
                 statements << item[COMMON_TABLE_EXPR]['ctequery']
               end
             end
-          elsif statement[SELECT_STMT]['op'] == 1
+          when 1
             statements << statement[SELECT_STMT]['larg'] if statement[SELECT_STMT]['larg']
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
@@ -100,11 +101,11 @@ class PgQuery
         when GRANT_STMT
           objects = statement[GRANT_STMT]['objects']
           case statement[GRANT_STMT]['objtype']
-          when 0 # Column
+          when 0 # Column # rubocop:disable Lint/EmptyWhen
             # FIXME
           when 1 # Table
             from_clause_items += objects
-          when 2 # Sequence
+          when 2 # Sequence # rubocop:disable Lint/EmptyWhen
             # FIXME
           end
         when DROP_STMT
@@ -131,7 +132,7 @@ class PgQuery
       if next_item
         case next_item.keys[0]
         when A_EXPR
-          %w(lexpr rexpr).each do |side|
+          %w[lexpr rexpr].each do |side|
             elem = next_item.values[0][side]
             next unless elem
             if elem.is_a?(Array)
@@ -158,7 +159,7 @@ class PgQuery
 
       case next_item.keys[0]
       when JOIN_EXPR
-        %w(larg rarg).each do |side|
+        %w[larg rarg].each do |side|
           from_clause_items << next_item[JOIN_EXPR][side]
         end
       when ROW_EXPR

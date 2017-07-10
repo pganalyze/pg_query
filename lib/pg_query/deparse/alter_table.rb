@@ -15,7 +15,7 @@ class PgQuery
       #   ALTER COLUMN {column_name} DROP NOT NULL
       #
       def self.commands(node)
-        action = ALTER_TABLE_TYPES_MAPPING[node['subtype']] || fail(format("Can't deparse: %s", node.inspect))
+        action = ALTER_TABLE_TYPES_MAPPING[node['subtype']] || raise(format("Can't deparse: %s", node.inspect))
         PgQuery::Deparse.instance_exec(node, &action)
       end
 

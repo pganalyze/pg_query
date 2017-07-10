@@ -3,7 +3,7 @@
 require 'mkmf'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '9.5-1.4.2'
+LIB_PG_QUERY_TAG = '9.5-1.4.2'.freeze
 
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
@@ -19,7 +19,7 @@ unless File.exist?("#{workdir}/libpg_query.tar.gz")
 end
 
 unless Dir.exist?(libdir)
-  system("tar -xf #{workdir}/libpg_query.tar.gz") || fail('ERROR')
+  system("tar -xf #{workdir}/libpg_query.tar.gz") || raise('ERROR')
 end
 
 unless Dir.exist?(libfile)

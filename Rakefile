@@ -12,7 +12,7 @@ RuboCop::RakeTask.new
 
 task spec: :compile
 
-task default: [:lint, :spec]
+task default: %i[lint spec]
 task test: :spec
 task lint: :rubocop
 

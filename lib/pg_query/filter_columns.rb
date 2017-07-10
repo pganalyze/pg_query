@@ -14,7 +14,8 @@ class PgQuery
       statement = statements.shift
       if statement
         if statement[SELECT_STMT]
-          if statement[SELECT_STMT]['op'] == 0
+          case statement[SELECT_STMT]['op']
+          when 0
             if statement[SELECT_STMT][FROM_CLAUSE_FIELD]
               # FROM subselects
               statement[SELECT_STMT][FROM_CLAUSE_FIELD].each do |item|
@@ -35,7 +36,7 @@ class PgQuery
                 statements << item['CommonTableExpr']['ctequery'] if item['CommonTableExpr']
               end
             end
-          elsif statement[SELECT_STMT]['op'] == 1
+          when 1
             statements << statement[SELECT_STMT]['larg'] if statement[SELECT_STMT]['larg']
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
@@ -50,7 +51,7 @@ class PgQuery
       next_item = condition_items.shift
       if next_item
         if next_item[A_EXPR]
-          %w(lexpr rexpr).each do |side|
+          %w[lexpr rexpr].each do |side|
             expr = next_item.values[0][side]
             next unless expr && expr.is_a?(Hash)
             condition_items << expr
@@ -93,7 +94,7 @@ class PgQuery
         next_item = joinexpr_items.shift
         break unless next_item
         condition_items << next_item['quals'] if next_item['quals']
-        %w(larg rarg).each do |side|
+        %w[larg rarg].each do |side|
           next unless next_item[side][JOIN_EXPR]
           joinexpr_items << next_item[side][JOIN_EXPR]
         end

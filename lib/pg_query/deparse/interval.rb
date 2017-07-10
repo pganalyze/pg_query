@@ -57,7 +57,7 @@ class PgQuery
         26 => 'CENTURY',
         27 => 'MILLENNIUM',
         28 => 'DTZMOD'
-      }
+      }.freeze
       KEYS = MASKS.invert
 
       # Postgres stores the interval 'day second' as 'day hour minute second' so
@@ -75,31 +75,31 @@ class PgQuery
       #      { 6 => 'year to month' }
       #
       SQL_BY_MASK = {
-        (1 << KEYS['YEAR'])     => %w(year),
-        (1 << KEYS['MONTH'])    => %w(month),
-        (1 << KEYS['DAY'])      => %w(day),
-        (1 << KEYS['HOUR'])     => %w(hour),
-        (1 << KEYS['MINUTE'])   => %w(minute),
-        (1 << KEYS['SECOND'])   => %w(second),
+        (1 << KEYS['YEAR'])     => %w[year],
+        (1 << KEYS['MONTH'])    => %w[month],
+        (1 << KEYS['DAY'])      => %w[day],
+        (1 << KEYS['HOUR'])     => %w[hour],
+        (1 << KEYS['MINUTE'])   => %w[minute],
+        (1 << KEYS['SECOND'])   => %w[second],
         (1 << KEYS['YEAR'] |
-           1 << KEYS['MONTH'])  => %w(year month),
+           1 << KEYS['MONTH'])  => %w[year month],
         (1 << KEYS['DAY'] |
-           1 << KEYS['HOUR'])   => %w(day hour),
+           1 << KEYS['HOUR'])   => %w[day hour],
         (1 << KEYS['DAY'] |
            1 << KEYS['HOUR'] |
-           1 << KEYS['MINUTE']) => %w(day minute),
+           1 << KEYS['MINUTE']) => %w[day minute],
         (1 << KEYS['DAY'] |
            1 << KEYS['HOUR'] |
            1 << KEYS['MINUTE'] |
-           1 << KEYS['SECOND']) => %w(day second),
+           1 << KEYS['SECOND']) => %w[day second],
         (1 << KEYS['HOUR'] |
-           1 << KEYS['MINUTE']) => %w(hour minute),
+           1 << KEYS['MINUTE']) => %w[hour minute],
         (1 << KEYS['HOUR'] |
            1 << KEYS['MINUTE'] |
-           1 << KEYS['SECOND']) => %w(hour second),
+           1 << KEYS['SECOND']) => %w[hour second],
         (1 << KEYS['MINUTE'] |
-           1 << KEYS['SECOND']) => %w(minute second)
-      }
+           1 << KEYS['SECOND']) => %w[minute second]
+      }.freeze
     end
   end
 end

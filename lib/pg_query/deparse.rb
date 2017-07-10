@@ -43,7 +43,7 @@ class PgQuery
         when AEXPR_NULLIF
           deparse_aexpr_nullif(node)
         else
-          fail format("Can't deparse: %s: %s", type, node.inspect)
+          raise format("Can't deparse: %s: %s", type, node.inspect)
         end
       when ALIAS
         deparse_alias(node)
@@ -161,7 +161,7 @@ class PgQuery
       when NULL
         'NULL'
       else
-        fail format("Can't deparse: %s: %s", type, node.inspect)
+        raise format("Can't deparse: %s: %s", type, node.inspect)
       end
     end
 
@@ -171,7 +171,10 @@ class PgQuery
 
     def deparse_rangevar(node)
       output = []
-      output << 'ONLY' if node['inhOpt'] == 0
+      case node['inhOpt']
+      when 0
+        output << 'ONLY'
+      end
       output << '"' + node['relname'] + '"'
       output << deparse_item(node['alias']) if node['alias']
       output.join(' ')
@@ -180,13 +183,14 @@ class PgQuery
     def deparse_renamestmt(node)
       output = []
 
-      if node['renameType'] == OBJECT_TYPE_TABLE
+      case node['renameType']
+      when OBJECT_TYPE_TABLE
         output << 'ALTER TABLE'
         output << deparse_item(node['relation'])
         output << 'RENAME TO'
         output << node['newname']
       else
-        fail format("Can't deparse: %s", node.inspect)
+        raise format("Can't deparse: %s", node.inspect)
       end
 
       output.join(' ')
@@ -276,7 +280,7 @@ class PgQuery
       elsif node['val'].nil?
         node['name']
       else
-        fail format("Can't deparse %s in context %s", node.inspect, context)
+        raise format("Can't deparse %s in context %s", node.inspect, context)
       end
     end
 
@@ -423,8 +427,12 @@ class PgQuery
     def deparse_joinexpr(node)
       output = []
       output << deparse_item(node['larg'])
-      output << 'LEFT' if node['jointype'] == 1
-      output << 'CROSS' if node['jointype'] == 0 && node['quals'].nil?
+      case node['jointype']
+      when 0
+        output << 'CROSS' if node['quals'].nil?
+      when 1
+        output << 'LEFT'
+      end
       output << 'JOIN'
       output << deparse_item(node['rarg'])
 
@@ -441,7 +449,7 @@ class PgQuery
       LCS_FORSHARE => 'FOR SHARE',
       LCS_FORNOKEYUPDATE => 'FOR NO KEY UPDATE',
       LCS_FORUPDATE => 'FOR UPDATE'
-    }
+    }.freeze
     def deparse_lockingclause(node)
       output = []
       output << LOCK_CLAUSE_STRENGTH[node['strength']]
@@ -632,11 +640,11 @@ class PgQuery
 
     def deparse_sublink(node)
       if node['subLinkType'] == SUBLINK_TYPE_ANY
-        return format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
+        format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
       elsif node['subLinkType'] == SUBLINK_TYPE_EXISTS
-        return format('EXISTS(%s)', deparse_item(node['subselect']))
+        format('EXISTS(%s)', deparse_item(node['subselect']))
       else
-        return format('(%s)', deparse_item(node['subselect']))
+        format('(%s)', deparse_item(node['subselect']))
       end
     end
 
@@ -791,7 +799,7 @@ class PgQuery
 
       # Intervals are tricky and should be handled in a separate method because
       # they require performing some bitmask operations.
-      return deparse_interval_type(node) if names == %w(pg_catalog interval)
+      return deparse_interval_type(node) if names == %w[pg_catalog interval]
 
       output = []
       output << 'SETOF' if node['setof']
@@ -844,7 +852,7 @@ class PgQuery
       when 'timestamptz'
         'timestamp with time zone'
       else
-        fail format("Can't deparse type: %s", type)
+        raise format("Can't deparse type: %s", type)
       end
     end
 
@@ -870,9 +878,10 @@ class PgQuery
 
     def deparse_nulltest(node)
       output = [deparse_item(node['arg'])]
-      if node['nulltesttype'] == 0
+      case node['nulltesttype']
+      when 0
         output << 'IS NULL'
-      elsif node['nulltesttype'] == 1
+      when 1
         output << 'IS NOT NULL'
       end
       output.join(' ')
@@ -885,10 +894,10 @@ class PgQuery
       TRANS_STMT_SAVEPOINT => 'SAVEPOINT',
       TRANS_STMT_RELEASE => 'RELEASE',
       TRANS_STMT_ROLLBACK_TO => 'ROLLBACK TO SAVEPOINT'
-    }
+    }.freeze
     def deparse_transaction(node)
       output = []
-      output << TRANSACTION_CMDS[node['kind']] || fail(format("Can't deparse TRANSACTION %s", node.inspect))
+      output << TRANSACTION_CMDS[node['kind']] || raise(format("Can't deparse TRANSACTION %s", node.inspect))
 
       if node['options']
         output += node['options'].map { |item| deparse_item(item) }

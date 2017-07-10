@@ -5,7 +5,7 @@ AllCops:
     - vendor/**/*
     - tmp/**/*
 
-Style/AlignHash:
+Layout/AlignHash:
   Exclude:
     - spec/**/*
 
@@ -17,11 +17,11 @@ Style/StringLiterals:
   Exclude:
     - spec/**/*
 
-Style/SpaceAroundOperators:
+Layout/SpaceAroundOperators:
   Exclude:
     - spec/**/*
 
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   Exclude:
     - spec/**/*
 
@@ -46,7 +46,22 @@ Metrics/BlockNesting:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Metrics/BlockLength:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
 # extend self preserves private methods,
 # module_function buggily removes them.
 Style/ModuleFunction:
+  Enabled: false
+
+Lint/ImplicitStringConcatenation:
   Enabled: false
