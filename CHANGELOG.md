@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.5    2017-07-09
+
+* Deparse coldeflist [#64](https://github.com/lfittl/pg_query/pull/64) [@jcsjcs](https://github.com/jcsjcs)
+* Use Integer class for checking integer instead of Fixnum [#62](https://github.com/lfittl/pg_query/pull/62) [@makimoto](https://github.com/makimoto)
+
+
 ## 0.11.4    2017-01-18
 
 * Compatibility with Ruby 2.4 [#59](https://github.com/lfittl/pg_query/pull/59) [@merqlove](https://github.com/merqlove)
