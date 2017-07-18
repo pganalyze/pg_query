@@ -42,7 +42,7 @@ class PgQuery
   end
   
   def administered_tables
-    tables_with_types.select { |t| t[:type] == :administrative }.map { |t| t[:table] }
+    tables_with_types.select { |t| t[:type] == :administered }.map { |t| t[:table] }
   end
 
   def cte_names
@@ -108,24 +108,24 @@ class PgQuery
           if statement[CREATE_TABLE_AS_STMT]['into'] && statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel']
             from_clause_items << { item: statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel'], type: :modified }
           end
+        when VIEW_STMT
+          from_clause_items << { item: statement[VIEW_STMT]['view'], type: :modified }
+          statements << statement[VIEW_STMT]['query']
+        when REFRESH_MAT_VIEW_STMT
+          from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :modified }
         when TRUNCATE_STMT
           from_clause_items += statement.values[0]['relations'].map {|r| { item: r, type: :modified } }
         when DROP_STMT
           objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String'] && obj['String']['str'] } }
           case statement[DROP_STMT]['removeType']
           when OBJECT_TYPE_TABLE
-            @tables += objects.map { |r| { item: r.join('.'), type: :modified } }
+            @tables += objects.map { |r| { table: r.join('.'), type: :modified } }
           when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
-            @tables += objects.map { |r| { item: r[0..-2].join('.'), type: :modified } }
+            @tables += objects.map { |r| { table: r[0..-2].join('.'), type: :modified } }
           end
         # The following statement types are 'administrative'; that is, they modify the table, but not its contents
         when VACUUM_STMT, INDEX_STMT, CREATE_TRIG_STMT, RULE_STMT
           from_clause_items << { item: statement.values[0]['relation'], type: :administered }
-        when VIEW_STMT
-          from_clause_items << { item: statement[VIEW_STMT]['view'], type: :administered }
-          statements << statement[VIEW_STMT]['query']
-        when REFRESH_MAT_VIEW_STMT
-          from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :administered }
         when EXPLAIN_STMT
           statements << statement[EXPLAIN_STMT]['query']
         when LOCK_STMT
@@ -184,12 +184,12 @@ class PgQuery
       case next_item[:item].keys[0]
       when JOIN_EXPR
         %w[larg rarg].each do |side|
-          from_clause_items << { item: next_item[JOIN_EXPR][side], type: next_item[:type] }
+          from_clause_items << { item: next_item[:item][JOIN_EXPR][side], type: next_item[:type] }
         end
       when ROW_EXPR
-        from_clause_items += next_item[ROW_EXPR]['args'].map {|a| { item: a, type: next_item[:type] } }
+        from_clause_items += next_item[:item][ROW_EXPR]['args'].map {|a| { item: a, type: next_item[:type] } }
       when RANGE_VAR
-        rangevar = next_item[RANGE_VAR]
+        rangevar = next_item[:item][RANGE_VAR]
         next if !rangevar['schemaname'] && @cte_names.include?(rangevar['relname'])
 
         table = [rangevar['schemaname'], rangevar['relname']].compact.join('.')
