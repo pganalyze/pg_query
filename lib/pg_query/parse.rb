@@ -34,7 +34,7 @@ class PgQuery
   end
   
   def viewed_tables
-    tables_with_types.select { |t| t[:type] == :viewed }.map { |t| t[:table] } 
+    tables_with_types.select { |t| t[:type] == :viewed }.map { |t| t[:table] }
   end
   
   def modified_tables
@@ -102,7 +102,7 @@ class PgQuery
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
         # The following statements modify the contents of a table
-        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, COPY_STMT, ALTER_TABLE_STMT, CREATE_STMT 
+        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, COPY_STMT, ALTER_TABLE_STMT, CREATE_STMT
           from_clause_items << { item: statement.values[0]['relation'], type: :modified }
         when CREATE_TABLE_AS_STMT
           if statement[CREATE_TABLE_AS_STMT]['into'] && statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel']
@@ -114,7 +114,7 @@ class PgQuery
         when REFRESH_MAT_VIEW_STMT
           from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :modified }
         when TRUNCATE_STMT
-          from_clause_items += statement.values[0]['relations'].map {|r| { item: r, type: :modified } }
+          from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :modified } }
         when DROP_STMT
           objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String'] && obj['String']['str'] } }
           case statement[DROP_STMT]['removeType']
@@ -129,14 +129,14 @@ class PgQuery
         when EXPLAIN_STMT
           statements << statement[EXPLAIN_STMT]['query']
         when LOCK_STMT
-          from_clause_items += statement.values[0]['relations'].map {|r| { item: r, type: :administered } }
+          from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :administered } }
         when GRANT_STMT
           objects = statement[GRANT_STMT]['objects']
           case statement[GRANT_STMT]['objtype']
           when 0 # Column # rubocop:disable Lint/EmptyWhen
             # FIXME
           when 1 # Table
-            from_clause_items += objects.map {|o| { item: o, type: :administered } }
+            from_clause_items += objects.map { |o| { item: o, type: :administered } }
           when 2 # Sequence # rubocop:disable Lint/EmptyWhen
             # FIXME
           end
@@ -187,7 +187,7 @@ class PgQuery
           from_clause_items << { item: next_item[:item][JOIN_EXPR][side], type: next_item[:type] }
         end
       when ROW_EXPR
-        from_clause_items += next_item[:item][ROW_EXPR]['args'].map {|a| { item: a, type: next_item[:type] } }
+        from_clause_items += next_item[:item][ROW_EXPR]['args'].map { |a| { item: a, type: next_item[:type] } }
       when RANGE_VAR
         rangevar = next_item[:item][RANGE_VAR]
         next if !rangevar['schemaname'] && @cte_names.include?(rangevar['relname'])
