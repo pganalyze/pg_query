@@ -30,8 +30,19 @@ class PgQuery
   end
 
   def tables
-    load_tables_and_aliases! if @tables.nil?
-    @tables
+    tables_with_types.map { |t| t[:table] }
+  end
+  
+  def viewed_tables
+    tables_with_types.select { |t| t[:type] == :viewed }.map { |t| t[:table] } 
+  end
+  
+  def modified_tables
+    tables_with_types.select { |t| t[:type] == :modified }.map { |t| t[:table] }
+  end
+  
+  def administered_tables
+    tables_with_types.select { |t| t[:type] == :administrative }.map { |t| t[:table] }
   end
 
   def cte_names
@@ -45,20 +56,27 @@ class PgQuery
   end
 
   protected
+  
+  def tables_with_types
+    load_tables_and_aliases! if @tables.nil?
+    @tables
+  end
 
   def load_tables_and_aliases! # rubocop:disable Metrics/CyclomaticComplexity
-    @tables = []
+    @tables = [] # types: modified, viewed, administered
     @cte_names = []
     @aliases = {}
 
     statements = @tree.dup
-    from_clause_items = []
+    from_clause_items = [] # types: modified, viewed, administered
     subselect_items = []
 
     loop do
       statement = statements.shift
       if statement
         case statement.keys[0]
+        # The following statement types do not modify tables and are added to from_clause_items
+        # (and subsequently @tables)
         when SELECT_STMT
           case statement[SELECT_STMT]['op']
           when 0
@@ -66,7 +84,7 @@ class PgQuery
               if item[RANGE_SUBSELECT]
                 statements << item[RANGE_SUBSELECT]['subquery']
               else
-                from_clause_items << item
+                from_clause_items << { item: item, type: :viewed }
               end
             end
 
@@ -83,38 +101,44 @@ class PgQuery
             statements << statement[SELECT_STMT]['larg'] if statement[SELECT_STMT]['larg']
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
-        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, VACUUM_STMT, COPY_STMT, ALTER_TABLE_STMT, CREATE_STMT, INDEX_STMT, RULE_STMT, CREATE_TRIG_STMT
-          from_clause_items << statement.values[0]['relation']
-        when VIEW_STMT
-          from_clause_items << statement[VIEW_STMT]['view']
-          statements << statement[VIEW_STMT]['query']
-        when REFRESH_MAT_VIEW_STMT
-          from_clause_items << statement[REFRESH_MAT_VIEW_STMT]['relation']
-        when EXPLAIN_STMT
-          statements << statement[EXPLAIN_STMT]['query']
+        # The following statements modify the contents of a table
+        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, COPY_STMT, ALTER_TABLE_STMT, CREATE_STMT 
+          from_clause_items << { item: statement.values[0]['relation'], type: :modified }
         when CREATE_TABLE_AS_STMT
           if statement[CREATE_TABLE_AS_STMT]['into'] && statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel']
-            from_clause_items << statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel']
+            from_clause_items << { item: statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel'], type: :modified }
           end
-        when LOCK_STMT, TRUNCATE_STMT
-          from_clause_items += statement.values[0]['relations']
+        when TRUNCATE_STMT
+          from_clause_items += statement.values[0]['relations'].map {|r| { item: r, type: :modified } }
+        when DROP_STMT
+          objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String'] && obj['String']['str'] } }
+          case statement[DROP_STMT]['removeType']
+          when OBJECT_TYPE_TABLE
+            @tables += objects.map { |r| { item: r.join('.'), type: :modified } }
+          when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
+            @tables += objects.map { |r| { item: r[0..-2].join('.'), type: :modified } }
+          end
+        # The following statement types are 'administrative'; that is, they modify the table, but not its contents
+        when VACUUM_STMT, INDEX_STMT, CREATE_TRIG_STMT, RULE_STMT
+          from_clause_items << { item: statement.values[0]['relation'], type: :administered }
+        when VIEW_STMT
+          from_clause_items << { item: statement[VIEW_STMT]['view'], type: :administered }
+          statements << statement[VIEW_STMT]['query']
+        when REFRESH_MAT_VIEW_STMT
+          from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :administered }
+        when EXPLAIN_STMT
+          statements << statement[EXPLAIN_STMT]['query']
+        when LOCK_STMT
+          from_clause_items += statement.values[0]['relations'].map {|r| { item: r, type: :administered } }
         when GRANT_STMT
           objects = statement[GRANT_STMT]['objects']
           case statement[GRANT_STMT]['objtype']
           when 0 # Column # rubocop:disable Lint/EmptyWhen
             # FIXME
           when 1 # Table
-            from_clause_items += objects
+            from_clause_items += objects.map {|o| { item: o, type: :administered } }
           when 2 # Sequence # rubocop:disable Lint/EmptyWhen
             # FIXME
-          end
-        when DROP_STMT
-          objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String'] && obj['String']['str'] } }
-          case statement[DROP_STMT]['removeType']
-          when OBJECT_TYPE_TABLE
-            @tables += objects.map { |r| r.join('.') }
-          when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
-            @tables += objects.map { |r| r[0..-2].join('.') }
           end
         end
 
@@ -157,19 +181,19 @@ class PgQuery
       next_item = from_clause_items.shift
       break unless next_item
 
-      case next_item.keys[0]
+      case next_item[:item].keys[0]
       when JOIN_EXPR
         %w[larg rarg].each do |side|
-          from_clause_items << next_item[JOIN_EXPR][side]
+          from_clause_items << { item: next_item[JOIN_EXPR][side], type: next_item[:type] }
         end
       when ROW_EXPR
-        from_clause_items += next_item[ROW_EXPR]['args']
+        from_clause_items += next_item[ROW_EXPR]['args'].map {|a| { item: a, type: next_item[:type] } }
       when RANGE_VAR
         rangevar = next_item[RANGE_VAR]
         next if !rangevar['schemaname'] && @cte_names.include?(rangevar['relname'])
 
         table = [rangevar['schemaname'], rangevar['relname']].compact.join('.')
-        @tables << table
+        @tables << { table: table, type: next_item[:type] }
         @aliases[rangevar['alias'][ALIAS]['aliasname']] = table if rangevar['alias']
       end
     end
