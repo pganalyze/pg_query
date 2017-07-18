@@ -32,15 +32,15 @@ class PgQuery
   def tables
     tables_with_types.map { |t| t[:table] }
   end
-  
+
   def viewed_tables
     tables_with_types.select { |t| t[:type] == :viewed }.map { |t| t[:table] }
   end
-  
+
   def modified_tables
     tables_with_types.select { |t| t[:type] == :modified }.map { |t| t[:table] }
   end
-  
+
   def administered_tables
     tables_with_types.select { |t| t[:type] == :administered }.map { |t| t[:table] }
   end
@@ -56,7 +56,7 @@ class PgQuery
   end
 
   protected
-  
+
   def tables_with_types
     load_tables_and_aliases! if @tables.nil?
     @tables
