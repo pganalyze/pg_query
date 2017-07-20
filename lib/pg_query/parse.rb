@@ -54,13 +54,13 @@ class PgQuery
     load_tables_and_aliases! if @aliases.nil?
     @aliases
   end
-
-  protected
-
+  
   def tables_with_types
     load_tables_and_aliases! if @tables.nil?
     @tables
   end
+
+  protected
 
   def load_tables_and_aliases! # rubocop:disable Metrics/CyclomaticComplexity
     @tables = [] # types: modified, viewed, administered
