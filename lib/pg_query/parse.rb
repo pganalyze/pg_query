@@ -54,7 +54,7 @@ class PgQuery
     load_tables_and_aliases! if @aliases.nil?
     @aliases
   end
-  
+
   def tables_with_types
     load_tables_and_aliases! if @tables.nil?
     @tables
