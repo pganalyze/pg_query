@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.1    2017-07-29
+
+* Update libpg_query to 9.5-1.6.1
+  * Update Fingerprinting Version 1.2
+    * Ignore portalname in DeclareCursorStmt, FetchStmt and ClosePortalStmt
+
+
 ## 0.12.0    2017-07-29
 
 * Update libpg_query to 9.5-1.6.0
