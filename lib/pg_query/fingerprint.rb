@@ -71,6 +71,8 @@ class PgQuery
         next if node_name == TRANSACTION_STMT
       when 'options'
         next if node_name == TRANSACTION_STMT
+      when 'portalname'
+        next if [DECLARE_CURSOR_STMT, FETCH_STMT, CLOSE_PORTAL_STMT].include?(node_name)
       end
 
       fingerprint_value(val, hash, node_name, field_name, true)
