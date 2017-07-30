@@ -9,7 +9,7 @@ describe PgQuery, '.parse' do
   it "handles errors" do
     expect { described_class.parse("SELECT 'ERR") }.to(raise_error do |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1116)"
+      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1117)"
       expect(error.location).to eq 8 # 8th character in query string
     end)
   end
