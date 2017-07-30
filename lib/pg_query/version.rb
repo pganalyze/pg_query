@@ -1,3 +1,3 @@
 class PgQuery
-  VERSION = '0.11.5'.freeze
+  VERSION = '0.12.0'.freeze
 end

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0    2017-07-29
+
+* Update libpg_query to 9.5-1.6.0
+  * BREAKING CHANGE in PgQuery.normalize(..) output
+  * This matches the change in the upcoming Postgres 10, and makes it easier to
+    migrate applications to the new normalization format using $1..$N instead of ?
+
+
 ## 0.11.5    2017-07-09
 
 * Deparse coldeflist [#64](https://github.com/lfittl/pg_query/pull/64) [@jcsjcs](https://github.com/jcsjcs)
