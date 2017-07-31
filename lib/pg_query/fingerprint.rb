@@ -58,7 +58,8 @@ class PgQuery
 
     hash.update node_name
 
-    node.values.first.sort_by { |k, _| k }.each do |field_name, val|
+    fields = node.values.first
+    fields.sort_by { |k, _| k }.each do |field_name, val|
       next if ignored_fingerprint_value?(val)
 
       case field_name
@@ -73,6 +74,8 @@ class PgQuery
         next if node_name == TRANSACTION_STMT
       when 'portalname'
         next if [DECLARE_CURSOR_STMT, FETCH_STMT, CLOSE_PORTAL_STMT].include?(node_name)
+      when 'relname'
+        next if node_name == RANGE_VAR && fields[RELPERSISTENCE_FIELD] == 't'
       end
 
       fingerprint_value(val, hash, node_name, field_name, true)
@@ -80,7 +83,7 @@ class PgQuery
   end
 
   def fingerprint_list(values, hash, parent_node_name, parent_field_name)
-    if [FROM_CLAUSE_FIELD, TARGET_LIST_FIELD, COLS_FIELD, REXPR_FIELD].include?(parent_field_name)
+    if [FROM_CLAUSE_FIELD, TARGET_LIST_FIELD, COLS_FIELD, REXPR_FIELD, VALUES_LISTS_FIELD].include?(parent_field_name)
       values_subhashes = values.map do |val|
         subhash = FingerprintSubHash.new
         fingerprint_value(val, subhash, parent_node_name, parent_field_name, false)

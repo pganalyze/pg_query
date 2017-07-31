@@ -85,10 +85,12 @@ class PgQuery
 
   # FIELDS
 
-  FROM_CLAUSE_FIELD = 'fromClause'.freeze
-  TARGET_LIST_FIELD = 'targetList'.freeze
   COLS_FIELD = 'cols'.freeze
+  FROM_CLAUSE_FIELD = 'fromClause'.freeze
+  RELPERSISTENCE_FIELD = 'relpersistence'.freeze
   REXPR_FIELD = 'rexpr'.freeze
+  TARGET_LIST_FIELD = 'targetList'.freeze
+  VALUES_LISTS_FIELD = 'valuesLists'.freeze
 
   # ENUMS
 
