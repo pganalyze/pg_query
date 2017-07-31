@@ -75,12 +75,12 @@ Note: The deparsing feature is experimental and does not support outputting all 
 ### Parsing a normalized query
 
 ```ruby
-# Normalizing a query (like pg_stat_statements)
+# Normalizing a query (like pg_stat_statements in Postgres 10+)
 PgQuery.normalize("SELECT 1 FROM x WHERE y = 'foo'")
 
-=> "SELECT ? FROM x WHERE y = ?"
+=> "SELECT $1 FROM x WHERE y = $2"
 
-# Parsing a normalized query
+# Parsing a normalized query (pre-Postgres 10 style)
 PgQuery.parse("SELECT ? FROM x WHERE y = ?")
 
 => #<PgQuery:0x007fb99455a438
@@ -151,12 +151,10 @@ to support parsing normalized queries containing `?` replacement characters.
 
 Currently tested and officially supported Ruby versions:
 
-* MRI 1.9
-* MRI 2.0
 * MRI 2.1
 * MRI 2.2
 * MRI 2.3
-* Rubinius 3.20
+* MRI 2.4
 
 
 ## Resources
@@ -167,12 +165,15 @@ Products, tools and libraries built on pg_query:
 * [hsql](https://github.com/JackDanger/hsql)
 * [sqlint](https://github.com/purcell/sqlint)
 * [pghero](https://github.com/ankane/pghero)
+* [dexter](https://github.com/ankane/dexter)
 
 pg_query for other languages:
 
 * C: [libpg_query](https://github.com/lfittl/libpg_query)
 * Go: [pg_query_go](https://github.com/lfittl/pg_query_go)
-* Javascript: [pg-query-parser](https://github.com/zhm/pg-query-parser)
+* Javascript (Node): [pg-query-parser](https://github.com/zhm/pg-query-parser)
+* Javascript (Browser): [pg-query-emscripten](https://github.com/lfittl/pg-query-emscripten)
+* Python: [psqlparse](https://github.com/alculquicondor/psqlparse)
 
 Please feel free to [open a PR](https://github.com/lfittl/pg_query/pull/new/master) to add yours! :)
 
