@@ -1,9 +1,22 @@
 # Changelog
 
+## 0.13.0    2017-07-30
+
+* Introduce split between SELECT/DML/DDL for tables method [#65](https://github.com/lfittl/pg_query/pull/65) [@chrisfrommann](https://github.com/chrisfrommann)
+  * Backwards compatible, use the new select_tables/dml_tables/ddl_tables to
+    access the categorized table references
+* Update libpg_query to 9.5-1.6.2
+  * Update to Fingerprinting Version 1.3
+    * Attributes to be ignored:
+      * RangeVar.relname (if node also has RangeVar.relpersistence = "t")
+    * Special cases: List nodes where parent field name is valuesLists
+      * Follow same logic described for fromClause/targetList/cols/rexpr
+
+
 ## 0.12.1    2017-07-29
 
 * Update libpg_query to 9.5-1.6.1
-  * Update Fingerprinting Version 1.2
+  * Update to Fingerprinting Version 1.2
     * Ignore portalname in DeclareCursorStmt, FetchStmt and ClosePortalStmt
 
 
