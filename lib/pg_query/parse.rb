@@ -33,16 +33,16 @@ class PgQuery
     tables_with_types.map { |t| t[:table] }
   end
 
-  def viewed_tables
-    tables_with_types.select { |t| t[:type] == :viewed }.map { |t| t[:table] }
+  def select_tables
+    tables_with_types.select { |t| t[:type] == :select }.map { |t| t[:table] }
   end
 
-  def modified_tables
-    tables_with_types.select { |t| t[:type] == :modified }.map { |t| t[:table] }
+  def dml_tables
+    tables_with_types.select { |t| t[:type] == :dml }.map { |t| t[:table] }
   end
 
-  def administered_tables
-    tables_with_types.select { |t| t[:type] == :administered }.map { |t| t[:table] }
+  def ddl_tables
+    tables_with_types.select { |t| t[:type] == :ddl }.map { |t| t[:table] }
   end
 
   def cte_names
@@ -63,12 +63,12 @@ class PgQuery
   protected
 
   def load_tables_and_aliases! # rubocop:disable Metrics/CyclomaticComplexity
-    @tables = [] # types: modified, viewed, administered
+    @tables = [] # types: select, dml, ddl
     @cte_names = []
     @aliases = {}
 
     statements = @tree.dup
-    from_clause_items = [] # types: modified, viewed, administered
+    from_clause_items = [] # types: select, dml, ddl
     subselect_items = []
 
     loop do
@@ -84,7 +84,7 @@ class PgQuery
               if item[RANGE_SUBSELECT]
                 statements << item[RANGE_SUBSELECT]['subquery']
               else
-                from_clause_items << { item: item, type: :viewed }
+                from_clause_items << { item: item, type: :select }
               end
             end
 
@@ -102,44 +102,47 @@ class PgQuery
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
         # The following statements modify the contents of a table
-        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, COPY_STMT, ALTER_TABLE_STMT, CREATE_STMT
-          from_clause_items << { item: statement.values[0]['relation'], type: :modified }
+        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, COPY_STMT
+          from_clause_items << { item: statement.values[0]['relation'], type: :dml }
+        # The following statement types are DDL (changing table structure)
+        when ALTER_TABLE_STMT, CREATE_STMT
+          from_clause_items << { item: statement.values[0]['relation'], type: :ddl }
         when CREATE_TABLE_AS_STMT
           if statement[CREATE_TABLE_AS_STMT]['into'] && statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel']
-            from_clause_items << { item: statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel'], type: :modified }
+            from_clause_items << { item: statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel'], type: :ddl }
           end
-        when VIEW_STMT
-          from_clause_items << { item: statement[VIEW_STMT]['view'], type: :modified }
-          statements << statement[VIEW_STMT]['query']
-        when REFRESH_MAT_VIEW_STMT
-          from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :modified }
         when TRUNCATE_STMT
-          from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :modified } }
+          from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :ddl } }
+        when VIEW_STMT
+          from_clause_items << { item: statement[VIEW_STMT]['view'], type: :ddl }
+          statements << statement[VIEW_STMT]['query']
+        when VACUUM_STMT, INDEX_STMT, CREATE_TRIG_STMT, RULE_STMT
+          from_clause_items << { item: statement.values[0]['relation'], type: :ddl }
+        when REFRESH_MAT_VIEW_STMT
+          from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :ddl }
         when DROP_STMT
           objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String'] && obj['String']['str'] } }
           case statement[DROP_STMT]['removeType']
           when OBJECT_TYPE_TABLE
-            @tables += objects.map { |r| { table: r.join('.'), type: :modified } }
+            @tables += objects.map { |r| { table: r.join('.'), type: :ddl } }
           when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
-            @tables += objects.map { |r| { table: r[0..-2].join('.'), type: :modified } }
+            @tables += objects.map { |r| { table: r[0..-2].join('.'), type: :ddl } }
           end
-        # The following statement types are 'administrative'; that is, they modify the table, but not its contents
-        when VACUUM_STMT, INDEX_STMT, CREATE_TRIG_STMT, RULE_STMT
-          from_clause_items << { item: statement.values[0]['relation'], type: :administered }
-        when EXPLAIN_STMT
-          statements << statement[EXPLAIN_STMT]['query']
-        when LOCK_STMT
-          from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :administered } }
         when GRANT_STMT
           objects = statement[GRANT_STMT]['objects']
           case statement[GRANT_STMT]['objtype']
           when 0 # Column # rubocop:disable Lint/EmptyWhen
             # FIXME
           when 1 # Table
-            from_clause_items += objects.map { |o| { item: o, type: :administered } }
+            from_clause_items += objects.map { |o| { item: o, type: :ddl } }
           when 2 # Sequence # rubocop:disable Lint/EmptyWhen
             # FIXME
           end
+        when LOCK_STMT
+          from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :ddl } }
+        # The following are other statements that don't fit into query/DML/DDL
+        when EXPLAIN_STMT
+          statements << statement[EXPLAIN_STMT]['query']
         end
 
         statement_value = statement.values[0]

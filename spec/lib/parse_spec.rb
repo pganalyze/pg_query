@@ -18,7 +18,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse("SELECT memory_total_bytes, memory_free_bytes, memory_pagecache_bytes, memory_buffers_bytes, memory_applications_bytes, (memory_swap_total_bytes - memory_swap_free_bytes) AS swap, date_part($0, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON (snapshot_id = s.id) WHERE s.database_id = $0 AND s.collected_at BETWEEN $0 AND $0 ORDER BY collected_at")
     expect(query.tree).not_to be_nil
     expect(query.tables).to eq ['snapshots', 'system_snapshots']
-    expect(query.viewed_tables).to eq ['snapshots', 'system_snapshots']
+    expect(query.select_tables).to eq ['snapshots', 'system_snapshots']
   end
 
   it "parses empty queries" do
@@ -56,7 +56,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse("ALTER TABLE test ADD PRIMARY KEY (gid)")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.modified_tables).to eq ['test']
+    expect(query.ddl_tables).to eq ['test']
     expect(query.tree).to eq [{described_class::ALTER_TABLE_STMT=>
           {"relation"=>
             {described_class::RANGE_VAR=>
@@ -111,7 +111,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse("drop table abc.test123 cascade")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['abc.test123']
-    expect(query.modified_tables).to eq ['abc.test123']
+    expect(query.ddl_tables).to eq ['abc.test123']
     expect(query.tree).to eq [{described_class::DROP_STMT=>
           {"objects"=>[[{"String"=>{"str"=>"abc"}}, {"String"=>{"str"=>"test123"}}]],
            "removeType"=>described_class::OBJECT_TYPE_TABLE,
@@ -134,7 +134,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse("VACUUM my_table")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['my_table']
-    expect(query.administered_tables).to eq ['my_table']
+    expect(query.ddl_tables).to eq ['my_table']
     expect(query.tree).to eq [{described_class::VACUUM_STMT=>
           {"options"=>1,
            "relation"=>
@@ -164,7 +164,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse("CREATE TEMP TABLE test AS SELECT 1")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.modified_tables).to eq ['test']
+    expect(query.ddl_tables).to eq ['test']
     expect(query.tree).to eq [{described_class::CREATE_TABLE_AS_STMT=>
           {"query"=>
             {described_class::SELECT_STMT=>
@@ -204,7 +204,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE TABLE test (a int4)')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.modified_tables).to eq ['test']
+    expect(query.ddl_tables).to eq ['test']
     expect(query.tree).to eq [{described_class::CREATE_STMT=>
        {"relation"=>
          {described_class::RANGE_VAR=>
@@ -229,7 +229,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE TABLE test (a int4) WITH OIDS')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.modified_tables).to eq ['test']
+    expect(query.ddl_tables).to eq ['test']
     expect(query.tree).to eq [{described_class::CREATE_STMT=>
        {"relation"=>
          {described_class::RANGE_VAR=>
@@ -255,7 +255,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE INDEX testidx ON test USING gist (a)')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
-    expect(query.administered_tables).to eq ['test']
+    expect(query.ddl_tables).to eq ['test']
     expect(query.tree).to eq [{described_class::INDEX_STMT=>
        {"idxname"=>"testidx",
         "relation"=>
@@ -286,8 +286,8 @@ describe PgQuery, '.parse' do
     query = described_class.parse('CREATE VIEW myview AS SELECT * FROM mytab')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['myview', 'mytab']
-    expect(query.modified_tables).to eq ['myview']
-    expect(query.viewed_tables).to eq ['mytab']
+    expect(query.ddl_tables).to eq ['myview']
+    expect(query.select_tables).to eq ['mytab']
     expect(query.tree).to eq [{described_class::VIEW_STMT=>
      {"view"=>
        {described_class::RANGE_VAR=>
@@ -316,7 +316,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('REFRESH MATERIALIZED VIEW myview')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['myview']
-    expect(query.modified_tables).to eq ['myview']
+    expect(query.ddl_tables).to eq ['myview']
     expect(query.tree).to eq [{described_class::REFRESH_MAT_VIEW_STMT=>
    {"relation"=>
      {described_class::RANGE_VAR=>
@@ -420,7 +420,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('GRANT INSERT, UPDATE ON mytable TO myuser')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['mytable']
-    expect(query.administered_tables).to eq ['mytable']
+    expect(query.ddl_tables).to eq ['mytable']
     expect(query.tree).to eq [{described_class::GRANT_STMT=>
        {"is_grant"=>true,
         "targtype"=>0,
@@ -452,7 +452,7 @@ describe PgQuery, '.parse' do
     query = described_class.parse('TRUNCATE bigtable, fattable RESTART IDENTITY')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['bigtable', 'fattable']
-    expect(query.modified_tables).to eq ['bigtable', 'fattable']
+    expect(query.ddl_tables).to eq ['bigtable', 'fattable']
     expect(query.tree).to eq [{described_class::TRUNCATE_STMT=>
       {"relations"=>
          [{described_class::RANGE_VAR=>
@@ -636,7 +636,7 @@ $BODY$
     query = described_class.parse("select u.email, (select count(*) from enrollments e where e.user_id = u.id) as num_enrollments from users u")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['users', 'enrollments']
-    expect(query.viewed_tables).to eq ['users', 'enrollments']
+    expect(query.select_tables).to eq ['users', 'enrollments']
   end
 
   # https://github.com/lfittl/pg_query/issues/52
@@ -644,21 +644,21 @@ $BODY$
     query = described_class.parse("WITH cte_name AS (SELECT 1) SELECT * FROM table_name, cte_name")
     expect(query.cte_names).to eq ['cte_name']
     expect(query.tables).to eq ['table_name']
-    expect(query.viewed_tables).to eq ['table_name']
+    expect(query.select_tables).to eq ['table_name']
   end
 
   it 'correctly finds nested tables in from clause' do
     query = described_class.parse("select u.* from (select * from users) u")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['users']
-    expect(query.viewed_tables).to eq ['users']
+    expect(query.select_tables).to eq ['users']
   end
 
   it 'correctly finds nested tables in where clause' do
     query = described_class.parse("select users.id from users where 1 = (select count(*) from user_roles)")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['users', 'user_roles']
-    expect(query.viewed_tables).to eq ['users', 'user_roles']
+    expect(query.select_tables).to eq ['users', 'user_roles']
   end
 
   it 'traverse boolean expressions in where clause' do
