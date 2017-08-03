@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.1    2017-08-03
+
+* Fix regression in 0.13.1 that broke ".tables" logic for COPY statements that
+  don't have a target table (i.e. are reading out data vs copying in)
+
+
 ## 0.13.0    2017-07-30
 
 * Introduce split between SELECT/DML/DDL for tables method [#65](https://github.com/lfittl/pg_query/pull/65) [@chrisfrommann](https://github.com/chrisfrommann)
