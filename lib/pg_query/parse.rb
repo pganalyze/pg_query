@@ -102,8 +102,11 @@ class PgQuery
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
         # The following statements modify the contents of a table
-        when INSERT_STMT, UPDATE_STMT, DELETE_STMT, COPY_STMT
+        when INSERT_STMT, UPDATE_STMT, DELETE_STMT
           from_clause_items << { item: statement.values[0]['relation'], type: :dml }
+        when COPY_STMT
+          from_clause_items << { item: statement.values[0]['relation'], type: :dml } if statement.values[0]['relation']
+          statements << statement.values[0]['query']
         # The following statement types are DDL (changing table structure)
         when ALTER_TABLE_STMT, CREATE_STMT
           from_clause_items << { item: statement.values[0]['relation'], type: :ddl }
@@ -182,7 +185,7 @@ class PgQuery
 
     loop do
       next_item = from_clause_items.shift
-      break unless next_item
+      break unless next_item && next_item[:item]
 
       case next_item[:item].keys[0]
       when JOIN_EXPR

@@ -786,4 +786,32 @@ $BODY$
          "missing_ok"=>true}}
     ]
   end
+
+  it 'handles COPY' do
+    query = described_class.parse("COPY (SELECT test FROM abc) TO STDOUT WITH (FORMAT 'csv');")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['abc']
+    expect(query.tree).to eq [{ 'CopyStmt' =>
+      { 'query' =>
+        { 'SelectStmt' =>
+        { 'targetList' =>
+            [{ 'ResTarget' =>
+               { 'val' =>
+                 { 'ColumnRef' =>
+                   { 'fields' => [{ 'String' => { 'str' => 'test' } }], 'location' => 13 } },
+                 'location' => 13 } }],
+          'fromClause' =>
+            [{ 'RangeVar' =>
+               { 'relname' => 'abc',
+                 'inhOpt' => 2,
+                 'relpersistence' => 'p',
+                 'location' => 23 } }],
+          'op' => 0 } },
+        'options' =>
+        [{ 'DefElem' =>
+           { 'defname' => 'format',
+             'arg' => { 'String' => { 'str' => 'csv' } },
+             'defaction' => 0,
+             'location' => -1 } }] } }]
+  end
 end
