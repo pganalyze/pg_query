@@ -643,4 +643,25 @@ $BODY$
            "location"=>7}}],
          "op"=>0}}]
   end
+
+  # https://github.com/lfittl/pg_query/issues/66
+  it 'transforms A_EXPR for BETWEEN statements correctly (bug case)' do
+    query = described_class.parse("SELECT 2 BETWEEN 3 AND 4")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq []
+    expect(query.parsetree).to eq [{ 'SELECT' =>
+     { 'targetList' =>
+       [{ 'RESTARGET' =>
+          { 'val' =>
+            { 'AEXPR' =>
+              { 'name' => ['BETWEEN'],
+                'lexpr' =>
+                { 'A_CONST' => { 'val' => 2, 'location' => 7, 'type' => 'integer' } },
+                'rexpr' =>
+                [{ 'A_CONST' => { 'val' => 3, 'location' => 17, 'type' => 'integer' } },
+                 { 'A_CONST' => { 'val' => 4, 'location' => 23, 'type' => 'integer' } }],
+                'location' => 9 } },
+            'location' => 7 } }],
+       'op' => 0 } }]
+  end
 end

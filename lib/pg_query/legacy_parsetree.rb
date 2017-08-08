@@ -10,8 +10,7 @@ class PgQuery
         transform_parsetree_a_const(node)
       when A_EXPR
         transform_string_list(node[A_EXPR]['name'])
-        new_key = LEGACY_A_EXPR_NAMES[node[A_EXPR]['kind']]
-        node[A_EXPR].delete('kind')
+        node[key].delete('kind')
       when COLUMN_REF
         transform_string_list(node[COLUMN_REF]['fields'])
       when CREATE_FUNCTION_STMT
@@ -44,6 +43,7 @@ class PgQuery
   private
 
   LEGACY_NODE_NAMES = {
+    A_EXPR => 'AEXPR',
     SELECT_STMT => 'SELECT',
     ALTER_TABLE_CMD => 'ALTER TABLE CMD',
     ALTER_TABLE_STMT => 'ALTER TABLE',
@@ -63,24 +63,6 @@ class PgQuery
     VARIABLE_SET_STMT => 'SET',
     VARIABLE_SHOW_STMT => 'SHOW'
     # All others default to simply upper-casing the input name
-  }.freeze
-
-  LEGACY_A_EXPR_NAMES = {
-    AEXPR_OP => 'AEXPR',
-    # AEXPR_OP_ANY = 1           # normal operator
-    # AEXPR_OP_ALL = 2           # scalar op ALL (array)
-    # AEXPR_DISTINCT = 3         # IS DISTINCT FROM - name must be "="
-    # AEXPR_NULLIF = 4           # NULLIF - name must be "="
-    # AEXPR_OF = 5               # IS [NOT] OF - name must be "=" or "<>"
-    # AEXPR_IN = 6               # [NOT] IN - name must be "=" or "<>"
-    # AEXPR_LIKE = 7             # [NOT] LIKE - name must be "~~" or "!~~"
-    # AEXPR_ILIKE = 8            # [NOT] ILIKE - name must be "~~*" or "!~~*"
-    AEXPR_SIMILAR => 'AEXPR',
-    # AEXPR_BETWEEN = 10         # name must be "BETWEEN"
-    # AEXPR_NOT_BETWEEN = 11     # name must be "NOT BETWEEN"
-    # AEXPR_BETWEEN_SYM = 12     # name must be "BETWEEN SYMMETRIC"
-    # AEXPR_NOT_BETWEEN_SYM = 13 # name must be "NOT BETWEEN SYMMETRIC"
-    # AEXPR_PAREN = 14           # nameless dummy node for parentheses
   }.freeze
 
   LEGACY_CONSTRAINT_TYPES = {
