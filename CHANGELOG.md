@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.2    2017-08-10
+
+* Support table detection in sub-SELECTs in JOINs [#68](https://github.com/lfittl/pg_query/pull/65) [@seanmdick](https://github.com/seanmdick)
+* Legacy ".parsetree" helper: Fix "Between" and "In" operator does not have "AEXPR" [#66](https://github.com/lfittl/pg_query/issues/66)
+  * For new applications please use ".tree" method which uses the native structure
+    returned from libpg_query which resembles Postgres node names more closely
+
+
 ## 0.13.1    2017-08-03
 
 * Fix regression in 0.13.1 that broke ".tables" logic for COPY statements that
