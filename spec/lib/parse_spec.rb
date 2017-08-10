@@ -768,6 +768,17 @@ $BODY$
     expect(query.tables).to eq ['users', 'user_roles']
   end
 
+  it 'correctly finds nested tables in a subselect on a join' do
+    query = described_class.parse(<<-SQL)
+      select foo.*
+      from foo
+      join ( select * from bar ) b
+      on b.baz = foo.quux
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['foo', 'bar']
+  end
+
   it 'handles DROP TYPE' do
     query = described_class.parse("DROP TYPE IF EXISTS repack.pk_something")
     expect(query.warnings).to eq []
