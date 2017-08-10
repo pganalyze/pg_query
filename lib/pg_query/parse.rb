@@ -204,7 +204,7 @@ class PgQuery
       when RANGE_SUBSELECT
         from_clause_items << { item: next_item[:item][RANGE_SUBSELECT]['subquery'], type: next_item[:type] }
       when SELECT_STMT
-        from_clause_items += next_item[:item][SELECT_STMT]['fromClause'].map {|r| { item: r, type: next_item[:type] }}
+        from_clause_items += next_item[:item][SELECT_STMT]['fromClause'].map { |r| { item: r, type: next_item[:type] } }
       end
     end
 
