@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.13.3    2017-09-04
+
+* Fix table detection for SELECTs that have sub-SELECTs without FROM clause [#69](https://github.com/lfittl/pg_query/issues/69)
+
+
 ## 0.13.2    2017-08-10
 
 * Support table detection in sub-SELECTs in JOINs [#68](https://github.com/lfittl/pg_query/pull/65) [@seanmdick](https://github.com/seanmdick)
