@@ -661,6 +661,14 @@ $BODY$
     expect(query.select_tables).to eq ['users', 'user_roles']
   end
 
+  it 'correctly finds tables in a select that has sub-selects without from clause' do
+    query = described_class.parse('SELECT * FROM pg_catalog.pg_class c JOIN (SELECT 17650 AS oid UNION ALL SELECT 17663 AS oid) vals ON c.oid = vals.oid')
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ["pg_catalog.pg_class"]
+    expect(query.select_tables).to eq ["pg_catalog.pg_class"]
+    expect(query.filter_columns).to eq [["pg_catalog.pg_class", "oid"], ["vals", "oid"]]
+  end
+
   it 'traverse boolean expressions in where clause' do
     query = described_class.parse(<<-SQL)
       select users.*
