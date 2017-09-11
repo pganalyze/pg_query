@@ -87,19 +87,19 @@ class PgQuery
                 from_clause_items << { item: item, type: :select }
               end
             end
-
-            # CTEs
-            with_clause = statement[SELECT_STMT]['withClause']
-            if with_clause
-              with_clause[WITH_CLAUSE]['ctes'].each do |item|
-                next unless item[COMMON_TABLE_EXPR]
-                @cte_names << item[COMMON_TABLE_EXPR]['ctename']
-                statements << item[COMMON_TABLE_EXPR]['ctequery']
-              end
-            end
           when 1
             statements << statement[SELECT_STMT]['larg'] if statement[SELECT_STMT]['larg']
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
+          end
+
+          # CTEs
+          with_clause = statement[SELECT_STMT]['withClause']
+          if with_clause
+            with_clause[WITH_CLAUSE]['ctes'].each do |item|
+              next unless item[COMMON_TABLE_EXPR]
+              @cte_names << item[COMMON_TABLE_EXPR]['ctename']
+              statements << item[COMMON_TABLE_EXPR]['ctequery']
+            end
           end
         # The following statements modify the contents of a table
         when INSERT_STMT, UPDATE_STMT, DELETE_STMT

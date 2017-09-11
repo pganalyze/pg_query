@@ -787,6 +787,24 @@ $BODY$
     expect(query.tables).to eq ['foo', 'bar']
   end
 
+  it 'does not list CTEs as tables after a union select' do
+    query = described_class.parse(<<-SQL)
+      with cte_a as (
+        select * from table_a
+      ), cte_b as (
+        select * from table_b
+      )
+
+      select id from table_c
+      left join cte_b on
+        table_c.id = cte_b.c_id
+      union
+      select * from cte_a
+    SQL
+    expect(query.tables).to match_array(['table_a', 'table_b', 'table_c'])
+    expect(query.cte_names).to match_array(['cte_a', 'cte_b'])
+  end
+
   it 'handles DROP TYPE' do
     query = described_class.parse("DROP TYPE IF EXISTS repack.pk_something")
     expect(query.warnings).to eq []
