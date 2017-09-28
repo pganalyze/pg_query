@@ -27,6 +27,9 @@ class PgQuery
     @query = query
     @tree = tree
     @warnings = warnings
+    @tables = nil
+    @aliases = nil
+    @cte_names = nil
   end
 
   def tables
