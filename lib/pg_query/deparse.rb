@@ -424,7 +424,7 @@ class PgQuery
       format('NULLIF(%s, %s)', lexpr, rexpr)
     end
 
-    def deparse_joinexpr(node)
+    def deparse_joinexpr(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = []
       output << deparse_item(node['larg'])
       case node['jointype']
