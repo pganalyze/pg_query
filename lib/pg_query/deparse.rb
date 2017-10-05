@@ -429,7 +429,7 @@ class PgQuery
       output << deparse_item(node['larg'])
       case node['jointype']
       when 0
-        output << 'CROSS' if node['quals'].nil?
+        output << 'CROSS' if node['quals'].nil? && node['usingClause'].nil?
       when 1
         output << 'LEFT'
       end
@@ -440,6 +440,8 @@ class PgQuery
         output << 'ON'
         output << deparse_item(node['quals'])
       end
+
+      output << format('USING (%s)', node['usingClause'].map { |n| deparse_item(n) }.join(', ')) if node['usingClause']
 
       output.join(' ')
     end
