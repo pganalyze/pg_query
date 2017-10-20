@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.4    2017-10-20
+
+* Update to libpg_query 9.5-1.7.0
+  - Fixes compilation old gcc before 4.6.0 [#73](https://github.com/lfittl/pg_query/issues/73)
+
+
 ## 0.13.3    2017-09-04
 
 * Fix table detection for SELECTs that have sub-SELECTs without FROM clause [#69](https://github.com/lfittl/pg_query/issues/69)
