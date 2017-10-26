@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.5    2017-10-26
+
+* Update to libpg_query 9.5-1.7.1
+  - Allow "$1 FROM $2" to be parsed (new with pg_stat_statements in Postgres 10)
+
+
 ## 0.13.4    2017-10-20
 
 * Update to libpg_query 9.5-1.7.0
