@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0     2017-10-31
+
+* IMPORTANT: Major version bump to indicate backwards incompatible parse tree change!
+* Update to Postgres 10 parser and fingerprint version 2
+  - This is a backwards-incompatible change in parser output format, although it should
+    be relatively easy to update most programs. This can't be avoided since Postgres
+    does not guarantee parse trees stay the same across versions
+
+
 ## 0.13.5    2017-10-26
 
 * Update to libpg_query 9.5-1.7.1
