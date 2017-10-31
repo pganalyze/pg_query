@@ -13,7 +13,9 @@ class PgQuery
     loop do
       statement = statements.shift
       if statement
-        if statement[SELECT_STMT]
+        if statement[RAW_STMT]
+          statements << statement[RAW_STMT][STMT_FIELD]
+        elsif statement[SELECT_STMT]
           case statement[SELECT_STMT]['op']
           when 0
             if statement[SELECT_STMT][FROM_CLAUSE_FIELD]

@@ -116,6 +116,8 @@ class PgQuery
         deparse_rangesubselect(node)
       when RANGE_VAR
         deparse_rangevar(node)
+      when RAW_STMT
+        deparse_raw_stmt(node)
       when RENAME_STMT
         deparse_renamestmt(node)
       when RES_TARGET
@@ -171,13 +173,14 @@ class PgQuery
 
     def deparse_rangevar(node)
       output = []
-      case node['inhOpt']
-      when 0
-        output << 'ONLY'
-      end
+      output << 'ONLY' unless node['inh']
       output << '"' + node['relname'] + '"'
       output << deparse_item(node['alias']) if node['alias']
       output.join(' ')
+    end
+
+    def deparse_raw_stmt(node)
+      deparse_item(node[STMT_FIELD])
     end
 
     def deparse_renamestmt(node)

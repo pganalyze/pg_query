@@ -60,6 +60,7 @@ class PgQuery
   RANGE_FUNCTION = 'RangeFunction'.freeze
   RANGE_SUBSELECT = 'RangeSubselect'.freeze
   RANGE_VAR = 'RangeVar'.freeze
+  RAW_STMT = 'RawStmt'.freeze
   REFRESH_MAT_VIEW_STMT = 'RefreshMatViewStmt'.freeze
   RENAME_STMT = 'RenameStmt'.freeze
   RES_TARGET = 'ResTarget'.freeze
@@ -89,6 +90,7 @@ class PgQuery
   FROM_CLAUSE_FIELD = 'fromClause'.freeze
   RELPERSISTENCE_FIELD = 'relpersistence'.freeze
   REXPR_FIELD = 'rexpr'.freeze
+  STMT_FIELD = 'stmt'.freeze
   TARGET_LIST_FIELD = 'targetList'.freeze
   VALUES_LISTS_FIELD = 'valuesLists'.freeze
 
@@ -97,22 +99,65 @@ class PgQuery
   CONSTR_TYPE_NULL = 0 # not standard SQL, but a lot of people expect it
   CONSTR_TYPE_NOTNULL = 1
   CONSTR_TYPE_DEFAULT = 2
-  CONSTR_TYPE_CHECK = 3
-  CONSTR_TYPE_PRIMARY = 4
-  CONSTR_TYPE_UNIQUE = 5
-  CONSTR_TYPE_EXCLUSION = 6
-  CONSTR_TYPE_FOREIGN = 7
-  CONSTR_TYPE_ATTR_DEFERRABLE = 8 # attributes for previous constraint node
-  CONSTR_TYPE_ATTR_NOT_DEFERRABLE = 9
-  CONSTR_TYPE_ATTR_DEFERRED = 10
-  CONSTR_TYPE_ATTR_IMMEDIATE = 11
+	CONSTR_TYPE_IDENTITY = 3
+  CONSTR_TYPE_CHECK = 4
+  CONSTR_TYPE_PRIMARY = 5
+  CONSTR_TYPE_UNIQUE = 6
+  CONSTR_TYPE_EXCLUSION = 7
+  CONSTR_TYPE_FOREIGN = 8
+  CONSTR_TYPE_ATTR_DEFERRABLE = 9 # attributes for previous constraint node
+  CONSTR_TYPE_ATTR_NOT_DEFERRABLE = 10
+  CONSTR_TYPE_ATTR_DEFERRED = 11
+  CONSTR_TYPE_ATTR_IMMEDIATE = 12
 
-  OBJECT_TYPE_INDEX = 19
-  OBJECT_TYPE_RULE = 28
-  OBJECT_TYPE_SCHEMA = 29
-  OBJECT_TYPE_TABLE = 32
-  OBJECT_TYPE_TRIGGER = 35
-  OBJECT_TYPE_VIEW = 42
+  OBJECT_TYPE_ACCESS_METHOD = 0
+  OBJECT_TYPE_AGGREGATE = 1
+  OBJECT_TYPE_AMOP = 2
+  OBJECT_TYPE_AMPROC = 3
+  OBJECT_TYPE_ATTRIBUTE = 4
+  OBJECT_TYPE_CAST = 5
+  OBJECT_TYPE_COLUMN = 6
+  OBJECT_TYPE_COLLATION = 7
+  OBJECT_TYPE_CONVERSION = 8
+  OBJECT_TYPE_DATABASE = 9
+  OBJECT_TYPE_DEFAULT = 10
+  OBJECT_TYPE_DEFACL = 11
+  OBJECT_TYPE_DOMAIN = 12
+  OBJECT_TYPE_DOMCONSTRAINT = 13
+  OBJECT_TYPE_EVENT_TRIGGER = 14
+  OBJECT_TYPE_EXTENSION = 15
+  OBJECT_TYPE_FDW = 16
+  OBJECT_TYPE_FOREIGN_SERVER = 17
+  OBJECT_TYPE_FOREIGN_TABLE = 18
+  OBJECT_TYPE_FUNCTION = 19
+  OBJECT_TYPE_INDEX = 20
+  OBJECT_TYPE_LANGUAGE = 21
+  OBJECT_TYPE_LARGEOBJECT = 22
+  OBJECT_TYPE_MATVIEW = 23
+  OBJECT_TYPE_OPCLASS = 24
+  OBJECT_TYPE_OPERATOR = 25
+  OBJECT_TYPE_OPFAMILY = 26
+  OBJECT_TYPE_POLICY = 27
+  OBJECT_TYPE_PUBLICATION = 28
+  OBJECT_TYPE_PUBLICATION_REL = 29
+  OBJECT_TYPE_ROLE = 30
+  OBJECT_TYPE_RULE = 31
+  OBJECT_TYPE_SCHEMA = 32
+  OBJECT_TYPE_SEQUENCE = 33
+  OBJECT_TYPE_SUBSCRIPTION = 34
+  OBJECT_TYPE_STATISTIC_EXT = 35
+  OBJECT_TYPE_TABCONSTRAINT = 36
+  OBJECT_TYPE_TABLE = 37
+  OBJECT_TYPE_TABLESPACE = 38
+  OBJECT_TYPE_TRANSFORM = 39
+  OBJECT_TYPE_TRIGGER = 40
+  OBJECT_TYPE_TSCONFIGURATION = 41
+  OBJECT_TYPE_TSDICTIONARY = 42
+  OBJECT_TYPE_TSPARSER = 43
+  OBJECT_TYPE_TSTEMPLATE = 44
+  OBJECT_TYPE_TYPE = 45
+  OBJECT_TYPE_USER_MAPPING = 46
+  OBJECT_TYPE_VIEW = 47
 
   BOOL_EXPR_AND = 0
   BOOL_EXPR_OR = 1
@@ -129,17 +174,18 @@ class PgQuery
   AEXPR_OP_ANY = 1           # scalar op ANY (array)
   AEXPR_OP_ALL = 2           # scalar op ALL (array)
   AEXPR_DISTINCT = 3         # IS DISTINCT FROM - name must be "="
-  AEXPR_NULLIF = 4           # NULLIF - name must be "="
-  AEXPR_OF = 5               # IS [NOT] OF - name must be "=" or "<>"
-  AEXPR_IN = 6               # [NOT] IN - name must be "=" or "<>"
-  AEXPR_LIKE = 7             # [NOT] LIKE - name must be "~~" or "!~~"
-  AEXPR_ILIKE = 8            # [NOT] ILIKE - name must be "~~*" or "!~~*"
-  AEXPR_SIMILAR = 9          # [NOT] SIMILAR - name must be "~" or "!~"
-  AEXPR_BETWEEN = 10         # name must be "BETWEEN"
-  AEXPR_NOT_BETWEEN = 11     # name must be "NOT BETWEEN"
-  AEXPR_BETWEEN_SYM = 12     # name must be "BETWEEN SYMMETRIC"
-  AEXPR_NOT_BETWEEN_SYM = 13 # name must be "NOT BETWEEN SYMMETRIC"
-  AEXPR_PAREN = 14           # nameless dummy node for parentheses
+	AEXPR_NOT_DISTINCT = 4		 # IS NOT DISTINCT FROM - name must be "="
+  AEXPR_NULLIF = 5           # NULLIF - name must be "="
+  AEXPR_OF = 6               # IS [NOT] OF - name must be "=" or "<>"
+  AEXPR_IN = 7               # [NOT] IN - name must be "=" or "<>"
+  AEXPR_LIKE = 8             # [NOT] LIKE - name must be "~~" or "!~~"
+  AEXPR_ILIKE = 9            # [NOT] ILIKE - name must be "~~*" or "!~~*"
+  AEXPR_SIMILAR = 10         # [NOT] SIMILAR - name must be "~" or "!~"
+  AEXPR_BETWEEN = 11         # name must be "BETWEEN"
+  AEXPR_NOT_BETWEEN = 12     # name must be "NOT BETWEEN"
+  AEXPR_BETWEEN_SYM = 13     # name must be "BETWEEN SYMMETRIC"
+  AEXPR_NOT_BETWEEN_SYM = 14 # name must be "NOT BETWEEN SYMMETRIC"
+  AEXPR_PAREN = 15           # nameless dummy node for parentheses
 
   TRANS_STMT_BEGIN = 0
   TRANS_STMT_START = 1 # semantically identical to BEGIN
@@ -228,4 +274,9 @@ class PgQuery
   AT_ForceRowSecurity = 58          # FORCE ROW SECURITY
   AT_NoForceRowSecurity = 59        # NO FORCE ROW SECURITY
   AT_GenericOptions = 60            # OPTIONS (...)
+  AT_AttachPartition = 61			      # ATTACH PARTITION
+	AT_DetachPartition = 62           # DETACH PARTITION
+	AT_AddIdentity = 63               # ADD IDENTITY
+	AT_SetIdentity = 64               # SET identity column options
+	AT_DropIdentity = 65              # DROP IDENTITY
 end

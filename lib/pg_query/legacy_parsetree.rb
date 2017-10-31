@@ -1,7 +1,9 @@
 class PgQuery
   # Legacy parsetree from 0.7 and earlier versions - migrate to "tree" format if you can
   def parsetree # rubocop:disable Metrics/CyclomaticComplexity
-    @parsetree ||= transform_nodes!(@tree) do |node|
+    @parsetree ||= transform_nodes!(@tree) do |raw_node|
+      node = raw_node.keys[0] == RAW_STMT ? raw_node.delete(RAW_STMT)[STMT_FIELD] : raw_node
+
       key = node.keys[0]
       new_key = LEGACY_NODE_NAMES[key] || key.upcase
 
@@ -9,34 +11,38 @@ class PgQuery
       when A_CONST
         transform_parsetree_a_const(node)
       when A_EXPR
-        transform_string_list(node[A_EXPR]['name'])
+        node[A_EXPR]['name'] = transform_string_list(node[A_EXPR]['name'])
         node[key].delete('kind')
       when COLUMN_REF
-        transform_string_list(node[COLUMN_REF]['fields'])
+        node[COLUMN_REF]['fields'] = transform_string_list(node[COLUMN_REF]['fields'])
       when CREATE_FUNCTION_STMT
-        transform_string_list(node[CREATE_FUNCTION_STMT]['funcname'])
+        node[CREATE_FUNCTION_STMT]['funcname'] = transform_string_list(node[CREATE_FUNCTION_STMT]['funcname'])
       when CREATE_TRIG_STMT
-        transform_string_list(node[CREATE_TRIG_STMT]['funcname'])
+        node[CREATE_TRIG_STMT]['funcname'] = transform_string_list(node[CREATE_TRIG_STMT]['funcname'])
       when CONSTRAINT
         node[CONSTRAINT]['contype'] = LEGACY_CONSTRAINT_TYPES[node[CONSTRAINT]['contype']]
-        transform_string_list(node[CONSTRAINT]['keys'])
+        node[CONSTRAINT]['keys'] = transform_string_list(node[CONSTRAINT]['keys'])
       when COPY_STMT
-        transform_string_list(node[COPY_STMT]['attlist'])
+        node[COPY_STMT]['attlist'] = transform_string_list(node[COPY_STMT]['attlist'])
       when DEF_ELEM
         node[DEF_ELEM]['arg'] = node[DEF_ELEM]['arg'][INTEGER]['ival'] if node[DEF_ELEM]['arg'].is_a?(Hash) && node[DEF_ELEM]['arg'].keys[0] == INTEGER
         node[DEF_ELEM]['arg'] = node[DEF_ELEM]['arg'][STRING]['str'] if node[DEF_ELEM]['arg'].is_a?(Hash) && node[DEF_ELEM]['arg'].keys[0] == STRING
-        transform_string_list(node[DEF_ELEM]['arg']) if node[DEF_ELEM]['arg'].is_a?(Array)
+        node[DEF_ELEM]['arg'] = transform_string_list(node[DEF_ELEM]['arg']) if node[DEF_ELEM]['arg'].is_a?(Array)
       when DROP_STMT
-        node[DROP_STMT]['objects'].each { |obj| transform_string_list(obj) }
+        node[DROP_STMT]['objects'].each_with_index do |obj, idx|
+          node[DROP_STMT]['objects'][idx] = transform_string_list(obj)
+        end
       when FUNC_CALL
-        transform_string_list(node[FUNC_CALL]['funcname'])
+        node[FUNC_CALL]['funcname'] = transform_string_list(node[FUNC_CALL]['funcname'])
       when GRANT_ROLE_STMT
-        transform_string_list(node[GRANT_ROLE_STMT]['grantee_roles'])
+        node[GRANT_ROLE_STMT]['grantee_roles'] = transform_string_list(node[GRANT_ROLE_STMT]['grantee_roles'])
+      when RANGE_VAR
+        node[RANGE_VAR]['inhOpt'] = node[RANGE_VAR].delete('inh') ? 2 : 0
       when TYPE_NAME
-        transform_string_list(node[TYPE_NAME]['names'])
+        node[TYPE_NAME]['names'] = transform_string_list(node[TYPE_NAME]['names'])
       end
 
-      node[new_key] = node.delete(key)
+      raw_node[new_key] = node.delete(key)
     end
   end
 
@@ -66,18 +72,7 @@ class PgQuery
   }.freeze
 
   LEGACY_CONSTRAINT_TYPES = {
-    # CONSTR_TYPE_NULL = 0 # not standard SQL, but a lot of people expect it
-    # CONSTR_TYPE_NOTNULL = 1
-    # CONSTR_TYPE_DEFAULT = 2
-    # CONSTR_TYPE_CHECK = 3
     CONSTR_TYPE_PRIMARY => 'PRIMARY_KEY',
-    # CONSTR_TYPE_UNIQUE = 5
-    # CONSTR_TYPE_EXCLUSION = 6
-    # CONSTR_TYPE_FOREIGN = 7
-    # CONSTR_TYPE_ATTR_DEFERRABLE = 8 # attributes for previous constraint node
-    # CONSTR_TYPE_ATTR_NOT_DEFERRABLE = 9
-    # CONSTR_TYPE_ATTR_DEFERRED = 10
-    # CONSTR_TYPE_ATTR_IMMEDIATE = 11
   }.freeze
 
   def transform_parsetree_a_const(node)
@@ -105,6 +100,10 @@ class PgQuery
   def transform_string_list(list)
     return if list.nil?
 
-    list.map! { |node| node.keys[0] == STRING ? node[STRING]['str'] : node }
+    if list.is_a?(Array)
+      list.map { |node| node.keys[0] == STRING ? node[STRING]['str'] : node }
+    else
+      [list.keys[0] == STRING ? list[STRING]['str'] : list]
+    end
   end
 end

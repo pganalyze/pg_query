@@ -9,7 +9,7 @@ class PgQuery
 
   private
 
-  FINGERPRINT_VERSION = 1
+  FINGERPRINT_VERSION = 2
 
   class FingerprintSubHash
     attr_reader :parts
@@ -76,6 +76,10 @@ class PgQuery
         next if [DECLARE_CURSOR_STMT, FETCH_STMT, CLOSE_PORTAL_STMT].include?(node_name)
       when 'relname'
         next if node_name == RANGE_VAR && fields[RELPERSISTENCE_FIELD] == 't'
+      when 'stmt_len'
+        next if node_name == RAW_STMT
+      when 'stmt_location'
+        next if node_name == RAW_STMT
       end
 
       fingerprint_value(val, hash, node_name, field_name, true)

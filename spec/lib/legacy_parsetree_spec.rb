@@ -212,9 +212,9 @@ describe PgQuery, '#parsetree' do
        {"relation"=>
          {"RANGEVAR"=>
            {"relname"=>"test",
-            "inhOpt"=>2,
             "relpersistence"=>"p",
-            "location"=>13}},
+            "location"=>13,
+            "inhOpt"=>2}},
         "tableElts"=>
          [{"COLUMNDEF"=>
             {"colname"=>"a",
@@ -225,7 +225,7 @@ describe PgQuery, '#parsetree' do
                  "location"=>21}},
              "is_local"=>true,
              "location"=>19}}],
-        "options"=> [{"DEFELEM"=> {"defname"=>"oids", "arg"=>1, "defaction"=>0, "location"=>-1}}],
+        "options"=> [{"DEFELEM"=> {"defname"=>"oids", "arg"=>1, "defaction"=>0, "location"=>27}}],
         "oncommit"=>0}}]
   end
 
@@ -541,17 +541,17 @@ $BODY$
            "arg"=>
             ["\nDECLARE\n        local_thing_id BIGINT := 0;\nBEGIN\n        SELECT thing_id INTO local_thing_id FROM thing_map\n        WHERE\n                thing_map_field = parameter_thing\n        ORDER BY 1 LIMIT 1;\n\n        IF NOT FOUND THEN\n                local_thing_id = 0;\n        END IF;\n        RETURN local_thing_id;\nEND;\n"],
            "defaction"=>0,
-           "location"=>-1}},
+           "location"=>72}},
         {"DEFELEM"=>
           {"defname"=>"language",
            "arg"=>"plpgsql",
            "defaction"=>0,
-           "location"=>-1}},
+           "location"=>407}},
         {"DEFELEM"=>
           {"defname"=>"volatility",
            "arg"=>"stable",
            "defaction"=>0,
-           "location"=>-1}}]}}]
+           "location"=>424}}]}}]
   end
 
   it 'parses table functions' do
@@ -589,12 +589,12 @@ $BODY$
         {"defname"=>"as",
          "arg"=>["\n    SELECT * FROM foo WHERE fooid = $1;\n"],
          "defaction"=>0,
-         "location"=>-1}},
+         "location"=>51}},
       {"DEFELEM"=>
         {"defname"=>"language",
          "arg"=>"sql",
          "defaction"=>0,
-         "location"=>-1}}]}}]
+         "location"=>98}}]}}]
   end
 
   it 'transforms NULL values correctly' do

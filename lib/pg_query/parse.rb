@@ -78,6 +78,8 @@ class PgQuery
       statement = statements.shift
       if statement
         case statement.keys[0]
+        when RAW_STMT
+          statements << statement[RAW_STMT][STMT_FIELD]
         # The following statement types do not modify tables and are added to from_clause_items
         # (and subsequently @tables)
         when SELECT_STMT
@@ -127,7 +129,13 @@ class PgQuery
         when REFRESH_MAT_VIEW_STMT
           from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :ddl }
         when DROP_STMT
-          objects = statement[DROP_STMT]['objects'].map { |list| list.map { |obj| obj['String'] && obj['String']['str'] } }
+          objects = statement[DROP_STMT]['objects'].map do |obj|
+            if obj.is_a?(Array)
+              obj.map { |obj2| obj2['String'] && obj2['String']['str'] }
+            else
+              obj['String'] && obj['String']['str']
+            end
+          end
           case statement[DROP_STMT]['removeType']
           when OBJECT_TYPE_TABLE
             @tables += objects.map { |r| { table: r.join('.'), type: :ddl } }
