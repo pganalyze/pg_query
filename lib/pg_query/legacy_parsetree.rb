@@ -72,7 +72,7 @@ class PgQuery
   }.freeze
 
   LEGACY_CONSTRAINT_TYPES = {
-    CONSTR_TYPE_PRIMARY => 'PRIMARY_KEY',
+    CONSTR_TYPE_PRIMARY => 'PRIMARY_KEY'
   }.freeze
 
   def transform_parsetree_a_const(node)

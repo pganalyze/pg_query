@@ -99,7 +99,7 @@ class PgQuery
   CONSTR_TYPE_NULL = 0 # not standard SQL, but a lot of people expect it
   CONSTR_TYPE_NOTNULL = 1
   CONSTR_TYPE_DEFAULT = 2
-	CONSTR_TYPE_IDENTITY = 3
+  CONSTR_TYPE_IDENTITY = 3
   CONSTR_TYPE_CHECK = 4
   CONSTR_TYPE_PRIMARY = 5
   CONSTR_TYPE_UNIQUE = 6
@@ -174,7 +174,7 @@ class PgQuery
   AEXPR_OP_ANY = 1           # scalar op ANY (array)
   AEXPR_OP_ALL = 2           # scalar op ALL (array)
   AEXPR_DISTINCT = 3         # IS DISTINCT FROM - name must be "="
-	AEXPR_NOT_DISTINCT = 4		 # IS NOT DISTINCT FROM - name must be "="
+  AEXPR_NOT_DISTINCT = 4     # IS NOT DISTINCT FROM - name must be "="
   AEXPR_NULLIF = 5           # NULLIF - name must be "="
   AEXPR_OF = 6               # IS [NOT] OF - name must be "=" or "<>"
   AEXPR_IN = 7               # [NOT] IN - name must be "=" or "<>"
@@ -274,9 +274,9 @@ class PgQuery
   AT_ForceRowSecurity = 58          # FORCE ROW SECURITY
   AT_NoForceRowSecurity = 59        # NO FORCE ROW SECURITY
   AT_GenericOptions = 60            # OPTIONS (...)
-  AT_AttachPartition = 61			      # ATTACH PARTITION
-	AT_DetachPartition = 62           # DETACH PARTITION
-	AT_AddIdentity = 63               # ADD IDENTITY
-	AT_SetIdentity = 64               # SET identity column options
-	AT_DropIdentity = 65              # DROP IDENTITY
+  AT_AttachPartition = 61           # ATTACH PARTITION
+  AT_DetachPartition = 62           # DETACH PARTITION
+  AT_AddIdentity = 63               # ADD IDENTITY
+  AT_SetIdentity = 64               # SET identity column options
+  AT_DropIdentity = 65              # DROP IDENTITY
 end

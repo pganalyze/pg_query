@@ -816,21 +816,26 @@ $BODY$
     query = described_class.parse("DROP TYPE IF EXISTS repack.pk_something")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
-    expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD =>
-      {"DropStmt"=>
-        {"objects"=>
-          [{"TypeName"=>
-              {"names"=>
-                [{"String"=>{"str"=>"repack"}},
-                 {"String"=>{"str"=>"pk_something"}}],
-               "typemod"=>-1,
-               "location"=>20}}],
-         "removeType"=>described_class::OBJECT_TYPE_TYPE,
-         "behavior"=>0,
-         "missing_ok"=>true
+    expect(query.tree).to eq [{
+      described_class::RAW_STMT => {
+        described_class::STMT_FIELD =>
+        {
+          "DropStmt"=>
+          {
+            "objects"=>
+            [{"TypeName"=>
+                {"names"=>
+                  [{"String"=>{"str"=>"repack"}},
+                   {"String"=>{"str"=>"pk_something"}}],
+                 "typemod"=>-1,
+                 "location"=>20}}],
+           "removeType"=>described_class::OBJECT_TYPE_TYPE,
+           "behavior"=>0,
+           "missing_ok"=>true
+          }
         }
       }
-    }}]
+    }]
   end
 
   it 'handles COPY' do
