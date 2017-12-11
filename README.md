@@ -159,24 +159,7 @@ Currently tested and officially supported Ruby versions:
 
 ## Resources
 
-Products, tools and libraries built on pg_query:
-
-* [pganalyze](https://pganalyze.com/)
-* [hsql](https://github.com/JackDanger/hsql)
-* [sqlint](https://github.com/purcell/sqlint)
-* [pghero](https://github.com/ankane/pghero)
-* [dexter](https://github.com/ankane/dexter)
-
-pg_query for other languages:
-
-* C: [libpg_query](https://github.com/lfittl/libpg_query)
-* Go: [pg_query_go](https://github.com/lfittl/pg_query_go)
-* Javascript (Node): [pg-query-parser](https://github.com/zhm/pg-query-parser)
-* Javascript (Browser): [pg-query-emscripten](https://github.com/lfittl/pg-query-emscripten)
-* Python: [psqlparse](https://github.com/alculquicondor/psqlparse)
-
-Please feel free to [open a PR](https://github.com/lfittl/pg_query/pull/new/master) to add yours! :)
-
+See [libpg_query](https://github.com/lfittl/libpg_query/blob/10-latest/README.md#resources) for pg_query in other languages, as well as products/tools built on pg_query.
 
 ## Original Author
 
