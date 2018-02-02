@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1     2018-02-02
+
+* Parse CTEs and nested selects in INSERT/UPDATE [#76](https://github.com/lfittl/pg_query/pull/76) [@jcoleman](https://github.com/jcoleman)
+* Drop explicit json dependency [#74](https://github.com/lfittl/pg_query/pull/74) [@yuki24](https://github.com/yuki24)
+
+
 ## 1.0.0     2017-10-31
 
 * IMPORTANT: Major version bump to indicate backwards incompatible parse tree change!
