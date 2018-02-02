@@ -97,18 +97,23 @@ class PgQuery
             statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
           end
 
-          # CTEs
-          with_clause = statement[SELECT_STMT]['withClause']
-          if with_clause
-            with_clause[WITH_CLAUSE]['ctes'].each do |item|
-              next unless item[COMMON_TABLE_EXPR]
-              @cte_names << item[COMMON_TABLE_EXPR]['ctename']
-              statements << item[COMMON_TABLE_EXPR]['ctequery']
-            end
+          if (with_clause = statement[SELECT_STMT]['withClause'])
+            cte_statements, cte_names = statements_and_cte_names_for_with_clause(with_clause)
+            @cte_names.concat(cte_names)
+            statements.concat(cte_statements)
           end
         # The following statements modify the contents of a table
         when INSERT_STMT, UPDATE_STMT, DELETE_STMT
-          from_clause_items << { item: statement.values[0]['relation'], type: :dml }
+          value = statement.values[0]
+          from_clause_items << { item: value['relation'], type: :dml }
+          statements << value['selectStmt'] if value.key?('selectStmt')
+          statements << value['withClause'] if value.key?('withClause')
+
+          if (with_clause = value['withClause'])
+            cte_statements, cte_names = statements_and_cte_names_for_with_clause(with_clause)
+            @cte_names.concat(cte_names)
+            statements.concat(cte_statements)
+          end
         when COPY_STMT
           from_clause_items << { item: statement.values[0]['relation'], type: :dml } if statement.values[0]['relation']
           statements << statement.values[0]['query']
@@ -221,5 +226,19 @@ class PgQuery
     end
 
     @tables.uniq!
+    @cte_names.uniq!
+  end
+
+  def statements_and_cte_names_for_with_clause(with_clause)
+    statements = []
+    cte_names = []
+
+    with_clause[WITH_CLAUSE]['ctes'].each do |item|
+      next unless item[COMMON_TABLE_EXPR]
+      cte_names << item[COMMON_TABLE_EXPR]['ctename']
+      statements << item[COMMON_TABLE_EXPR]['ctequery']
+    end
+
+    [statements, cte_names]
   end
 end
