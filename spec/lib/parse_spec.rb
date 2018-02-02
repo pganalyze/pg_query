@@ -812,6 +812,64 @@ $BODY$
     expect(query.cte_names).to match_array(['cte_a', 'cte_b'])
   end
 
+  describe 'parsing INSERT' do
+    it 'finds the table inserted into' do
+      query = described_class.parse(<<-SQL)
+        insert into users(pk, name) values (1, 'bob');
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to eq(['users'])
+    end
+
+    it 'finds tables in being selected from for insert' do
+      query = described_class.parse(<<-SQL)
+        insert into users(pk, name) select pk, name from other_users;
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to match_array(['users', 'other_users'])
+    end
+
+    it 'finds tables in a CTE' do
+      query = described_class.parse(<<-SQL)
+        with cte as (
+          select pk, name from other_users
+        )
+        insert into users(pk, name) select * from cte;
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to match_array(['users', 'other_users'])
+    end
+  end
+
+  describe 'parsing UPDATE' do
+    it 'finds the table updateed into' do
+      query = described_class.parse(<<-SQL)
+        update users set name = 'bob';
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to eq(['users'])
+    end
+
+    it 'finds tables in a sub-select' do
+      query = described_class.parse(<<-SQL)
+        update users set name = (select name from other_users limit 1);
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to match_array(['users', 'other_users'])
+    end
+
+    it 'finds tables in a CTE' do
+      query = described_class.parse(<<-SQL)
+        with cte as (
+          select name from other_users limit 1
+        )
+        update users set name = (select name from cte);
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to match_array(['users', 'other_users'])
+    end
+  end
+
   it 'handles DROP TYPE' do
     query = described_class.parse("DROP TYPE IF EXISTS repack.pk_something")
     expect(query.warnings).to eq []
