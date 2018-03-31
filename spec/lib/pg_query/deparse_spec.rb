@@ -14,6 +14,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with DISTINCT' do
+        let(:query) { 'SELECT DISTINCT "a", "b", * FROM "c" WHERE "d" = "e"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'complex SELECT statement' do
         let(:query) { 'SELECT "memory_total_bytes", "memory_swap_total_bytes" - "memory_swap_free_bytes" AS swap, date_part(?, "s"."collected_at") AS collected_at FROM "snapshots" s JOIN "system_snapshots" ON "snapshot_id" = "s"."id" WHERE "s"."database_id" = ? AND "s"."collected_at" >= ? AND "s"."collected_at" <= ? ORDER BY "collected_at" ASC' }
 
