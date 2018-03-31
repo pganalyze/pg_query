@@ -681,6 +681,7 @@ class PgQuery
 
       if node[TARGET_LIST_FIELD]
         output << 'SELECT'
+        output << 'DISTINCT' if node['distinctClause']
         output << node[TARGET_LIST_FIELD].map do |item|
           deparse_item(item, :select)
         end.join(', ')
