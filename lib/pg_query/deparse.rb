@@ -528,6 +528,7 @@ class PgQuery
 
     def deparse_case(node)
       output = ['CASE']
+      output << deparse_item(node['arg']) if node['arg']
       output += node['args'].map { |arg| deparse_item(arg) }
       if node['defresult']
         output << 'ELSE'

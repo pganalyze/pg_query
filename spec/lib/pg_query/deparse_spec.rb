@@ -148,6 +148,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'CASE condition WHEN clause' do
+        let(:query) { 'SELECT CASE 1 > 0 WHEN true THEN \'ok\' ELSE NULL END' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'CASE WHEN statements with ELSE clause' do
         let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" a' }
 
