@@ -104,6 +104,30 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'NATURAL JOIN' do
+        let(:query) { 'SELECT "x", "y" FROM "a" NATURAL JOIN "b"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'LEFT JOIN' do
+        let(:query) { 'SELECT "x", "y" FROM "a" LEFT JOIN "b" ON 1 > 0' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'RIGHT JOIN' do
+        let(:query) { 'SELECT "x", "y" FROM "a" RIGHT JOIN "b" ON 1 > 0' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'FULL JOIN' do
+        let(:query) { 'SELECT "x", "y" FROM "a" FULL JOIN "b" ON 1 > 0' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'JOIN with USING' do
         let(:query) do
           'SELECT "x", "y" FROM "a" JOIN "b" USING ("z")'
