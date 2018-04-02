@@ -432,9 +432,17 @@ class PgQuery
       output << deparse_item(node['larg'])
       case node['jointype']
       when 0
-        output << 'CROSS' if node['quals'].nil? && node['usingClause'].nil?
+        if node['isNatural']
+          output << 'NATURAL'
+        elsif node['quals'].nil? && node['usingClause'].nil?
+          output << 'CROSS'
+        end
       when 1
         output << 'LEFT'
+      when 2
+        output << 'FULL'
+      when 3
+        output << 'RIGHT'
       end
       output << 'JOIN'
       output << deparse_item(node['rarg'])
