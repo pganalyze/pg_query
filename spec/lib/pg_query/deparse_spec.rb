@@ -14,6 +14,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'basic statement with schema' do
+        let(:query) { 'SELECT "a" AS b FROM "public"."x" WHERE "y" = 5 AND "z" = "y"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with DISTINCT' do
         let(:query) { 'SELECT DISTINCT "a", "b", * FROM "c" WHERE "d" = "e"' }
 

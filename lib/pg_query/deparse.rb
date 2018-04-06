@@ -174,7 +174,8 @@ class PgQuery
     def deparse_rangevar(node)
       output = []
       output << 'ONLY' unless node['inh']
-      output << '"' + node['relname'] + '"'
+      schema = node['schemaname'] ? '"' + node['schemaname'] + '".' : ''
+      output << schema + '"' + node['relname'] + '"'
       output << deparse_item(node['alias']) if node['alias']
       output.join(' ')
     end
