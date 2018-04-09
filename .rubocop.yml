@@ -25,6 +25,16 @@ Layout/SpaceInsideHashLiteralBraces:
   Exclude:
     - spec/**/*
 
+Performance/RegexpMatch:
+  Exclude:
+    - ext/pg_query/extconf.rb
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: false
+
 Documentation:
   Enabled: false
 
