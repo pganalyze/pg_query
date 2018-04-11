@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2     2018-04-11
+
+* Deparsing improvements
+  * SELECT DISTINCT clause [#77](https://github.com/lfittl/pg_query/pull/77) [@Papierkorb](https://github.com/Papierkorb)
+  * "CASE expr WHEN ... END" clause [#78](https://github.com/lfittl/pg_query/pull/78) [@Papierkorb](https://github.com/Papierkorb)
+  * LEFT/RIGHT/FULL/NATURAL JOIN [#79](https://github.com/lfittl/pg_query/pull/79) [@Papierkorb](https://github.com/Papierkorb)
+  * SELECT that includes schema name [#80](https://github.com/lfittl/pg_query/pull/80) [@jcsjcs](https://github.com/jcsjcs)
+
+
 ## 1.0.1     2018-02-02
 
 * Parse CTEs and nested selects in INSERT/UPDATE [#76](https://github.com/lfittl/pg_query/pull/76) [@jcoleman](https://github.com/jcoleman)
