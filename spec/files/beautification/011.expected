@@ -1,0 +1,12 @@
+SELECT
+  "a",
+  "b",
+  max("c")
+FROM
+  "t"
+GROUP BY
+  "a",
+  "b"
+HAVING
+  count(*) > 1 AND
+  min("c") = 2

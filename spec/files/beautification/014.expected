@@ -1,0 +1,17 @@
+SELECT
+  "x"
+FROM
+  "a"
+  JOIN "x" ON ("a"."y" = "x"."y")
+  JOIN "b" ON "a"."c" = "b"."id" AND
+              "a"."d" = "b"."d" AND
+              (
+                (
+                  "a"."e" >= 123 AND
+                  "a"."e" <= 234
+                ) OR
+                (
+                  "a"."f" = 'x' AND
+                  "a"."g" <= 500
+                )
+              )

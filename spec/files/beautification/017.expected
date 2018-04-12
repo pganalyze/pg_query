@@ -1,0 +1,13 @@
+SELECT
+  DISTINCT ON (
+    "a",
+    "b"
+  )
+  "a",
+  "b",
+  "c"
+FROM
+  "d"
+ORDER BY
+  "a",
+  "b"

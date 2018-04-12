@@ -1,0 +1,1 @@
+SELECT a FROM b WHERE c = 123

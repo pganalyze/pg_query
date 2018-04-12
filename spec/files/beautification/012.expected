@@ -1,0 +1,8 @@
+SELECT
+  CASE "relkind"
+    WHEN 'r' THEN 'TABLE'
+    WHEN 'i' THEN 'INDEX'
+    ELSE 'STH-ELSE'
+  END AS type
+FROM
+  "pg_class"

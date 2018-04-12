@@ -1,0 +1,6 @@
+SELECT
+  "a"
+FROM
+  "b"
+  JOIN "c" ON "b"."d" = "c"."e" AND
+              "b"."f" = "c"."g"

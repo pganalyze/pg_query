@@ -1,0 +1,10 @@
+SELECT
+  DISTINCT ON (
+    "a"
+  )
+  "a",
+  "b"
+FROM
+  "c"
+ORDER BY
+  "a"

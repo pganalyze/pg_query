@@ -1,5 +1,6 @@
 require_relative 'deparse/interval'
 require_relative 'deparse/alter_table'
+require_relative 'deparse/beautify'
 class PgQuery
   # Reconstruct all of the parsed queries into their original form
   def deparse(tree = @tree)

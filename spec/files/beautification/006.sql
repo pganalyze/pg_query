@@ -1,0 +1,1 @@
+SELECT a FROM b WHERE c = 123 OR d = 1

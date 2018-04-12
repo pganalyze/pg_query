@@ -1,0 +1,19 @@
+WITH x AS (
+  SELECT
+    "relkind",
+    count(*)
+  FROM
+    "pg_class"
+  GROUP BY
+    1
+), y AS (
+  SELECT
+    count(*)
+  FROM
+    "pg_database"
+)
+SELECT
+  count(*)
+FROM
+  "x",
+  "y"

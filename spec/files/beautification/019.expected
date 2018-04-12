@@ -1,0 +1,13 @@
+WITH RECURSIVE x AS (
+  SELECT
+    "relkind",
+    count(*)
+  FROM
+    "pg_class"
+  GROUP BY
+    1
+)
+SELECT
+  count(*)
+FROM
+  "x"

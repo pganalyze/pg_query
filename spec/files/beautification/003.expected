@@ -1,0 +1,11 @@
+SELECT
+  "a",
+  "b"
+FROM
+  "c"
+  JOIN "d" USING ("x")
+  LEFT JOIN "e" ON ("c"."y" = "e"."y"),
+  "t"
+WHERE
+  "c"."h" AND
+  "e"."k" = 123
