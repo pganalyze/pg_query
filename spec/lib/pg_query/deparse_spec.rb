@@ -2,7 +2,30 @@ require 'spec_helper'
 
 describe PgQuery::Deparse do
   let(:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip.chomp(';') }
+  let(:fmt_oneline_query) { fmt_query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip.chomp(';') }
   let(:parsetree) { PgQuery.parse(query).tree }
+
+  describe '.from with bracket delimiters' do
+    subject { described_class.from(parsetree.first, '[', ']') }
+
+    context 'SELECT' do
+      let(:query) { %q(SELECT "a" AS b, "c", 'ab"c' AS d FROM "public"."x" WHERE "y" = 5 AND "z" = "y") }
+      let(:fmt_query) { %q(SELECT [a] AS b, [c], 'ab"c' AS d FROM [public].[x] WHERE [y] = 5 AND [z] = [y]) }
+
+      it { is_expected.to eq fmt_query }
+    end
+  end
+
+  describe '.from with no delimiters' do
+    subject { described_class.from(parsetree.first, '', '') }
+
+    context 'SELECT' do
+      let(:query) { %q(SELECT "a" AS b, "c", 'ab"c' AS d FROM "public"."x" WHERE "y" = 5 AND "z" = "y") }
+      let(:fmt_query) { %q(SELECT a AS b, c, 'ab"c' AS d FROM public.x WHERE y = 5 AND z = y) }
+
+      it { is_expected.to eq fmt_query }
+    end
+  end
 
   describe '.from' do
     subject { described_class.from(parsetree.first) }
@@ -958,6 +981,50 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq "SET search_path TO 10000" }
       end
+    end
+  end
+
+  describe '#deparse with bracket delimiters' do
+    subject { PgQuery.parse(oneline_query).deparse(delimiter_type: :bracket) }
+
+    context 'for single query' do
+      let(:query) do
+        '''
+        SELECT "a" AS b, "c"
+          FROM "public"."x" WHERE "y" = 5 AND "z" = "y"
+        '''
+      end
+
+      let(:fmt_query) do
+        '''
+        SELECT [a] AS b, [c]
+          FROM [public].[x] WHERE [y] = 5 AND [z] = [y]
+        '''
+      end
+
+      it { is_expected.to eq fmt_oneline_query }
+    end
+  end
+
+  describe '#deparse without delimiters' do
+    subject { PgQuery.parse(oneline_query).deparse(delimiter_type: :none) }
+
+    context 'for single query' do
+      let(:query) do
+        '''
+        SELECT "a" AS b, "c"
+          FROM "public"."x" WHERE "y" = 5 AND "z" = "y"
+        '''
+      end
+
+      let(:fmt_query) do
+        '''
+        SELECT a AS b, c
+          FROM public.x WHERE y = 5 AND z = y
+        '''
+      end
+
+      it { is_expected.to eq fmt_oneline_query }
     end
   end
 

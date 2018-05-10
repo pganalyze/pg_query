@@ -2,9 +2,18 @@ require_relative 'deparse/interval'
 require_relative 'deparse/alter_table'
 class PgQuery
   # Reconstruct all of the parsed queries into their original form
-  def deparse(tree = @tree)
+  def deparse(tree = @tree, delimiter_type: :quote)
+    raise ArgumentError, "Invalid delimiter type \"#{delimiter_type.inspect}\". Use one of \":quote\", \":bracket\" or \":none\"." unless %i[quote bracket none].include?(delimiter_type)
+    left, right = case delimiter_type
+                  when :quote
+                    ['"', '"']
+                  when :bracket
+                    ['[', ']']
+                  else
+                    ['', '']
+                  end
     tree.map do |item|
-      Deparse.from(item)
+      Deparse.from(item, left, right)
     end.join('; ')
   end
 
@@ -14,7 +23,9 @@ class PgQuery
 
     # Given one element of the PgQuery#parsetree reconstruct it back into the
     # original query.
-    def from(item)
+    def from(item, left = nil, right = nil)
+      @left_delimiter = left || '"'
+      @right_delimiter = right || '"'
       deparse_item(item)
     end
 
@@ -154,7 +165,7 @@ class PgQuery
         elsif [FUNC_CALL, TYPE_NAME, :operator, :defname_as].include?(context)
           node['str']
         else
-          format('"%s"', node['str'].gsub('"', '""'))
+          format("#{@left_delimiter}%s#{@right_delimiter}", node['str'].gsub('"', '""'))
         end
       when INTEGER
         node['ival'].to_s
@@ -174,8 +185,8 @@ class PgQuery
     def deparse_rangevar(node)
       output = []
       output << 'ONLY' unless node['inh']
-      schema = node['schemaname'] ? '"' + node['schemaname'] + '".' : ''
-      output << schema + '"' + node['relname'] + '"'
+      schema = node['schemaname'] ? @left_delimiter + node['schemaname'] + "#{@right_delimiter}." : ''
+      output << schema + @left_delimiter + node['relname'] + @right_delimiter
       output << deparse_item(node['alias']) if node['alias']
       output.join(' ')
     end
@@ -202,7 +213,7 @@ class PgQuery
 
     def deparse_columnref(node)
       node['fields'].map do |field|
-        field.is_a?(String) ? '"' + field + '"' : deparse_item(field)
+        field.is_a?(String) ? @left_delimiter + field + @right_delimiter : deparse_item(field)
       end.join('.')
     end
 
