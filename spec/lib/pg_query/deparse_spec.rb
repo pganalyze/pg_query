@@ -32,6 +32,18 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'ORDER BY with NULLS FIRST' do
+        let(:query) { 'SELECT * FROM "a" ORDER BY "x" ASC NULLS FIRST' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ORDER BY with NULLS LAST' do
+        let(:query) { 'SELECT * FROM "a" ORDER BY "x" ASC NULLS LAST' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with specific column alias' do
         let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(\"first\", \"last\")" }
 
