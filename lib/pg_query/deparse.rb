@@ -148,6 +148,8 @@ class PgQuery
         deparse_viewstmt(node)
       when VARIABLE_SET_STMT
         deparse_variable_set_stmt(node)
+      when VACUUM_STMT
+        deparse_vacuum_stmt(node)
       when STRING
         if context == A_CONST
           format("'%s'", node['str'].gsub("'", "''"))
@@ -526,6 +528,20 @@ class PgQuery
       output << node['name']
       output << 'TO'
       output << node['args'].map { |arg| deparse_item(arg) }.join(', ')
+      output.join(' ')
+    end
+
+    def deparse_vacuum_stmt(node)
+      output = []
+      output << 'VACUUM'
+      output << 'FULL' if node['options'][4] == 1
+      output << 'FREEZE' if node['options'][3] == 1
+      output << 'VERBOSE' if node['options'][2] == 1
+      output << 'ANALYZE' if node['options'][1] == 1
+      output << deparse_item(node['relation']) if node.key?('relation')
+      if node.key?('va_cols')
+        output << "(#{node['va_cols'].map(&method(:deparse_item)).join(', ')})"
+      end
       output.join(' ')
     end
 
