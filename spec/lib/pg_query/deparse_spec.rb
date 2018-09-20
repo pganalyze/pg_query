@@ -971,6 +971,56 @@ describe PgQuery::Deparse do
         it { is_expected.to eq "SET search_path TO 10000" }
       end
     end
+
+    context 'VACUUM' do
+      context 'without anything' do
+        let(:query) { 'VACUUM' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with table name' do
+        let(:query) { 'VACUUM "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'full' do
+        let(:query) { 'VACUUM FULL "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'freeze' do
+        let(:query) { 'VACUUM FREEZE "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'verbose' do
+        let(:query) { 'VACUUM VERBOSE "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'analyze' do
+        let(:query) { 'VACUUM ANALYZE "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'combine operations' do
+        let(:query) { 'VACUUM FULL FREEZE VERBOSE ANALYZE' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'adding column names' do
+        let(:query) { 'VACUUM ANALYZE "t" ("a", "b")' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do
