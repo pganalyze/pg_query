@@ -481,6 +481,8 @@ class PgQuery
       output << deparse_item(node['node'])
       output << 'ASC' if node['sortby_dir'] == 1
       output << 'DESC' if node['sortby_dir'] == 2
+      output << 'NULLS FIRST' if node['sortby_nulls'] == 1
+      output << 'NULLS LAST' if node['sortby_nulls'] == 2
       output.join(' ')
     end
 
