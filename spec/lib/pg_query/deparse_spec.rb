@@ -612,6 +612,12 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq oneline_query }
       end
+
+      context 'multiple columns' do
+        let(:query) { 'UPDATE "foo" SET a = ?, b = ?' }
+
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'DELETE' do

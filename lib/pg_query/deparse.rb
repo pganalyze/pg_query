@@ -805,9 +805,10 @@ class PgQuery
 
       if node[TARGET_LIST_FIELD]
         output << 'SET'
-        node[TARGET_LIST_FIELD].each do |item|
-          output << deparse_item(item, :update)
+        columns = node[TARGET_LIST_FIELD].map do |item|
+          deparse_item(item, :update)
         end
+        output << columns.join(', ')
       end
 
       if node['whereClause']
