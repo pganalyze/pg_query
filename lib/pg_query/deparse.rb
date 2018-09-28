@@ -715,7 +715,13 @@ class PgQuery
 
       if node[TARGET_LIST_FIELD]
         output << 'SELECT'
-        output << 'DISTINCT' if node['distinctClause']
+        if node['distinctClause']
+          output << 'DISTINCT'
+          unless node['distinctClause'].compact.empty?
+            columns = node['distinctClause'].map { |item| deparse_item(item, :select) }
+            output << "ON (#{columns.join(', ')})"
+          end
+        end
         output << node[TARGET_LIST_FIELD].map do |item|
           deparse_item(item, :select)
         end.join(', ')
