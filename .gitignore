@@ -5,3 +5,4 @@ spec/files/fingerprint.json
 
 *.bundle
 *.o
+*.so
