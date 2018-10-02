@@ -1033,6 +1033,20 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'LOCK' do
+      context 'basic statement' do
+        let(:query) { 'LOCK TABLE "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'multiple tables' do
+        let(:query) { 'LOCK TABLE "t", "u"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do
