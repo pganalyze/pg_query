@@ -104,6 +104,8 @@ class PgQuery
         deparse_insert_into(node)
       when JOIN_EXPR
         deparse_joinexpr(node)
+      when LOCK_STMT
+        deparse_lock(node)
       when LOCKING_CLAUSE
         deparse_lockingclause(node)
       when NULL_TEST
@@ -457,6 +459,14 @@ class PgQuery
 
       output << format('USING (%s)', node['usingClause'].map { |n| deparse_item(n) }.join(', ')) if node['usingClause']
 
+      output.join(' ')
+    end
+
+    def deparse_lock(node)
+      output = []
+      output << 'LOCK TABLE'
+      tables = node['relations'].map { |table| deparse_item(table) }
+      output << tables.join(', ')
       output.join(' ')
     end
 
