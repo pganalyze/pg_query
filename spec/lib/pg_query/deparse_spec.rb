@@ -1078,6 +1078,12 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq oneline_query }
       end
+
+      context 'analyze and buffers' do
+        let(:query) { 'EXPLAIN (ANALYZE, BUFFERS) SELECT "a" FROM "b"' }
+
+        it { is_expected.to eq oneline_query }
+      end
     end
   end
 
