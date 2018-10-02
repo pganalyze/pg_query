@@ -25,7 +25,7 @@ def fingerprint_parts(qstr)
 end
 
 def fingerprint_defs
-  @fingerprint_defs ||= JSON.parse File.read(File.join(File.dirname(__FILE__), '../files/fingerprint.json'))
+  @fingerprint_defs ||= JSON.parse File.read(File.join(__dir__, '../files/fingerprint.json'))
 end
 
 describe PgQuery, "#fingerprint" do
