@@ -17,7 +17,7 @@ task test: :spec
 task lint: :rubocop
 
 task :clean do
-  FileUtils.rm_rf File.join(File.dirname(__FILE__), 'tmp/')
-  FileUtils.rm_f Dir.glob(File.join(File.dirname(__FILE__), 'ext/pg_query/*.o'))
-  FileUtils.rm_f File.join(File.dirname(__FILE__), 'lib/pg_query/pg_query.bundle')
+  FileUtils.rm_rf File.join(__dir__, 'tmp/')
+  FileUtils.rm_f Dir.glob(File.join(__dir__, 'ext/pg_query/*.o'))
+  FileUtils.rm_f File.join(__dir__, 'lib/pg_query/pg_query.bundle')
 end

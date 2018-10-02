@@ -7,7 +7,7 @@ LIB_PG_QUERY_TAG = '10-1.0.1'.freeze
 
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
-gemdir = File.join(File.dirname(__FILE__), '../..')
+gemdir = File.join(__dir__, '../..')
 libfile = libdir + '/libpg_query.a'
 
 unless File.exist?("#{workdir}/libpg_query.tar.gz")
@@ -36,7 +36,7 @@ $LOCAL_LIBS << '-lpg_query'
 $LIBPATH << libdir
 $CFLAGS << " -I #{libdir} -O3 -Wall -fno-strict-aliasing -fwrapv -g"
 
-SYMFILE = File.join(File.dirname(__FILE__), 'pg_query_ruby.sym')
+SYMFILE = File.join(__dir__, 'pg_query_ruby.sym')
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
 else
