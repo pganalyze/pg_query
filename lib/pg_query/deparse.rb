@@ -1073,7 +1073,11 @@ class PgQuery
     def deparse_explain(node)
       output = ['EXPLAIN']
       options = node.fetch('options', []).map { |option| option['DefElem']['defname'].upcase }
-      output.concat(options)
+      if options.size == 1
+        output.concat(options)
+      elsif options.size > 1
+        output << "(#{options.join(', ')})"
+      end
       output << deparse_item(node['query'])
       output.join(' ')
     end
