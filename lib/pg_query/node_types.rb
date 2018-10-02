@@ -70,6 +70,7 @@ class PgQuery
   SELECT_STMT = 'SelectStmt'.freeze
   SET_TO_DEFAULT = 'SetToDefault'.freeze
   SORT_BY = 'SortBy'.freeze
+  SQL_VALUE_FUNCTION = 'SQLValueFunction'.freeze
   STRING = 'String'.freeze
   SUB_LINK = 'SubLink'.freeze
   TRANSACTION_STMT = 'TransactionStmt'.freeze
