@@ -126,6 +126,8 @@ class PgQuery
         deparse_row(node)
       when SELECT_STMT
         deparse_select(node)
+      when SQL_VALUE_FUNCTION
+        deparse_sql_value_function(node)
       when SORT_BY
         deparse_sortby(node)
       when SUB_LINK
@@ -782,6 +784,30 @@ class PgQuery
       end
 
       output.join(' ')
+    end
+
+    def deparse_sql_value_function(node)
+      output = []
+      lookup = [
+        'current_date',
+        'current_time',
+        'current_time', # with precision
+        'current_timestamp',
+        'current_timestamp', # with precision
+        'localtime',
+        'localtime', # with precision
+        'localtimestamp',
+        'localtimestamp', # with precision
+        'current_role',
+        'current_user',
+        'session_user',
+        'user',
+        'current_catalog',
+        'current_schema'
+      ]
+      output << lookup[node['op']]
+      output << "(#{node['typmod']})" unless node.fetch('typmod', -1) == -1
+      output.join('')
     end
 
     def deparse_insert_into(node)
