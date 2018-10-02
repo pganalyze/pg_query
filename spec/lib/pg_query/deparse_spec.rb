@@ -793,6 +793,12 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq oneline_query }
       end
+
+      context 'temporary table' do
+        let(:query) { 'CREATE TEMPORARY TABLE "temp" AS SELECT "c" FROM "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'DROP TABLE' do
