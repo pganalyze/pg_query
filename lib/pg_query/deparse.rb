@@ -100,6 +100,8 @@ class PgQuery
         deparse_delete_from(node)
       when DROP_STMT
         deparse_drop(node)
+      when EXPLAIN_STMT
+        deparse_explain(node)
       when FUNC_CALL
         deparse_funccall(node)
       when FUNCTION_PARAMETER
@@ -1065,6 +1067,14 @@ class PgQuery
 
       output << 'CASCADE' if node['behavior'] == 1
 
+      output.join(' ')
+    end
+
+    def deparse_explain(node)
+      output = ['EXPLAIN']
+      options = node.fetch('options', []).map { |option| option['DefElem']['defname'].upcase }
+      output.concat(options)
+      output << deparse_item(node['query'])
       output.join(' ')
     end
 
