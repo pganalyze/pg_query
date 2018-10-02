@@ -92,6 +92,8 @@ class PgQuery
         deparse_create_table(node)
       when CREATE_TABLE_AS_STMT
         deparse_create_table_as(node)
+      when INTO_CLAUSE
+        deparse_into_clause(node)
       when DEF_ELEM
         deparse_defelem(node)
       when DELETE_STMT
@@ -674,10 +676,14 @@ class PgQuery
     def deparse_create_table_as(node)
       output = []
       output << 'CREATE TEMPORARY TABLE'
-      output << deparse_item(node['into']['IntoClause']['rel'])
+      output << deparse_item(node['into'])
       output << 'AS'
       output << deparse_item(node['query'])
       output.join(' ')
+    end
+
+    def deparse_into_clause(node)
+      deparse_item(node['rel'])
     end
 
     def deparse_when(node)
