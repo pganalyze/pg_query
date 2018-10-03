@@ -86,6 +86,8 @@ class PgQuery
         deparse_cte(node)
       when CONSTRAINT
         deparse_constraint(node)
+      when COPY_STMT
+        deparse_copy(node)
       when CREATE_FUNCTION_STMT
         deparse_create_function(node)
       when CREATE_STMT
@@ -640,6 +642,21 @@ class PgQuery
       output << 'REFERENCES ' + deparse_item(node['pktable']) + ' (' + deparse_item_list(node['pk_attrs']).join(', ') + ')' if node['pktable']
       output << 'NOT VALID' if node['skip_validation']
       output << "USING INDEX #{node['indexname']}" if node['indexname']
+      output.join(' ')
+    end
+
+    def deparse_copy(node)
+      output = ['COPY']
+      output << deparse_item(node['relation'])
+      columns = node.fetch('attlist', []).map { |column| deparse_item(column) }
+      output << "(#{columns.join(', ')})" unless columns.empty?
+      output << (node['is_from'] ? 'FROM' : 'TO')
+      output << 'PROGRAM' if node['is_program']
+      output << if node.key?('filename')
+                  "'#{node['filename']}'"
+                else
+                  node['is_from'] ? 'STDIN' : 'STDOUT'
+                end
       output.join(' ')
     end
 

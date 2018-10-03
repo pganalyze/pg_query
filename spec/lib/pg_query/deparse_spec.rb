@@ -1085,6 +1085,38 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'COPY' do
+      context 'FROM' do
+        let(:query) { 'COPY "t" FROM STDIN' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FROM with columns' do
+        let(:query) { 'COPY "t" ("c1", "c2") FROM STDIN' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FROM program' do
+        let(:query) { 'COPY "t" FROM PROGRAM \'/bin/false\'' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FROM filename' do
+        let(:query) { 'COPY "t" FROM \'/dev/null\'' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TO' do
+        let(:query) { 'COPY "t" TO STDOUT' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do
