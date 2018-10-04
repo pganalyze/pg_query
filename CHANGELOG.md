@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.1.0     2018-10-04
+
+* Deparsing improvements by [@herwinw](https://github.com/herwinw)
+  * Add NULLS FIRST/LAST to ORDER BY [#95](https://github.com/lfittl/pg_query/pull/95)
+  * VACUUM [#97](https://github.com/lfittl/pg_query/pull/97)
+  * UPDATE with multiple columns [#99](https://github.com/lfittl/pg_query/pull/99)
+  * DISTINCT ON [#101](https://github.com/lfittl/pg_query/pull/101)
+  * CREATE TABLE AS [#102](https://github.com/lfittl/pg_query/pull/102)
+  * SQL value functions [#103](https://github.com/lfittl/pg_query/pull/103)
+  * LOCK [#105](https://github.com/lfittl/pg_query/pull/105)
+  * EXPLAIN [#107](https://github.com/lfittl/pg_query/pull/107)
+  * COPY [#108](https://github.com/lfittl/pg_query/pull/108)
+  * DO [#109](https://github.com/lfittl/pg_query/pull/109)
+* Ignore pg_query.so in git checkout [#110](https://github.com/lfittl/pg_query/pull/110) [@herwinw](https://github.com/herwinw)
+* Prefer __dir__ over File.dirname(__FILE__) [#110](https://github.com/lfittl/pg_query/pull/104) [@herwinw](https://github.com/herwinw)
+
+
 ## 1.0.2     2018-04-11
 
 * Deparsing improvements
