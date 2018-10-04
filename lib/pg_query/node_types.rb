@@ -34,6 +34,7 @@ class PgQuery
   DECLARE_CURSOR_STMT = 'DeclareCursorStmt'.freeze
   DEF_ELEM = 'DefElem'.freeze
   DELETE_STMT = 'DeleteStmt'.freeze
+  DO_STMT = 'DoStmt'.freeze
   DROP_STMT = 'DropStmt'.freeze
   EXECUTE_STMT = 'ExecuteStmt'.freeze
   EXPLAIN_STMT = 'ExplainStmt'.freeze
