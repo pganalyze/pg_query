@@ -1117,6 +1117,20 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'DO' do
+      context 'basic statement' do
+        let(:query) { 'DO $$BEGIN PERFORM * FROM information_schema.tables; END$$' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with language' do
+        let(:query) { 'DO $$ BEGIN PERFORM * FROM information_schema.tables; END $$ language "plpgsql"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do

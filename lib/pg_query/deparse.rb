@@ -162,6 +162,8 @@ class PgQuery
         deparse_variable_set_stmt(node)
       when VACUUM_STMT
         deparse_vacuum_stmt(node)
+      when DO_STMT
+        deparse_do_stmt(node)
       when STRING
         if context == A_CONST
           format("'%s'", node['str'].gsub("'", "''"))
@@ -569,6 +571,15 @@ class PgQuery
       output << 'VERBOSE' if node['options'][2] == 1
       output << 'ANALYZE' if node['options'][1] == 1
       output
+    end
+
+    def deparse_do_stmt(node)
+      output = []
+      output << 'DO'
+      statement, *rest = node['args']
+      output << "$$#{statement['DefElem']['arg']['String']['str']}$$"
+      output += rest.map { |item| deparse_item(item) }
+      output.join(' ')
     end
 
     def deparse_cte(node)
