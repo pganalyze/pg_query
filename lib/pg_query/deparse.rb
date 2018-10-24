@@ -658,7 +658,11 @@ class PgQuery
 
     def deparse_copy(node)
       output = ['COPY']
-      output << deparse_item(node['relation'])
+      if node.key?('relation')
+        output << deparse_item(node['relation'])
+      elsif node.key?('query')
+        output << "(#{deparse_item(node['query'])})"
+      end
       columns = node.fetch('attlist', []).map { |column| deparse_item(column) }
       output << "(#{columns.join(', ')})" unless columns.empty?
       output << (node['is_from'] ? 'FROM' : 'TO')
