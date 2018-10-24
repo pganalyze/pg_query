@@ -1116,6 +1116,12 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq oneline_query }
       end
+
+      context 'SUBQUERY' do
+        let(:query) { 'COPY (SELECT 1 FROM "foo") TO STDOUT' }
+
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'DO' do
