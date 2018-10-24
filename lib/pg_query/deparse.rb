@@ -667,12 +667,14 @@ class PgQuery
       output << "(#{columns.join(', ')})" unless columns.empty?
       output << (node['is_from'] ? 'FROM' : 'TO')
       output << 'PROGRAM' if node['is_program']
-      output << if node.key?('filename')
-                  "'#{node['filename']}'"
-                else
-                  node['is_from'] ? 'STDIN' : 'STDOUT'
-                end
+      output << deparse_copy_output(node)
       output.join(' ')
+    end
+
+    def deparse_copy_output(node)
+      return "'#{node['filename']}'" if node.key?('filename')
+      return 'STDIN' if node['is_from']
+      'STDOUT'
     end
 
     def deparse_create_function(node)
