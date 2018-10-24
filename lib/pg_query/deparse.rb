@@ -237,7 +237,13 @@ class PgQuery
     end
 
     def deparse_a_indirection(node)
-      output = [deparse_item(node['arg'])]
+      output = []
+      arg = deparse_item(node['arg'])
+      output << if node['arg'].key?(FUNC_CALL)
+                  "(#{arg})."
+                else
+                  arg
+                end
       node['indirection'].each do |subnode|
         output << deparse_item(subnode)
       end
