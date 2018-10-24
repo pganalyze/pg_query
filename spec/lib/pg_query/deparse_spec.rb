@@ -1131,6 +1131,188 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'GRANT' do
+      context 'basic select statement' do
+        let(:query) { 'GRANT select ON "table" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'multiple privileges' do
+        let(:query) { 'GRANT select, update, insert ON "table" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'all tables' do
+        let(:query) { 'GRANT select ON ALL TABLES IN SCHEMA "schema" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'multiple users' do
+        let(:query) { 'GRANT select ON "table" TO "user1", "user2"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'user public' do
+        let(:query) { 'GRANT select ON "table" TO PUBLIC' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'user current user' do
+        let(:query) { 'GRANT select ON "table" TO CURRENT_USER' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'user session user' do
+        let(:query) { 'GRANT select ON "table" TO SESSION_USER' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'all privileges' do
+        let(:query) { 'GRANT ALL ON "table" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with grant option' do
+        let(:query) { 'GRANT select ON "table" TO "user" WITH GRANT OPTION' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with column name' do
+        let(:query) { 'GRANT select ("column") ON "table" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with column names' do
+        let(:query) { 'GRANT select ("column1", "column2") ON "table" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'sequence' do
+        let(:query) { 'GRANT usage ON SEQUENCE "sequence" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'all sequences' do
+        let(:query) { 'GRANT usage ON ALL SEQUENCES IN SCHEMA "schema" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'database' do
+        let(:query) { 'GRANT create ON DATABASE "database" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'domain' do
+        let(:query) { 'GRANT usage ON DOMAIN "domain" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'foreign data wrapper' do
+        let(:query) { 'GRANT usage ON FOREIGN DATA WRAPPER "fdw" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'foreign server' do
+        let(:query) { 'GRANT usage ON FOREIGN SERVER "server" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'function with unspecified args' do
+        let(:query) { 'GRANT execute ON FUNCTION "function" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'function without args' do
+        let(:query) { 'GRANT execute ON FUNCTION "function"() TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'function without 1 arg' do
+        let(:query) { 'GRANT execute ON FUNCTION "function"(string) TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'function without multiple args' do
+        let(:query) { 'GRANT execute ON FUNCTION "function"(string, string, boolean) TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'all functions' do
+        let(:query) { 'GRANT execute ON ALL FUNCTIONS IN SCHEMA "schema" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'language' do
+        let(:query) { 'GRANT usage ON LANGUAGE "plpgsql" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'large object' do
+        let(:query) { 'GRANT select ON LARGE OBJECT 1234 TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'schema' do
+        let(:query) { 'GRANT create ON SCHEMA "schema" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'tablespace' do
+        let(:query) { 'GRANT create ON TABLESPACE "tablespace" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'type' do
+        let(:query) { 'GRANT usage ON TYPE "type" TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'role' do
+        let(:query) { 'GRANT role TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'multiple roles' do
+        let(:query) { 'GRANT role1, role2 TO "user"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with admin option' do
+        let(:query) { 'GRANT role TO "user" WITH ADMIN OPTION' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do
