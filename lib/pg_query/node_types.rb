@@ -55,6 +55,7 @@ class PgQuery
   LOCKING_CLAUSE = 'LockingClause'.freeze
   NULL = 'Null'.freeze
   NULL_TEST = 'NullTest'.freeze
+  OBJECT_WITH_ARGS = 'ObjectWithArgs'.freeze
   OID_LIST = 'OidList'.freeze
   PARAM_REF = 'ParamRef'.freeze
   PREPARE_STMT = 'PrepareStmt'.freeze
