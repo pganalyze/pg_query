@@ -274,6 +274,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'query indirection' do
+        let(:query) { 'SELECT (foo(1))."y"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'complex indirection' do
         let(:query) { 'SELECT * FROM "x" WHERE "y" = "z"[?][?]' }
 
