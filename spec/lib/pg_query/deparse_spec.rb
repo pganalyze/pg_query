@@ -728,6 +728,18 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq query }
       end
+
+      context 'without parameters' do
+        let(:query) do
+          """
+          CREATE OR REPLACE FUNCTION \"getfoo\"() RETURNS text AS $$
+              SELECT name FROM \"users\" LIMIT 1
+          $$ language \"sql\" IMMUTABLE CALLED ON NULL INPUT
+          """.strip
+        end
+
+        it { is_expected.to eq query }
+      end
     end
 
     context 'CREATE TABLE' do
