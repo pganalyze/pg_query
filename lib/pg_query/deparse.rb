@@ -102,6 +102,8 @@ class PgQuery
         deparse_into_clause(node)
       when DEF_ELEM
         deparse_defelem(node)
+      when DEFINE_STMT
+        deparse_define_stmt(node)
       when DELETE_STMT
         deparse_delete_from(node)
       when DISCARD_STMT
@@ -1085,6 +1087,27 @@ class PgQuery
       else
         deparse_item(node['arg'])
       end
+    end
+
+    def deparse_define_stmt(node)
+      dispatch = {
+        1 => :deparse_create_aggregate
+      }
+      method(dispatch.fetch(node['kind'])).call(node)
+    end
+
+    def deparse_create_aggregate(node)
+      output = ['CREATE AGGREGATE']
+      output << node['defnames'].map(&method(:deparse_item))
+      args = node['args'][0] || [{ A_STAR => nil }]
+      output << "(#{args.map(&method(:deparse_item)).join(', ')})"
+      definitions = node['definition'].map do |definition|
+        definition_output = [definition['DefElem']['defname']]
+        definition_output << definition['DefElem']['arg']['TypeName']['names'].map(&method(:deparse_item)).join(', ') if definition['DefElem'].key?('arg')
+        definition_output.join('=')
+      end
+      output << "(#{definitions.join(', ')})"
+      output.join(' ')
     end
 
     def deparse_delete_from(node)
