@@ -1131,6 +1131,40 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'DefineStmt' do
+      context 'CREATE AGGREGATE' do
+        context 'minimal' do
+          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4) (sfunc="sfunc1", stype="stype1")' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'multiple arg type' do
+          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4, bool) (sfunc="sfunc1", stype="stype1")' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'wildcard arg type' do
+          let(:query) { 'CREATE AGGREGATE "aggregate1" (*) (sfunc="sfunc1", stype="stype1")' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'attributes without values' do
+          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4) (sfunc="sfunc1", stype="stype1", finalfunc_extra, mfinalfuncextra)' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'attributes with predefined values' do
+          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4) (sfunc="sfunc1", stype="stype1", finalfunc_modify="read_only", parallel="restricted")' }
+
+          it { is_expected.to eq oneline_query }
+        end
+      end
+    end
   end
 
   describe '#deparse' do
