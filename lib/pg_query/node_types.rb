@@ -33,6 +33,7 @@ class PgQuery
   DEALLOCATE_STMT = 'DeallocateStmt'.freeze
   DECLARE_CURSOR_STMT = 'DeclareCursorStmt'.freeze
   DEF_ELEM = 'DefElem'.freeze
+  DEFINE_STMT = 'DefineStmt'.freeze
   DELETE_STMT = 'DeleteStmt'.freeze
   DO_STMT = 'DoStmt'.freeze
   DROP_STMT = 'DropStmt'.freeze
