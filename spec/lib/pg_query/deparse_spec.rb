@@ -1164,6 +1164,26 @@ describe PgQuery::Deparse do
           it { is_expected.to eq oneline_query }
         end
       end
+
+      context 'CREATE OPERATOR' do
+        context 'minimal' do
+          let(:query) { 'CREATE OPERATOR + (procedure="plusfunc")' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'more arguments' do
+          let(:query) { 'CREATE OPERATOR + (procedure="plusfunc", leftarg="int4", rightarg="int4")' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'empty arguments' do
+          let(:query) { 'CREATE OPERATOR + (procedure="plusfunc", hashes, merges)' }
+
+          it { is_expected.to eq oneline_query }
+        end
+      end
     end
   end
 
