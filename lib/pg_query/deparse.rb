@@ -1059,7 +1059,8 @@ class PgQuery
 
     def deparse_define_stmt(node)
       dispatch = {
-        1 => :deparse_create_aggregate
+        1 => :deparse_create_aggregate,
+        25 => :deparse_create_operator
       }
       method(dispatch.fetch(node['kind'])).call(node)
     end
@@ -1069,6 +1070,18 @@ class PgQuery
       output << node['defnames'].map(&method(:deparse_item))
       args = node['args'][0] || [{ A_STAR => nil }]
       output << "(#{args.map(&method(:deparse_item)).join(', ')})"
+      definitions = node['definition'].map do |definition|
+        definition_output = [definition['DefElem']['defname']]
+        definition_output << definition['DefElem']['arg']['TypeName']['names'].map(&method(:deparse_item)).join(', ') if definition['DefElem'].key?('arg')
+        definition_output.join('=')
+      end
+      output << "(#{definitions.join(', ')})"
+      output.join(' ')
+    end
+
+    def deparse_create_operator(node)
+      output = ['CREATE OPERATOR']
+      output << node['defnames'][0]['String']['str']
       definitions = node['definition'].map do |definition|
         definition_output = [definition['DefElem']['defname']]
         definition_output << definition['DefElem']['arg']['TypeName']['names'].map(&method(:deparse_item)).join(', ') if definition['DefElem'].key?('arg')
