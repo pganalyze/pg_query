@@ -24,9 +24,12 @@ class PgQuery
   COLUMN_DEF = 'ColumnDef'.freeze
   COLUMN_REF = 'ColumnRef'.freeze
   COMMON_TABLE_EXPR = 'CommonTableExpr'.freeze
+  COMPOSITE_TYPE_STMT = 'CompositeTypeStmt'.freeze
   CONSTRAINT = 'Constraint'.freeze
   COPY_STMT = 'CopyStmt'.freeze
+  CREATE_ENUM_STMT = 'CreateEnumStmt'.freeze
   CREATE_FUNCTION_STMT = 'CreateFunctionStmt'.freeze
+  CREATE_RANGE_STMT = 'CreateRangeStmt'.freeze
   CREATE_SCHEMA_STMT = 'CreateSchemaStmt'.freeze
   CREATE_STMT = 'CreateStmt'.freeze
   CREATE_TABLE_AS_STMT = 'CreateTableAsStmt'.freeze

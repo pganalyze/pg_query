@@ -1255,6 +1255,56 @@ describe PgQuery::Deparse do
           it { is_expected.to eq oneline_query }
         end
       end
+
+      context 'CREATE TYPE' do
+        context 'shell' do
+          let(:query) { 'CREATE TYPE "type1"' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'composite' do
+          let(:query) { 'CREATE TYPE "type1" AS (attr1 int4, attr2 bool)' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'composite with collate' do
+          let(:query) { 'CREATE TYPE "type1" AS (attr1 int4 COLLATE "collation1", attr2 bool)' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'enum' do
+          let(:query) { 'CREATE TYPE "type1" AS ENUM (\'value1\', \'value2\', \'value3\')' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'range' do
+          let(:query) { 'CREATE TYPE "type1" AS RANGE (subtype=int4)' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'range with multiple params' do
+          let(:query) { 'CREATE TYPE "type1" AS RANGE (subtype=int4, receive=receive_func, passedbyvalue)' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'base' do
+          let(:query) { 'CREATE TYPE "type1" (input="input1", output="output1")' }
+
+          it { is_expected.to eq oneline_query }
+        end
+
+        context 'base with multiple params' do
+          let(:query) { 'CREATE TYPE "type1" (input="input1", output="output1", passedbyvalue)' }
+
+          it { is_expected.to eq oneline_query }
+        end
+      end
     end
   end
 
