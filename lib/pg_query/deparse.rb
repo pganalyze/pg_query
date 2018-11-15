@@ -84,12 +84,18 @@ class PgQuery
         deparse_columnref(node)
       when COMMON_TABLE_EXPR
         deparse_cte(node)
+      when COMPOSITE_TYPE_STMT
+        deparse_composite_type(node)
       when CONSTRAINT
         deparse_constraint(node)
       when COPY_STMT
         deparse_copy(node)
+      when CREATE_ENUM_STMT
+        deparse_create_enum(node)
       when CREATE_FUNCTION_STMT
         deparse_create_function(node)
+      when CREATE_RANGE_STMT
+        deparse_create_range(node)
       when CREATE_STMT
         deparse_create_table(node)
       when CREATE_TABLE_AS_STMT
@@ -616,7 +622,20 @@ class PgQuery
           deparse_item(item)
         end
       end
+      if node['collClause']
+        output << 'COLLATE'
+        output += node['collClause']['CollateClause']['collname'].map(&method(:deparse_item))
+      end
       output.compact.join(' ')
+    end
+
+    def deparse_composite_type(node)
+      output = ['CREATE TYPE']
+      output << deparse_rangevar(node['typevar'][RANGE_VAR].merge('inh' => true))
+      output << 'AS'
+      coldeflist = node['coldeflist'].map(&method(:deparse_item))
+      output << "(#{coldeflist.join(', ')})"
+      output.join(' ')
     end
 
     def deparse_constraint(node) # rubocop:disable Metrics/CyclomaticComplexity
@@ -673,6 +692,15 @@ class PgQuery
       output.join(' ')
     end
 
+    def deparse_create_enum(node)
+      output = ['CREATE TYPE']
+      output << deparse_item(node['typeName'][0])
+      output << 'AS ENUM'
+      vals = node['vals'].map { |val| deparse_item(val, A_CONST) }
+      output << "(#{vals.join(', ')})"
+      output.join(' ')
+    end
+
     def deparse_create_function(node)
       output = []
       output << 'CREATE'
@@ -687,6 +715,21 @@ class PgQuery
       output << deparse_item(node['returnType'])
       output += node['options'].map { |item| deparse_item(item) }
 
+      output.join(' ')
+    end
+
+    def deparse_create_range(node)
+      output = ['CREATE TYPE']
+      output << deparse_item(node['typeName'][0])
+      output << 'AS RANGE'
+      params = node['params'].map do |param|
+        param_out = [param['DefElem']['defname']]
+        if param['DefElem'].key?('arg')
+          param_out << deparse_item(param['DefElem']['arg'])
+        end
+        param_out.join('=')
+      end
+      output << "(#{params.join(', ')})"
       output.join(' ')
     end
 
@@ -1060,7 +1103,8 @@ class PgQuery
     def deparse_define_stmt(node)
       dispatch = {
         1 => :deparse_create_aggregate,
-        25 => :deparse_create_operator
+        25 => :deparse_create_operator,
+        45 => :deparse_create_type
       }
       method(dispatch.fetch(node['kind'])).call(node)
     end
@@ -1088,6 +1132,22 @@ class PgQuery
         definition_output.join('=')
       end
       output << "(#{definitions.join(', ')})"
+      output.join(' ')
+    end
+
+    def deparse_create_type(node)
+      output = ['CREATE TYPE']
+      output << node['defnames'].map(&method(:deparse_item))
+      if node.key?('definition')
+        definitions = node['definition'].map do |definition|
+          definition_output = [definition['DefElem']['defname']]
+          if definition['DefElem'].key?('arg')
+            definition_output += definition['DefElem']['arg']['TypeName']['names'].map(&method(:deparse_item))
+          end
+          definition_output.join('=')
+        end
+        output << "(#{definitions.join(', ')})"
+      end
       output.join(' ')
     end
 
