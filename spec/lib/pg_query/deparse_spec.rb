@@ -869,6 +869,12 @@ describe PgQuery::Deparse do
       end
     end
 
+    context 'DROP SCHEMA' do
+      let(:query) { 'DROP SCHEMA IF EXISTS "any_schema"' }
+
+      it { is_expected.to eq oneline_query }
+    end
+
     context 'ALTER TABLE' do
       context 'with column modifications' do
         let(:query) do
