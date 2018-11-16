@@ -1088,10 +1088,13 @@ class PgQuery
     def deparse_drop(node)
       output = ['DROP']
       output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
+      output << 'SCHEMA' if node['removeType'] == OBJECT_TYPE_SCHEMA
       output << 'CONCURRENTLY' if node['concurrent']
       output << 'IF EXISTS' if node['missing_ok']
 
-      output << node['objects'].map { |list| list.map { |object| deparse_item(object) } }.join(', ')
+      objects = node['objects']
+      objects = [objects] unless objects[0].is_a?(Array)
+      output << objects.map { |list| list.map { |object| deparse_item(object) } }.join(', ')
 
       output << 'CASCADE' if node['behavior'] == 1
 
