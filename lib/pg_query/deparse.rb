@@ -36,6 +36,8 @@ class PgQuery
           deparse_aexpr_any(node)
         when AEXPR_IN
           deparse_aexpr_in(node)
+        when AEXPR_ILIKE
+          deparse_aexpr_ilike(node)
         when CONSTR_TYPE_FOREIGN
           deparse_aexpr_like(node)
         when AEXPR_BETWEEN, AEXPR_NOT_BETWEEN, AEXPR_BETWEEN_SYM, AEXPR_NOT_BETWEEN_SYM
@@ -353,6 +355,12 @@ class PgQuery
     def deparse_aexpr_like(node)
       value = deparse_item(node['rexpr'])
       operator = node['name'].map { |n| deparse_item(n, :operator) } == ['~~'] ? 'LIKE' : 'NOT LIKE'
+      format('%s %s %s', deparse_item(node['lexpr']), operator, value)
+    end
+
+    def deparse_aexpr_ilike(node)
+      value = deparse_item(node['rexpr'])
+      operator = node['name'][0]['String']['str'] == '~~*' ? 'ILIKE' : 'NOT ILIKE'
       format('%s %s %s', deparse_item(node['lexpr']), operator, value)
     end
 
