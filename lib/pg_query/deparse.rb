@@ -180,6 +180,8 @@ class PgQuery
         node['str']
       when NULL
         'NULL'
+      when COLLATE_CLAUSE
+        deparse_collate(node)
       else
         raise format("Can't deparse: %s: %s", type, node.inspect)
       end
@@ -515,6 +517,14 @@ class PgQuery
       output << 'DESC' if node['sortby_dir'] == 2
       output << 'NULLS FIRST' if node['sortby_nulls'] == 1
       output << 'NULLS LAST' if node['sortby_nulls'] == 2
+      output.join(' ')
+    end
+
+    def deparse_collate(node)
+      output = []
+      output << deparse_item(node['arg'])
+      output << 'COLLATE'
+      output <<  deparse_item_list(node['collname'])
       output.join(' ')
     end
 

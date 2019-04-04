@@ -85,6 +85,7 @@ class PgQuery
   VIEW_STMT = 'ViewStmt'.freeze
   WINDOW_DEF = 'WindowDef'.freeze
   WITH_CLAUSE = 'WithClause'.freeze
+  COLLATE_CLAUSE = 'CollateClause'.freeze
 
   # FIELDS
 
