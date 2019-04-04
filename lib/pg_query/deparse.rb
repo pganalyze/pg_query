@@ -524,7 +524,7 @@ class PgQuery
       output = []
       output << deparse_item(node['arg'])
       output << 'COLLATE'
-      output <<  deparse_item_list(node['collname'])
+      output << deparse_item_list(node['collname'])
       output.join(' ')
     end
 
