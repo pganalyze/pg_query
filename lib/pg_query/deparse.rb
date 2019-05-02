@@ -80,6 +80,8 @@ class PgQuery
         deparse_case(node)
       when COALESCE_EXPR
         deparse_coalesce(node)
+      when COLLATE_CLAUSE
+        deparse_collate(node)
       when COLUMN_DEF
         deparse_columndef(node)
       when COLUMN_REF
@@ -102,6 +104,8 @@ class PgQuery
         deparse_defelem(node)
       when DELETE_STMT
         deparse_delete_from(node)
+      when DISCARD_STMT
+        deparse_discard(node)
       when DROP_STMT
         deparse_drop(node)
       when EXPLAIN_STMT
@@ -180,8 +184,6 @@ class PgQuery
         node['str']
       when NULL
         'NULL'
-      when COLLATE_CLAUSE
-        deparse_collate(node)
       else
         raise format("Can't deparse: %s: %s", type, node.inspect)
       end
@@ -1100,6 +1102,15 @@ class PgQuery
         end.join(', ')
       end
 
+      output.join(' ')
+    end
+
+    def deparse_discard(node)
+      output = ['DISCARD']
+      output << 'ALL' if node['target'] == 0
+      output << 'PLANS' if node['target'] == 1
+      output << 'SEQUENCES' if node['target'] == 2
+      output << 'TEMP' if node['target'] == 3
       output.join(' ')
     end
 

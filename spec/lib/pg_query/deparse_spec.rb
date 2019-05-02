@@ -1155,6 +1155,29 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'DISCARD' do
+      context 'all' do
+        let(:query) { 'DISCARD ALL' }
+
+        it { is_expected.to eq oneline_query }
+      end
+      context 'plans' do
+        let(:query) { 'DISCARD PLANS' }
+
+        it { is_expected.to eq oneline_query }
+      end
+      context 'sequences' do
+        let(:query) { 'DISCARD SEQUENCES' }
+
+        it { is_expected.to eq oneline_query }
+      end
+      context 'temp' do
+        let(:query) { 'DISCARD TEMP' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do
