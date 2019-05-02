@@ -1107,7 +1107,7 @@ class PgQuery
 
     def deparse_discard(node)
       output = ['DISCARD']
-      output << 'ALL' if node['target'] == 0
+      output << 'ALL' if (node['target']).zero?
       output << 'PLANS' if node['target'] == 1
       output << 'SEQUENCES' if node['target'] == 2
       output << 'TEMP' if node['target'] == 3
