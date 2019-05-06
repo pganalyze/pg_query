@@ -36,6 +36,8 @@ class PgQuery
           deparse_aexpr_any(node)
         when AEXPR_IN
           deparse_aexpr_in(node)
+        when AEXPR_ILIKE
+          deparse_aexpr_ilike(node)
         when CONSTR_TYPE_FOREIGN
           deparse_aexpr_like(node)
         when AEXPR_BETWEEN, AEXPR_NOT_BETWEEN, AEXPR_BETWEEN_SYM, AEXPR_NOT_BETWEEN_SYM
@@ -78,6 +80,8 @@ class PgQuery
         deparse_case(node)
       when COALESCE_EXPR
         deparse_coalesce(node)
+      when COLLATE_CLAUSE
+        deparse_collate(node)
       when COLUMN_DEF
         deparse_columndef(node)
       when COLUMN_REF
@@ -100,6 +104,8 @@ class PgQuery
         deparse_defelem(node)
       when DELETE_STMT
         deparse_delete_from(node)
+      when DISCARD_STMT
+        deparse_discard(node)
       when DROP_STMT
         deparse_drop(node)
       when EXPLAIN_STMT
@@ -356,6 +362,12 @@ class PgQuery
       format('%s %s %s', deparse_item(node['lexpr']), operator, value)
     end
 
+    def deparse_aexpr_ilike(node)
+      value = deparse_item(node['rexpr'])
+      operator = node['name'][0]['String']['str'] == '~~*' ? 'ILIKE' : 'NOT ILIKE'
+      format('%s %s %s', deparse_item(node['lexpr']), operator, value)
+    end
+
     def deparse_bool_expr_not(node)
       format('NOT %s', deparse_item(node['args'][0]))
     end
@@ -507,6 +519,14 @@ class PgQuery
       output << 'DESC' if node['sortby_dir'] == 2
       output << 'NULLS FIRST' if node['sortby_nulls'] == 1
       output << 'NULLS LAST' if node['sortby_nulls'] == 2
+      output.join(' ')
+    end
+
+    def deparse_collate(node)
+      output = []
+      output << deparse_item(node['arg'])
+      output << 'COLLATE'
+      output << deparse_item_list(node['collname'])
       output.join(' ')
     end
 
@@ -1082,6 +1102,15 @@ class PgQuery
         end.join(', ')
       end
 
+      output.join(' ')
+    end
+
+    def deparse_discard(node)
+      output = ['DISCARD']
+      output << 'ALL' if (node['target']).zero?
+      output << 'PLANS' if node['target'] == 1
+      output << 'SEQUENCES' if node['target'] == 2
+      output << 'TEMP' if node['target'] == 3
       output.join(' ')
     end
 

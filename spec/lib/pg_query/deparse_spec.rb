@@ -62,6 +62,18 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'ORDER BY with COLLATE' do
+        let(:query) { 'SELECT * FROM "a" ORDER BY "x" COLLATE "tr_TR" DESC NULLS LAST' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'text with COLLATE' do
+        let(:query) { "SELECT 'foo' COLLATE \"tr_TR\"" }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with specific column alias' do
         let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(\"first\", \"last\")" }
 
@@ -76,6 +88,18 @@ describe PgQuery::Deparse do
 
       context 'with NOT LIKE filter' do
         let(:query) { "SELECT * FROM \"users\" WHERE \"name\" NOT LIKE 'postgresql:%';" }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with ILIKE filter' do
+        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" ILIKE 'postgresql:%';" }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'with NOT ILIKE filter' do
+        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" NOT ILIKE 'postgresql:%';" }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1127,6 +1151,29 @@ describe PgQuery::Deparse do
 
       context 'with language' do
         let(:query) { 'DO $$ BEGIN PERFORM * FROM information_schema.tables; END $$ language "plpgsql"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
+    context 'DISCARD' do
+      context 'all' do
+        let(:query) { 'DISCARD ALL' }
+
+        it { is_expected.to eq oneline_query }
+      end
+      context 'plans' do
+        let(:query) { 'DISCARD PLANS' }
+
+        it { is_expected.to eq oneline_query }
+      end
+      context 'sequences' do
+        let(:query) { 'DISCARD SEQUENCES' }
+
+        it { is_expected.to eq oneline_query }
+      end
+      context 'temp' do
+        let(:query) { 'DISCARD TEMP' }
 
         it { is_expected.to eq oneline_query }
       end
