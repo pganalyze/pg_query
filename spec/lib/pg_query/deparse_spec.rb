@@ -74,6 +74,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'UNION or UNION ALL' do
+        let(:query) { "WITH kodsis AS (SELECT * FROM application), kodsis2 AS (SELECT * FROM application) SELECT * FROM kodsis UNION SELECT * FROM kodsis ORDER BY id DESC" }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with specific column alias' do
         let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(\"first\", \"last\")" }
 

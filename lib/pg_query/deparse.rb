@@ -793,15 +793,15 @@ class PgQuery
     def deparse_select(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = []
 
+      output << deparse_item(node['withClause']) if node['withClause']
+
       if node['op'] == 1
         output << deparse_item(node['larg'])
         output << 'UNION'
         output << 'ALL' if node['all']
         output << deparse_item(node['rarg'])
-        return output.join(' ')
+        output.join(' ')
       end
-
-      output << deparse_item(node['withClause']) if node['withClause']
 
       if node[TARGET_LIST_FIELD]
         output << 'SELECT'
