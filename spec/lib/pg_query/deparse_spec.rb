@@ -75,7 +75,7 @@ describe PgQuery::Deparse do
       end
 
       context 'UNION or UNION ALL' do
-        let(:query) { "WITH kodsis AS (SELECT * FROM application), kodsis2 AS (SELECT * FROM application) SELECT * FROM kodsis UNION SELECT * FROM kodsis ORDER BY id DESC" }
+        let(:query) { "WITH kodsis AS (SELECT * FROM \"application\"), kodsis2 AS (SELECT * FROM \"application\") SELECT * FROM \"kodsis\" UNION SELECT * FROM \"kodsis\" ORDER BY \"id\" DESC" }
 
         it { is_expected.to eq query }
       end
