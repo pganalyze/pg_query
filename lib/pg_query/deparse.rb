@@ -769,7 +769,7 @@ class PgQuery
       if node['subLinkType'] == SUBLINK_TYPE_ANY
         format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
       elsif node['subLinkType'] == SUBLINK_TYPE_ALL
-        format('%s %s ALL (%s)', deparse_item(node['testexpr']),deparse_item(node['operName'][0], :operator), deparse_item(node['subselect']))
+        format('%s %s ALL (%s)', deparse_item(node['testexpr']), deparse_item(node['operName'][0], :operator), deparse_item(node['subselect']))
       elsif node['subLinkType'] == SUBLINK_TYPE_EXISTS
         format('EXISTS(%s)', deparse_item(node['subselect']))
       else
