@@ -32,6 +32,8 @@ class PgQuery
         case node['kind']
         when AEXPR_OP
           deparse_aexpr(node, context)
+        when AEXPR_OP_ALL
+          deparse_aexpr_all(node)
         when AEXPR_OP_ANY
           deparse_aexpr_any(node)
         when AEXPR_IN
@@ -434,6 +436,13 @@ class PgQuery
       output.join(' ' + deparse_item(node['name'][0], :operator) + ' ')
     end
 
+    def deparse_aexpr_all(node)
+      output = []
+      output << deparse_item(node['lexpr'])
+      output << format('ALL(%s)', deparse_item(node['rexpr']))
+      output.join(' ' + deparse_item(node['name'][0], :operator) + ' ')
+    end
+
     def deparse_aexpr_between(node)
       between = case node['kind']
                 when AEXPR_BETWEEN
@@ -759,6 +768,8 @@ class PgQuery
     def deparse_sublink(node)
       if node['subLinkType'] == SUBLINK_TYPE_ANY
         format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
+      elsif node['subLinkType'] == SUBLINK_TYPE_ALL
+        format('%s %s ALL (%s)', deparse_item(node['testexpr']),deparse_item(node['operName'][0], :operator), deparse_item(node['subselect']))
       elsif node['subLinkType'] == SUBLINK_TYPE_EXISTS
         format('EXISTS(%s)', deparse_item(node['subselect']))
       else

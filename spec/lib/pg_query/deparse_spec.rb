@@ -334,6 +334,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'ALL' do
+        let(:query) { 'SELECT * FROM "x" WHERE "x" = ALL(?)' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'ANY' do
         let(:query) { 'SELECT * FROM "x" WHERE "x" = ANY(?)' }
 
