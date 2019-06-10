@@ -261,7 +261,7 @@ class PgQuery
       if node['colnames']
         name + '(' + deparse_item_list(node['colnames']).join(', ') + ')'
       else
-        format('"%s"',name)  if !name.nil?
+        format('"%s"', name) unless name.nil?
       end
     end
 
@@ -302,7 +302,7 @@ class PgQuery
 
     def deparse_restarget(node, context)
       if context == :select
-        [deparse_item(node['val']), (format('"%s"',node['name'])  if !node['name'].nil?) ].compact.join(' AS ')
+        [deparse_item(node['val']), (format('"%s"', node['name']) unless node['name'].nil?)].compact.join(' AS ')
       elsif context == :update
         [node['name'], deparse_item(node['val'])].compact.join(' = ')
       elsif node['val'].nil?
