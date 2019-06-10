@@ -9,13 +9,13 @@ describe PgQuery::Deparse do
 
     context 'SELECT' do
       context 'basic statement' do
-        let(:query) { 'SELECT "a" AS b FROM "x" WHERE "y" = 5 AND "z" = "y"' }
+        let(:query) { 'SELECT "a" AS "b" FROM "x" WHERE "y" = 5 AND "z" = "y"' }
 
         it { is_expected.to eq query }
       end
 
       context 'basic statement with schema' do
-        let(:query) { 'SELECT "a" AS b FROM "public"."x" WHERE "y" = 5 AND "z" = "y"' }
+        let(:query) { 'SELECT "a" AS "b" FROM "public"."x" WHERE "y" = 5 AND "z" = "y"' }
 
         it { is_expected.to eq query }
       end
@@ -45,7 +45,7 @@ describe PgQuery::Deparse do
       end
 
       context 'complex SELECT statement' do
-        let(:query) { 'SELECT "memory_total_bytes", "memory_swap_total_bytes" - "memory_swap_free_bytes" AS swap, date_part(?, "s"."collected_at") AS collected_at FROM "snapshots" s JOIN "system_snapshots" ON "snapshot_id" = "s"."id" WHERE "s"."database_id" = ? AND "s"."collected_at" >= ? AND "s"."collected_at" <= ? ORDER BY "collected_at" ASC' }
+        let(:query) { 'SELECT "memory_total_bytes", "memory_swap_total_bytes" - "memory_swap_free_bytes" AS "swap", date_part(?, "s"."collected_at") AS "collected_at" FROM "snapshots" "s" JOIN "system_snapshots" ON "snapshot_id" = "s"."id" WHERE "s"."database_id" = ? AND "s"."collected_at" >= ? AND "s"."collected_at" <= ? ORDER BY "collected_at" ASC' }
 
         it { is_expected.to eq query }
       end
@@ -75,7 +75,7 @@ describe PgQuery::Deparse do
       end
 
       context 'UNION or UNION ALL' do
-        let(:query) { "WITH kodsis AS (SELECT * FROM \"application\"), kodsis2 AS (SELECT * FROM \"application\") SELECT * FROM \"kodsis\" UNION SELECT * FROM \"kodsis\" ORDER BY \"id\" DESC" }
+        let(:query) { 'WITH kodsis AS (SELECT * FROM "application"), kodsis2 AS (SELECT * FROM "application") SELECT * FROM "kodsis" UNION SELECT * FROM "kodsis" ORDER BY "id" DESC' }
 
         it { is_expected.to eq query }
       end
@@ -117,7 +117,7 @@ describe PgQuery::Deparse do
       end
 
       context 'simple WITH statement' do
-        let(:query) { 'WITH t AS (SELECT random() AS x FROM generate_series(1, 3)) SELECT * FROM "t"' }
+        let(:query) { 'WITH t AS (SELECT random() AS "x" FROM generate_series(1, 3)) SELECT * FROM "t"' }
 
         it { is_expected.to eq query }
       end
@@ -130,12 +130,12 @@ describe PgQuery::Deparse do
               SELECT "g"."id", "g"."link", "g"."data", 1,
                 ARRAY[ROW("g"."f1", "g"."f2")],
                 false
-              FROM "graph" g
+              FROM "graph" "g"
             UNION ALL
               SELECT "g"."id", "g"."link", "g"."data", "sg"."depth" + 1,
                 "path" || ROW("g"."f1", "g"."f2"),
                 ROW("g"."f1", "g"."f2") = ANY("path")
-              FROM "graph" g, "search_graph" sg
+              FROM "graph" "g", "search_graph" "sg"
               WHERE "g"."id" = "sg"."link" AND NOT "cycle"
           )
           SELECT "id", "data", "link" FROM "search_graph";
@@ -152,7 +152,7 @@ describe PgQuery::Deparse do
       end
 
       context 'LATERAL' do
-        let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" m, LATERAL get_product_names("m"."id") pname' }
+        let(:query) { 'SELECT "m"."name" AS "mname", "pname" FROM "manufacturers" "m", LATERAL get_product_names("m"."id") "pname"' }
 
         it { is_expected.to eq query }
       end
@@ -160,8 +160,8 @@ describe PgQuery::Deparse do
       context 'LATERAL JOIN' do
         let(:query) do
           %(
-          SELECT "m"."name" AS mname, "pname"
-            FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+          SELECT "m"."name" AS "mname", "pname"
+            FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") "pname" ON true
           )
         end
 
@@ -239,7 +239,7 @@ describe PgQuery::Deparse do
       end
 
       context 'basic CASE WHEN statements' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM "accounts" a' }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM "accounts" "a"' }
 
         it { is_expected.to eq query }
       end
@@ -251,7 +251,7 @@ describe PgQuery::Deparse do
       end
 
       context 'CASE WHEN statements with ELSE clause' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" a' }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" "a"' }
 
         it { is_expected.to eq query }
       end
@@ -275,7 +275,7 @@ describe PgQuery::Deparse do
       end
 
       context 'Subselect in FROM clause' do
-        let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) a" }
+        let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) \"a\"" }
 
         it { is_expected.to eq query }
       end
@@ -299,7 +299,7 @@ describe PgQuery::Deparse do
       end
 
       context 'Subselect JOIN' do
-        let(:query) { 'SELECT * FROM "x" JOIN (SELECT "n" FROM "z") b ON "a"."id" = "b"."id"' }
+        let(:query) { 'SELECT * FROM "x" JOIN (SELECT "n" FROM "z") "b" ON "a"."id" = "b"."id"' }
 
         it { is_expected.to eq query }
       end
@@ -413,7 +413,7 @@ describe PgQuery::Deparse do
       end
 
       context 'NULLIF' do
-        let(:query) { 'SELECT NULLIF("id", 0) AS id FROM "x"' }
+        let(:query) { 'SELECT NULLIF("id", 0) AS "id" FROM "x"' }
 
         it { is_expected.to eq query }
       end
@@ -479,7 +479,7 @@ describe PgQuery::Deparse do
           SELECT * FROM crosstab(
           'SELECT "department", "role", COUNT("id") FROM "users" GROUP BY "department", "role" ORDER BY "department", "role"',
           'VALUES (''admin''::text), (''ordinary''::text)')
-          ctab (department varchar, admin int, ordinary int)
+          "ctab" (department varchar, admin int, ordinary int)
           }
         end
 
@@ -489,8 +489,8 @@ describe PgQuery::Deparse do
       context 'with columndef list returning an array' do
         let(:query) do
           %q{
-          SELECT "row_cols"[0] AS dept, "row_cols"[1] AS sub, "admin", "ordinary" FROM crosstab(
-          'SELECT ARRAY["department", "sub"] AS row_cols, "role", COUNT("id") FROM "users" GROUP BY "department", "role" ORDER BY "department", "role"',
+          SELECT "row_cols"[0] AS "dept", "row_cols"[1] AS "sub", "admin", "ordinary" FROM crosstab(
+          'SELECT ARRAY["department", "sub"] AS "row_cols", "role", COUNT("id") FROM "users" GROUP BY "department", "role" ORDER BY "department", "role"',
           'VALUES (''admin''::text), (''ordinary''::text)')
           AS (row_cols varchar[], admin int, ordinary int)
           }
@@ -635,7 +635,7 @@ describe PgQuery::Deparse do
 
       context 'elaborate' do
         let(:query) do
-          'UPDATE ONLY "x" table_x SET y = 1 WHERE "z" = \'abc\' RETURNING "y" AS changed_y'
+          'UPDATE ONLY "x" "table_x" SET y = 1 WHERE "z" = \'abc\' RETURNING "y" AS "changed_y"'
         end
 
         it { is_expected.to eq query }
@@ -688,7 +688,7 @@ describe PgQuery::Deparse do
       end
 
       context 'elaborate' do
-        let(:query) { 'DELETE FROM ONLY "x" table_x USING "table_z" WHERE "y" = 1 RETURNING *' }
+        let(:query) { 'DELETE FROM ONLY "x" "table_x" USING "table_z" WHERE "y" = 1 RETURNING *' }
 
         it { is_expected.to eq query }
       end
@@ -1204,8 +1204,8 @@ describe PgQuery::Deparse do
     context 'for single query' do
       let(:query) do
         '''
-        SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+        SELECT "m"."name" AS "mname", "pname"
+          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") "pname" ON true
         '''
       end
 
@@ -1215,8 +1215,8 @@ describe PgQuery::Deparse do
     context 'for multiple queries' do
       let(:query) do
         '''
-        SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
+        SELECT "m"."name" AS "mname", "pname"
+          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") "pname" ON true;
         INSERT INTO "manufacturers_daily" (a, b)
           SELECT "a", "b" FROM "manufacturers";
         '''
@@ -1228,8 +1228,8 @@ describe PgQuery::Deparse do
     context 'for multiple queries with a semicolon inside a value' do
       let(:query) do
         '''
-        SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
+        SELECT "m"."name" AS "mname", "pname"
+          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") "pname" ON true;
         UPDATE "users" SET name = \'bobby; drop tables\';
         INSERT INTO "manufacturers_daily" (a, b)
           SELECT "a", "b" FROM "manufacturers";
