@@ -803,6 +803,13 @@ class PgQuery
         output.join(' ')
       end
 
+      if node['op'] == 3
+        output << deparse_item(node['larg'])
+        output << 'EXCEPT'
+        output << deparse_item(node['rarg'])
+        output.join(' ')
+      end
+
       if node[TARGET_LIST_FIELD]
         output << 'SELECT'
         if node['distinctClause']

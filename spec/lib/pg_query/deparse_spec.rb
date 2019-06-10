@@ -80,6 +80,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'EXCEPT' do
+        let(:query) { "SELECT \"a\" FROM \"kodsis\" EXCEPT SELECT \"a\" FROM \"application\"" }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with specific column alias' do
         let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(\"first\", \"last\")" }
 
