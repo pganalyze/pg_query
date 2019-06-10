@@ -231,9 +231,13 @@ class PgQuery
     end
 
     def deparse_a_arrayexp(node)
-      'ARRAY[' + node['elements'].map do |element|
-        deparse_item(element)
-      end.join(', ') + ']'
+      output = 'ARRAY['
+      unless node['elements'].nil?
+        output << node['elements'].map do |element|
+          deparse_item(element)
+        end.join(', ')
+      end
+      output << ']'
     end
 
     def deparse_a_const(node)
