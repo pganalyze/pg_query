@@ -917,7 +917,7 @@ describe PgQuery::Deparse do
 
         it do
           is_expected.to eq(
-            'CREATE TABLE "types" (a real, b double, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))'
+            'CREATE TABLE "types" (a real, b double precision, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))'
           )
         end
       end
