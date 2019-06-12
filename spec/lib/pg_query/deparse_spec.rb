@@ -595,8 +595,27 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
-      context 'boolean' do
+      context 'boolean column reference' do
         let(:query) { "SELECT \"table_field\"::bool, \"table_field\"::boolean FROM \"t\"" }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'boolean bool value cast' do
+        let(:query) { "SELECT true, false" }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'boolean string value cast' do
+        let(:query) { "SELECT 't'::boolean, 'f'::boolean" }
+
+        # The AST is identical to the more common "SELECT true" case, which is why we return the short-form in that case
+        it { is_expected.to eq "SELECT true, false" }
+      end
+
+      context 'boolean integer value cast' do
+        let(:query) { "SELECT 1::boolean, 0::boolean" }
 
         it { is_expected.to eq query }
       end
