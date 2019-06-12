@@ -1156,7 +1156,7 @@ class PgQuery
     end
 
     def deparse_typecast(node)
-      if deparse_item(node['typeName']) == 'boolean'
+      if deparse_item(node['typeName']) == 'boolean' && node['arg'][A_CONST]
         deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
       else
         deparse_item(node['arg']) + '::' + deparse_typename(node['typeName'][TYPE_NAME])

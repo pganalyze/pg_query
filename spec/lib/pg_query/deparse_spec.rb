@@ -513,6 +513,18 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'case for boolean' do
+        let(:query) { "SELECT \"x\"::boolean" }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'case for boolean with \'t\'' do
+        let(:query) { "SELECT 't'::boolean" }
+
+        it { is_expected.to eq "SELECT true" }
+      end
+
       context 'regclass' do
         let(:query) { "SELECT ?::regclass" }
 
