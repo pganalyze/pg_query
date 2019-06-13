@@ -96,6 +96,8 @@ class PgQuery
         deparse_copy(node)
       when CREATE_FUNCTION_STMT
         deparse_create_function(node)
+      when CREATE_SCHEMA_STMT
+        deparse_create_schema(node)
       when CREATE_STMT
         deparse_create_table(node)
       when CREATE_TABLE_AS_STMT
@@ -140,6 +142,8 @@ class PgQuery
         deparse_renamestmt(node)
       when RES_TARGET
         deparse_restarget(node, context)
+      when ROLE_SPEC
+        deparse_role_spec(node)
       when ROW_EXPR
         deparse_row(node)
       when SELECT_STMT
@@ -354,6 +358,13 @@ class PgQuery
 
     def deparse_functionparameter(node)
       deparse_item(node['argType'])
+    end
+
+    def deparse_role_spec(node)
+      return 'CURRENT_USER' if node['roletype'] == 1
+      return 'SESSION_USER' if node['roletype'] == 2
+      return 'PUBLIC' if node['roletype'] == 3
+      format('"%s"', node['rolename'].gsub('"', '""'))
     end
 
     def deparse_aexpr_in(node)
@@ -717,6 +728,23 @@ class PgQuery
       output << 'RETURNS'
       output << deparse_item(node['returnType'])
       output += node['options'].map { |item| deparse_item(item) }
+
+      output.join(' ')
+    end
+
+    def deparse_create_schema(node)
+      output = []
+      output << 'CREATE'
+
+      output << 'SCHEMA'
+
+      output << 'IF NOT EXISTS' if node['if_not_exists']
+
+      output << format('"%s"', node['schemaname']) if node.key?('schemaname')
+
+      output << format('AUTHORIZATION %s', deparse_item(node['authrole'])) if node.key?('authrole')
+
+      output << deparse_item_list(node['schemaElts']) if node.key?('schemaElts')
 
       output.join(' ')
     end
