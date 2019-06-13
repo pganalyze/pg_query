@@ -922,6 +922,20 @@ describe PgQuery::Deparse do
         end
       end
 
+      context 'with custom typecasts with arguments' do
+        let(:query) do
+          """
+            CREATE TABLE types (a geometry(point) not null);
+          """
+        end
+
+        it do
+          is_expected.to eq(
+            'CREATE TABLE "types" (a geometry("point") NOT NULL)'
+          )
+        end
+      end
+
       context 'with column definition options' do
         let(:query) do
           '''
