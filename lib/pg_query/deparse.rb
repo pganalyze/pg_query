@@ -1189,7 +1189,7 @@ class PgQuery
       # Just pass along any custom types.
       # (The pg_catalog types are built-in Postgres system types and are
       #  handled in the case statement below)
-      return names.join('.') + (arguments.nil? ? "" : "(#{arguments})")  if catalog != 'pg_catalog'
+      return names.join('.') + (arguments.nil? ? '' : "(#{arguments})") if catalog != 'pg_catalog'
 
       case type
       when 'bpchar'
