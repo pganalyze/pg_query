@@ -94,6 +94,8 @@ class PgQuery
         deparse_constraint(node)
       when COPY_STMT
         deparse_copy(node)
+      when CREATE_CAST_STMT
+        deparse_create_cast(node)
       when CREATE_FUNCTION_STMT
         deparse_create_function(node)
       when CREATE_SCHEMA_STMT
@@ -712,6 +714,26 @@ class PgQuery
                 else
                   node['is_from'] ? 'STDIN' : 'STDOUT'
                 end
+      output.join(' ')
+    end
+
+    def deparse_create_cast(node)
+      output = []
+      output << 'CREATE'
+      output << 'CAST'
+      output << format('(%s AS %s)', deparse_item(node['sourcetype']), deparse_item(node['targettype']))
+      output << if node['func']
+                  function = node['func']['ObjectWithArgs']
+                  name = deparse_item_list(function['objname']).join('.')
+                  arguments = deparse_item_list(function['objargs']).join(', ')
+                  format('WITH FUNCTION %s(%s)', name, arguments)
+                elsif node['inout']
+                  'WITH INOUT'
+                else
+                  'WITHOUT FUNCTION'
+                end
+      output << 'AS IMPLICIT' if (node['context']).zero?
+      output << 'AS ASSIGNMENT' if node['context'] == 1
       output.join(' ')
     end
 

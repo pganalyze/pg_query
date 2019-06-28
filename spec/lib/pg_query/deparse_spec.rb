@@ -709,6 +709,36 @@ describe PgQuery::Deparse do
       end
     end
 
+    context 'CREATE CAST' do
+      context 'with function' do
+        let(:query) do
+          """
+          CREATE CAST (bigint AS int4) WITH FUNCTION \"int4\"(bigint) AS ASSIGNMENT
+          """.strip
+        end
+
+        it { is_expected.to eq query }
+      end
+      context 'without function' do
+        let(:query) do
+          """
+          CREATE CAST (bigint AS int4) WITHOUT FUNCTION AS IMPLICIT
+          """.strip
+        end
+
+        it { is_expected.to eq query }
+      end
+      context 'with inout' do
+        let(:query) do
+          """
+          CREATE CAST (bigint AS int4) WITH INOUT AS ASSIGNMENT
+          """.strip
+        end
+
+        it { is_expected.to eq query }
+      end
+    end
+
     context 'CREATE FUNCTION' do
       # Taken from http://www.postgresql.org/docs/8.3/static/queries-table-expressions.html
       context 'with inline function definition' do

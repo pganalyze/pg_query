@@ -26,6 +26,7 @@ class PgQuery
   COMMON_TABLE_EXPR = 'CommonTableExpr'.freeze
   CONSTRAINT = 'Constraint'.freeze
   COPY_STMT = 'CopyStmt'.freeze
+  CREATE_CAST_STMT = 'CreateCastStmt'.freeze
   CREATE_FUNCTION_STMT = 'CreateFunctionStmt'.freeze
   CREATE_SCHEMA_STMT = 'CreateSchemaStmt'.freeze
   CREATE_STMT = 'CreateStmt'.freeze
