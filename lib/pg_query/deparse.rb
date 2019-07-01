@@ -108,6 +108,8 @@ class PgQuery
         deparse_create_function(node)
       when CREATE_RANGE_STMT
         deparse_create_range(node)
+      when CREATE_SCHEMA_STMT
+        deparse_create_schema(node)
       when CREATE_STMT
         deparse_create_table(node)
       when CREATE_TABLE_AS_STMT
@@ -889,6 +891,15 @@ class PgQuery
         param_out.join('=')
       end
       output << "(#{params.join(', ')})"
+      output.join(' ')
+    end
+
+    def deparse_create_schema(node)
+      output = ['CREATE SCHEMA']
+      output << 'IF NOT EXISTS' if node['if_not_exists']
+      output << deparse_identifier(node['schemaname']) if node.key?('schemaname')
+      output << format('AUTHORIZATION %s', deparse_item(node['authrole'])) if node.key?('authrole')
+      output << deparse_item_list(node['schemaElts']) if node.key?('schemaElts')
       output.join(' ')
     end
 

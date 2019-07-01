@@ -808,6 +808,40 @@ describe PgQuery::Deparse do
       end
     end
 
+    context 'CREATE SCHEMA' do
+      # Taken from https://www.postgresql.org/docs/11/sql-createschema.html
+      context 'basic' do
+        let(:query) { 'CREATE SCHEMA myschema' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'with authorization' do
+        let(:query) { 'CREATE SCHEMA AUTHORIZATION "joe"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'with if not exist' do
+        let(:query) { 'CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION "joe"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'with cschema_element' do
+        let(:query) do
+          """
+          CREATE SCHEMA hollywood
+          CREATE TABLE \"films\" (title text, release date, awards text[])
+          CREATE VIEW winners AS
+              SELECT \"title\", \"release\" FROM \"films\" WHERE \"awards\" IS NOT NULL
+          """.strip
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
     context 'CREATE TABLE' do
       context 'top-level' do
         let(:query) do
