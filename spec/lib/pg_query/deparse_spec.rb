@@ -340,6 +340,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'ALL' do
+        let(:query) { 'SELECT * FROM "x" WHERE "x" = ALL(?)' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'ANY' do
         let(:query) { 'SELECT * FROM "x" WHERE "x" = ANY(?)' }
 
@@ -694,6 +700,36 @@ describe PgQuery::Deparse do
         end
 
         it { is_expected.to eq oneline_query }
+      end
+    end
+
+    context 'CREATE CAST' do
+      context 'with function' do
+        let(:query) do
+          """
+          CREATE CAST (bigint AS int4) WITH FUNCTION \"int4\"(bigint) AS ASSIGNMENT
+          """.strip
+        end
+
+        it { is_expected.to eq query }
+      end
+      context 'without function' do
+        let(:query) do
+          """
+          CREATE CAST (bigint AS int4) WITHOUT FUNCTION AS IMPLICIT
+          """.strip
+        end
+
+        it { is_expected.to eq query }
+      end
+      context 'with inout' do
+        let(:query) do
+          """
+          CREATE CAST (bigint AS int4) WITH INOUT AS ASSIGNMENT
+          """.strip
+        end
+
+        it { is_expected.to eq query }
       end
     end
 

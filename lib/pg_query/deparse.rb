@@ -34,6 +34,8 @@ class PgQuery
         case node['kind']
         when AEXPR_OP
           deparse_aexpr(node, context)
+        when AEXPR_OP_ALL
+          deparse_aexpr_all(node)
         when AEXPR_OP_ANY
           deparse_aexpr_any(node)
         when AEXPR_IN
@@ -98,6 +100,8 @@ class PgQuery
         deparse_constraint(node)
       when COPY_STMT
         deparse_copy(node)
+      when CREATE_CAST_STMT
+        deparse_create_cast(node)
       when CREATE_ENUM_STMT
         deparse_create_enum(node)
       when CREATE_FUNCTION_STMT
@@ -544,6 +548,13 @@ class PgQuery
       output.join(' ' + deparse_item(node['name'][0], :operator) + ' ')
     end
 
+    def deparse_aexpr_all(node)
+      output = []
+      output << deparse_item(node['lexpr'])
+      output << format('ALL(%s)', deparse_item(node['rexpr']))
+      output.join(' ' + deparse_item(node['name'][0], :operator) + ' ')
+    end
+
     def deparse_aexpr_between(node)
       between = case node['kind']
                 when AEXPR_BETWEEN
@@ -826,6 +837,26 @@ class PgQuery
       output << 'AS ENUM'
       vals = node['vals'].map { |val| deparse_item(val, A_CONST) }
       output << "(#{vals.join(', ')})"
+      output.join(' ')
+    end
+
+    def deparse_create_cast(node)
+      output = []
+      output << 'CREATE'
+      output << 'CAST'
+      output << format('(%s AS %s)', deparse_item(node['sourcetype']), deparse_item(node['targettype']))
+      output << if node['func']
+                  function = node['func']['ObjectWithArgs']
+                  name = deparse_item_list(function['objname']).join('.')
+                  arguments = deparse_item_list(function['objargs']).join(', ')
+                  format('WITH FUNCTION %s(%s)', name, arguments)
+                elsif node['inout']
+                  'WITH INOUT'
+                else
+                  'WITHOUT FUNCTION'
+                end
+      output << 'AS IMPLICIT' if (node['context']).zero?
+      output << 'AS ASSIGNMENT' if node['context'] == 1
       output.join(' ')
     end
 

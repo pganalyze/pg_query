@@ -27,6 +27,7 @@ class PgQuery
   COMPOSITE_TYPE_STMT = 'CompositeTypeStmt'.freeze
   CONSTRAINT = 'Constraint'.freeze
   COPY_STMT = 'CopyStmt'.freeze
+  CREATE_CAST_STMT = 'CreateCastStmt'.freeze
   CREATE_ENUM_STMT = 'CreateEnumStmt'.freeze
   CREATE_FUNCTION_STMT = 'CreateFunctionStmt'.freeze
   CREATE_RANGE_STMT = 'CreateRangeStmt'.freeze
