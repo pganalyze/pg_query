@@ -36,6 +36,8 @@ class PgQuery
           deparse_aexpr_any(node)
         when AEXPR_IN
           deparse_aexpr_in(node)
+        when AEXPR_ILIKE
+          deparse_aexpr_ilike(node)
         when CONSTR_TYPE_FOREIGN
           deparse_aexpr_like(node)
         when AEXPR_BETWEEN, AEXPR_NOT_BETWEEN, AEXPR_BETWEEN_SYM, AEXPR_NOT_BETWEEN_SYM
@@ -78,6 +80,8 @@ class PgQuery
         deparse_case(node)
       when COALESCE_EXPR
         deparse_coalesce(node)
+      when COLLATE_CLAUSE
+        deparse_collate(node)
       when COLUMN_DEF
         deparse_columndef(node)
       when COLUMN_REF
@@ -108,6 +112,8 @@ class PgQuery
         deparse_define_stmt(node)
       when DELETE_STMT
         deparse_delete_from(node)
+      when DISCARD_STMT
+        deparse_discard(node)
       when DROP_STMT
         deparse_drop(node)
       when EXPLAIN_STMT
@@ -245,7 +251,13 @@ class PgQuery
     end
 
     def deparse_a_indirection(node)
-      output = [deparse_item(node['arg'])]
+      output = []
+      arg = deparse_item(node['arg'])
+      output << if node['arg'].key?(FUNC_CALL)
+                  "(#{arg})."
+                else
+                  arg
+                end
       node['indirection'].each do |subnode|
         output << deparse_item(subnode)
       end
@@ -361,6 +373,12 @@ class PgQuery
     def deparse_aexpr_like(node)
       value = deparse_item(node['rexpr'])
       operator = node['name'].map { |n| deparse_item(n, :operator) } == ['~~'] ? 'LIKE' : 'NOT LIKE'
+      format('%s %s %s', deparse_item(node['lexpr']), operator, value)
+    end
+
+    def deparse_aexpr_ilike(node)
+      value = deparse_item(node['rexpr'])
+      operator = node['name'][0]['String']['str'] == '~~*' ? 'ILIKE' : 'NOT ILIKE'
       format('%s %s %s', deparse_item(node['lexpr']), operator, value)
     end
 
@@ -515,6 +533,14 @@ class PgQuery
       output << 'DESC' if node['sortby_dir'] == 2
       output << 'NULLS FIRST' if node['sortby_nulls'] == 1
       output << 'NULLS LAST' if node['sortby_nulls'] == 2
+      output.join(' ')
+    end
+
+    def deparse_collate(node)
+      output = []
+      output << deparse_item(node['arg'])
+      output << 'COLLATE'
+      output << deparse_item_list(node['collname'])
       output.join(' ')
     end
 
@@ -679,17 +705,23 @@ class PgQuery
 
     def deparse_copy(node)
       output = ['COPY']
-      output << deparse_item(node['relation'])
+      if node.key?('relation')
+        output << deparse_item(node['relation'])
+      elsif node.key?('query')
+        output << "(#{deparse_item(node['query'])})"
+      end
       columns = node.fetch('attlist', []).map { |column| deparse_item(column) }
       output << "(#{columns.join(', ')})" unless columns.empty?
       output << (node['is_from'] ? 'FROM' : 'TO')
       output << 'PROGRAM' if node['is_program']
-      output << if node.key?('filename')
-                  "'#{node['filename']}'"
-                else
-                  node['is_from'] ? 'STDIN' : 'STDOUT'
-                end
+      output << deparse_copy_output(node)
       output.join(' ')
+    end
+  
+    def deparse_copy_output(node)
+      return "'#{node['filename']}'" if node.key?('filename')
+      return 'STDIN' if node['is_from']
+      'STDOUT'
     end
 
     def deparse_create_enum(node)
@@ -700,14 +732,14 @@ class PgQuery
       output << "(#{vals.join(', ')})"
       output.join(' ')
     end
-
+  
     def deparse_create_function(node)
       output = []
       output << 'CREATE'
       output << 'OR REPLACE' if node['replace']
       output << 'FUNCTION'
 
-      arguments = deparse_item_list(node['parameters']).join(', ')
+      arguments = deparse_item_list(node.fetch('parameters', [])).join(', ')
 
       output << deparse_item_list(node['funcname']).join('.') + '(' + arguments + ')'
 
@@ -1178,6 +1210,15 @@ class PgQuery
         end.join(', ')
       end
 
+      output.join(' ')
+    end
+
+    def deparse_discard(node)
+      output = ['DISCARD']
+      output << 'ALL' if (node['target']).zero?
+      output << 'PLANS' if node['target'] == 1
+      output << 'SEQUENCES' if node['target'] == 2
+      output << 'TEMP' if node['target'] == 3
       output.join(' ')
     end
 

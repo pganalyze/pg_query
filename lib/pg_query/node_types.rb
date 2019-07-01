@@ -20,6 +20,7 @@ class PgQuery
   CHECK_POINT_STMT = 'CheckPointStmt'.freeze
   CLOSE_PORTAL_STMT = 'ClosePortalStmt'.freeze
   COALESCE_EXPR = 'CoalesceExpr'.freeze
+  COLLATE_CLAUSE = 'CollateClause'.freeze
   COLUMN_DEF = 'ColumnDef'.freeze
   COLUMN_REF = 'ColumnRef'.freeze
   COMMON_TABLE_EXPR = 'CommonTableExpr'.freeze
@@ -38,6 +39,7 @@ class PgQuery
   DEF_ELEM = 'DefElem'.freeze
   DEFINE_STMT = 'DefineStmt'.freeze
   DELETE_STMT = 'DeleteStmt'.freeze
+  DISCARD_STMT = 'DiscardStmt'.freeze
   DO_STMT = 'DoStmt'.freeze
   DROP_STMT = 'DropStmt'.freeze
   EXECUTE_STMT = 'ExecuteStmt'.freeze
