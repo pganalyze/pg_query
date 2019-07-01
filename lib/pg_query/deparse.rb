@@ -102,6 +102,8 @@ class PgQuery
         deparse_copy(node)
       when CREATE_CAST_STMT
         deparse_create_cast(node)
+      when CREATE_DOMAIN_STMT
+        deparse_create_domain(node)
       when CREATE_ENUM_STMT
         deparse_create_enum(node)
       when CREATE_FUNCTION_STMT
@@ -801,6 +803,7 @@ class PgQuery
       if node['raw_expr']
         expression = deparse_item(node['raw_expr'])
         # Unless it's simple, put parentheses around it
+        expression = '(' + expression + ')' if node['raw_expr'][BOOL_EXPR]
         expression = '(' + expression + ')' if node['raw_expr'][A_EXPR] && node['raw_expr'][A_EXPR]['kind'] == AEXPR_OP
         output << expression
       end
@@ -859,6 +862,18 @@ class PgQuery
                 end
       output << 'AS IMPLICIT' if (node['context']).zero?
       output << 'AS ASSIGNMENT' if node['context'] == 1
+      output.join(' ')
+    end
+
+    def deparse_create_domain(node)
+      output = []
+      output << 'CREATE'
+      output << 'DOMAIN'
+      output << deparse_item_list(node['domainname']).join('.')
+      output << 'AS'
+      output << deparse_item(node['typeName']) if node['typeName']
+      output << deparse_item(node['collClause']) if node['collClause']
+      output << deparse_item_list(node['constraints'])
       output.join(' ')
     end
 
