@@ -745,6 +745,22 @@ describe PgQuery::Deparse do
       end
     end
 
+    context 'CREATE DOMAIN' do
+      context 'with check' do
+        let(:query) do
+          """
+          CREATE DOMAIN \"us_postal_code\" AS text
+          CHECK (
+             \"VALUE\" ~ '^\d{5}$'
+          OR \"VALUE\" ~ '^\d{5}-\d{4}$'
+          );
+          """.strip
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
     context 'CREATE FUNCTION' do
       # Taken from http://www.postgresql.org/docs/8.3/static/queries-table-expressions.html
       context 'with inline function definition' do

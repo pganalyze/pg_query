@@ -28,6 +28,7 @@ class PgQuery
   CONSTRAINT = 'Constraint'.freeze
   COPY_STMT = 'CopyStmt'.freeze
   CREATE_CAST_STMT = 'CreateCastStmt'.freeze
+  CREATE_DOMAIN_STMT = 'CreateDomainStmt'.freeze
   CREATE_ENUM_STMT = 'CreateEnumStmt'.freeze
   CREATE_FUNCTION_STMT = 'CreateFunctionStmt'.freeze
   CREATE_RANGE_STMT = 'CreateRangeStmt'.freeze
