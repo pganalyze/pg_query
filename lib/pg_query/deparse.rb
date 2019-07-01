@@ -245,13 +245,14 @@ class PgQuery
 
     def deparse_renamestmt(node)
       output = []
-
       case node['renameType']
-      when OBJECT_TYPE_TABLE
-        output << 'ALTER TABLE'
+      when OBJECT_TYPE_TABLE, OBJECT_TYPE_VIEW
+        output << 'ALTER'
+        output << 'TABLE' if node['renameType'] == OBJECT_TYPE_TABLE
+        output << 'VIEW' if node['renameType'] == OBJECT_TYPE_VIEW
         output << deparse_item(node['relation'])
         output << 'RENAME TO'
-        output << node['newname']
+        output << deparse_identifier(node['newname'], escape_always: true)
       else
         raise format("Can't deparse: %s", node.inspect)
       end

@@ -996,7 +996,7 @@ describe PgQuery::Deparse do
       end
 
       context 'rename' do
-        let(:query) { 'ALTER TABLE "distributors" RENAME TO suppliers;' }
+        let(:query) { 'ALTER TABLE "distributors" RENAME TO "suppliers";' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1091,6 +1091,12 @@ describe PgQuery::Deparse do
     end
 
     context 'VIEWS' do
+      context 'rename view' do
+        let(:query) { 'ALTER VIEW "foo" RENAME TO "bar"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with check option' do
         let(:query) { 'CREATE OR REPLACE TEMPORARY VIEW view_a AS SELECT * FROM a(1) WITH CASCADED CHECK OPTION' }
 
