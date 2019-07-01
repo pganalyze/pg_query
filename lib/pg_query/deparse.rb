@@ -264,7 +264,7 @@ class PgQuery
     end
 
     def deparse_a_arrayexp(node)
-      'ARRAY[' + node['elements'].map do |element|
+      'ARRAY[' + (node['elements'] || []).map do |element|
         deparse_item(element)
       end.join(', ') + ']'
     end
@@ -954,6 +954,8 @@ class PgQuery
     def deparse_sublink(node)
       if node['subLinkType'] == SUBLINK_TYPE_ANY
         format('%s IN (%s)', deparse_item(node['testexpr']), deparse_item(node['subselect']))
+      elsif node['subLinkType'] == SUBLINK_TYPE_ALL
+        format('%s %s ALL (%s)', deparse_item(node['testexpr']), deparse_item(node['operName'][0], :operator), deparse_item(node['subselect']))
       elsif node['subLinkType'] == SUBLINK_TYPE_EXISTS
         format('EXISTS(%s)', deparse_item(node['subselect']))
       else
@@ -977,15 +979,22 @@ class PgQuery
     def deparse_select(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = []
 
+      output << deparse_item(node['withClause']) if node['withClause']
+
       if node['op'] == 1
         output << deparse_item(node['larg'])
         output << 'UNION'
         output << 'ALL' if node['all']
         output << deparse_item(node['rarg'])
-        return output.join(' ')
+        output.join(' ')
       end
 
-      output << deparse_item(node['withClause']) if node['withClause']
+      if node['op'] == 3
+        output << deparse_item(node['larg'])
+        output << 'EXCEPT'
+        output << deparse_item(node['rarg'])
+        output.join(' ')
+      end
 
       if node[TARGET_LIST_FIELD]
         output << 'SELECT'
