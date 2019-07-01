@@ -19,7 +19,7 @@ unless File.exist?("#{workdir}/libpg_query.tar.gz")
 end
 
 unless Dir.exist?(libdir)
-  system("tar -xf #{workdir}/libpg_query.tar.gz") || raise('ERROR')
+  system("tar -xzf #{workdir}/libpg_query.tar.gz") || raise('ERROR')
 end
 
 unless Dir.exist?(libfile)
