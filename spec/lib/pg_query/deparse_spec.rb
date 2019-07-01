@@ -996,7 +996,7 @@ describe PgQuery::Deparse do
       end
 
       context 'rename' do
-        let(:query) { 'ALTER TABLE "distributors" RENAME TO "suppliers";' }
+        let(:query) { 'ALTER TABLE "distributors" RENAME TO "suppliers"' }
 
         it { is_expected.to eq oneline_query }
       end
