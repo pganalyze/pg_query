@@ -1,5 +1,7 @@
-require_relative 'deparse/interval'
 require_relative 'deparse/alter_table'
+require_relative 'deparse/interval'
+require_relative 'deparse/keywords'
+
 class PgQuery
   # Reconstruct all of the parsed queries into their original form
   def deparse(tree = @tree)
@@ -194,7 +196,7 @@ class PgQuery
         elsif [FUNC_CALL, TYPE_NAME, :operator, :defname_as].include?(context)
           node['str']
         else
-          format('"%s"', node['str'].gsub('"', '""'))
+          deparse_identifier(node['str'], escape_always: true)
         end
       when INTEGER
         node['ival'].to_s
@@ -209,6 +211,15 @@ class PgQuery
 
     def deparse_item_list(nodes, context = nil)
       nodes.map { |n| deparse_item(n, context) }
+    end
+
+    def deparse_identifier(ident, escape_always: false)
+      return if ident.nil?
+      if escape_always || !ident[/^\w+$/] || KEYWORDS.include?(ident.upcase)
+        format('"%s"', ident.gsub('"', '""'))
+      else
+        ident
+      end
     end
 
     def deparse_rangevar(node)
@@ -283,7 +294,7 @@ class PgQuery
       if node['colnames']
         name + '(' + deparse_item_list(node['colnames']).join(', ') + ')'
       else
-        name
+        deparse_identifier(name)
       end
     end
 
@@ -334,7 +345,7 @@ class PgQuery
 
     def deparse_restarget(node, context)
       if context == :select
-        [deparse_item(node['val']), node['name']].compact.join(' AS ')
+        [deparse_item(node['val']), deparse_identifier(node['name'])].compact.join(' AS ')
       elsif context == :update
         [node['name'], deparse_item(node['val'])].compact.join(' = ')
       elsif node['val'].nil?
@@ -446,7 +457,7 @@ class PgQuery
       return 'CURRENT_USER' if node['roletype'] == 1
       return 'SESSION_USER' if node['roletype'] == 2
       return 'PUBLIC' if node['roletype'] == 3
-      format('"%s"', node['rolename'].gsub('"', '""'))
+      deparse_identifier(node['rolename'], escape_always: true)
     end
 
     def deparse_aexpr_in(node)
