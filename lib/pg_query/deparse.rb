@@ -47,6 +47,8 @@ class PgQuery
         else
           raise format("Can't deparse: %s: %s", type, node.inspect)
         end
+      when ACCESS_PRIV
+        deparse_access_priv(node)
       when ALIAS
         deparse_alias(node)
       when ALTER_TABLE_STMT
@@ -122,6 +124,10 @@ class PgQuery
         deparse_funccall(node)
       when FUNCTION_PARAMETER
         deparse_functionparameter(node)
+      when GRANT_ROLE_STMT
+        deparse_grant_role(node)
+      when GRANT_STMT
+        deparse_grant(node)
       when INSERT_STMT
         deparse_insert_into(node)
       when JOIN_EXPR
@@ -132,6 +138,8 @@ class PgQuery
         deparse_lockingclause(node)
       when NULL_TEST
         deparse_nulltest(node)
+      when OBJECT_WITH_ARGS
+        deparse_object_with_args(node)
       when PARAM_REF
         deparse_paramref(node)
       when RANGE_FUNCTION
@@ -146,6 +154,8 @@ class PgQuery
         deparse_renamestmt(node)
       when RES_TARGET
         deparse_restarget(node, context)
+      when ROLE_SPEC
+        deparse_role_spec(node)
       when ROW_EXPR
         deparse_row(node)
       when SELECT_STMT
@@ -304,6 +314,16 @@ class PgQuery
       output.compact.join(' ')
     end
 
+    def deparse_object_with_args(node)
+      output = []
+      output += node['objname'].map(&method(:deparse_item))
+      unless node['args_unspecified']
+        args = node.fetch('objargs', []).map(&method(:deparse_item)).join(', ')
+        output << "(#{args})"
+      end
+      output.join('')
+    end
+
     def deparse_paramref(node)
       if node['number'].nil?
         '?'
@@ -362,6 +382,71 @@ class PgQuery
 
     def deparse_functionparameter(node)
       deparse_item(node['argType'])
+    end
+
+    def deparse_grant_role(node)
+      output = ['GRANT']
+      output << node['granted_roles'].map(&method(:deparse_item)).join(', ')
+      output << 'TO'
+      output << node['grantee_roles'].map(&method(:deparse_item)).join(', ')
+      output << 'WITH ADMIN OPTION' if node['admin_opt']
+      output.join(' ')
+    end
+
+    def deparse_grant(node) # rubocop:disable Metrics/CyclomaticComplexity
+      objtype, allow_all = deparse_grant_objtype(node)
+      output = ['GRANT']
+      output << if node.key?('privileges')
+                  node['privileges'].map(&method(:deparse_item)).join(', ')
+                else
+                  'ALL'
+                end
+      output << 'ON'
+      objects = node['objects']
+      objects = objects[0] if %w[DOMAIN TYPE].include?(objtype)
+      objects = objects.map do |object|
+        deparsed = deparse_item(object)
+        if object.key?(RANGE_VAR) || object.key?(OBJECT_WITH_ARGS) || !allow_all
+          objtype == 'TABLE' ? deparsed : "#{objtype} #{deparsed}"
+        else
+          "ALL #{objtype}S IN SCHEMA #{deparsed}"
+        end
+      end
+      output << objects.join(', ')
+      output << 'TO'
+      output << node['grantees'].map(&method(:deparse_item)).join(', ')
+      output << 'WITH GRANT OPTION' if node['grant_option']
+      output.join(' ')
+    end
+
+    def deparse_grant_objtype(node)
+      {
+        1 => ['TABLE', true],
+        2 => ['SEQUENCE', true],
+        3 => ['DATABASE', false],
+        4 => ['DOMAIN', false],
+        5 => ['FOREIGN DATA WRAPPER', false],
+        6 => ['FOREIGN SERVER', false],
+        7 => ['FUNCTION', true],
+        8 => ['LANGUAGE', false],
+        9 => ['LARGE OBJECT', false],
+        10 => ['SCHEMA', false],
+        11 => ['TABLESPACE', false],
+        12 => ['TYPE', false]
+      }.fetch(node['objtype'])
+    end
+
+    def deparse_access_priv(node)
+      output = [node['priv_name']]
+      output << "(#{node['cols'].map(&method(:deparse_item)).join(', ')})" if node.key?('cols')
+      output.join(' ')
+    end
+
+    def deparse_role_spec(node)
+      return 'CURRENT_USER' if node['roletype'] == 1
+      return 'SESSION_USER' if node['roletype'] == 2
+      return 'PUBLIC' if node['roletype'] == 3
+      format('"%s"', node['rolename'].gsub('"', '""'))
     end
 
     def deparse_aexpr_in(node)
