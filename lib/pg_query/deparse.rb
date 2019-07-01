@@ -709,7 +709,7 @@ class PgQuery
       output << 'OR REPLACE' if node['replace']
       output << 'FUNCTION'
 
-      arguments = deparse_item_list(node['parameters']).join(', ')
+      arguments = deparse_item_list(node.fetch('parameters', [])).join(', ')
 
       output << deparse_item_list(node['funcname']).join('.') + '(' + arguments + ')'
 
