@@ -128,6 +128,8 @@ class PgQuery
         deparse_discard(node)
       when DROP_STMT
         deparse_drop(node)
+      when DROP_TABLESPACE
+        deparse_drop_tablespace(node)
       when EXPLAIN_STMT
         deparse_explain(node)
       when FUNC_CALL
@@ -1386,8 +1388,14 @@ class PgQuery
 
     def deparse_drop(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = ['DROP']
-      output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
+
+      output << 'CONVERSION' if node['removeType'] == OBJECT_TYPE_CONVERSION
+      output << 'SERVER' if node['removeType'] == OBJECT_TYPE_FOREIGN_SERVER
+      output << 'PUBLICATION' if node['removeType'] == OBJECT_TYPE_PUBLICATION
       output << 'SCHEMA' if node['removeType'] == OBJECT_TYPE_SCHEMA
+      output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
+      output << 'TYPE' if node['removeType'] == OBJECT_TYPE_TYPE
+
       output << 'CONCURRENTLY' if node['concurrent']
       output << 'IF EXISTS' if node['missing_ok']
 
@@ -1397,6 +1405,13 @@ class PgQuery
 
       output << 'CASCADE' if node['behavior'] == 1
 
+      output.join(' ')
+    end
+
+    def deparse_drop_tablespace(node)
+      output = ['DROP TABLESPACE']
+      output << 'IF EXISTS' if node['missing_ok']
+      output << node['tablespacename']
       output.join(' ')
     end
 
