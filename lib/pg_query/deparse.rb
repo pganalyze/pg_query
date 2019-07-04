@@ -1393,6 +1393,7 @@ class PgQuery
       output << 'SERVER' if node['removeType'] == OBJECT_TYPE_FOREIGN_SERVER
       output << 'PUBLICATION' if node['removeType'] == OBJECT_TYPE_PUBLICATION
       output << 'SCHEMA' if node['removeType'] == OBJECT_TYPE_SCHEMA
+      output << 'SEQUENCE' if node['removeType'] == OBJECT_TYPE_SEQUENCE
       output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
       output << 'TYPE' if node['removeType'] == OBJECT_TYPE_TYPE
 
