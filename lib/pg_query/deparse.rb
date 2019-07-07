@@ -128,10 +128,10 @@ class PgQuery
         deparse_discard(node)
       when DROP_STMT
         deparse_drop(node)
-      when EXECUTE_STMT
-        deparse_execute(node)
       when EXPLAIN_STMT
         deparse_explain(node)
+      when EXECUTE_STMT
+        deparse_execute(node)
       when FUNC_CALL
         deparse_funccall(node)
       when FUNCTION_PARAMETER
