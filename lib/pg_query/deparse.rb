@@ -126,6 +126,8 @@ class PgQuery
         deparse_delete_from(node)
       when DISCARD_STMT
         deparse_discard(node)
+      when DROP_ROLE
+        deparse_drop_role(node)
       when DROP_STMT
         deparse_drop(node)
       when DROP_TABLESPACE
@@ -337,7 +339,8 @@ class PgQuery
 
     def deparse_object_with_args(node)
       output = []
-      output += node['objname'].map(&method(:deparse_item))
+      output << deparse_item_list(node['objname']).join('.')
+      # output += node['objname'].map(&method(:deparse_item_list)).join('.')
       unless node['args_unspecified']
         args = node.fetch('objargs', []).map(&method(:deparse_item)).join(', ')
         output << "(#{args})"
@@ -1389,12 +1392,27 @@ class PgQuery
     def deparse_drop(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = ['DROP']
 
+      output << 'ACCESS METHOD' if node['removeType'] == OBJECT_TYPE_ACCESS_METHOD
+      output << 'AGGREGATE' if node['removeType'] == OBJECT_TYPE_AGGREGATE
+      output << 'CAST' if node['removeType'] == OBJECT_TYPE_CAST
+      output << 'COLLATION' if node['removeType'] == OBJECT_TYPE_COLLATION
       output << 'CONVERSION' if node['removeType'] == OBJECT_TYPE_CONVERSION
-      output << 'SERVER' if node['removeType'] == OBJECT_TYPE_FOREIGN_SERVER
+      output << 'FOREIGN DATA WRAPPER' if node['removeType'] == OBJECT_TYPE_FDW
+      output << 'FUNCTION' if node['removeType'] == OBJECT_TYPE_FUNCTION
+      output << 'INDEX' if node['removeType'] == OBJECT_TYPE_INDEX
+      output << 'MATERIALIZED VIEW' if node['removeType'] == OBJECT_TYPE_MATVIEW
+      output << 'OPERATOR CLASS' if node['removeType'] == OBJECT_TYPE_OPCLASS
+      output << 'OPERATOR FAMILY' if node['removeType'] == OBJECT_TYPE_OPFAMILY
       output << 'PUBLICATION' if node['removeType'] == OBJECT_TYPE_PUBLICATION
+      output << 'RULE' if node['removeType'] == OBJECT_TYPE_RULE
       output << 'SCHEMA' if node['removeType'] == OBJECT_TYPE_SCHEMA
+      output << 'SERVER' if node['removeType'] == OBJECT_TYPE_FOREIGN_SERVER
       output << 'SEQUENCE' if node['removeType'] == OBJECT_TYPE_SEQUENCE
+      output << 'STATISTICS' if node['removeType'] == OBJECT_TYPE_STATISTIC_EXT
       output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
+      output << 'TRANSFORM' if node['removeType'] == OBJECT_TYPE_TRANSFORM
+      output << 'TRIGGER' if node['removeType'] == OBJECT_TYPE_TRIGGER
+      output << 'TEXT SEARCH DICTIONARY' if node['removeType'] == OBJECT_TYPE_TSDICTIONARY
       output << 'TYPE' if node['removeType'] == OBJECT_TYPE_TYPE
 
       output << 'CONCURRENTLY' if node['concurrent']
@@ -1402,10 +1420,37 @@ class PgQuery
 
       objects = node['objects']
       objects = [objects] unless objects[0].is_a?(Array)
-      output << objects.map { |list| list.map { |object| deparse_item(object) } }.join(', ')
+      case node['removeType']
+      when OBJECT_TYPE_CAST
+        object = objects[0]
+        output << format('(%s)', deparse_item_list(object).join(' AS '))
+      when OBJECT_TYPE_FUNCTION, OBJECT_TYPE_AGGREGATE
+        output << objects.map { |list| list.map { |object_line| deparse_item(object_line) } }.join(', ')
+      when OBJECT_TYPE_OPFAMILY, OBJECT_TYPE_OPCLASS
+        object = objects[0]
+        output << deparse_item(object[1]) if object.length == 2
+        output << deparse_item_list(object[1..-1]).join('.') if object.length == 3
+        output << 'USING'
+        output << deparse_item(object[0])
+      when OBJECT_TYPE_TRIGGER, OBJECT_TYPE_RULE
+        object = objects[0]
+        output << deparse_item(object[-1])
+        output << 'ON'
+        output << deparse_item(object[0]) if object.length == 2
+        output << deparse_item_list(object[0..1]).join('.') if object.length == 3
+      else
+        output << objects.map { |list| list.map { |object_line| deparse_item(object_line) }.join('.') }.join(', ')
+      end
 
       output << 'CASCADE' if node['behavior'] == 1
 
+      output.join(' ')
+    end
+
+    def deparse_drop_role(node)
+      output = ['DROP ROLE']
+      output << 'IF EXISTS' if node['missing_ok']
+      output << node['roles'].map { |role| deparse_identifier(role['RoleSpec']['rolename']) }.join(', ')
       output.join(' ')
     end
 
