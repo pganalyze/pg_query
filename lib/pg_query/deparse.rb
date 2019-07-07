@@ -1424,7 +1424,7 @@ class PgQuery
       when OBJECT_TYPE_CAST
         object = objects[0]
         output << format('(%s)', deparse_item_list(object).join(' AS '))
-      when OBJECT_TYPE_FUNCTION, OBJECT_TYPE_AGGREGATE
+      when OBJECT_TYPE_FUNCTION, OBJECT_TYPE_AGGREGATE, OBJECT_TYPE_SCHEMA
         output << objects.map { |list| list.map { |object_line| deparse_item(object_line) } }.join(', ')
       when OBJECT_TYPE_OPFAMILY, OBJECT_TYPE_OPCLASS
         object = objects[0]
