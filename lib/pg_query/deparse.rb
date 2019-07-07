@@ -949,12 +949,20 @@ class PgQuery
       output = []
       output << 'CREATE'
 
-      persistence = relpersistence(node['into']['IntoClause']['rel'])
+      into = node['into']['IntoClause']
+      persistence = relpersistence(into['rel'])
       output << persistence if persistence
 
       output << 'TABLE'
 
       output << deparse_item(node['into'])
+
+      if into['onCommit'] > 0
+        output << 'ON COMMIT'
+        output << 'DELETE ROWS' if into['onCommit'] == 2
+        output << 'DROP' if into['onCommit'] == 3
+      end
+
       output << 'AS'
       output << deparse_item(node['query'])
       output.join(' ')
