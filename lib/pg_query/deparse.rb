@@ -128,6 +128,8 @@ class PgQuery
         deparse_discard(node)
       when DROP_STMT
         deparse_drop(node)
+      when EXECUTE_STMT
+        deparse_execute(node)
       when EXPLAIN_STMT
         deparse_explain(node)
       when FUNC_CALL
@@ -152,6 +154,8 @@ class PgQuery
         deparse_object_with_args(node)
       when PARAM_REF
         deparse_paramref(node)
+      when PREPARE_STMT
+        deparse_prepare(node)
       when RANGE_FUNCTION
         deparse_range_function(node)
       when RANGE_SUBSELECT
@@ -349,6 +353,15 @@ class PgQuery
       else
         format('$%d', node['number'])
       end
+    end
+
+    def deparse_prepare(node)
+      output = ['PREPARE']
+      output << deparse_identifier(node['name'])
+      output << "(#{deparse_item_list(node['argtypes']).join(', ')})" if node['argtypes']
+      output << 'AS'
+      output << deparse_item(node['query'])
+      output.join(' ')
     end
 
     def deparse_restarget(node, context)
@@ -951,6 +964,13 @@ class PgQuery
       output << deparse_item(node['into'])
       output << 'AS'
       output << deparse_item(node['query'])
+      output.join(' ')
+    end
+
+    def deparse_execute(node)
+      output = ['EXECUTE']
+      output << deparse_identifier(node['name'])
+      output << "(#{deparse_item_list(node['params']).join(', ')})" if node['params']
       output.join(' ')
     end
 
