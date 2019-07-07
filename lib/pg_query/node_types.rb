@@ -44,6 +44,7 @@ class PgQuery
   DISCARD_STMT = 'DiscardStmt'.freeze
   DO_STMT = 'DoStmt'.freeze
   DROP_STMT = 'DropStmt'.freeze
+  DROP_SUBSCRIPTION = 'DropSubscriptionStmt'.freeze
   DROP_TABLESPACE = 'DropTableSpaceStmt'.freeze
   DROP_ROLE = 'DropRoleStmt'.freeze
   EXECUTE_STMT = 'ExecuteStmt'.freeze
