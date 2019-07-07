@@ -947,7 +947,13 @@ class PgQuery
 
     def deparse_create_table_as(node)
       output = []
-      output << 'CREATE TEMPORARY TABLE'
+      output << 'CREATE'
+
+      persistence = relpersistence(node['into']['IntoClause']['rel'])
+      output << persistence if persistence
+
+      output << 'TABLE'
+
       output << deparse_item(node['into'])
       output << 'AS'
       output << deparse_item(node['query'])
