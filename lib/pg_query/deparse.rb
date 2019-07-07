@@ -253,6 +253,14 @@ class PgQuery
         output << deparse_item(node['relation'])
         output << 'RENAME TO'
         output << deparse_identifier(node['newname'], escape_always: true)
+      when OBJECT_TYPE_RULE
+        output << 'ALTER'
+        output << 'RULE' if node['renameType'] == OBJECT_TYPE_RULE
+        output << deparse_identifier(node['subname'], escape_always: true)
+        output << 'ON'
+        output << deparse_item(node['relation'])
+        output << 'RENAME TO'
+        output << deparse_identifier(node['newname'], escape_always: true)
       else
         raise format("Can't deparse: %s", node.inspect)
       end
@@ -309,7 +317,10 @@ class PgQuery
 
     def deparse_alter_table(node)
       output = []
-      output << 'ALTER TABLE'
+      output << 'ALTER'
+
+      output << 'TABLE' if node['relkind'] == OBJECT_TYPE_TABLE
+      output << 'VIEW' if node['relkind'] == OBJECT_TYPE_VIEW
 
       output << deparse_item(node['relation'])
 
