@@ -374,12 +374,14 @@ class PgQuery
       name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) } - ['pg_catalog']).join('.')
       distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
       output << format('%s(%s%s)', name, distinct, args.join(', '))
-      output << format('OVER (%s)', deparse_item(node['over'])) if node['over']
+      output << format('OVER %s', deparse_item(node['over'])) if node['over']
 
       output.join(' ')
     end
 
     def deparse_windowdef(node)
+      return deparse_identifier(node['name']) if node['name']
+
       output = []
 
       if node['partitionClause']
@@ -396,7 +398,7 @@ class PgQuery
         end.join(', ')
       end
 
-      output.join(' ')
+      format('(%s)', output.join(' '))
     end
 
     def deparse_functionparameter(node)
