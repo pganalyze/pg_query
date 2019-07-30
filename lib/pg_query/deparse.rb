@@ -1159,7 +1159,8 @@ class PgQuery
       if deparse_item(node['typeName']) == 'boolean'
         deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
       else
-        deparse_item(node['arg']) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
+        context = true if node['arg']['A_Expr']
+        deparse_item(node['arg'], context) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
       end
     end
 
