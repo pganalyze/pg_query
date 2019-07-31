@@ -1121,6 +1121,13 @@ class PgQuery
 
       output << deparse_item(node['selectStmt'])
 
+      if node['returningList']
+        output << 'RETURNING'
+        output << node['returningList'].map do |column|
+          deparse_item(column['ResTarget']['val'])
+        end.join(', ')
+      end
+
       output.join(' ')
     end
 

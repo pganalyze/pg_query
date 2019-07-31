@@ -541,6 +541,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with RETURNING' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') RETURNING "id"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'INTO SELECT' do
         let(:query) { 'INSERT INTO "x" SELECT * FROM "y"' }
 
