@@ -1,4 +1,5 @@
 require_relative 'deparse/alter_table'
+require_relative 'deparse/rename'
 require_relative 'deparse/interval'
 require_relative 'deparse/keywords'
 
@@ -243,28 +244,32 @@ class PgQuery
       deparse_item(node[STMT_FIELD])
     end
 
+    def deparse_renamestmt_decision(node, type)
+      if node[type]
+        if node[type].is_a?(String)
+          deparse_identifier(node[type])
+        elsif node[type].is_a?(Array)
+          deparse_item_list(node[type])
+        elsif node[type].is_a?(Object)
+          deparse_item(node[type])
+        end
+      else
+        type
+      end
+    end
+
     def deparse_renamestmt(node)
       output = []
-      case node['renameType']
-      when OBJECT_TYPE_TABLE, OBJECT_TYPE_VIEW
-        output << 'ALTER'
-        output << 'TABLE' if node['renameType'] == OBJECT_TYPE_TABLE
-        output << 'VIEW' if node['renameType'] == OBJECT_TYPE_VIEW
-        output << deparse_item(node['relation'])
-        output << 'RENAME TO'
-        output << deparse_identifier(node['newname'], escape_always: true)
-      when OBJECT_TYPE_RULE
-        output << 'ALTER'
-        output << 'RULE' if node['renameType'] == OBJECT_TYPE_RULE
-        output << deparse_identifier(node['subname'], escape_always: true)
-        output << 'ON'
-        output << deparse_item(node['relation'])
-        output << 'RENAME TO'
-        output << deparse_identifier(node['newname'], escape_always: true)
-      else
-        raise format("Can't deparse: %s", node.inspect)
-      end
+      output << 'ALTER'
+      command, type, options, type2, options2 = Rename.commands(node)
 
+      output << command if command
+      output << deparse_renamestmt_decision(node, type)
+      output << options if options
+      output << deparse_renamestmt_decision(node, type2) if type2
+      output << deparse_renamestmt_decision(node, options2) if options2
+      output << 'TO'
+      output << deparse_identifier(node['newname'], escape_always: true)
       output.join(' ')
     end
 
