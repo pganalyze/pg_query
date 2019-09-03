@@ -404,9 +404,12 @@ class PgQuery
     end
 
     def deparse_grant_role(node)
-      output = ['GRANT']
+      output = []
+      output << ['GRANT'] if node['is_grant']
+      output << ['REVOKE'] unless node['is_grant']
       output << node['granted_roles'].map(&method(:deparse_item)).join(', ')
-      output << 'TO'
+      output << ['TO'] if node['is_grant']
+      output << ['FROM'] unless node['is_grant']
       output << node['grantee_roles'].map(&method(:deparse_item)).join(', ')
       output << 'WITH ADMIN OPTION' if node['admin_opt']
       output.join(' ')
@@ -414,7 +417,9 @@ class PgQuery
 
     def deparse_grant(node) # rubocop:disable Metrics/CyclomaticComplexity
       objtype, allow_all = deparse_grant_objtype(node)
-      output = ['GRANT']
+      output = []
+      output << ['GRANT'] if node['is_grant']
+      output << ['REVOKE'] unless node['is_grant']
       output << if node.key?('privileges')
                   node['privileges'].map(&method(:deparse_item)).join(', ')
                 else
@@ -432,7 +437,8 @@ class PgQuery
         end
       end
       output << objects.join(', ')
-      output << 'TO'
+      output << ['TO'] if node['is_grant']
+      output << ['FROM'] unless node['is_grant']
       output << node['grantees'].map(&method(:deparse_item)).join(', ')
       output << 'WITH GRANT OPTION' if node['grant_option']
       output.join(' ')
