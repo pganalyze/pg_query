@@ -1011,8 +1011,9 @@ class PgQuery
         output.join(' ')
       end
 
+      output << 'SELECT' if node[FROM_CLAUSE_FIELD] || node[TARGET_LIST_FIELD]
+
       if node[TARGET_LIST_FIELD]
-        output << 'SELECT'
         if node['distinctClause']
           output << 'DISTINCT'
           unless node['distinctClause'].compact.empty?
