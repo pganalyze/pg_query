@@ -997,10 +997,15 @@ class PgQuery
       output << deparse_item(node['withClause']) if node['withClause']
 
       if node['op'] == 1
+        print node['larg']
+        output << '(' if node['larg']['SelectStmt']['sortClause']
         output << deparse_item(node['larg'])
+        output << ')' if node['larg']['SelectStmt']['sortClause']
         output << 'UNION'
         output << 'ALL' if node['all']
+        output << '(' if node['rarg']['SelectStmt']['sortClause']
         output << deparse_item(node['rarg'])
+        output << ')' if node['rarg']['SelectStmt']['sortClause']
         output.join(' ')
       end
 
