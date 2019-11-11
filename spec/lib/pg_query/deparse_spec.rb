@@ -1622,6 +1622,30 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'REVOKE' do
+      context 'PRIVILEGES' do
+        let(:shorthand_query) { 'REVOKE ALL PRIVILEGES ON "kinds" FROM "manuel"' }
+        let(:query) { 'REVOKE ALL ON "kinds" FROM "manuel"' }
+
+        it 'parses both and deparses into the normalized form' do
+          expect(described_class.from(PgQuery.parse(query).tree.first)).to eq(query)
+          expect(described_class.from(PgQuery.parse(shorthand_query).tree.first)).to eq(query)
+        end
+      end
+
+      context 'role' do
+        let(:query) { 'REVOKE admins FROM "joe"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'basic select statement' do
+        let(:query) { 'REVOKE insert ON "films" FROM "PUBLIC"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do
