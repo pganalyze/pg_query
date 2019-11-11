@@ -1106,6 +1106,12 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq query }
       end
+
+      context 'OVER with named window' do
+        let(:query) { 'SELECT rank(*) OVER named_window' }
+
+        it { is_expected.to eq query }
+      end
     end
 
     context 'VIEWS' do
