@@ -14,6 +14,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with empty target list' do
+        let(:query) { 'SELECT FROM "x" WHERE "y" = 5 AND "z" = "y"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'basic statement with schema' do
         let(:query) { 'SELECT "a" AS b FROM "public"."x" WHERE "y" = 5 AND "z" = "y"' }
 
