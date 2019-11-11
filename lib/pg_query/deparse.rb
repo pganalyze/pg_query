@@ -1,4 +1,5 @@
 require_relative 'deparse/alter_table'
+require_relative 'deparse/rename'
 require_relative 'deparse/interval'
 require_relative 'deparse/keywords'
 
@@ -130,6 +131,8 @@ class PgQuery
         deparse_drop(node)
       when EXPLAIN_STMT
         deparse_explain(node)
+      when EXECUTE_STMT
+        deparse_execute(node)
       when FUNC_CALL
         deparse_funccall(node)
       when FUNCTION_PARAMETER
@@ -152,6 +155,8 @@ class PgQuery
         deparse_object_with_args(node)
       when PARAM_REF
         deparse_paramref(node)
+      when PREPARE_STMT
+        deparse_prepare(node)
       when RANGE_FUNCTION
         deparse_range_function(node)
       when RANGE_SUBSELECT
@@ -198,6 +203,8 @@ class PgQuery
         deparse_vacuum_stmt(node)
       when DO_STMT
         deparse_do_stmt(node)
+      when SET_TO_DEFAULT
+        'DEFAULT'
       when STRING
         if context == A_CONST
           format("'%s'", node['str'].gsub("'", "''"))
@@ -243,19 +250,32 @@ class PgQuery
       deparse_item(node[STMT_FIELD])
     end
 
+    def deparse_renamestmt_decision(node, type)
+      if node[type]
+        if node[type].is_a?(String)
+          deparse_identifier(node[type])
+        elsif node[type].is_a?(Array)
+          deparse_item_list(node[type])
+        elsif node[type].is_a?(Object)
+          deparse_item(node[type])
+        end
+      else
+        type
+      end
+    end
+
     def deparse_renamestmt(node)
       output = []
+      output << 'ALTER'
+      command, type, options, type2, options2 = Rename.commands(node)
 
-      case node['renameType']
-      when OBJECT_TYPE_TABLE
-        output << 'ALTER TABLE'
-        output << deparse_item(node['relation'])
-        output << 'RENAME TO'
-        output << node['newname']
-      else
-        raise format("Can't deparse: %s", node.inspect)
-      end
-
+      output << command if command
+      output << deparse_renamestmt_decision(node, type)
+      output << options if options
+      output << deparse_renamestmt_decision(node, type2) if type2
+      output << deparse_renamestmt_decision(node, options2) if options2
+      output << 'TO'
+      output << deparse_identifier(node['newname'], escape_always: true)
       output.join(' ')
     end
 
@@ -282,7 +302,7 @@ class PgQuery
     def deparse_a_indirection(node)
       output = []
       arg = deparse_item(node['arg'])
-      output << if node['arg'].key?(FUNC_CALL)
+      output << if node['arg'].key?(FUNC_CALL) || node['arg'].key?(SUB_LINK)
                   "(#{arg})."
                 else
                   arg
@@ -308,7 +328,10 @@ class PgQuery
 
     def deparse_alter_table(node)
       output = []
-      output << 'ALTER TABLE'
+      output << 'ALTER'
+
+      output << 'TABLE' if node['relkind'] == OBJECT_TYPE_TABLE
+      output << 'VIEW' if node['relkind'] == OBJECT_TYPE_VIEW
 
       output << deparse_item(node['relation'])
 
@@ -351,6 +374,15 @@ class PgQuery
       end
     end
 
+    def deparse_prepare(node)
+      output = ['PREPARE']
+      output << deparse_identifier(node['name'])
+      output << "(#{deparse_item_list(node['argtypes']).join(', ')})" if node['argtypes']
+      output << 'AS'
+      output << deparse_item(node['query'])
+      output.join(' ')
+    end
+
     def deparse_restarget(node, context)
       if context == :select
         [deparse_item(node['val']), deparse_identifier(node['name'])].compact.join(' AS ')
@@ -374,12 +406,14 @@ class PgQuery
       name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) } - ['pg_catalog']).join('.')
       distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
       output << format('%s(%s%s)', name, distinct, args.join(', '))
-      output << format('OVER (%s)', deparse_item(node['over'])) if node['over']
+      output << format('OVER %s', deparse_item(node['over'])) if node['over']
 
       output.join(' ')
     end
 
     def deparse_windowdef(node)
+      return deparse_identifier(node['name']) if node['name']
+
       output = []
 
       if node['partitionClause']
@@ -396,7 +430,7 @@ class PgQuery
         end.join(', ')
       end
 
-      output.join(' ')
+      format('(%s)', output.join(' '))
     end
 
     def deparse_functionparameter(node)
@@ -404,9 +438,12 @@ class PgQuery
     end
 
     def deparse_grant_role(node)
-      output = ['GRANT']
+      output = []
+      output << ['GRANT'] if node['is_grant']
+      output << ['REVOKE'] unless node['is_grant']
       output << node['granted_roles'].map(&method(:deparse_item)).join(', ')
-      output << 'TO'
+      output << ['TO'] if node['is_grant']
+      output << ['FROM'] unless node['is_grant']
       output << node['grantee_roles'].map(&method(:deparse_item)).join(', ')
       output << 'WITH ADMIN OPTION' if node['admin_opt']
       output.join(' ')
@@ -414,7 +451,9 @@ class PgQuery
 
     def deparse_grant(node) # rubocop:disable Metrics/CyclomaticComplexity
       objtype, allow_all = deparse_grant_objtype(node)
-      output = ['GRANT']
+      output = []
+      output << ['GRANT'] if node['is_grant']
+      output << ['REVOKE'] unless node['is_grant']
       output << if node.key?('privileges')
                   node['privileges'].map(&method(:deparse_item)).join(', ')
                 else
@@ -432,7 +471,8 @@ class PgQuery
         end
       end
       output << objects.join(', ')
-      output << 'TO'
+      output << ['TO'] if node['is_grant']
+      output << ['FROM'] unless node['is_grant']
       output << node['grantees'].map(&method(:deparse_item)).join(', ')
       output << 'WITH GRANT OPTION' if node['grant_option']
       output.join(' ')
@@ -968,6 +1008,13 @@ class PgQuery
       output.join(' ')
     end
 
+    def deparse_execute(node)
+      output = ['EXECUTE']
+      output << deparse_identifier(node['name'])
+      output << "(#{deparse_item_list(node['params']).join(', ')})" if node['params']
+      output.join(' ')
+    end
+
     def deparse_into_clause(node)
       deparse_item(node['rel'])
     end
@@ -1037,6 +1084,11 @@ class PgQuery
         output << node[TARGET_LIST_FIELD].map do |item|
           deparse_item(item, :select)
         end.join(', ')
+
+        if node['intoClause']
+          output << 'INTO'
+          output << deparse_item(node['intoClause'])
+        end
       end
 
       if node[FROM_CLAUSE_FIELD]
@@ -1135,6 +1187,13 @@ class PgQuery
 
       output << deparse_item(node['selectStmt'])
 
+      if node['returningList']
+        output << 'RETURNING'
+        output << node['returningList'].map do |column|
+          deparse_item(column, :select)
+        end.join(', ')
+      end
+
       output.join(' ')
     end
 
@@ -1173,7 +1232,8 @@ class PgQuery
       if deparse_item(node['typeName']) == 'boolean'
         deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
       else
-        deparse_item(node['arg']) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
+        context = true if node['arg']['A_Expr']
+        deparse_item(node['arg'], context) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
       end
     end
 
@@ -1203,7 +1263,7 @@ class PgQuery
       # Just pass along any custom types.
       # (The pg_catalog types are built-in Postgres system types and are
       #  handled in the case statement below)
-      return names.join('.') if catalog != 'pg_catalog'
+      return names.join('.') + (arguments.nil? ? '' : "(#{arguments})") if catalog != 'pg_catalog'
 
       case type
       when 'bpchar'
@@ -1225,7 +1285,7 @@ class PgQuery
       when 'real', 'float4'
         'real'
       when 'float8'
-        'double'
+        'double precision'
       when 'time'
         'time'
       when 'timetz'
