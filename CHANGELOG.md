@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0     2019-11-10
+
+* Reduce escaped keywords to Postgres-specific keywords, and ignore unreserved keywords
+  * This matches the behaviour of Postgres' quote_identifier function, and avoids problems
+    when doing text comparisons with output involving that function
+  * Note that this will lead to different output than in earlier pg_query versions,
+    in some cases
+
 ## 1.1.1     2019-11-10
 
 * Deparsing improvements by [@emin100](https://github.com/emin100)
