@@ -519,6 +519,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with parentheses' do
+        let(:query) { "SELECT (1 + 3)::int8" }
+
+        it { is_expected.to eq query }
+      end
+
       context 'regclass' do
         let(:query) { "SELECT ?::regclass" }
 
