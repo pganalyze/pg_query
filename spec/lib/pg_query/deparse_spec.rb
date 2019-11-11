@@ -1021,6 +1021,200 @@ describe PgQuery::Deparse do
       end
     end
 
+    context 'DROP GENERAL' do
+      context 'server' do
+        let(:query) { 'DROP SERVER IF EXISTS "foo"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'PUBLICATION' do
+        let(:query) { 'DROP PUBLICATION "mypublication"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TYPE' do
+        let(:query) { 'DROP TYPE box' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TABLESPACE' do
+        let(:query) { 'DROP TABLESPACE mystuff' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'CONVERSION' do
+        let(:query) { 'DROP CONVERSION "myname"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'SEQUENCE' do
+        let(:query) { 'DROP SEQUENCE "serial"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'INDEX' do
+        let(:query) { 'DROP INDEX "title_idx"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'MATERIALIZED VIEW' do
+        let(:query) { 'DROP MATERIALIZED VIEW "order_summary"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TRIGGER' do
+        let(:query) { 'DROP TRIGGER "if_dist_exists" ON "films"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'RULE' do
+        let(:query) { 'DROP RULE "newrule" ON "mytable"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'CAST' do
+        let(:query) { 'DROP CAST (text AS int)' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'OPERATOR FAMILY' do
+        let(:query) { 'DROP OPERATOR FAMILY "float_ops" USING "btree"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'AGGREGATE' do
+        let(:query) { 'DROP AGGREGATE "myavg"(int), "myavg"(bigint)' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'COLLATION' do
+        let(:query) { 'DROP COLLATION "german"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FOREIGN DATA WRAPPER' do
+        let(:query) { 'DROP FOREIGN DATA WRAPPER "dbi"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'ACCESS METHOD' do
+        let(:query) { 'DROP ACCESS METHOD "heptree"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'STATISTICS' do
+        let(:query) { 'DROP STATISTICS IF EXISTS "accounting"."users_uid_creation", "public"."grants_user_role"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TEXT SEARCH DICTIONARY' do
+        let(:query) { 'DROP TEXT SEARCH DICTIONARY "english"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'OPERATOR CLASS' do
+        let(:query) { 'DROP OPERATOR CLASS "widget_ops" USING "btree"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'POLICY' do
+        let(:query) { 'DROP POLICY "p1" ON "my_table"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'SUBSCRIPTION' do
+        let(:query) { 'DROP SUBSCRIPTION mysub' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TEXT SEARCH CONFIGURATION' do
+        let(:query) { 'DROP TEXT SEARCH CONFIGURATION "my_english"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'EVENT TRIGGER' do
+        let(:query) { 'DROP EVENT TRIGGER "snitch"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TEXT SEARCH PARSER' do
+        let(:query) { 'DROP TEXT SEARCH PARSER "my_parser"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'EXTENSION' do
+        let(:query) { 'DROP EXTENSION "hstore"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'DOMAIN' do
+        let(:query) { 'DROP DOMAIN box' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TEXT SEARCH TEMPLATE' do
+        let(:query) { 'DROP TEXT SEARCH TEMPLATE "thesaurus"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TRANSFORM' do
+        let(:query) { 'DROP TRANSFORM FOR hstore LANGUAGE "plpythonu"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FOREIGN TABLE' do
+        let(:query) { 'DROP FOREIGN TABLE "films", "distributors"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FUNCTION with param' do
+        let(:query) { 'DROP FUNCTION "sqrt"(int)' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FUNCTION without param' do
+        let(:query) { 'DROP FUNCTION "update_employee_salaries"()' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FUNCTION without param and parentheses' do
+        let(:query) { 'DROP FUNCTION "update_employee_salaries"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
     context 'DROP TABLE' do
       context 'cascade' do
         let(:query) { 'DROP TABLE IF EXISTS "any_table" CASCADE;' }
@@ -1253,6 +1447,12 @@ describe PgQuery::Deparse do
 
       context 'with check option' do
         let(:query) { 'CREATE OR REPLACE TEMPORARY VIEW view_a AS SELECT * FROM a(1) WITH CASCADED CHECK OPTION' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'drop' do
+        let(:query) { 'DROP VIEW "kinds"' }
 
         it { is_expected.to eq query }
       end
@@ -1748,6 +1948,12 @@ describe PgQuery::Deparse do
 
       context 'with admin option' do
         let(:query) { 'GRANT role TO "user" WITH ADMIN OPTION' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'drop' do
+        let(:query) { 'DROP ROLE jonathan' }
 
         it { is_expected.to eq oneline_query }
       end

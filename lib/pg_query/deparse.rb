@@ -127,8 +127,14 @@ class PgQuery
         deparse_delete_from(node)
       when DISCARD_STMT
         deparse_discard(node)
+      when DROP_ROLE
+        deparse_drop_role(node)
       when DROP_STMT
         deparse_drop(node)
+      when DROP_SUBSCRIPTION
+        deparse_drop_subscription(node)
+      when DROP_TABLESPACE
+        deparse_drop_tablespace(node)
       when EXPLAIN_STMT
         deparse_explain(node)
       when EXECUTE_STMT
@@ -358,7 +364,7 @@ class PgQuery
 
     def deparse_object_with_args(node)
       output = []
-      output += node['objname'].map(&method(:deparse_item))
+      output << deparse_item_list(node['objname']).join('.')
       unless node['args_unspecified']
         args = node.fetch('objargs', []).map(&method(:deparse_item)).join(', ')
         output << "(#{args})"
@@ -1465,17 +1471,95 @@ class PgQuery
 
     def deparse_drop(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = ['DROP']
-      output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
+
+      output << 'ACCESS METHOD' if node['removeType'] == OBJECT_TYPE_ACCESS_METHOD
+      output << 'AGGREGATE' if node['removeType'] == OBJECT_TYPE_AGGREGATE
+      output << 'CAST' if node['removeType'] == OBJECT_TYPE_CAST
+      output << 'COLLATION' if node['removeType'] == OBJECT_TYPE_COLLATION
+      output << 'DOMAIN' if node['removeType'] == OBJECT_TYPE_DOMAIN
+      output << 'CONVERSION' if node['removeType'] == OBJECT_TYPE_CONVERSION
+      output << 'EVENT TRIGGER' if node['removeType'] == OBJECT_TYPE_EVENT_TRIGGER
+      output << 'EXTENSION' if node['removeType'] == OBJECT_TYPE_EXTENSION
+      output << 'FOREIGN DATA WRAPPER' if node['removeType'] == OBJECT_TYPE_FDW
+      output << 'FOREIGN TABLE' if node['removeType'] == OBJECT_TYPE_FOREIGN_TABLE
+      output << 'FUNCTION' if node['removeType'] == OBJECT_TYPE_FUNCTION
+      output << 'INDEX' if node['removeType'] == OBJECT_TYPE_INDEX
+      output << 'MATERIALIZED VIEW' if node['removeType'] == OBJECT_TYPE_MATVIEW
+      output << 'OPERATOR CLASS' if node['removeType'] == OBJECT_TYPE_OPCLASS
+      output << 'OPERATOR FAMILY' if node['removeType'] == OBJECT_TYPE_OPFAMILY
+      output << 'POLICY' if node['removeType'] == OBJECT_TYPE_POLICY
+      output << 'PUBLICATION' if node['removeType'] == OBJECT_TYPE_PUBLICATION
+      output << 'RULE' if node['removeType'] == OBJECT_TYPE_RULE
       output << 'SCHEMA' if node['removeType'] == OBJECT_TYPE_SCHEMA
+      output << 'SERVER' if node['removeType'] == OBJECT_TYPE_FOREIGN_SERVER
+      output << 'SEQUENCE' if node['removeType'] == OBJECT_TYPE_SEQUENCE
+      output << 'STATISTICS' if node['removeType'] == OBJECT_TYPE_STATISTIC_EXT
+      output << 'TABLE' if node['removeType'] == OBJECT_TYPE_TABLE
+      output << 'TRANSFORM' if node['removeType'] == OBJECT_TYPE_TRANSFORM
+      output << 'TRIGGER' if node['removeType'] == OBJECT_TYPE_TRIGGER
+      output << 'TEXT SEARCH CONFIGURATION' if node['removeType'] == OBJECT_TYPE_TSCONFIGURATION
+      output << 'TEXT SEARCH DICTIONARY' if node['removeType'] == OBJECT_TYPE_TSDICTIONARY
+      output << 'TEXT SEARCH PARSER' if node['removeType'] == OBJECT_TYPE_TSPARSER
+      output << 'TEXT SEARCH TEMPLATE' if node['removeType'] == OBJECT_TYPE_TSTEMPLATE
+      output << 'TYPE' if node['removeType'] == OBJECT_TYPE_TYPE
+      output << 'VIEW' if node['removeType'] == OBJECT_TYPE_VIEW
+
       output << 'CONCURRENTLY' if node['concurrent']
       output << 'IF EXISTS' if node['missing_ok']
 
       objects = node['objects']
       objects = [objects] unless objects[0].is_a?(Array)
-      output << objects.map { |list| list.map { |object| deparse_item(object) } }.join(', ')
+      case node['removeType']
+      when OBJECT_TYPE_CAST
+        object = objects[0]
+        output << format('(%s)', deparse_item_list(object).join(' AS '))
+      when OBJECT_TYPE_FUNCTION, OBJECT_TYPE_AGGREGATE, OBJECT_TYPE_SCHEMA, OBJECT_TYPE_EXTENSION
+        output << objects.map { |list| list.map { |object_line| deparse_item(object_line) } }.join(', ')
+      when OBJECT_TYPE_OPFAMILY, OBJECT_TYPE_OPCLASS
+        object = objects[0]
+        output << deparse_item(object[1]) if object.length == 2
+        output << deparse_item_list(object[1..-1]).join('.') if object.length == 3
+        output << 'USING'
+        output << deparse_item(object[0])
+      when OBJECT_TYPE_TRIGGER, OBJECT_TYPE_RULE, OBJECT_TYPE_POLICY
+        object = objects[0]
+        output << deparse_item(object[-1])
+        output << 'ON'
+        output << deparse_item(object[0]) if object.length == 2
+        output << deparse_item_list(object[0..1]).join('.') if object.length == 3
+      when OBJECT_TYPE_TRANSFORM
+        object = objects[0]
+        output << 'FOR'
+        output << deparse_item(object[0])
+        output << 'LANGUAGE'
+        output << deparse_item(object[1])
+      else
+        output << objects.map { |list| list.map { |object_line| deparse_item(object_line) }.join('.') }.join(', ')
+      end
 
       output << 'CASCADE' if node['behavior'] == 1
 
+      output.join(' ')
+    end
+
+    def deparse_drop_role(node)
+      output = ['DROP ROLE']
+      output << 'IF EXISTS' if node['missing_ok']
+      output << node['roles'].map { |role| deparse_identifier(role['RoleSpec']['rolename']) }.join(', ')
+      output.join(' ')
+    end
+
+    def deparse_drop_subscription(node)
+      output = ['DROP SUBSCRIPTION']
+      output << 'IF EXISTS' if node['missing_ok']
+      output << deparse_identifier(node['subname'])
+      output.join(' ')
+    end
+
+    def deparse_drop_tablespace(node)
+      output = ['DROP TABLESPACE']
+      output << 'IF EXISTS' if node['missing_ok']
+      output << node['tablespacename']
       output.join(' ')
     end
 
