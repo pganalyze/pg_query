@@ -32,6 +32,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with INTO' do
+        let(:query) { 'SELECT * INTO "films_recent" FROM "films" WHERE "date_prod" >= \'2002-01-01\'' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'SQL value function' do
         let(:query) { 'SELECT current_timestamp' }
 
