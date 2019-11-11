@@ -14,6 +14,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with empty target list' do
+        let(:query) { 'SELECT FROM "x" WHERE "y" = 5 AND "z" = "y"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'basic statement with schema' do
         let(:query) { 'SELECT "a" AS b FROM "public"."x" WHERE "y" = 5 AND "z" = "y"' }
 
@@ -82,6 +88,12 @@ describe PgQuery::Deparse do
 
       context 'UNION or UNION ALL' do
         let(:query) { 'WITH kodsis AS (SELECT * FROM "application"), kodsis2 AS (SELECT * FROM "application") SELECT * FROM "kodsis" UNION SELECT * FROM "kodsis" ORDER BY "id" DESC' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'UNION with ORDER' do
+        let(:query) { 'SELECT "id", "name" FROM "table1" UNION ( SELECT "id", "name" FROM "table2" ORDER BY "name" ) ORDER BY "id" ASC' }
 
         it { is_expected.to eq query }
       end
@@ -992,6 +1004,18 @@ describe PgQuery::Deparse do
 
       context 'temporary table' do
         let(:query) { 'CREATE TEMPORARY TABLE "temp" AS SELECT "c" FROM "t"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'create table as' do
+        let(:query) { 'CREATE TABLE "films2" AS SELECT * FROM "films"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'create table ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP }' do
+        let(:query) { 'CREATE TEMPORARY TABLE "films_recent" ON COMMIT DROP AS SELECT * FROM "films" WHERE "date_prod" > $1' }
 
         it { is_expected.to eq oneline_query }
       end

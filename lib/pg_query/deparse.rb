@@ -994,8 +994,22 @@ class PgQuery
 
     def deparse_create_table_as(node)
       output = []
-      output << 'CREATE TEMPORARY TABLE'
+      output << 'CREATE'
+
+      into = node['into']['IntoClause']
+      persistence = relpersistence(into['rel'])
+      output << persistence if persistence
+
+      output << 'TABLE'
+
       output << deparse_item(node['into'])
+
+      if into['onCommit'] > 0
+        output << 'ON COMMIT'
+        output << 'DELETE ROWS' if into['onCommit'] == 2
+        output << 'DROP' if into['onCommit'] == 3
+      end
+
       output << 'AS'
       output << deparse_item(node['query'])
       output.join(' ')
@@ -1051,10 +1065,14 @@ class PgQuery
       output << deparse_item(node['withClause']) if node['withClause']
 
       if node['op'] == 1
+        output << '(' if node['larg']['SelectStmt']['sortClause']
         output << deparse_item(node['larg'])
+        output << ')' if node['larg']['SelectStmt']['sortClause']
         output << 'UNION'
         output << 'ALL' if node['all']
+        output << '(' if node['rarg']['SelectStmt']['sortClause']
         output << deparse_item(node['rarg'])
+        output << ')' if node['rarg']['SelectStmt']['sortClause']
         output.join(' ')
       end
 
@@ -1065,8 +1083,9 @@ class PgQuery
         output.join(' ')
       end
 
+      output << 'SELECT' if node[FROM_CLAUSE_FIELD] || node[TARGET_LIST_FIELD]
+
       if node[TARGET_LIST_FIELD]
-        output << 'SELECT'
         if node['distinctClause']
           output << 'DISTINCT'
           unless node['distinctClause'].compact.empty?
