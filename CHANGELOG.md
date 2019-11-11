@@ -1,5 +1,48 @@
 # Changelog
 
+## 1.2.0     2019-11-10
+
+* Reduce escaped keywords to Postgres-specific keywords, and ignore unreserved keywords
+  * This matches the behaviour of Postgres' quote_identifier function, and avoids problems
+    when doing text comparisons with output involving that function
+  * Note that this will lead to different output than in earlier pg_query versions,
+    in some cases
+
+## 1.1.1     2019-11-10
+
+* Deparsing improvements by [@emin100](https://github.com/emin100)
+  * Deparse ILIKE, COLLATE and DISCARD (#133)
+  * CREATE CAST (#136)
+  * CREATE SCHEMA (#136)
+  * UNION, UNION ALL and EXCEPT in SELECT queries (#136)
+  * CREATE DOMAIN (#145)
+  * Subquery indirection (#157)
+  * Fix Type Cast Parentheses Problem (#152)
+  * SELECT INTO (#151)
+  * SET DEFAULT in INSERT INTO (#154)
+  * REVOKE (#155)
+  * PREPARE and EXECUTE (#148)
+  * INSERT INTO ... RETURNING (#153)
+  * Fix Alter .. RENAME SQL (#146)
+* Deparsing improvements by [@herwinw](https://github.com/herwinw)
+  * Fix subquery in COPY in deparse (#112)
+  * Function call indirection (#116)
+  * Function without parameters (#117)
+  * CREATE AGGREGATE
+  * CREATE OPERATOR
+  * CREATE TYPE
+  * GRANT statements
+  * DROP SCHEMA
+* Deparsing improvements by [@akiellor](https://github.com/akiellor)
+  * Named window functions (#150)
+* Deparsing improvements by [@himanshu](https://github.com/himanshu)
+  * Arguments in custom types (#143)
+  * Use "double precision" instead of "double" type name (#139)
+* Use explicit -z flag to support OpenBSD tar (#134) [@sirn](https://github.com/sirn)
+* Add Ruby 2.6 to Travis tests
+* Escape identifiers in more cases, if necessary
+
+
 ## 1.1.0     2018-10-04
 
 * Deparsing improvements by [@herwinw](https://github.com/herwinw)

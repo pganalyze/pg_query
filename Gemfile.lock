@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pg_query (1.1.0)
+    pg_query (1.2.0)
 
 GEM
   remote: https://rubygems.org/
@@ -53,4 +53,4 @@ DEPENDENCIES
   rubocop-rspec (= 1.15.1)
 
 BUNDLED WITH
-   1.16.1
+   1.17.3

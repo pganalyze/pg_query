@@ -32,6 +32,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with INTO' do
+        let(:query) { 'SELECT * INTO "films_recent" FROM "films" WHERE "date_prod" >= \'2002-01-01\'' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'SQL value function' do
         let(:query) { 'SELECT current_timestamp' }
 
@@ -130,12 +136,12 @@ describe PgQuery::Deparse do
               SELECT "g"."id", "g"."link", "g"."data", 1,
                 ARRAY[ROW("g"."f1", "g"."f2")],
                 false
-              FROM "graph" "g"
+              FROM "graph" g
             UNION ALL
               SELECT "g"."id", "g"."link", "g"."data", "sg"."depth" + 1,
                 "path" || ROW("g"."f1", "g"."f2"),
                 ROW("g"."f1", "g"."f2") = ANY("path")
-              FROM "graph" "g", "search_graph" sg
+              FROM "graph" g, "search_graph" sg
               WHERE "g"."id" = "sg"."link" AND NOT "cycle"
           )
           SELECT "id", "data", "link" FROM "search_graph";
@@ -152,7 +158,7 @@ describe PgQuery::Deparse do
       end
 
       context 'LATERAL' do
-        let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" "m", LATERAL get_product_names("m"."id") pname' }
+        let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" m, LATERAL get_product_names("m"."id") pname' }
 
         it { is_expected.to eq query }
       end
@@ -161,7 +167,7 @@ describe PgQuery::Deparse do
         let(:query) do
           %(
           SELECT "m"."name" AS mname, "pname"
-            FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+            FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
           )
         end
 
@@ -239,7 +245,7 @@ describe PgQuery::Deparse do
       end
 
       context 'basic CASE WHEN statements' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM "accounts" "a"' }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM "accounts" a' }
 
         it { is_expected.to eq query }
       end
@@ -251,7 +257,7 @@ describe PgQuery::Deparse do
       end
 
       context 'CASE WHEN statements with ELSE clause' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" "a"' }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" a' }
 
         it { is_expected.to eq query }
       end
@@ -275,7 +281,7 @@ describe PgQuery::Deparse do
       end
 
       context 'Subselect in FROM clause' do
-        let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) \"a\"" }
+        let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) a" }
 
         it { is_expected.to eq query }
       end
@@ -312,6 +318,12 @@ describe PgQuery::Deparse do
 
       context 'query indirection' do
         let(:query) { 'SELECT (foo(1))."y"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'sub query indirection' do
+        let(:query) { "SELECT COALESCE(((SELECT customer.sp_person(\"n\".\"id\") AS sp_person)).\"city_id\", NULL::int) AS city_id FROM \"customer\".\"tb_customer\" n" }
 
         it { is_expected.to eq query }
       end
@@ -419,7 +431,7 @@ describe PgQuery::Deparse do
       end
 
       context 'NULLIF' do
-        let(:query) { 'SELECT NULLIF("id", 0) AS "id" FROM "x"' }
+        let(:query) { 'SELECT NULLIF("id", 0) AS id FROM "x"' }
 
         it { is_expected.to eq query }
       end
@@ -513,6 +525,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'with parentheses' do
+        let(:query) { "SELECT (1 + 3)::int8" }
+
+        it { is_expected.to eq query }
+      end
+
       context 'regclass' do
         let(:query) { "SELECT ?::regclass" }
 
@@ -537,6 +555,12 @@ describe PgQuery::Deparse do
     context 'INSERT' do
       context 'basic' do
         let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\')' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'with RETURNING' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') RETURNING "id"' }
 
         it { is_expected.to eq query }
       end
@@ -579,6 +603,12 @@ describe PgQuery::Deparse do
         end
 
         it { is_expected.to eq oneline_query }
+      end
+
+      context 'DEFAULT' do
+        let(:query) { "INSERT INTO \"films\" VALUES ('T_601', 'Yojimbo', 106, DEFAULT, 'Drama', DEFAULT)" }
+
+        it { is_expected.to eq query }
       end
 
       context 'with locks' do
@@ -917,7 +947,21 @@ describe PgQuery::Deparse do
 
         it do
           is_expected.to eq(
-            'CREATE TABLE "types" (a real, b double, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))'
+            'CREATE TABLE "types" (a real, b double precision, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))'
+          )
+        end
+      end
+
+      context 'with custom typecasts with arguments' do
+        let(:query) do
+          """
+            CREATE TABLE types (a geometry(point) not null);
+          """
+        end
+
+        it do
+          is_expected.to eq(
+            'CREATE TABLE "types" (a geometry("point") NOT NULL)'
           )
         end
       end
@@ -996,7 +1040,7 @@ describe PgQuery::Deparse do
       end
 
       context 'rename' do
-        let(:query) { 'ALTER TABLE "distributors" RENAME TO suppliers;' }
+        let(:query) { 'ALTER TABLE "distributors" RENAME TO "suppliers"' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1009,6 +1053,86 @@ describe PgQuery::Deparse do
 
       context 'FOREIGN KEY NOT VALID' do
         let(:query) { 'ALTER TABLE "distributors" ADD CONSTRAINT distfk FOREIGN KEY ("address") REFERENCES "addresses" ("address") NOT VALID;' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
+    context 'RENAME' do
+      context 'TRIGGER' do
+        let(:query) { 'ALTER TRIGGER emp_stamp ON "emp" RENAME TO "emp_track_chgs"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'CONVERSION' do
+        let(:query) { 'ALTER CONVERSION "iso_8859_1_to_utf8" RENAME TO "latin1_to_unicode"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TABLE CONSTRAINT' do
+        let(:query) { 'ALTER TABLE "distributors" RENAME CONSTRAINT zipchk TO "zip_check"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'INDEX' do
+        let(:query) { 'ALTER INDEX "distributors" RENAME TO "suppliers"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'MATERIALIZED VIEW' do
+        let(:query) { 'ALTER MATERIALIZED VIEW "foo" RENAME TO "bar"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TABLESPACE' do
+        let(:query) { 'ALTER TABLESPACE index_space RENAME TO "fast_raid"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'COLUMN' do
+        let(:query) { 'ALTER TABLE "distributors" RENAME COLUMN address TO "city"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'COLLATION' do
+        let(:query) { 'ALTER COLLATION "de_DE" RENAME TO "german"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TYPE' do
+        let(:query) { 'ALTER TYPE "electronic_mail" RENAME TO "email"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'DOMAIN CONSTRAINT' do
+        let(:query) { 'ALTER DOMAIN "zipcode" RENAME CONSTRAINT zipchk TO "zip_check"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'AGGREGATE' do
+        let(:query) { 'ALTER AGGREGATE "myavg"(int) RENAME TO "my_average"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FUNCTION' do
+        let(:query) { 'ALTER FUNCTION "sqrt"(int) RENAME TO "square_root"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'RULE' do
+        let(:query) { 'ALTER RULE notify_all ON "emp" RENAME TO "notify_me"' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1088,9 +1212,21 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq query }
       end
+
+      context 'OVER with named window' do
+        let(:query) { 'SELECT rank(*) OVER named_window' }
+
+        it { is_expected.to eq query }
+      end
     end
 
     context 'VIEWS' do
+      context 'rename view' do
+        let(:query) { 'ALTER VIEW "foo" RENAME TO "bar"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with check option' do
         let(:query) { 'CREATE OR REPLACE TEMPORARY VIEW view_a AS SELECT * FROM a(1) WITH CASCADED CHECK OPTION' }
 
@@ -1592,6 +1728,30 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'REVOKE' do
+      context 'PRIVILEGES' do
+        let(:shorthand_query) { 'REVOKE ALL PRIVILEGES ON "kinds" FROM "manuel"' }
+        let(:query) { 'REVOKE ALL ON "kinds" FROM "manuel"' }
+
+        it 'parses both and deparses into the normalized form' do
+          expect(described_class.from(PgQuery.parse(query).tree.first)).to eq(query)
+          expect(described_class.from(PgQuery.parse(shorthand_query).tree.first)).to eq(query)
+        end
+      end
+
+      context 'role' do
+        let(:query) { 'REVOKE admins FROM "joe"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'basic select statement' do
+        let(:query) { 'REVOKE insert ON "films" FROM "PUBLIC"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
   end
 
   describe '#deparse' do
@@ -1601,7 +1761,7 @@ describe PgQuery::Deparse do
       let(:query) do
         '''
         SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
         '''
       end
 
@@ -1612,7 +1772,7 @@ describe PgQuery::Deparse do
       let(:query) do
         '''
         SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
+          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
         INSERT INTO "manufacturers_daily" (a, b)
           SELECT "a", "b" FROM "manufacturers";
         '''
@@ -1625,7 +1785,7 @@ describe PgQuery::Deparse do
       let(:query) do
         '''
         SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
+          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
         UPDATE "users" SET name = \'bobby; drop tables\';
         INSERT INTO "manufacturers_daily" (a, b)
           SELECT "a", "b" FROM "manufacturers";
