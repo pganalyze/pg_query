@@ -1254,7 +1254,7 @@ class PgQuery
       when 'real', 'float4'
         'real'
       when 'float8'
-        'double'
+        'double precision'
       when 'time'
         'time'
       when 'timetz'
