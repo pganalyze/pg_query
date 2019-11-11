@@ -1007,6 +1007,18 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq oneline_query }
       end
+
+      context 'create table as' do
+        let(:query) { 'CREATE TABLE "films2" AS SELECT * FROM "films"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'create table ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP }' do
+        let(:query) { 'CREATE TEMPORARY TABLE "films_recent" ON COMMIT DROP AS SELECT * FROM "films" WHERE "date_prod" > $1' }
+
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'DROP TABLE' do
