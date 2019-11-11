@@ -136,12 +136,12 @@ describe PgQuery::Deparse do
               SELECT "g"."id", "g"."link", "g"."data", 1,
                 ARRAY[ROW("g"."f1", "g"."f2")],
                 false
-              FROM "graph" "g"
+              FROM "graph" g
             UNION ALL
               SELECT "g"."id", "g"."link", "g"."data", "sg"."depth" + 1,
                 "path" || ROW("g"."f1", "g"."f2"),
                 ROW("g"."f1", "g"."f2") = ANY("path")
-              FROM "graph" "g", "search_graph" sg
+              FROM "graph" g, "search_graph" sg
               WHERE "g"."id" = "sg"."link" AND NOT "cycle"
           )
           SELECT "id", "data", "link" FROM "search_graph";
@@ -158,7 +158,7 @@ describe PgQuery::Deparse do
       end
 
       context 'LATERAL' do
-        let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" "m", LATERAL get_product_names("m"."id") pname' }
+        let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" m, LATERAL get_product_names("m"."id") pname' }
 
         it { is_expected.to eq query }
       end
@@ -167,7 +167,7 @@ describe PgQuery::Deparse do
         let(:query) do
           %(
           SELECT "m"."name" AS mname, "pname"
-            FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+            FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
           )
         end
 
@@ -245,7 +245,7 @@ describe PgQuery::Deparse do
       end
 
       context 'basic CASE WHEN statements' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM "accounts" "a"' }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM "accounts" a' }
 
         it { is_expected.to eq query }
       end
@@ -257,7 +257,7 @@ describe PgQuery::Deparse do
       end
 
       context 'CASE WHEN statements with ELSE clause' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" "a"' }
+        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" a' }
 
         it { is_expected.to eq query }
       end
@@ -281,7 +281,7 @@ describe PgQuery::Deparse do
       end
 
       context 'Subselect in FROM clause' do
-        let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) \"a\"" }
+        let(:query) { "SELECT * FROM (SELECT generate_series(0, 100)) a" }
 
         it { is_expected.to eq query }
       end
@@ -431,7 +431,7 @@ describe PgQuery::Deparse do
       end
 
       context 'NULLIF' do
-        let(:query) { 'SELECT NULLIF("id", 0) AS "id" FROM "x"' }
+        let(:query) { 'SELECT NULLIF("id", 0) AS id FROM "x"' }
 
         it { is_expected.to eq query }
       end
@@ -1761,7 +1761,7 @@ describe PgQuery::Deparse do
       let(:query) do
         '''
         SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
         '''
       end
 
@@ -1772,7 +1772,7 @@ describe PgQuery::Deparse do
       let(:query) do
         '''
         SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
+          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
         INSERT INTO "manufacturers_daily" (a, b)
           SELECT "a", "b" FROM "manufacturers";
         '''
@@ -1785,7 +1785,7 @@ describe PgQuery::Deparse do
       let(:query) do
         '''
         SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" "m" LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
+          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
         UPDATE "users" SET name = \'bobby; drop tables\';
         INSERT INTO "manufacturers_daily" (a, b)
           SELECT "a", "b" FROM "manufacturers";
