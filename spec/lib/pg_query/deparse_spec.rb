@@ -1040,7 +1040,7 @@ describe PgQuery::Deparse do
       end
 
       context 'rename' do
-        let(:query) { 'ALTER TABLE "distributors" RENAME TO suppliers;' }
+        let(:query) { 'ALTER TABLE "distributors" RENAME TO "suppliers"' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1053,6 +1053,86 @@ describe PgQuery::Deparse do
 
       context 'FOREIGN KEY NOT VALID' do
         let(:query) { 'ALTER TABLE "distributors" ADD CONSTRAINT distfk FOREIGN KEY ("address") REFERENCES "addresses" ("address") NOT VALID;' }
+
+        it { is_expected.to eq oneline_query }
+      end
+    end
+
+    context 'RENAME' do
+      context 'TRIGGER' do
+        let(:query) { 'ALTER TRIGGER emp_stamp ON "emp" RENAME TO "emp_track_chgs"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'CONVERSION' do
+        let(:query) { 'ALTER CONVERSION "iso_8859_1_to_utf8" RENAME TO "latin1_to_unicode"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TABLE CONSTRAINT' do
+        let(:query) { 'ALTER TABLE "distributors" RENAME CONSTRAINT zipchk TO "zip_check"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'INDEX' do
+        let(:query) { 'ALTER INDEX "distributors" RENAME TO "suppliers"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'MATERIALIZED VIEW' do
+        let(:query) { 'ALTER MATERIALIZED VIEW "foo" RENAME TO "bar"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TABLESPACE' do
+        let(:query) { 'ALTER TABLESPACE index_space RENAME TO "fast_raid"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'COLUMN' do
+        let(:query) { 'ALTER TABLE "distributors" RENAME COLUMN address TO "city"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'COLLATION' do
+        let(:query) { 'ALTER COLLATION "de_DE" RENAME TO "german"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'TYPE' do
+        let(:query) { 'ALTER TYPE "electronic_mail" RENAME TO "email"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'DOMAIN CONSTRAINT' do
+        let(:query) { 'ALTER DOMAIN "zipcode" RENAME CONSTRAINT zipchk TO "zip_check"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'AGGREGATE' do
+        let(:query) { 'ALTER AGGREGATE "myavg"(int) RENAME TO "my_average"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'FUNCTION' do
+        let(:query) { 'ALTER FUNCTION "sqrt"(int) RENAME TO "square_root"' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'RULE' do
+        let(:query) { 'ALTER RULE notify_all ON "emp" RENAME TO "notify_me"' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1141,6 +1221,12 @@ describe PgQuery::Deparse do
     end
 
     context 'VIEWS' do
+      context 'rename view' do
+        let(:query) { 'ALTER VIEW "foo" RENAME TO "bar"' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with check option' do
         let(:query) { 'CREATE OR REPLACE TEMPORARY VIEW view_a AS SELECT * FROM a(1) WITH CASCADED CHECK OPTION' }
 
