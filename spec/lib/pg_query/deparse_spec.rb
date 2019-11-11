@@ -92,6 +92,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'UNION with ORDER' do
+        let(:query) { 'SELECT "id", "name" FROM "table1" UNION ( SELECT "id", "name" FROM "table2" ORDER BY "name" ) ORDER BY "id" ASC' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'EXCEPT' do
         let(:query) { "SELECT \"a\" FROM \"kodsis\" EXCEPT SELECT \"a\" FROM \"application\"" }
 
