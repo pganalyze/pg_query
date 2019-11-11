@@ -599,6 +599,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'DEFAULT' do
+        let(:query) { "INSERT INTO \"films\" VALUES ('T_601', 'Yojimbo', 106, DEFAULT, 'Drama', DEFAULT)" }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with locks' do
         let(:query) do
           '''

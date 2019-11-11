@@ -198,6 +198,8 @@ class PgQuery
         deparse_vacuum_stmt(node)
       when DO_STMT
         deparse_do_stmt(node)
+      when SET_TO_DEFAULT
+        'DEFAULT'
       when STRING
         if context == A_CONST
           format("'%s'", node['str'].gsub("'", "''"))
