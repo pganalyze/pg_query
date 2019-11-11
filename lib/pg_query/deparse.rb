@@ -365,7 +365,6 @@ class PgQuery
     def deparse_object_with_args(node)
       output = []
       output << deparse_item_list(node['objname']).join('.')
-      # output += node['objname'].map(&method(:deparse_item_list)).join('.')
       unless node['args_unspecified']
         args = node.fetch('objargs', []).map(&method(:deparse_item)).join(', ')
         output << "(#{args})"
