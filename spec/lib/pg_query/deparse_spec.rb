@@ -163,6 +163,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'OVERLAY' do
+        let(:query) { 'SELECT overlay("m"."name" placing \'******\' from 3 for 6) AS tc_kimlik FROM "tb_test" m' }
+
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'SUM' do
         let(:query) { 'SELECT sum("price_cents") FROM "products"' }
 
