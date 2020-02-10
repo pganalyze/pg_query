@@ -413,11 +413,17 @@ class PgQuery
       # COUNT(*)
       args << '*' if node['agg_star']
 
-      name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) } - ['pg_catalog']).join('.')
-      distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
-      output << format('%s(%s%s)', name, distinct, args.join(', '))
-      output << format('FILTER (WHERE %s)', deparse_item(node['agg_filter'])) if node['agg_filter']
-      output << format('OVER %s', deparse_item(node['over'])) if node['over']
+      name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) }).join('.')
+      if name == 'pg_catalog.overlay'
+        # Note that this is a bit odd, but "OVERLAY" is a keyword on its own merit, and only accepts the
+        # keyword parameter style when its called as a keyword, not as a regular function (i.e. pg_catalog.overlay)
+        output << format('OVERLAY(%s PLACING %s FROM %s FOR %s)', args[0], args[1], args[2], args[3])
+      else
+        distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
+        output << format('%s(%s%s)', name, distinct, args.join(', '))
+        output << format('FILTER (WHERE %s)', deparse_item(node['agg_filter'])) if node['agg_filter']
+        output << format('OVER %s', deparse_item(node['over'])) if node['over']
+      end
 
       output.join(' ')
     end
