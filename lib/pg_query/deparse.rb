@@ -410,9 +410,13 @@ class PgQuery
       args << '*' if node['agg_star']
 
       name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) } - ['pg_catalog']).join('.')
-      distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
-      output << format('%s(%s%s)', name, distinct, args.join(', '))
-      output << format('OVER %s', deparse_item(node['over'])) if node['over']
+      if name == 'overlay'
+        output << format('%s(%s placing %s from %s for %s)', name, args[0], args[1], args[2], args[3])
+      else
+        distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
+        output << format('%s(%s%s)', name, distinct, args.join(', '))
+        output << format('OVER %s', deparse_item(node['over'])) if node['over']
+      end
 
       output.join(' ')
     end
