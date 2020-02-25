@@ -308,7 +308,11 @@ class PgQuery
     def deparse_a_indirection(node)
       output = []
       arg = deparse_item(node['arg'])
-      output << if node['arg'].key?(FUNC_CALL) || node['arg'].key?(SUB_LINK)
+      array_indirection = []
+      if node['indirection']
+        array_indirection = node['indirection'].select { |a| a.key?(A_INDICES) }
+      end
+      output << if node['arg'].key?(FUNC_CALL) || (node['arg'].key?(SUB_LINK) && array_indirection.count.zero?)
                   "(#{arg})."
                 else
                   arg

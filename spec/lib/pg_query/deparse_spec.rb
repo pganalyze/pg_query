@@ -334,6 +334,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'array indirection' do
+        let(:query) { "SELECT \"proname\", (SELECT regexp_split_to_array(\"proargtypes\"::text, ' ') )[\"idx\"] AS argtype, \"proargnames\"[\"idx\"] AS argname FROM \"pg_proc\"" }
+
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'sub query indirection' do
         let(:query) { "SELECT COALESCE(((SELECT customer.sp_person(\"n\".\"id\") AS sp_person)).\"city_id\", NULL::int) AS city_id FROM \"customer\".\"tb_customer\" n" }
 
