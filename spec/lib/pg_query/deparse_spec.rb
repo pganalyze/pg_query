@@ -571,6 +571,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'special column name' do
+        let(:query) { 'INSERT INTO "x" ("user") VALUES (\'abc\')' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with RETURNING' do
         let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') RETURNING "id"' }
 
