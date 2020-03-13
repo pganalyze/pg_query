@@ -676,6 +676,30 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'ON CONFLICT' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO UPDATE SET "user" = EXCLUDED."user" RETURNING "y"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ON CONFLICT DO NOTHING' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO NOTHING RETURNING "y"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ON CONFLICT DO NOTHING with WHERE clause' do
+        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (10, \'Conrad International\') ON CONFLICT ("did") WHERE "is_active" DO NOTHING' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ON CONFLICT DO NOTHING on CONSTRAINT' do
+        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (9, \'Antwerp Design\') ON CONFLICT ON CONSTRAINT "distributors_pkey" DO NOTHING' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'HAVING' do
         let(:query) do
           '''
