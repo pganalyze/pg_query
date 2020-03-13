@@ -571,30 +571,6 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
-      context 'onconflict' do
-        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO UPDATE SET "user" = EXCLUDED."user" RETURNING "y"' }
-
-        it { is_expected.to eq query }
-      end
-
-      context 'onconflict do noting' do
-        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO NOTHING RETURNING "y"' }
-
-        it { is_expected.to eq query }
-      end
-
-      context 'onconflict do noting with where clause' do
-        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (10, \'Conrad International\') ON CONFLICT ("did") WHERE "is_active" DO NOTHING' }
-
-        it { is_expected.to eq query }
-      end
-
-      context 'onconflict do noting on CONSTRAINT' do
-        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (9, \'Antwerp Design\') ON CONFLICT ON CONSTRAINT "distributors_pkey" DO NOTHING' }
-
-        it { is_expected.to eq query }
-      end
-
       context 'with RETURNING' do
         let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') RETURNING "id"' }
 
@@ -621,6 +597,30 @@ describe PgQuery::Deparse do
         end
 
         it { is_expected.to eq oneline_query }
+      end
+
+      context 'onconflict' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO UPDATE SET "user" = EXCLUDED."user" RETURNING "y"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'onconflict do noting' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO NOTHING RETURNING "y"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'onconflict do noting with where clause' do
+        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (10, \'Conrad International\') ON CONFLICT ("did") WHERE "is_active" DO NOTHING' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'onconflict do noting on CONSTRAINT' do
+        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (9, \'Antwerp Design\') ON CONFLICT ON CONSTRAINT "distributors_pkey" DO NOTHING' }
+
+        it { is_expected.to eq query }
       end
 
       context 'HAVING' do
