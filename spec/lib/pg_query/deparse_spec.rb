@@ -169,22 +169,6 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
-      context 'LATERAL JOIN 2' do
-        let(:query) do
-          %(
-          SELECT *
-                  FROM "tb_test_main" mh
-                  JOIN LATERAL (
-                    SELECT "ftnrm".* FROM "test" ftnrm WHERE "ftnrm"."hizmet_id" = "mh"."id"
-                    UNION ALL
-                    SELECT "ftarc".* FROM "test"."test2" ftarc WHERE "ftarc"."hizmet_id" = "mh"."id"
-                  ) ft ON true
-          )
-        end
-
-        it { is_expected.to eq oneline_query }
-      end
-
       context 'LATERAL' do
         let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" m, LATERAL get_product_names("m"."id") pname' }
 
@@ -196,6 +180,22 @@ describe PgQuery::Deparse do
           %(
           SELECT "m"."name" AS mname, "pname"
             FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+          )
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'LATERAL JOIN with sql' do
+        let(:query) do
+          %(
+          SELECT *
+                  FROM "tb_test_main" mh
+                  JOIN LATERAL (
+                    SELECT "ftnrm".* FROM "test" ftnrm WHERE "ftnrm"."hizmet_id" = "mh"."id"
+                    UNION ALL
+                    SELECT "ftarc".* FROM "test"."test2" ftarc WHERE "ftarc"."hizmet_id" = "mh"."id"
+                  ) ft ON true
           )
         end
 
