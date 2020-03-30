@@ -1046,7 +1046,9 @@ class PgQuery
     end
 
     def deparse_rangesubselect(node)
-      output = '(' + deparse_item(node['subquery']) + ')'
+      output = ''
+      output = 'LATERAL ' if node['lateral']
+      output = output + '(' + deparse_item(node['subquery']) + ')'
       if node['alias']
         output + ' ' + deparse_item(node['alias'])
       else
