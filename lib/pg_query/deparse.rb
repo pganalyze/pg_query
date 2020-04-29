@@ -1223,6 +1223,13 @@ class PgQuery
         output << columns.join(', ')
       end
 
+      if node[FROM_CLAUSE_FIELD]
+        output << 'FROM'
+        output << node[FROM_CLAUSE_FIELD].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+
       if node['whereClause']
         output << 'WHERE'
         output << deparse_item(node['whereClause'])
