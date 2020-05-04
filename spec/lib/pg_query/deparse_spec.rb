@@ -548,6 +548,12 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq query }
       end
+
+      context 'boolean' do
+        let(:query) { "SELECT \"table_field\"::bool, \"table_field\"::boolean FROM \"t\"" }
+
+        it { is_expected.to eq query }
+      end
     end
 
     context 'param ref' do
