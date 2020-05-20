@@ -732,6 +732,12 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq oneline_query }
       end
+
+      context 'special column name' do
+        let(:query) { "UPDATE \"x\" SET \"user\" = 'emin'" }
+
+        it { is_expected.to eq query }
+      end
     end
 
     context 'DELETE' do
