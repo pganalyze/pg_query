@@ -124,6 +124,9 @@ class PgQuery
           if statement[CREATE_TABLE_AS_STMT]['into'] && statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel']
             from_clause_items << { item: statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel'], type: :ddl }
           end
+          if statement[CREATE_TABLE_AS_STMT]['query']
+            statements << statement[CREATE_TABLE_AS_STMT]['query']
+          end
         when TRUNCATE_STMT
           from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :ddl } }
         when VIEW_STMT

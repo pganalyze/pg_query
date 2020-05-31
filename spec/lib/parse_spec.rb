@@ -931,4 +931,27 @@ $BODY$
              'defaction' => 0,
              'location' => 44 } }] } }}}]
   end
+
+  describe 'parsing CREATE TABLE AS' do
+    it 'finds tables in the subquery' do
+      query = described_class.parse(<<-SQL)
+        CREATE TABLE foo AS
+          SELECT * FROM bar;
+      SQL
+      expect(query.tables).to eq(['foo', 'bar'])
+      expect(query.ddl_tables).to eq(['foo'])
+      expect(query.select_tables).to eq(['bar'])
+    end
+
+    it 'finds tables in the subquery with UNION' do
+      query = described_class.parse(<<-SQL)
+        CREATE TABLE foo AS
+          SELECT id FROM bar UNION SELECT id from baz;
+      SQL
+
+      expect(query.tables).to eq(['foo', 'bar', 'baz'])
+      expect(query.ddl_tables).to eq(['foo'])
+      expect(query.select_tables).to eq(['bar', 'baz'])
+    end
+  end
 end
