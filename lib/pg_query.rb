@@ -14,3 +14,5 @@ require 'pg_query/fingerprint'
 require 'pg_query/param_refs'
 require 'pg_query/deparse'
 require 'pg_query/truncate'
+
+require 'pg_query/scan'
