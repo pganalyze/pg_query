@@ -4,7 +4,7 @@ require 'digest'
 require 'mkmf'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '10-1.0.4'.freeze
+LIB_PG_QUERY_TAG = '12-latest-develop'.freeze
 LIB_PG_QUERY_SHA256SUM = '88cc90296e5fcaaebd0b360c46698b7c5badddf86f120e249ef682a820d41338'.freeze
 
 workdir = Dir.pwd
@@ -53,3 +53,6 @@ else
 end
 
 create_makefile 'pg_query/pg_query'
+
+# To update the protobufs, run this after the source has been downloaded:
+# protoc --proto_path=tmp/x86_64-darwin19/pg_query/2.6.3/libpg_query-12-latest-develop/protobuf --ruby_out=lib/pg_query tmp/x86_64-darwin19/pg_query/2.6.3/libpg_query-12-latest-develop/protobuf/*.proto
