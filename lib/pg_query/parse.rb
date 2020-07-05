@@ -33,19 +33,19 @@ class PgQuery
   end
 
   def tables
-    tables_with_types.map { |t| t[:table] }
+    tables_with_details.map { |t| t[:name] }.uniq
   end
 
   def select_tables
-    tables_with_types.select { |t| t[:type] == :select }.map { |t| t[:table] }
+    tables_with_details.select { |t| t[:type] == :select }.map { |t| t[:name] }.uniq
   end
 
   def dml_tables
-    tables_with_types.select { |t| t[:type] == :dml }.map { |t| t[:table] }
+    tables_with_details.select { |t| t[:type] == :dml }.map { |t| t[:name] }.uniq
   end
 
   def ddl_tables
-    tables_with_types.select { |t| t[:type] == :ddl }.map { |t| t[:table] }
+    tables_with_details.select { |t| t[:type] == :ddl }.map { |t| t[:name] }.uniq
   end
 
   def cte_names
@@ -58,7 +58,7 @@ class PgQuery
     @aliases
   end
 
-  def tables_with_types
+  def tables_with_details
     load_tables_and_aliases! if @tables.nil?
     @tables
   end
@@ -132,8 +132,10 @@ class PgQuery
         when VIEW_STMT
           from_clause_items << { item: statement[VIEW_STMT]['view'], type: :ddl }
           statements << statement[VIEW_STMT]['query']
-        when VACUUM_STMT, INDEX_STMT, CREATE_TRIG_STMT, RULE_STMT
+        when INDEX_STMT, CREATE_TRIG_STMT, RULE_STMT
           from_clause_items << { item: statement.values[0]['relation'], type: :ddl }
+        when VACUUM_STMT
+          from_clause_items += statement.values[0]['rels'].map { |r| { item: r[VACUUM_RELATION]['relation'], type: :ddl } }
         when REFRESH_MAT_VIEW_STMT
           from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :ddl }
         when DROP_STMT
@@ -146,9 +148,9 @@ class PgQuery
           end
           case statement[DROP_STMT]['removeType']
           when OBJECT_TYPE_TABLE
-            @tables += objects.map { |r| { table: r.join('.'), type: :ddl } }
+            @tables += objects.map { |r| { name: r.join('.'), type: :ddl } }
           when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
-            @tables += objects.map { |r| { table: r[0..-2].join('.'), type: :ddl } }
+            @tables += objects.map { |r| { name: r[0..-2].join('.'), type: :ddl } }
           end
         when GRANT_STMT
           objects = statement[GRANT_STMT]['objects']
@@ -218,7 +220,14 @@ class PgQuery
         next if !rangevar['schemaname'] && @cte_names.include?(rangevar['relname'])
 
         table = [rangevar['schemaname'], rangevar['relname']].compact.join('.')
-        @tables << { table: table, type: next_item[:type] }
+        @tables << {
+          name: table,
+          type: next_item[:type],
+          location: rangevar['location'],
+          schemaname: rangevar['schemaname'],
+          relname: rangevar['relname'],
+          inh: rangevar['inh']
+        }
         @aliases[rangevar['alias'][ALIAS]['aliasname']] = table if rangevar['alias']
       when RANGE_SUBSELECT
         from_clause_items << { item: next_item[:item][RANGE_SUBSELECT]['subquery'], type: next_item[:type] }
