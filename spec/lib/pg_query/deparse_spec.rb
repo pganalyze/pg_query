@@ -1499,19 +1499,19 @@ describe PgQuery::Deparse do
       end
 
       context 'SAVEPOINT' do
-        let(:query) { 'SAVEPOINT "x"' }
+        let(:query) { 'SAVEPOINT "x y"' }
 
         it { is_expected.to eq query }
       end
 
       context 'ROLLBACK TO SAFEPOINT' do
-        let(:query) { 'ROLLBACK TO SAVEPOINT "x"' }
+        let(:query) { 'ROLLBACK TO SAVEPOINT x' }
 
         it { is_expected.to eq query }
       end
 
       context 'RELEASE' do
-        let(:query) { 'RELEASE "x"' }
+        let(:query) { 'RELEASE x' }
 
         it { is_expected.to eq query }
       end
