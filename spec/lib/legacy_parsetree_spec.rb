@@ -49,7 +49,7 @@ describe PgQuery, '#parsetree' do
                "location"=>12}},
            "cmds"=>
             [{"ALTER TABLE CMD"=>
-               {"subtype"=>14,
+               {"subtype"=>described_class::OBJECT_TYPE_EXTENSION,
                 "def"=>
                  {"CONSTRAINT"=>
                    {"contype"=>"PRIMARY_KEY",
@@ -397,7 +397,7 @@ describe PgQuery, '#parsetree' do
     expect(query.parsetree).to eq [{"GRANTSTMT"=>
        {"is_grant"=>true,
         "targtype"=>0,
-        "objtype"=>1,
+        "objtype"=>described_class::OBJECT_TYPE_TABLE,
         "objects"=>
          [{"RANGEVAR"=>
             {"relname"=>"mytable",

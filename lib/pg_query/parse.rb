@@ -153,11 +153,11 @@ class PgQuery
         when GRANT_STMT
           objects = statement[GRANT_STMT]['objects']
           case statement[GRANT_STMT]['objtype']
-          when 0 # Column # rubocop:disable Lint/EmptyWhen
+          when OBJECT_TYPE_COLUMN # Column # rubocop:disable Lint/EmptyWhen
             # FIXME
-          when 1 # Table
+          when OBJECT_TYPE_TABLE # Table
             from_clause_items += objects.map { |o| { item: o, type: :ddl } }
-          when 2 # Sequence # rubocop:disable Lint/EmptyWhen
+          when OBJECT_TYPE_SEQUENCE # Sequence # rubocop:disable Lint/EmptyWhen
             # FIXME
           end
         when LOCK_STMT

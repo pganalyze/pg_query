@@ -74,7 +74,7 @@ describe PgQuery, '.parse' do
                "location"=>12}},
            "cmds"=>
             [{described_class::ALTER_TABLE_CMD=>
-               {"subtype"=>14,
+               {"subtype"=>described_class::AT_AddConstraint,
                 "def"=>
                  {described_class::CONSTRAINT=>
                    {"contype"=>described_class::CONSTR_TYPE_PRIMARY,
@@ -439,7 +439,7 @@ describe PgQuery, '.parse' do
     expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::GRANT_STMT=>
        {"is_grant"=>true,
         "targtype"=>0,
-        "objtype"=>1,
+        "objtype"=>described_class::OBJECT_TYPE_TABLE,
         "objects"=>
          [{described_class::RANGE_VAR=>
             {"relname"=>"mytable",
