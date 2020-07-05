@@ -143,14 +143,31 @@ describe PgQuery, '.parse' do
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['my_table']
     expect(query.ddl_tables).to eq ['my_table']
-    expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::VACUUM_STMT=>
-          {"options"=>1,
-           "relation"=>
-            {described_class::RANGE_VAR=>
-              {"relname"=>"my_table",
-               "inh"=>true,
-               "relpersistence"=>"p",
-               "location"=>7}}}}}}]
+    expect(query.tree).to eq [
+      {
+        described_class::RAW_STMT => {
+          described_class::STMT_FIELD => {
+            described_class::VACUUM_STMT => {
+              "is_vacuumcmd"=>true,
+              "rels"=> [
+                {
+                  "VacuumRelation" => {
+                    "relation" => {
+                      described_class::RANGE_VAR => {
+                        "relname" => "my_table",
+                        "inh" => true,
+                        "relpersistence" => "p",
+                        "location"=>7
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
   end
 
   it "parses EXPLAIN" do
@@ -233,37 +250,12 @@ describe PgQuery, '.parse' do
         "oncommit"=>0}}}}]
   end
 
-  it 'parses CREATE TABLE WITH OIDS' do
-    query = described_class.parse('CREATE TABLE test (a int4) WITH OIDS')
-    expect(query.warnings).to eq []
-    expect(query.tables).to eq ['test']
-    expect(query.ddl_tables).to eq ['test']
-    expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::CREATE_STMT=>
-       {"relation"=>
-         {described_class::RANGE_VAR=>
-           {"relname"=>"test",
-            "inh"=>true,
-            "relpersistence"=>"p",
-            "location"=>13}},
-        "tableElts"=>
-         [{described_class::COLUMN_DEF=>
-            {"colname"=>"a",
-             "typeName"=>
-              {described_class::TYPE_NAME=>
-                {"names"=>[{"String"=>{"str"=>"int4"}}],
-                 "typemod"=>-1,
-                 "location"=>21}},
-             "is_local"=>true,
-             "location"=>19}}],
-        "options"=> [{
-          described_class::DEF_ELEM => {
-            "defname"=>"oids",
-            "arg"=>{"Integer"=>{"ival"=>1}},
-            "defaction"=>0,
-            "location"=>27
-          }
-        }],
-        "oncommit"=>0}}}}]
+  it 'fails to parse CREATE TABLE WITH OIDS' do
+    expect { described_class.parse("CREATE TABLE test (a int4) WITH OIDS") }.to(raise_error do |error|
+      expect(error).to be_a(described_class::ParseError)
+      expect(error.message).to eq "syntax error at or near \"OIDS\" (scan.l:1204)"
+      expect(error.location).to eq 33 # 33rd character in query string
+    end)
   end
 
   it 'parses CREATE INDEX' do
@@ -504,7 +496,8 @@ describe PgQuery, '.parse' do
      {described_class::WITH_CLAUSE=>
        {"ctes"=>
          [{described_class::COMMON_TABLE_EXPR=>
-            {"ctename"=>"a",
+            {"ctematerialized"=>0,
+             "ctename"=>"a",
              "ctequery"=>
               {described_class::SELECT_STMT=>
                 {described_class::TARGET_LIST_FIELD=>
