@@ -207,6 +207,8 @@ class PgQuery
         deparse_variable_set_stmt(node)
       when VACUUM_STMT
         deparse_vacuum_stmt(node)
+      when VACUUM_RELATION
+        deparse_vacuum_relation(node)
       when DO_STMT
         deparse_do_stmt(node)
       when SET_TO_DEFAULT
@@ -761,22 +763,23 @@ class PgQuery
 
     def deparse_vacuum_stmt(node)
       output = []
-      output << 'VACUUM'
-      output.concat(deparse_vacuum_options(node))
+      if node['is_vacuumcmd']
+        output << 'VACUUM'
+      else
+        output << 'ANALYZE'
+      end
+      output << node['options'].map { |arg| arg['DefElem']['defname'].upcase }.join(' ') if node['options']
+      output << node['rels'].map { |arg| deparse_item(arg) }.join(', ') if node['rels']
+      output.join(' ')
+    end
+
+    def deparse_vacuum_relation(node)
+      output = []
       output << deparse_item(node['relation']) if node.key?('relation')
       if node.key?('va_cols')
         output << "(#{node['va_cols'].map(&method(:deparse_item)).join(', ')})"
       end
       output.join(' ')
-    end
-
-    def deparse_vacuum_options(node)
-      output = []
-      output << 'FULL' if node['options'][4] == 1
-      output << 'FREEZE' if node['options'][3] == 1
-      output << 'VERBOSE' if node['options'][2] == 1
-      output << 'ANALYZE' if node['options'][1] == 1
-      output
     end
 
     def deparse_do_stmt(node)
@@ -1448,6 +1451,8 @@ class PgQuery
       if node['options']
         output += node['options'].map { |item| deparse_item(item) }
       end
+
+      output << deparse_identifier(node['savepoint_name']) if node['savepoint_name']
 
       output.join(' ')
     end
