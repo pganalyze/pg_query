@@ -456,10 +456,28 @@ describe PgQuery, '.parse' do
   end
 
   it 'parses TRUNCATE' do
-    query = described_class.parse('TRUNCATE bigtable, fattable RESTART IDENTITY')
+    query = described_class.parse('TRUNCATE bigtable, "fattable" RESTART IDENTITY')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['bigtable', 'fattable']
     expect(query.ddl_tables).to eq ['bigtable', 'fattable']
+    expect(query.tables_with_details).to eq [
+      {
+        inh: true,
+        location: 9,
+        name: "bigtable",
+        relname: "bigtable",
+        schemaname: nil,
+        type: :ddl
+      },
+      {
+        inh: true,
+        location: 19,
+        name: "fattable",
+        relname: "fattable",
+        schemaname: nil,
+        type: :ddl
+      }
+    ]
     expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::TRUNCATE_STMT=>
       {"relations"=>
          [{described_class::RANGE_VAR=>
