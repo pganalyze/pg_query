@@ -9,7 +9,7 @@ class PgQuery
 
   private
 
-  FINGERPRINT_VERSION = 2
+  FINGERPRINT_VERSION = 3
 
   class FingerprintSubHash
     attr_reader :parts
@@ -71,6 +71,8 @@ class PgQuery
       when 'gid'
         next if node_name == TRANSACTION_STMT
       when 'options'
+        next if node_name == TRANSACTION_STMT
+      when 'savepoint_name'
         next if node_name == TRANSACTION_STMT
       when 'portalname'
         next if [DECLARE_CURSOR_STMT, FETCH_STMT, CLOSE_PORTAL_STMT].include?(node_name)
