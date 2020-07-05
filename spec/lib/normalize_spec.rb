@@ -36,9 +36,8 @@ describe PgQuery, '#normalize' do
     q = described_class.normalize("SELECT * FROM x WHERE z NOT LIKE E'abc'AND TRUE")
     expect(q).to eq "SELECT * FROM x WHERE z NOT LIKE $1AND $2"
 
-    # We can't avoid this easily, so treat it as known behaviour that we remove comments in this case
     q = described_class.normalize("SELECT U&'d\\0061t\\+000061'-- comment\nFROM x")
-    expect(q).to eq "SELECT $1\nFROM x"
+    expect(q).to eq "SELECT $1-- comment\nFROM x"
   end
 
   it "normalizes COPY" do

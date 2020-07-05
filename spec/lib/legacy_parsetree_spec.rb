@@ -116,14 +116,27 @@ describe PgQuery, '#parsetree' do
     query = described_class.parse("VACUUM my_table")
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['my_table']
-    expect(query.parsetree).to eq [{"VACUUM"=>
-          {"options"=>1,
-           "relation"=>
-            {"RANGEVAR"=>
-              {"relname"=>"my_table",
-               "inhOpt"=>2,
-               "relpersistence"=>"p",
-               "location"=>7}}}}]
+    expect(query.parsetree).to eq [
+      {
+        "VACUUM" => {
+          "is_vacuumcmd"=>true,
+          "rels"=> [
+            {
+              "VACUUMRELATION" => {
+                "relation" => {
+                  "RANGEVAR" => {
+                    "relname" => "my_table",
+                    "inhOpt" => 2,
+                    "relpersistence" => "p",
+                    "location"=>7
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
   end
 
   it "parses EXPLAIN" do
@@ -201,31 +214,6 @@ describe PgQuery, '#parsetree' do
                  "location"=>21}},
              "is_local"=>true,
              "location"=>19}}],
-        "oncommit"=>0}}]
-  end
-
-  it 'parses CREATE TABLE WITH OIDS' do
-    query = described_class.parse('CREATE TABLE test (a int4) WITH OIDS')
-    expect(query.warnings).to eq []
-    expect(query.tables).to eq ['test']
-    expect(query.parsetree).to eq [{"CREATESTMT"=>
-       {"relation"=>
-         {"RANGEVAR"=>
-           {"relname"=>"test",
-            "relpersistence"=>"p",
-            "location"=>13,
-            "inhOpt"=>2}},
-        "tableElts"=>
-         [{"COLUMNDEF"=>
-            {"colname"=>"a",
-             "typeName"=>
-              {"TYPENAME"=>
-                {"names"=>["int4"],
-                 "typemod"=>-1,
-                 "location"=>21}},
-             "is_local"=>true,
-             "location"=>19}}],
-        "options"=> [{"DEFELEM"=> {"defname"=>"oids", "arg"=>1, "defaction"=>0, "location"=>27}}],
         "oncommit"=>0}}]
   end
 
@@ -458,7 +446,8 @@ describe PgQuery, '#parsetree' do
      {"WITHCLAUSE"=>
        {"ctes"=>
          [{"COMMONTABLEEXPR"=>
-            {"ctename"=>"a",
+            {"ctematerialized"=>0,
+             "ctename"=>"a",
              "ctequery"=>
               {"SELECT"=>
                 {"targetList"=>
