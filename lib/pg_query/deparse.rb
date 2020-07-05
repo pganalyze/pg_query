@@ -43,7 +43,7 @@ class PgQuery
           deparse_aexpr_in(node)
         when AEXPR_ILIKE
           deparse_aexpr_ilike(node)
-        when CONSTR_TYPE_FOREIGN
+        when AEXPR_LIKE
           deparse_aexpr_like(node)
         when AEXPR_BETWEEN, AEXPR_NOT_BETWEEN, AEXPR_BETWEEN_SYM, AEXPR_NOT_BETWEEN_SYM
           deparse_aexpr_between(node)
@@ -501,18 +501,18 @@ class PgQuery
 
     def deparse_grant_objtype(node)
       {
-        1 => ['TABLE', true],
-        2 => ['SEQUENCE', true],
-        3 => ['DATABASE', false],
-        4 => ['DOMAIN', false],
-        5 => ['FOREIGN DATA WRAPPER', false],
-        6 => ['FOREIGN SERVER', false],
-        7 => ['FUNCTION', true],
-        8 => ['LANGUAGE', false],
-        9 => ['LARGE OBJECT', false],
-        10 => ['SCHEMA', false],
-        11 => ['TABLESPACE', false],
-        12 => ['TYPE', false]
+        OBJECT_TYPE_TABLE => ['TABLE', true],
+        OBJECT_TYPE_SEQUENCE => ['SEQUENCE', true],
+        OBJECT_TYPE_DATABASE => ['DATABASE', false],
+        OBJECT_TYPE_DOMAIN => ['DOMAIN', false],
+        OBJECT_TYPE_FDW => ['FOREIGN DATA WRAPPER', false],
+        OBJECT_TYPE_FOREIGN_SERVER => ['FOREIGN SERVER', false],
+        OBJECT_TYPE_FUNCTION => ['FUNCTION', true],
+        OBJECT_TYPE_LANGUAGE => ['LANGUAGE', false],
+        OBJECT_TYPE_LARGEOBJECT => ['LARGE OBJECT', false],
+        OBJECT_TYPE_SCHEMA => ['SCHEMA', false],
+        OBJECT_TYPE_TABLESPACE => ['TABLESPACE', false],
+        OBJECT_TYPE_TYPE => ['TYPE', false]
       }.fetch(node['objtype'])
     end
 
@@ -1473,9 +1473,9 @@ class PgQuery
 
     def deparse_define_stmt(node)
       dispatch = {
-        1 => :deparse_create_aggregate,
-        25 => :deparse_create_operator,
-        45 => :deparse_create_type
+        OBJECT_TYPE_AGGREGATE => :deparse_create_aggregate,
+        OBJECT_TYPE_OPERATOR => :deparse_create_operator,
+        OBJECT_TYPE_TYPE => :deparse_create_type
       }
       method(dispatch.fetch(node['kind'])).call(node)
     end

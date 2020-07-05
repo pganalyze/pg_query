@@ -92,6 +92,7 @@ class PgQuery
   TYPE_CAST = 'TypeCast'.freeze
   TYPE_NAME = 'TypeName'.freeze
   UPDATE_STMT = 'UpdateStmt'.freeze
+  VACUUM_RELATION = 'VacuumRelation'.freeze
   VACUUM_STMT = 'VacuumStmt'.freeze
   VARIABLE_SET_STMT = 'VariableSetStmt'.freeze
   VARIABLE_SHOW_STMT = 'VariableShowStmt'.freeze
@@ -111,69 +112,6 @@ class PgQuery
 
   # ENUMS
 
-  CONSTR_TYPE_NULL = 0 # not standard SQL, but a lot of people expect it
-  CONSTR_TYPE_NOTNULL = 1
-  CONSTR_TYPE_DEFAULT = 2
-  CONSTR_TYPE_IDENTITY = 3
-  CONSTR_TYPE_CHECK = 4
-  CONSTR_TYPE_PRIMARY = 5
-  CONSTR_TYPE_UNIQUE = 6
-  CONSTR_TYPE_EXCLUSION = 7
-  CONSTR_TYPE_FOREIGN = 8
-  CONSTR_TYPE_ATTR_DEFERRABLE = 9 # attributes for previous constraint node
-  CONSTR_TYPE_ATTR_NOT_DEFERRABLE = 10
-  CONSTR_TYPE_ATTR_DEFERRED = 11
-  CONSTR_TYPE_ATTR_IMMEDIATE = 12
-
-  OBJECT_TYPE_ACCESS_METHOD = 0
-  OBJECT_TYPE_AGGREGATE = 1
-  OBJECT_TYPE_AMOP = 2
-  OBJECT_TYPE_AMPROC = 3
-  OBJECT_TYPE_ATTRIBUTE = 4
-  OBJECT_TYPE_CAST = 5
-  OBJECT_TYPE_COLUMN = 6
-  OBJECT_TYPE_COLLATION = 7
-  OBJECT_TYPE_CONVERSION = 8
-  OBJECT_TYPE_DATABASE = 9
-  OBJECT_TYPE_DEFAULT = 10
-  OBJECT_TYPE_DEFACL = 11
-  OBJECT_TYPE_DOMAIN = 12
-  OBJECT_TYPE_DOMCONSTRAINT = 13
-  OBJECT_TYPE_EVENT_TRIGGER = 14
-  OBJECT_TYPE_EXTENSION = 15
-  OBJECT_TYPE_FDW = 16
-  OBJECT_TYPE_FOREIGN_SERVER = 17
-  OBJECT_TYPE_FOREIGN_TABLE = 18
-  OBJECT_TYPE_FUNCTION = 19
-  OBJECT_TYPE_INDEX = 20
-  OBJECT_TYPE_LANGUAGE = 21
-  OBJECT_TYPE_LARGEOBJECT = 22
-  OBJECT_TYPE_MATVIEW = 23
-  OBJECT_TYPE_OPCLASS = 24
-  OBJECT_TYPE_OPERATOR = 25
-  OBJECT_TYPE_OPFAMILY = 26
-  OBJECT_TYPE_POLICY = 27
-  OBJECT_TYPE_PUBLICATION = 28
-  OBJECT_TYPE_PUBLICATION_REL = 29
-  OBJECT_TYPE_ROLE = 30
-  OBJECT_TYPE_RULE = 31
-  OBJECT_TYPE_SCHEMA = 32
-  OBJECT_TYPE_SEQUENCE = 33
-  OBJECT_TYPE_SUBSCRIPTION = 34
-  OBJECT_TYPE_STATISTIC_EXT = 35
-  OBJECT_TYPE_TABCONSTRAINT = 36
-  OBJECT_TYPE_TABLE = 37
-  OBJECT_TYPE_TABLESPACE = 38
-  OBJECT_TYPE_TRANSFORM = 39
-  OBJECT_TYPE_TRIGGER = 40
-  OBJECT_TYPE_TSCONFIGURATION = 41
-  OBJECT_TYPE_TSDICTIONARY = 42
-  OBJECT_TYPE_TSPARSER = 43
-  OBJECT_TYPE_TSTEMPLATE = 44
-  OBJECT_TYPE_TYPE = 45
-  OBJECT_TYPE_USER_MAPPING = 46
-  OBJECT_TYPE_VIEW = 47
-
   BOOL_EXPR_AND = 0
   BOOL_EXPR_OR = 1
   BOOL_EXPR_NOT = 2
@@ -184,34 +122,6 @@ class PgQuery
   BOOLEAN_TEST_NOT_FALSE = 3
   BOOLEAN_TEST_UNKNOWN = 4
   BOOLEAN_TEST_NOT_UNKNOWN = 5
-
-  AEXPR_OP = 0               # normal operator
-  AEXPR_OP_ANY = 1           # scalar op ANY (array)
-  AEXPR_OP_ALL = 2           # scalar op ALL (array)
-  AEXPR_DISTINCT = 3         # IS DISTINCT FROM - name must be "="
-  AEXPR_NOT_DISTINCT = 4     # IS NOT DISTINCT FROM - name must be "="
-  AEXPR_NULLIF = 5           # NULLIF - name must be "="
-  AEXPR_OF = 6               # IS [NOT] OF - name must be "=" or "<>"
-  AEXPR_IN = 7               # [NOT] IN - name must be "=" or "<>"
-  AEXPR_LIKE = 8             # [NOT] LIKE - name must be "~~" or "!~~"
-  AEXPR_ILIKE = 9            # [NOT] ILIKE - name must be "~~*" or "!~~*"
-  AEXPR_SIMILAR = 10         # [NOT] SIMILAR - name must be "~" or "!~"
-  AEXPR_BETWEEN = 11         # name must be "BETWEEN"
-  AEXPR_NOT_BETWEEN = 12     # name must be "NOT BETWEEN"
-  AEXPR_BETWEEN_SYM = 13     # name must be "BETWEEN SYMMETRIC"
-  AEXPR_NOT_BETWEEN_SYM = 14 # name must be "NOT BETWEEN SYMMETRIC"
-  AEXPR_PAREN = 15           # nameless dummy node for parentheses
-
-  TRANS_STMT_BEGIN = 0
-  TRANS_STMT_START = 1 # semantically identical to BEGIN
-  TRANS_STMT_COMMIT = 2
-  TRANS_STMT_ROLLBACK = 3
-  TRANS_STMT_SAVEPOINT = 4
-  TRANS_STMT_RELEASE = 5
-  TRANS_STMT_ROLLBACK_TO = 6
-  TRANS_STMT_PREPARE = 7
-  TRANS_STMT_COMMIT_PREPARED = 8
-  TRANS_STMT_ROLLBACK_PREPARED = 9
 
   SUBLINK_TYPE_EXISTS = 0     # EXISTS(SELECT ...)
   SUBLINK_TYPE_ALL = 1        # (lefthand) op ALL (SELECT ...)
@@ -227,71 +137,24 @@ class PgQuery
   LCS_FORSHARE = 2       # FOR SHARE
   LCS_FORNOKEYUPDATE = 3 # FOR NO KEY UPDATE
   LCS_FORUPDATE = 4      # FOR UPDATE
+end
 
-  AT_AddColumn = 0                  # add column
-  AT_AddColumnRecurse = 1           # internal to commands/tablecmds.c
-  AT_AddColumnToView = 2            # implicitly via CREATE OR REPLACE VIEW
-  AT_ColumnDefault = 3              # alter column default
-  AT_DropNotNull = 4                # alter column drop not null
-  AT_SetNotNull = 5                 # alter column set not null
-  AT_SetStatistics = 6              # alter column set statistics
-  AT_SetOptions = 7                 # alter column set ( options )
-  AT_ResetOptions = 8               # alter column reset ( options )
-  AT_SetStorage = 9                 # alter column set storage
-  AT_DropColumn = 10                # drop column
-  AT_DropColumnRecurse = 11         # internal to commands/tablecmds.c
-  AT_AddIndex = 12                  # add index
-  AT_ReAddIndex = 13                # internal to commands/tablecmds.c
-  AT_AddConstraint = 14             # add constraint
-  AT_AddConstraintRecurse = 15      # internal to commands/tablecmds.c
-  AT_ReAddConstraint = 16           # internal to commands/tablecmds.c
-  AT_AlterConstraint = 17           # alter constraint
-  AT_ValidateConstraint = 18        # validate constraint
-  AT_ValidateConstraintRecurse = 19 # internal to commands/tablecmds.c
-  AT_ProcessedConstraint = 20       # pre-processed add constraint (local in parser/parse_utilcmd.c)
-  AT_AddIndexConstraint = 21        # add constraint using existing index
-  AT_DropConstraint = 22            # drop constraint
-  AT_DropConstraintRecurse = 23     # internal to commands/tablecmds.c
-  AT_ReAddComment = 24              # internal to commands/tablecmds.c
-  AT_AlterColumnType = 25           # alter column type
-  AT_AlterColumnGenericOptions = 26 # alter column OPTIONS (...)
-  AT_ChangeOwner = 27               # change owner
-  AT_ClusterOn = 28                 # CLUSTER ON
-  AT_DropCluster = 29               # SET WITHOUT CLUSTER
-  AT_SetLogged = 30                 # SET LOGGED
-  AT_SetUnLogged = 31               # SET UNLOGGED
-  AT_AddOids = 32                   # SET WITH OIDS
-  AT_AddOidsRecurse = 33            # internal to commands/tablecmds.c
-  AT_DropOids = 34                  # SET WITHOUT OIDS
-  AT_SetTableSpace = 35             # SET TABLESPACE
-  AT_SetRelOptions = 36             # SET (...) -- AM specific parameters
-  AT_ResetRelOptions = 37           # RESET (...) -- AM specific parameters
-  AT_ReplaceRelOptions = 38         # replace reloption list in its entirety
-  AT_EnableTrig = 39                # ENABLE TRIGGER name
-  AT_EnableAlwaysTrig = 40          # ENABLE ALWAYS TRIGGER name
-  AT_EnableReplicaTrig = 41         # ENABLE REPLICA TRIGGER name
-  AT_DisableTrig = 42               # DISABLE TRIGGER name
-  AT_EnableTrigAll = 43             # ENABLE TRIGGER ALL
-  AT_DisableTrigAll = 44            #  DISABLE TRIGGER ALL
-  AT_EnableTrigUser = 45            # ENABLE TRIGGER USER
-  AT_DisableTrigUser = 46           # DISABLE TRIGGER USER
-  AT_EnableRule = 47                # ENABLE RULE name
-  AT_EnableAlwaysRule = 48          # ENABLE ALWAYS RULE name
-  AT_EnableReplicaRule = 49         # ENABLE REPLICA RULE name
-  AT_DisableRule = 50               # DISABLE RULE name
-  AT_AddInherit = 51                # INHERIT parent
-  AT_DropInherit = 52               # NO INHERIT parent
-  AT_AddOf = 53                     # OF <type_name>
-  AT_DropOf = 54                    # NOT OF
-  AT_ReplicaIdentity = 55           # REPLICA IDENTITY
-  AT_EnableRowSecurity = 56         # ENABLE ROW SECURITY
-  AT_DisableRowSecurity = 57        # DISABLE ROW SECURITY
-  AT_ForceRowSecurity = 58          # FORCE ROW SECURITY
-  AT_NoForceRowSecurity = 59        # NO FORCE ROW SECURITY
-  AT_GenericOptions = 60            # OPTIONS (...)
-  AT_AttachPartition = 61           # ATTACH PARTITION
-  AT_DetachPartition = 62           # DETACH PARTITION
-  AT_AddIdentity = 63               # ADD IDENTITY
-  AT_SetIdentity = 64               # SET identity column options
-  AT_DropIdentity = 65              # DROP IDENTITY
+JSON.parse(File.read(File.dirname(__FILE__) + '/enum_defs.json'))['nodes/parsenodes']['ConstrType']['values'].map { |v| v['name'] }.compact.each_with_index do |v, idx|
+  PgQuery.const_set(v.sub('CONSTR_', 'CONSTR_TYPE_'), idx)
+end
+
+JSON.parse(File.read(File.dirname(__FILE__) + '/enum_defs.json'))['nodes/parsenodes']['ObjectType']['values'].map { |v| v['name'] }.compact.each_with_index do |v, idx|
+  PgQuery.const_set(v.sub('OBJECT_', 'OBJECT_TYPE_'), idx)
+end
+
+JSON.parse(File.read(File.dirname(__FILE__) + '/enum_defs.json'))['nodes/parsenodes']['AlterTableType']['values'].map { |v| v['name'] }.compact.each_with_index do |v, idx|
+  PgQuery.const_set(v, idx)
+end
+
+JSON.parse(File.read(File.dirname(__FILE__) + '/enum_defs.json'))['nodes/parsenodes']['A_Expr_Kind']['values'].map { |v| v['name'] }.compact.each_with_index do |v, idx|
+  PgQuery.const_set(v, idx)
+end
+
+JSON.parse(File.read(File.dirname(__FILE__) + '/enum_defs.json'))['nodes/parsenodes']['TransactionStmtKind']['values'].map { |v| v['name'] }.compact.each_with_index do |v, idx|
+  PgQuery.const_set(v, idx)
 end
