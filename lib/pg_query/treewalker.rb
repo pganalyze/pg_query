@@ -1,4 +1,4 @@
-class PgQuery
+class PgQuery::ParseResult
   private
 
   def treewalker!(normalized_parsetree)

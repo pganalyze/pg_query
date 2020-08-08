@@ -1,5 +1,5 @@
 # rubocop:disable Style/ConstantName
-class PgQuery
+module PgQuery
   # NODE TYPES
 
   A_ARRAY_EXPR = 'A_ArrayExpr'.freeze

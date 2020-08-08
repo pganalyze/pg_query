@@ -1,4 +1,4 @@
-class PgQuery
+module PgQuery
   module Deparse
     module AlterTable
       # Returns a list of strings of length one or length two. The first string

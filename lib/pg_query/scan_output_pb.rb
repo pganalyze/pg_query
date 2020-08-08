@@ -509,7 +509,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
   end
 end
 
-class PgQuery
+module PgQuery
   ScanToken = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ScanToken").msgclass
   ScanOutput = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ScanOutput").msgclass
   KeywordKind = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.KeywordKind").enummodule

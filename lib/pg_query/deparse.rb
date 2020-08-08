@@ -3,14 +3,16 @@ require_relative 'deparse/rename'
 require_relative 'deparse/interval'
 require_relative 'deparse/keywords'
 
-class PgQuery
+class PgQuery::ParseResult
   # Reconstruct all of the parsed queries into their original form
   def deparse(tree = @tree)
     tree.map do |item|
-      Deparse.from(item)
+      PgQuery::Deparse.from(item)
     end.join('; ')
   end
+end
 
+module PgQuery
   # rubocop:disable Metrics/ModuleLength
   module Deparse
     extend self
