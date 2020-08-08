@@ -1,4 +1,4 @@
-class PgQuery
+class PgQuery::ParseResult
   # Legacy parsetree from 0.7 and earlier versions - migrate to "tree" format if you can
   def parsetree # rubocop:disable Metrics/CyclomaticComplexity
     @parsetree ||= transform_nodes!(@tree) do |raw_node|
@@ -49,30 +49,30 @@ class PgQuery
   private
 
   LEGACY_NODE_NAMES = {
-    A_EXPR => 'AEXPR',
-    SELECT_STMT => 'SELECT',
-    ALTER_TABLE_CMD => 'ALTER TABLE CMD',
-    ALTER_TABLE_STMT => 'ALTER TABLE',
-    CHECK_POINT_STMT => 'CHECKPOINT',
-    CREATE_SCHEMA_STMT => 'CREATE SCHEMA',
-    CREATE_TABLE_AS_STMT => 'CREATE TABLE AS',
-    COPY_STMT => 'COPY',
-    DELETE_STMT => 'DELETE FROM',
-    DROP_STMT => 'DROP',
-    INSERT_STMT => 'INSERT INTO',
-    EXPLAIN_STMT => 'EXPLAIN',
-    LOCK_STMT => 'LOCK',
-    TRANSACTION_STMT => 'TRANSACTION',
-    TRUNCATE_STMT => 'TRUNCATE',
-    UPDATE_STMT => 'UPDATE',
-    VACUUM_STMT => 'VACUUM',
-    VARIABLE_SET_STMT => 'SET',
-    VARIABLE_SHOW_STMT => 'SHOW'
+    PgQuery::A_EXPR => 'AEXPR',
+    PgQuery::SELECT_STMT => 'SELECT',
+    PgQuery::ALTER_TABLE_CMD => 'ALTER TABLE CMD',
+    PgQuery::ALTER_TABLE_STMT => 'ALTER TABLE',
+    PgQuery::CHECK_POINT_STMT => 'CHECKPOINT',
+    PgQuery::CREATE_SCHEMA_STMT => 'CREATE SCHEMA',
+    PgQuery::CREATE_TABLE_AS_STMT => 'CREATE TABLE AS',
+    PgQuery::COPY_STMT => 'COPY',
+    PgQuery::DELETE_STMT => 'DELETE FROM',
+    PgQuery::DROP_STMT => 'DROP',
+    PgQuery::INSERT_STMT => 'INSERT INTO',
+    PgQuery::EXPLAIN_STMT => 'EXPLAIN',
+    PgQuery::LOCK_STMT => 'LOCK',
+    PgQuery::TRANSACTION_STMT => 'TRANSACTION',
+    PgQuery::TRUNCATE_STMT => 'TRUNCATE',
+    PgQuery::UPDATE_STMT => 'UPDATE',
+    PgQuery::VACUUM_STMT => 'VACUUM',
+    PgQuery::VARIABLE_SET_STMT => 'SET',
+    PgQuery::VARIABLE_SHOW_STMT => 'SHOW'
     # All others default to simply upper-casing the input name
   }.freeze
 
   LEGACY_CONSTRAINT_TYPES = {
-    CONSTR_TYPE_PRIMARY => 'PRIMARY_KEY'
+    PgQuery::CONSTR_TYPE_PRIMARY => 'PRIMARY_KEY'
   }.freeze
 
   def transform_parsetree_a_const(node)

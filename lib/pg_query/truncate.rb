@@ -1,4 +1,4 @@
-class PgQuery
+class PgQuery::ParseResult
   PossibleTruncation = Struct.new(:location, :node_type, :length, :is_array)
 
   A_TRUNCATED = 'A_Truncated'.freeze

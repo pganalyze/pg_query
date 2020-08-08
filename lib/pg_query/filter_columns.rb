@@ -1,4 +1,4 @@
-class PgQuery
+class PgQuery::ParseResult
   # Returns a list of columns that the query filters by - this excludes the
   # target list, but includes things like JOIN condition and WHERE clause.
   #

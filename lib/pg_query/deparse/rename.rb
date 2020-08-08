@@ -1,4 +1,4 @@
-class PgQuery
+module PgQuery
   module Deparse
     module Rename
       # relation, subname and object is the array key in the node.

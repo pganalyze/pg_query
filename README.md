@@ -161,6 +161,14 @@ Not supported:
 * JRuby: `pg_query` relies on a C extension, which is discouraged / not properly supported for JRuby
 * TruffleRuby: GraalVM [does not support sigjmp](https://www.graalvm.org/reference-manual/llvm/NativeExecution/), which is used by the Postgres error handling code (`pg_query` uses a copy of the Postgres parser & error handling code)
 
+## Developer tasks
+
+### Regenerate Protocol Buffers
+
+```
+protoc --proto_path=protobuf --ruby_out=lib/pg_query protobuf/*.proto
+```
+
 ## Resources
 
 See [libpg_query](https://github.com/lfittl/libpg_query/blob/10-latest/README.md#resources) for pg_query in other languages, as well as products/tools built on pg_query.

@@ -1,4 +1,4 @@
-class PgQuery
+class PgQuery::ParseResult
   class ParseError < ArgumentError
     attr_reader :location
     def initialize(message, source_file, source_line, location)

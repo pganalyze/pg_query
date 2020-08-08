@@ -1,6 +1,6 @@
 require 'digest'
 
-class PgQuery
+class PgQuery::ParseResult
   def fingerprint
     hash = Digest::SHA1.new
     fingerprint_tree(hash)

@@ -1,4 +1,4 @@
-class PgQuery
+class PgQuery::ParseResult
   def deep_dup(obj)
     case obj
     when Hash

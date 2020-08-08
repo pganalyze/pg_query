@@ -1,6 +1,6 @@
 require 'json'
 
-class PgQuery
+module PgQuery
   def self.parse(query)
     tree, stderr = _raw_parse(query)
 
@@ -16,9 +16,11 @@ class PgQuery
       warnings << line.strip
     end
 
-    PgQuery.new(query, tree, warnings)
+    PgQuery::ParseResult.new(query, tree, warnings)
   end
+end
 
+class PgQuery::ParseResult
   attr_reader :query
   attr_reader :tree
   attr_reader :warnings

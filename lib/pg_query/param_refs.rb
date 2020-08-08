@@ -1,4 +1,4 @@
-class PgQuery
+class PgQuery::ParseResult
   def param_refs # rubocop:disable Metrics/CyclomaticComplexity
     results = []
 

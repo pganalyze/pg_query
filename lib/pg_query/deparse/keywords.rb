@@ -1,4 +1,4 @@
-class PgQuery
+module PgQuery
   module Deparse # rubocop:disable Metrics/ModuleLength
     # Keywords that need to be escaped during deparsing. This matches they keywords
     # excaped by quote_identifier in Postgres ruleutils.c. You can refresh this

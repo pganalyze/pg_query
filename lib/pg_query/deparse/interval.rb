@@ -1,4 +1,4 @@
-class PgQuery
+module PgQuery
   module Deparse
     module Interval
       # A type called 'interval hour to minute' is stored in a compressed way by
