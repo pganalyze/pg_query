@@ -9,7 +9,7 @@ describe PgQuery, '.parse' do
   it "handles errors" do
     expect { described_class.parse("SELECT 'ERR") }.to(raise_error do |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1121)"
+      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1162)"
       expect(error.location).to eq 8 # 8th character in query string
     end)
   end
@@ -930,5 +930,28 @@ $BODY$
              'arg' => { 'String' => { 'str' => 'csv' } },
              'defaction' => 0,
              'location' => 44 } }] } }}}]
+  end
+
+  describe 'parsing CREATE TABLE AS' do
+    it 'finds tables in the subquery' do
+      query = described_class.parse(<<-SQL)
+        CREATE TABLE foo AS
+          SELECT * FROM bar;
+      SQL
+      expect(query.tables).to eq(['foo', 'bar'])
+      expect(query.ddl_tables).to eq(['foo'])
+      expect(query.select_tables).to eq(['bar'])
+    end
+
+    it 'finds tables in the subquery with UNION' do
+      query = described_class.parse(<<-SQL)
+        CREATE TABLE foo AS
+          SELECT id FROM bar UNION SELECT id from baz;
+      SQL
+
+      expect(query.tables).to eq(['foo', 'bar', 'baz'])
+      expect(query.ddl_tables).to eq(['foo'])
+      expect(query.select_tables).to eq(['bar', 'baz'])
+    end
   end
 end

@@ -68,7 +68,7 @@ describe PgQuery do
     # support that due to keyword/function duality (e.g. JOIN)
     expect { described_class.parse("SELECT ? 10") }.to raise_error do |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1121)"
+      expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1162)"
     end
   end
 
@@ -172,7 +172,7 @@ describe PgQuery do
 
   it "parses ?!=?" do
     e = parse_expr("?!=?")
-    expect(e["name"]).to eq [{"String"=>{"str"=>"!="}}]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"<>"}}]
     expect(e["lexpr"][described_class::PARAM_REF]).not_to be_nil
     expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
@@ -186,7 +186,7 @@ describe PgQuery do
 
   it "parses x!=?" do
     e = parse_expr("x!=?")
-    expect(e["name"]).to eq [{"String"=>{"str"=>"!="}}]
+    expect(e["name"]).to eq [{"String"=>{"str"=>"<>"}}]
     expect(e["lexpr"][described_class::COLUMN_REF]).not_to be_nil
     expect(e["rexpr"][described_class::PARAM_REF]).not_to be_nil
   end
