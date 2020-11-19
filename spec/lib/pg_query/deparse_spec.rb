@@ -352,6 +352,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'indirection with star' do
+        let(:query) { 'SELECT ("k" #= hstore(\'{id}\'::text[], ARRAY[1::text])).* FROM "test" k' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'NOT' do
         let(:query) { 'SELECT * FROM "x" WHERE NOT "y"' }
 
