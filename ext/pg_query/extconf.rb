@@ -10,11 +10,21 @@ libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
 gemdir = File.join(__dir__, '../..')
 libfile = libdir + '/libpg_query.a'
 
+expected_sha256 = '1332761f31c198cb9825e6ccccda0b6a0e57daeb824870e8524df77f1592d149'
+
 unless File.exist?("#{workdir}/libpg_query.tar.gz")
-  File.open("#{workdir}/libpg_query.tar.gz", 'wb') do |target_file|
-    open('https://codeload.github.com/lfittl/libpg_query/tar.gz/' + LIB_PG_QUERY_TAG, 'rb') do |read_file|
+  filename = "#{workdir}/libpg_query.tar.gz"
+
+  File.open(filename, 'wb') do |target_file|
+    URI.open('https://codeload.github.com/lfittl/libpg_query/tar.gz/' + LIB_PG_QUERY_TAG, 'rb') do |read_file|
       target_file.write(read_file.read)
     end
+  end
+
+  checksum = Digest::SHA256.hexdigest(File.read(filename))
+
+  if checksum != expected_sha256
+    raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{expected_sha256}"
   end
 end
 
