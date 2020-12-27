@@ -716,6 +716,22 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'WITH FROM UPDATE' do
+        let(:query) do
+          '''
+          WITH archived AS (
+            DELETE
+            FROM "employees"
+            WHERE "manager_name" = \'Mary\'
+            RETURNING "user_id"
+          )
+          UPDATE "users" SET archived = true FROM "archived" WHERE "archived"."user_id" = "id" RETURNING "id"
+          '''
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'from generated sequence' do
         let(:query) do
           '''
