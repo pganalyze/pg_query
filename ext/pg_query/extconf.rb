@@ -1,5 +1,6 @@
 # rubocop:disable Style/GlobalVars
 
+require 'digest'
 require 'mkmf'
 require 'open-uri'
 
@@ -10,16 +11,25 @@ libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
 gemdir = File.join(__dir__, '../..')
 libfile = libdir + '/libpg_query.a'
 
-unless File.exist?("#{workdir}/libpg_query.tar.gz")
-  File.open("#{workdir}/libpg_query.tar.gz", 'wb') do |target_file|
-    open('https://codeload.github.com/lfittl/libpg_query/tar.gz/' + LIB_PG_QUERY_TAG, 'rb') do |read_file|
+expected_sha256 = '1332761f31c198cb9825e6ccccda0b6a0e57daeb824870e8524df77f1592d149'
+filename = "#{workdir}/libpg_query.tar.gz"
+
+unless File.exist?(filename)
+  File.open(filename, 'wb') do |target_file|
+    URI.open('https://codeload.github.com/lfittl/libpg_query/tar.gz/' + LIB_PG_QUERY_TAG, 'rb') do |read_file|
       target_file.write(read_file.read)
     end
+  end
+
+  checksum = Digest::SHA256.hexdigest(File.read(filename))
+
+  if checksum != expected_sha256
+    raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{expected_sha256}"
   end
 end
 
 unless Dir.exist?(libdir)
-  system("tar -xzf #{workdir}/libpg_query.tar.gz") || raise('ERROR')
+  system("tar -xzf #{filename}") || raise('ERROR')
 end
 
 unless Dir.exist?(libfile)
