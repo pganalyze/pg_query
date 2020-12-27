@@ -1041,6 +1041,8 @@ class PgQuery
         format('%s %s ALL (%s)', deparse_item(node['testexpr']), deparse_item(node['operName'][0], :operator), deparse_item(node['subselect']))
       elsif node['subLinkType'] == SUBLINK_TYPE_EXISTS
         format('EXISTS(%s)', deparse_item(node['subselect']))
+      elsif node['subLinkType'] == SUBLINK_TYPE_ARRAY
+        format('ARRAY(%s)', deparse_item(node['subselect']))
       else
         format('(%s)', deparse_item(node['subselect']))
       end

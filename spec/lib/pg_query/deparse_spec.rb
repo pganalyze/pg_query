@@ -175,6 +175,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'ARRAY' do
+        let(:query) { 'SELECT ARRAY(SELECT "id" FROM "products")::bigint[]' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'LATERAL' do
         let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" m, LATERAL get_product_names("m"."id") pname' }
 
