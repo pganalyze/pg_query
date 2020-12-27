@@ -68,6 +68,7 @@ class PgQuery
   NULL_TEST = 'NullTest'.freeze
   OBJECT_WITH_ARGS = 'ObjectWithArgs'.freeze
   OID_LIST = 'OidList'.freeze
+  ON_CONFLICT_CLAUSE = 'OnConflictClause'.freeze
   PARAM_REF = 'ParamRef'.freeze
   PREPARE_STMT = 'PrepareStmt'.freeze
   RANGE_FUNCTION = 'RangeFunction'.freeze
