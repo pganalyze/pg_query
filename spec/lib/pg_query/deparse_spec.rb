@@ -1444,6 +1444,14 @@ describe PgQuery::Deparse do
       end
     end
 
+    context 'FILTER' do
+      context 'FILTER ( WHERE )' do
+        let(:query) { 'SELECT max("create_date"::date) FILTER (WHERE "cancel_date" IS NULL) OVER (ORDER BY "create_date" DESC) FROM "tb_x"' }
+
+        it { is_expected.to eq query }
+      end
+    end
+
     context 'VIEWS' do
       context 'rename view' do
         let(:query) { 'ALTER VIEW "foo" RENAME TO "bar"' }
