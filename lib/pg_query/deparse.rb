@@ -1082,6 +1082,13 @@ class PgQuery
         output.join(' ')
       end
 
+      if node['op'] == 2
+        output << deparse_item(node['larg'])
+        output << 'INTERSECT'
+        output << deparse_item(node['rarg'])
+        output.join(' ')
+      end
+
       output << 'SELECT' if node[FROM_CLAUSE_FIELD] || node[TARGET_LIST_FIELD]
 
       if node[TARGET_LIST_FIELD]
