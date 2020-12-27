@@ -151,10 +151,12 @@ to support parsing normalized queries containing `?` replacement characters.
 
 Currently tested and officially supported Ruby versions:
 
-* MRI 2.1
-* MRI 2.2
-* MRI 2.3
-* MRI 2.4
+* CRuby 2.3
+* CRuby 2.4
+* CRuby 2.5
+* CRuby 2.6
+* CRuby 2.7
+* CRuby 3.0
 
 
 ## Resources
