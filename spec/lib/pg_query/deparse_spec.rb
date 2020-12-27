@@ -192,6 +192,22 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'LATERAL JOIN with sql' do
+        let(:query) do
+          %(
+          SELECT *
+                  FROM "tb_test_main" mh
+                  JOIN LATERAL (
+                    SELECT "ftnrm".* FROM "test" ftnrm WHERE "ftnrm"."hizmet_id" = "mh"."id"
+                    UNION ALL
+                    SELECT "ftarc".* FROM "test"."test2" ftarc WHERE "ftarc"."hizmet_id" = "mh"."id"
+                  ) ft ON true
+          )
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'CROSS JOIN' do
         let(:query) do
           'SELECT "x", "y" FROM "a" CROSS JOIN "b"'
