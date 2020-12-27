@@ -1247,13 +1247,14 @@ class PgQuery
       output.join(' ')
     end
 
-    def deparse_typecast(node)
-      if deparse_item(node['typeName']) == 'boolean'
-        deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
-      else
-        context = true if node['arg']['A_Expr']
-        deparse_item(node['arg'], context) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
+    def deparse_typecast(node) # rubocop:disable Metrics/CyclomaticComplexity
+      if deparse_item(node['typeName']) == 'boolean' || deparse_item(node['typeName']) == 'bool'
+        return 'true' if deparse_item(node['arg']) == "'t'" || deparse_item(node['arg']) == 'true'
+        return 'false' if deparse_item(node['arg']) == "'f'" || deparse_item(node['arg']) == 'false'
       end
+
+      context = true if node['arg']['A_Expr']
+      deparse_item(node['arg'], context) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
     end
 
     def deparse_typename(node)
