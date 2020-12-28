@@ -4,15 +4,14 @@ require 'digest'
 require 'mkmf'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '10-1.0.3'.freeze
+LIB_PG_QUERY_TAG = '10-1.0.4'.freeze
+LIB_PG_QUERY_SHA256SUM = '88cc90296e5fcaaebd0b360c46698b7c5badddf86f120e249ef682a820d41338'.freeze
 
 workdir = Dir.pwd
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
 gemdir = File.join(__dir__, '../..')
 libfile = libdir + '/libpg_query.a'
-
-expected_sha256 = '1332761f31c198cb9825e6ccccda0b6a0e57daeb824870e8524df77f1592d149'
-filename = "#{workdir}/libpg_query.tar.gz"
+filename = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG + '.tar.gz')
 
 unless File.exist?(filename)
   File.open(filename, 'wb') do |target_file|
@@ -23,7 +22,7 @@ unless File.exist?(filename)
 
   checksum = Digest::SHA256.hexdigest(File.read(filename))
 
-  if checksum != expected_sha256
+  if checksum != LIB_PG_QUERY_SHA256SUM
     raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{expected_sha256}"
   end
 end
