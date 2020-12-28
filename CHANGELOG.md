@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.3.0     2020-12-28
+
+* Incorporate newer libpg_query updates in 10-1.0.3 and 10-1.0.4
+  * Adds support for running on ARM
+  * Fixes asprintf warning during builds
+  * Updates to newer Postgres 10 patch release (10.15)
+* Deparsing improvements by [@emin100](https://github.com/emin100)
+  * Add support for additional DROP statements (#147)
+  * Fix CREATE TABLE AS - Support without TEMP, Add ON COMMIT (#149)
+  * Empty target list support (#156)
+  * UNION parentheses (#158)
+  * OVERLAY keyword function (#161)
+  * Array indirection (#162)
+  * ARRAY functions (#163)
+  * Correctly handle column names that need escaping in INSERT and UPDATE statements (#164)
+  * INSERT INTO ON CONFLICT (#166)
+  * LATERAL JOIN (#168)
+  * UPDATE FROM clause (#170)
+  * SELECT aggregate FILTER (#175)
+  * INTERSECT operator (#176)
+* Deparsing: Improve handling of boolean type casts [@himanshu-pro](https://github.com/himanshu-pro) & [@emin100](https://github.com/emin100)
+* `tables` method: Find tables in the subquery of CREATE TABLE AS (#172) [@Tassosb](https://github.com/Tassosb)
+* Support Ruby 3.0, verify SHA256 checksum of downloaded libpg_query (#178) [@stanhu](https://github.com/stanhu)
+  * Verify SHA256 checksum to guard against any malicious attempts to change the archive
+  * Use `URI.open` to fix Ruby 3.0 support
+
+
 ## 1.2.0     2019-11-10
 
 * Reduce escaped keywords to Postgres-specific keywords, and ignore unreserved keywords
@@ -7,6 +34,7 @@
     when doing text comparisons with output involving that function
   * Note that this will lead to different output than in earlier pg_query versions,
     in some cases
+
 
 ## 1.1.1     2019-11-10
 
