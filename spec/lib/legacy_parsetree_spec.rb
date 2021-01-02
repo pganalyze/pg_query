@@ -49,7 +49,7 @@ describe PgQuery, '#parsetree' do
                "location"=>12}},
            "cmds"=>
             [{"ALTER TABLE CMD"=>
-               {"subtype"=>described_class::OBJECT_TYPE_EXTENSION,
+               {"subtype"=>described_class::OBJECT_TYPE_FOREIGN_SERVER,
                 "def"=>
                  {"CONSTRAINT"=>
                    {"contype"=>"PRIMARY_KEY",
@@ -604,11 +604,9 @@ $BODY$
            "lexpr"=>{"COLUMNREF"=>{"fields"=>["object_id"], "location"=>22}},
            "rexpr"=>
             {"FUNCCALL"=>
-              {"funcname"=>["pg_catalog", "similar_escape"],
+              {"funcname"=>["pg_catalog", "similar_to_escape"],
                "args"=>
-                [{"PARAMREF"=>{"location"=>43}},
-                 {"A_CONST"=>
-                   {"type"=>"null", "val"=>nil, "location"=>-1}}],
+                [{"PARAMREF"=>{"location"=>43}}],
                "location"=>32}},
            "location"=>32}},
        "op"=>0}}]

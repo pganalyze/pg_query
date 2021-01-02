@@ -55,4 +55,4 @@ end
 create_makefile 'pg_query/pg_query'
 
 # To update the protobufs, run this after the source has been downloaded:
-# protoc --proto_path=tmp/x86_64-darwin19/pg_query/2.6.3/libpg_query-13-latest-develop-protobuf/protobuf --ruby_out=lib/pg_query tmp/x86_64-darwin19/pg_query/2.6.3/libpg_query-13-latest-develop-protobuf/protobuf/*.proto
+# protoc --proto_path=tmp/x86_64-darwin17/pg_query/2.6.3/libpg_query-13-latest-develop-protobuf/protobuf --ruby_out=lib/pg_query tmp/x86_64-darwin17/pg_query/2.6.3/libpg_query-13-latest-develop-protobuf/protobuf/*.proto
