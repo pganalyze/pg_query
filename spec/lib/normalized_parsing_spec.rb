@@ -13,6 +13,7 @@ describe PgQuery do
     query = described_class.parse("SELECT ? FROM x")
     expect(query.tree).to eq [{described_class::RAW_STMT=>{described_class::STMT_FIELD=>{described_class::SELECT_STMT=>{described_class::TARGET_LIST_FIELD=>[{described_class::RES_TARGET=>{"val"=>{described_class::PARAM_REF=>{"location"=>7}}, "location"=>7}}],
                                     "fromClause"=>[{described_class::RANGE_VAR=>{"relname"=>"x", "inh"=>true, "relpersistence"=>"p", "location"=>14}}],
+                                    "limitOption"=>0,
                                     "op"=>0}}}}]
     expect(query.query).to eq "SELECT ? FROM x"
   end
@@ -68,7 +69,7 @@ describe PgQuery do
     # support that due to keyword/function duality (e.g. JOIN)
     expect { described_class.parse("SELECT ? 10") }.to raise_error do |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1162)"
+      expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1233)"
     end
   end
 

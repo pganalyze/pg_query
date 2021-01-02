@@ -264,7 +264,7 @@ module PgQuery
 
     def deparse_renamestmt_decision(node, type)
       if node[type]
-        if node[type].is_a?(String)
+        if node[type].is_a?(::String)
           deparse_identifier(node[type])
         elsif node[type].is_a?(Array)
           deparse_item_list(node[type])
@@ -293,7 +293,7 @@ module PgQuery
 
     def deparse_columnref(node, context = false)
       node['fields'].map do |field|
-        field.is_a?(String) ? '"' + field + '"' : deparse_item(field, context)
+        field.is_a?(::String) ? '"' + field + '"' : deparse_item(field, context)
       end.join('.')
     end
 

@@ -1,6 +1,6 @@
 require 'pg_query/scan_output_pb'
 
-class PgQuery::ParseResult
+module PgQuery
   class ScanError < ArgumentError
     attr_reader :location
     def initialize(message, source_file, source_line, location)

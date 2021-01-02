@@ -3,13 +3,39 @@ require 'spec_helper'
 describe PgQuery, '.parse' do
   it "parses a simple query" do
     query = described_class.parse("SELECT 1")
-    expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::SELECT_STMT=>{described_class::TARGET_LIST_FIELD=>[{described_class::RES_TARGET=>{"val"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>7}}, "location"=>7}}], "op"=>0}}}}]
+    expect(query.tree).to eq [
+      {
+        described_class::RAW_STMT => {
+          described_class::STMT_FIELD => {
+            described_class::SELECT_STMT => {
+              described_class::TARGET_LIST_FIELD => [
+                {
+                  described_class::RES_TARGET => {
+                    "val" => {
+                      described_class::A_CONST => {
+                        "val" => {
+                          described_class::INTEGER => { "ival" => 1 }
+                        },
+                        "location" => 7
+                      }
+                    },
+                    "location" => 7
+                  }
+                }
+              ],
+              "limitOption" => 0,
+              "op" => 0
+            }
+          }
+        }
+      }
+    ]
   end
 
   it "handles errors" do
     expect { described_class.parse("SELECT 'ERR") }.to(raise_error do |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1162)"
+      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1233)"
       expect(error.location).to eq 8 # 8th character in query string
     end)
   end
@@ -197,6 +223,7 @@ describe PgQuery, '.parse' do
                 [{described_class::RES_TARGET=>
                    {"val"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>33}},
                     "location"=>33}}],
+               "limitOption" => 0,
                "op"=>0}},
            "into"=>
             {described_class::INTO_CLAUSE=>
@@ -253,7 +280,7 @@ describe PgQuery, '.parse' do
   it 'fails to parse CREATE TABLE WITH OIDS' do
     expect { described_class.parse("CREATE TABLE test (a int4) WITH OIDS") }.to(raise_error do |error|
       expect(error).to be_a(described_class::ParseError)
-      expect(error.message).to eq "syntax error at or near \"OIDS\" (scan.l:1204)"
+      expect(error.message).to eq "syntax error at or near \"OIDS\" (scan.l:1233)"
       expect(error.location).to eq 33 # 33rd character in query string
     end)
   end
@@ -263,20 +290,37 @@ describe PgQuery, '.parse' do
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.ddl_tables).to eq ['test']
-    expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::INDEX_STMT=>
-       {"idxname"=>"testidx",
-        "relation"=>
-         {described_class::RANGE_VAR=>
-           {"relname"=>"test",
-            "inh"=>true,
-            "relpersistence"=>"p",
-            "location"=>24}},
-        "accessMethod"=>"gist",
-        "indexParams"=>
-         [{described_class::INDEX_ELEM=>
-            {"name"=>"a",
-             "ordering"=>0,
-             "nulls_ordering"=>0}}]}}}}]
+    expect(query.tree).to eq [
+      {
+        described_class::RAW_STMT => {
+          described_class::STMT_FIELD => {
+            described_class::INDEX_STMT => {
+              "idxname" => "testidx",
+              "relation" => {
+                described_class::RANGE_VAR => {
+                  "relname" => "test",
+                  "inh" => true,
+                  "relpersistence" => "p",
+                  "location" => 24
+                }
+              },
+              "accessMethod" => "gist",
+              "indexParams" => [
+                {
+                  described_class::INDEX_ELEM => {
+                    "name" => "a",
+                    "ordering" => 0,
+                    "nulls_ordering" => 0
+                  }
+                }
+              ],
+              "oldCreateSubid"=>0,
+              "oldFirstRelfilenodeSubid"=>0
+            }
+          }
+        }
+      }
+    ]
   end
 
   it 'parses CREATE SCHEMA' do
@@ -315,6 +359,7 @@ describe PgQuery, '.parse' do
                "inh"=>true,
                "relpersistence"=>"p",
                "location"=>36}}],
+          "limitOption"=>0,
           "op"=>0}},
       "withCheckOption"=>0}}}}]
   end
@@ -510,6 +555,7 @@ describe PgQuery, '.parse' do
          "inh"=>true,
          "relpersistence"=>"p",
          "location"=>68}}],
+    "limitOption"=>0,
     "withClause"=>
      {described_class::WITH_CLAUSE=>
        {"ctes"=>
@@ -551,6 +597,7 @@ describe PgQuery, '.parse' do
                          "rexpr"=>{described_class::A_CONST=>{"val"=>{described_class::INTEGER => {"ival" => 1}}, "location"=>51}},
                          "location"=>49}}],
                      "location"=>41}},
+                 "limitOption"=>0,
                  "op"=>0}},
              "location"=>5}}]}},
     "op"=>0}}}}]
@@ -934,6 +981,7 @@ $BODY$
                  'inh' => true,
                  'relpersistence' => 'p',
                  'location' => 23 } }],
+          'limitOption' => 0,
           'op' => 0 } },
         'options' =>
         [{ 'DefElem' =>
