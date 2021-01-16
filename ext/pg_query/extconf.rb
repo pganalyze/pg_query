@@ -23,7 +23,7 @@ unless File.exist?(filename)
   checksum = Digest::SHA256.hexdigest(File.read(filename))
 
   if checksum != LIB_PG_QUERY_SHA256SUM
-    raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{expected_sha256}"
+    raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{LIB_PG_QUERY_SHA256SUM}"
   end
 end
 
