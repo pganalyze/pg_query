@@ -566,6 +566,7 @@ $BODY$
   LANGUAGE plpgsql STABLE')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
+    expect(query.functions).to eq ['thing']
     expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::CREATE_FUNCTION_STMT=>
      {"replace"=>true,
       "funcname"=>[{"String"=>{"str"=>"thing"}}],
@@ -609,6 +610,7 @@ $BODY$
 ' LANGUAGE SQL")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
+    expect(query.functions).to eq ['getfoo']
     expect(query.tree).to eq [{ described_class::RAW_STMT => { described_class::STMT_FIELD => { described_class::CREATE_FUNCTION_STMT=>
     {"funcname"=>[{"String"=>{"str"=>"getfoo"}}],
     "parameters"=>
@@ -644,6 +646,48 @@ $BODY$
          "arg"=>{"String"=>{"str"=>"sql"}},
          "defaction"=>0,
          "location"=>98}}]}}}}]
+  end
+
+  it 'correctly finds created functions' do
+    query = described_class.parse(<<-SQL)
+      CREATE OR REPLACE FUNCTION testfunc(x integer) RETURNS integer AS $$
+        BEGIN
+          RETURN x
+        END;
+      $$ LANGUAGE plpgsql STABLE;
+      SELECT testfunc(1);
+    SQL
+    p query.tree
+    expect(query.functions).to eq ['testfunc', 'testfunc']
+    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.call_functions).to eq ['testfunc']
+  end
+
+  it 'correctly finds called functions' do
+    query = described_class.parse(<<-SQL)
+      SELECT testfunc(1);
+    SQL
+    expect(query.functions).to eq ['testfunc']
+    expect(query.ddl_functions).to eq []
+    expect(query.call_functions).to eq ['testfunc']
+  end
+
+  it 'correctly finds dropped functions' do
+    query = described_class.parse(<<-SQL)
+      DROP FUNCTION IF EXISTS testfunc(x integer);
+    SQL
+    expect(query.functions).to eq ['testfunc']
+    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.call_functions).to eq []
+  end
+
+  it 'correctly finds renamed functions' do
+    query = described_class.parse(<<-SQL)
+      ALTER FUNCTION testfunc(integer) RENAME TO testfunc2;
+    SQL
+    expect(query.functions).to eq ['testfunc', 'testfunc2']
+    expect(query.ddl_functions).to eq ['testfunc', 'testfunc2']
+    expect(query.call_functions).to eq []
   end
 
   # https://github.com/lfittl/pg_query/issues/38

@@ -48,27 +48,45 @@ class PgQuery
     tables_with_types.select { |t| t[:type] == :ddl }.map { |t| t[:table] }
   end
 
+  def functions
+    functions_with_types.map { |f| f[:function] }
+  end
+
+  def ddl_functions
+    functions_with_types.select { |f| f[:type] == :ddl }.map { |f| f[:function] }
+  end
+
+  def call_functions
+    functions_with_types.select { |f| f[:type] == :call }.map { |f| f[:function] }
+  end
+
   def cte_names
-    load_tables_and_aliases! if @cte_names.nil?
+    load_objects! if @cte_names.nil?
     @cte_names
   end
 
   def aliases
-    load_tables_and_aliases! if @aliases.nil?
+    load_objects! if @aliases.nil?
     @aliases
   end
 
   def tables_with_types
-    load_tables_and_aliases! if @tables.nil?
+    load_objects! if @tables.nil?
     @tables
+  end
+
+  def functions_with_types
+    load_objects! if @functions.nil?
+    @functions
   end
 
   protected
 
-  def load_tables_and_aliases! # rubocop:disable Metrics/CyclomaticComplexity
+  def load_objects! # rubocop:disable Metrics/CyclomaticComplexity
     @tables = [] # types: select, dml, ddl
     @cte_names = []
     @aliases = {}
+    @functions = [] # types: call, ddl
 
     statements = @tree.dup
     from_clause_items = [] # types: select, dml, ddl
@@ -149,6 +167,10 @@ class PgQuery
             @tables += objects.map { |r| { table: r.join('.'), type: :ddl } }
           when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
             @tables += objects.map { |r| { table: r[0..-2].join('.'), type: :ddl } }
+          when OBJECT_TYPE_FUNCTION
+            # Only one function can be dropped in a statement
+            obj = statement[DROP_STMT]['objects'][0]['ObjectWithArgs']
+            @functions << { function: obj['objname'][0]['String']['str'], type: :ddl }
           end
         when GRANT_STMT
           objects = statement[GRANT_STMT]['objects']
@@ -165,6 +187,20 @@ class PgQuery
         # The following are other statements that don't fit into query/DML/DDL
         when EXPLAIN_STMT
           statements << statement[EXPLAIN_STMT]['query']
+        when CREATE_FUNCTION_STMT
+          @functions << {
+            function: statement[CREATE_FUNCTION_STMT]['funcname'][0]['String']['str'],
+            type: :ddl
+          }
+        when RENAME_STMT
+          if statement[RENAME_STMT]['renameType'] == OBJECT_TYPE_FUNCTION
+            original_name = statement[RENAME_STMT]['object']['ObjectWithArgs']['objname'][0]['String']['str']
+            new_name = statement[RENAME_STMT]['newname']
+            @functions += [
+              { function: original_name, type: :ddl },
+              { function: new_name, type: :ddl }
+            ]
+          end
         end
 
         statement_value = statement.values[0]
@@ -196,6 +232,11 @@ class PgQuery
           subselect_items << next_item[RES_TARGET]['val']
         when SUB_LINK
           statements << next_item[SUB_LINK]['subselect']
+        when FUNC_CALL
+          @functions << {
+            function: next_item[FUNC_CALL]['funcname'][0]['String']['str'],
+            type: :call
+          }
         end
       end
 
@@ -228,6 +269,7 @@ class PgQuery
       end
     end
 
+    @functions.uniq!
     @tables.uniq!
     @cte_names.uniq!
   end
