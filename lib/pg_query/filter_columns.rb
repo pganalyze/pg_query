@@ -4,7 +4,7 @@ class PgQuery
   #
   # Note: This also traverses into sub-selects.
   def filter_columns # rubocop:disable Metrics/CyclomaticComplexity
-    load_tables_and_aliases! if @aliases.nil?
+    load_objects! if @aliases.nil?
 
     # Get condition items from the parsetree
     statements = @tree.dup
