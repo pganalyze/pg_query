@@ -104,6 +104,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'INTERSECT' do
+        let(:query) { "SELECT 'a' INTERSECT SELECT 'b'" }
+
+        it { is_expected.to eq query }
+      end
+
       context 'with specific column alias' do
         let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(\"first\", \"last\")" }
 
@@ -163,8 +169,20 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'OVERLAY' do
+        let(:query) { 'SELECT OVERLAY("m"."name" PLACING \'******\' FROM 3 FOR 6) AS tc_kimlik FROM "tb_test" m' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'SUM' do
         let(:query) { 'SELECT sum("price_cents") FROM "products"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ARRAY' do
+        let(:query) { 'SELECT ARRAY(SELECT "id" FROM "products")::bigint[]' }
 
         it { is_expected.to eq query }
       end
@@ -180,6 +198,22 @@ describe PgQuery::Deparse do
           %(
           SELECT "m"."name" AS mname, "pname"
             FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+          )
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
+
+      context 'LATERAL JOIN with sql' do
+        let(:query) do
+          %(
+          SELECT *
+                  FROM "tb_test_main" mh
+                  JOIN LATERAL (
+                    SELECT "ftnrm".* FROM "test" ftnrm WHERE "ftnrm"."hizmet_id" = "mh"."id"
+                    UNION ALL
+                    SELECT "ftarc".* FROM "test"."test2" ftarc WHERE "ftarc"."hizmet_id" = "mh"."id"
+                  ) ft ON true
           )
         end
 
@@ -334,6 +368,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'array indirection' do
+        let(:query) { "SELECT \"proname\", (SELECT regexp_split_to_array(\"proargtypes\"::text, ' ') )[\"idx\"] AS argtype, \"proargnames\"[\"idx\"] AS argname FROM \"pg_proc\"" }
+
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'sub query indirection' do
         let(:query) { "SELECT COALESCE(((SELECT customer.sp_person(\"n\".\"id\") AS sp_person)).\"city_id\", NULL::int) AS city_id FROM \"customer\".\"tb_customer\" n" }
 
@@ -342,6 +382,12 @@ describe PgQuery::Deparse do
 
       context 'complex indirection' do
         let(:query) { 'SELECT * FROM "x" WHERE "y" = "z"[?][?]' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'indirection with star' do
+        let(:query) { 'SELECT ("k" #= hstore(\'{id}\'::text[], ARRAY[1::text])).* FROM "test" k' }
 
         it { is_expected.to eq query }
       end
@@ -548,6 +594,31 @@ describe PgQuery::Deparse do
 
         it { is_expected.to eq query }
       end
+
+      context 'boolean column reference' do
+        let(:query) { "SELECT \"table_field\"::bool, \"table_field\"::boolean FROM \"t\"" }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'boolean bool value cast' do
+        let(:query) { "SELECT true, false" }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'boolean string value cast' do
+        let(:query) { "SELECT 't'::boolean, 'f'::boolean" }
+
+        # The AST is identical to the more common "SELECT true" case, which is why we return the short-form in that case
+        it { is_expected.to eq "SELECT true, false" }
+      end
+
+      context 'boolean integer value cast' do
+        let(:query) { "SELECT 1::boolean, 0::boolean" }
+
+        it { is_expected.to eq query }
+      end
     end
 
     context 'param ref' do
@@ -567,6 +638,12 @@ describe PgQuery::Deparse do
     context 'INSERT' do
       context 'basic' do
         let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\')' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'special column name' do
+        let(:query) { 'INSERT INTO "x" ("user") VALUES (\'abc\')' }
 
         it { is_expected.to eq query }
       end
@@ -597,6 +674,30 @@ describe PgQuery::Deparse do
         end
 
         it { is_expected.to eq oneline_query }
+      end
+
+      context 'ON CONFLICT' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO UPDATE SET "user" = EXCLUDED."user" RETURNING "y"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ON CONFLICT DO NOTHING' do
+        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO NOTHING RETURNING "y"' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ON CONFLICT DO NOTHING with WHERE clause' do
+        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (10, \'Conrad International\') ON CONFLICT ("did") WHERE "is_active" DO NOTHING' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'ON CONFLICT DO NOTHING on CONSTRAINT' do
+        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (9, \'Antwerp Design\') ON CONFLICT ON CONSTRAINT "distributors_pkey" DO NOTHING' }
+
+        it { is_expected.to eq query }
       end
 
       context 'HAVING' do
@@ -704,6 +805,22 @@ describe PgQuery::Deparse do
         it { is_expected.to eq oneline_query }
       end
 
+      context 'WITH FROM UPDATE' do
+        let(:query) do
+          '''
+          WITH archived AS (
+            DELETE
+            FROM "employees"
+            WHERE "manager_name" = \'Mary\'
+            RETURNING "user_id"
+          )
+          UPDATE "users" SET archived = true FROM "archived" WHERE "archived"."user_id" = "id" RETURNING "id"
+          '''
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
+
       context 'from generated sequence' do
         let(:query) do
           '''
@@ -725,6 +842,12 @@ describe PgQuery::Deparse do
         let(:query) { 'UPDATE "foo" SET a = ?, b = ?' }
 
         it { is_expected.to eq oneline_query }
+      end
+
+      context 'special column name' do
+        let(:query) { "UPDATE \"x\" SET \"user\" = 'emin'" }
+
+        it { is_expected.to eq query }
       end
     end
 
@@ -1433,6 +1556,14 @@ describe PgQuery::Deparse do
 
       context 'OVER with named window' do
         let(:query) { 'SELECT rank(*) OVER named_window' }
+
+        it { is_expected.to eq query }
+      end
+    end
+
+    context 'FILTER' do
+      context 'FILTER ( WHERE )' do
+        let(:query) { 'SELECT max("create_date"::date) FILTER (WHERE "cancel_date" IS NULL) OVER (ORDER BY "create_date" DESC) FROM "tb_x"' }
 
         it { is_expected.to eq query }
       end

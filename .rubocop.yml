@@ -2,6 +2,7 @@ require: rubocop-rspec
 
 AllCops:
   Exclude:
+    - ext/pg_query/extconf.rb
     - vendor/**/*
     - tmp/**/*
 

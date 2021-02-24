@@ -92,7 +92,7 @@ class PgQuery
       when COLUMN_DEF
         deparse_columndef(node)
       when COLUMN_REF
-        deparse_columnref(node)
+        deparse_columnref(node, context)
       when COMMON_TABLE_EXPR
         deparse_cte(node)
       when COMPOSITE_TYPE_STMT
@@ -216,6 +216,8 @@ class PgQuery
           format("'%s'", node['str'].gsub("'", "''"))
         elsif [FUNC_CALL, TYPE_NAME, :operator, :defname_as].include?(context)
           node['str']
+        elsif context == :excluded
+          node['str'].casecmp('EXCLUDED').zero? ? node['str'].upcase : deparse_identifier(node['str'], escape_always: true)
         else
           deparse_identifier(node['str'], escape_always: true)
         end
@@ -285,9 +287,9 @@ class PgQuery
       output.join(' ')
     end
 
-    def deparse_columnref(node)
+    def deparse_columnref(node, context = false)
       node['fields'].map do |field|
-        field.is_a?(String) ? '"' + field + '"' : deparse_item(field)
+        field.is_a?(String) ? '"' + field + '"' : deparse_item(field, context)
       end.join('.')
     end
 
@@ -308,7 +310,11 @@ class PgQuery
     def deparse_a_indirection(node)
       output = []
       arg = deparse_item(node['arg'])
-      output << if node['arg'].key?(FUNC_CALL) || node['arg'].key?(SUB_LINK)
+      array_indirection = []
+      if node['indirection']
+        array_indirection = node['indirection'].select { |a| a.key?(A_INDICES) }
+      end
+      output << if node['arg'].key?(FUNC_CALL) || node['arg'].key?(A_EXPR) || (node['arg'].key?(SUB_LINK) && array_indirection.count.zero?)
                   "(#{arg})."
                 else
                   arg
@@ -393,7 +399,9 @@ class PgQuery
       if context == :select
         [deparse_item(node['val']), deparse_identifier(node['name'])].compact.join(' AS ')
       elsif context == :update
-        [node['name'], deparse_item(node['val'])].compact.join(' = ')
+        [deparse_identifier(node['name']), deparse_item(node['val'])].compact.join(' = ')
+      elsif context == :excluded
+        [deparse_identifier(node['name'], escape_always: true), deparse_item(node['val'], context)].compact.join(' = ')
       elsif node['val'].nil?
         node['name']
       else
@@ -409,10 +417,17 @@ class PgQuery
       # COUNT(*)
       args << '*' if node['agg_star']
 
-      name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) } - ['pg_catalog']).join('.')
-      distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
-      output << format('%s(%s%s)', name, distinct, args.join(', '))
-      output << format('OVER %s', deparse_item(node['over'])) if node['over']
+      name = (node['funcname'].map { |n| deparse_item(n, FUNC_CALL) }).join('.')
+      if name == 'pg_catalog.overlay'
+        # Note that this is a bit odd, but "OVERLAY" is a keyword on its own merit, and only accepts the
+        # keyword parameter style when its called as a keyword, not as a regular function (i.e. pg_catalog.overlay)
+        output << format('OVERLAY(%s PLACING %s FROM %s FOR %s)', args[0], args[1], args[2], args[3])
+      else
+        distinct = node['agg_distinct'] ? 'DISTINCT ' : ''
+        output << format('%s(%s%s)', name, distinct, args.join(', '))
+        output << format('FILTER (WHERE %s)', deparse_item(node['agg_filter'])) if node['agg_filter']
+        output << format('OVER %s', deparse_item(node['over'])) if node['over']
+      end
 
       output.join(' ')
     end
@@ -1040,13 +1055,17 @@ class PgQuery
         format('%s %s ALL (%s)', deparse_item(node['testexpr']), deparse_item(node['operName'][0], :operator), deparse_item(node['subselect']))
       elsif node['subLinkType'] == SUBLINK_TYPE_EXISTS
         format('EXISTS(%s)', deparse_item(node['subselect']))
+      elsif node['subLinkType'] == SUBLINK_TYPE_ARRAY
+        format('ARRAY(%s)', deparse_item(node['subselect']))
       else
         format('(%s)', deparse_item(node['subselect']))
       end
     end
 
     def deparse_rangesubselect(node)
-      output = '(' + deparse_item(node['subquery']) + ')'
+      output = ''
+      output = 'LATERAL ' if node['lateral']
+      output = output + '(' + deparse_item(node['subquery']) + ')'
       if node['alias']
         output + ' ' + deparse_item(node['alias'])
       else
@@ -1078,6 +1097,13 @@ class PgQuery
       if node['op'] == 3
         output << deparse_item(node['larg'])
         output << 'EXCEPT'
+        output << deparse_item(node['rarg'])
+        output.join(' ')
+      end
+
+      if node['op'] == 2
+        output << deparse_item(node['larg'])
+        output << 'INTERSECT'
         output << deparse_item(node['rarg'])
         output.join(' ')
       end
@@ -1192,11 +1218,15 @@ class PgQuery
 
       if node['cols']
         output << '(' + node['cols'].map do |column|
-          deparse_item(column)
+          deparse_item(column, :select)
         end.join(', ') + ')'
       end
 
       output << deparse_item(node['selectStmt'])
+
+      if node['onConflictClause']
+        output << deparse_insert_onconflict(node['onConflictClause'][ON_CONFLICT_CLAUSE])
+      end
 
       if node['returningList']
         output << 'RETURNING'
@@ -1204,6 +1234,40 @@ class PgQuery
           deparse_item(column, :select)
         end.join(', ')
       end
+
+      output.join(' ')
+    end
+
+    def deparse_insert_onconflict(node) # rubocop:disable Metrics/CyclomaticComplexity
+      output = []
+      output << 'ON CONFLICT'
+
+      infer = node['infer']['InferClause']
+      if infer['indexElems']
+        output << '(' + infer['indexElems'].map do |column|
+          '"' + column['IndexElem']['name'] + '"'
+        end.join(', ') + ')'
+      end
+
+      if infer['conname']
+        output << 'ON CONSTRAINT'
+        output << deparse_identifier(infer['conname'], escape_always: true)
+      end
+
+      output << 'DO UPDATE' if node['action'] == 2
+
+      if node[TARGET_LIST_FIELD]
+        output << 'SET ' + node[TARGET_LIST_FIELD].map do |column|
+          deparse_item(column, :excluded)
+        end.join(', ')
+      end
+
+      if infer['whereClause']
+        output << 'WHERE'
+        output << deparse_item(infer['whereClause'])
+      end
+
+      output << 'DO NOTHING' if node['action'] == 1
 
       output.join(' ')
     end
@@ -1223,6 +1287,13 @@ class PgQuery
         output << columns.join(', ')
       end
 
+      if node[FROM_CLAUSE_FIELD]
+        output << 'FROM'
+        output << node[FROM_CLAUSE_FIELD].map do |item|
+          deparse_item(item)
+        end.join(', ')
+      end
+
       if node['whereClause']
         output << 'WHERE'
         output << deparse_item(node['whereClause'])
@@ -1239,13 +1310,34 @@ class PgQuery
       output.join(' ')
     end
 
+    # Builds a properly-qualified reference to a built-in Postgres type.
+    #
+    # Inspired by SystemTypeName in Postgres' gram.y, but without node name
+    # and locations, to simplify comparison.
+    def make_system_type_name(name)
+      {
+        'names' => [
+          { 'String' => { 'str' => 'pg_catalog' } },
+          { 'String' => { 'str' => name } }
+        ],
+        'typemod' => -1
+      }
+    end
+
+    def make_string(str)
+      { 'String' => { 'str' => str } }
+    end
+
     def deparse_typecast(node)
-      if deparse_item(node['typeName']) == 'boolean'
-        deparse_item(node['arg']) == "'t'" ? 'true' : 'false'
-      else
-        context = true if node['arg']['A_Expr']
-        deparse_item(node['arg'], context) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
+      # Handle "bool" or "false" in the statement, which is represented as a typecast
+      # (other boolean casts should be represented as a cast, i.e. don't need special handling)
+      if node['arg'][A_CONST] && node['typeName'][TYPE_NAME].slice('names', 'typemod') == make_system_type_name('bool')
+        return 'true' if node['arg'][A_CONST]['val'] == make_string('t')
+        return 'false' if node['arg'][A_CONST]['val'] == make_string('f')
       end
+
+      context = true if node['arg']['A_Expr']
+      deparse_item(node['arg'], context) + '::' + deparse_typename(node['typeName'][TYPE_NAME])
     end
 
     def deparse_typename(node)

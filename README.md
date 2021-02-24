@@ -151,11 +151,15 @@ to support parsing normalized queries containing `?` replacement characters.
 
 Currently tested and officially supported Ruby versions:
 
-* MRI 2.1
-* MRI 2.2
-* MRI 2.3
-* MRI 2.4
+* CRuby 2.5
+* CRuby 2.6
+* CRuby 2.7
+* CRuby 3.0
 
+Not supported:
+
+* JRuby: `pg_query` relies on a C extension, which is discouraged / not properly supported for JRuby
+* TruffleRuby: GraalVM [does not support sigjmp](https://www.graalvm.org/reference-manual/llvm/NativeExecution/), which is used by the Postgres error handling code (`pg_query` uses a copy of the Postgres parser & error handling code)
 
 ## Resources
 
