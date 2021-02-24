@@ -49,6 +49,9 @@ class PgQuery
     tables_with_types.select { |t| t[:type] == :ddl }.map { |t| t[:table] }
   end
 
+  # Returns function names, ignoring their argument types. This may be insufficient
+  # if you need to disambiguate two functions with the same name but different argument
+  # types.
   def functions
     functions_with_types.map { |f| f[:function] }
   end
