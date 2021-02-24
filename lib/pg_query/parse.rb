@@ -30,6 +30,7 @@ class PgQuery
     @tables = nil
     @aliases = nil
     @cte_names = nil
+    @functions = nil
   end
 
   def tables
