@@ -657,7 +657,8 @@ $BODY$
       $$ LANGUAGE plpgsql STABLE;
       SELECT testfunc(1);
     SQL
-    p query.tree
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
     expect(query.functions).to eq ['testfunc', 'testfunc']
     expect(query.ddl_functions).to eq ['testfunc']
     expect(query.call_functions).to eq ['testfunc']
@@ -667,6 +668,8 @@ $BODY$
     query = described_class.parse(<<-SQL)
       SELECT testfunc(1);
     SQL
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
     expect(query.functions).to eq ['testfunc']
     expect(query.ddl_functions).to eq []
     expect(query.call_functions).to eq ['testfunc']
@@ -676,6 +679,8 @@ $BODY$
     query = described_class.parse(<<-SQL)
       DROP FUNCTION IF EXISTS testfunc(x integer);
     SQL
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
     expect(query.functions).to eq ['testfunc']
     expect(query.ddl_functions).to eq ['testfunc']
     expect(query.call_functions).to eq []
@@ -685,6 +690,8 @@ $BODY$
     query = described_class.parse(<<-SQL)
       ALTER FUNCTION testfunc(integer) RENAME TO testfunc2;
     SQL
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
     expect(query.functions).to eq ['testfunc', 'testfunc2']
     expect(query.ddl_functions).to eq ['testfunc', 'testfunc2']
     expect(query.call_functions).to eq []
