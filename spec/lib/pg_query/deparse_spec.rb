@@ -2112,47 +2112,47 @@ describe PgQuery do
         it { is_expected.to eq oneline_query }
       end
     end
-  end
 
-  describe '#deparse' do
-    subject { PgQuery.parse(oneline_query).deparse }
+    context 'other examples' do
+      subject { PgQuery.parse(oneline_query).deparse }
 
-    context 'for single query' do
-      let(:query) do
-        '''
-        SELECT m.name AS mname, pname
-          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
-        '''
+      context 'for single query' do
+        let(:query) do
+          '''
+          SELECT m.name AS mname, pname
+            FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
+          '''
+        end
+
+        it { is_expected.to eq oneline_query }
       end
 
-      it { is_expected.to eq oneline_query }
-    end
+      context 'for multiple queries' do
+        let(:query) do
+          '''
+          SELECT m.name AS mname, pname
+            FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
+          INSERT INTO manufacturers_daily (a, b)
+            SELECT a, b FROM manufacturers;
+          '''
+        end
 
-    context 'for multiple queries' do
-      let(:query) do
-        '''
-        SELECT m.name AS mname, pname
-          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
-        INSERT INTO manufacturers_daily (a, b)
-          SELECT a, b FROM manufacturers;
-        '''
+        it { is_expected.to eq oneline_query }
       end
 
-      it { is_expected.to eq oneline_query }
-    end
+      context 'for multiple queries with a semicolon inside a value' do
+        let(:query) do
+          '''
+          SELECT m.name AS mname, pname
+            FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
+          UPDATE users SET name = \'bobby; drop tables\';
+          INSERT INTO manufacturers_daily (a, b)
+            SELECT a, b FROM manufacturers;
+          '''
+        end
 
-    context 'for multiple queries with a semicolon inside a value' do
-      let(:query) do
-        '''
-        SELECT m.name AS mname, pname
-          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
-        UPDATE users SET name = \'bobby; drop tables\';
-        INSERT INTO manufacturers_daily (a, b)
-          SELECT a, b FROM manufacturers;
-        '''
+        it { is_expected.to eq oneline_query }
       end
-
-      it { is_expected.to eq oneline_query }
     end
   end
 end
