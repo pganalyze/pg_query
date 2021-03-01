@@ -10,6 +10,14 @@ module PgQuery
       PgQuery::Node.new(node_field_name(node_field_val) => node_field_val)
     end
 
+    # Make it easier to initialize value nodes
+    def self.from_string(str)
+      PgQuery::Node.new(string: PgQuery::String.new(str: str))
+    end
+    def self.from_integer(ival)
+      PgQuery::Node.new(integer: PgQuery::Integer.new(ival: ival))
+    end
+
     private
 
     # This needs to match libpg_query naming for the Node message field names
