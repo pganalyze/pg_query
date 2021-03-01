@@ -1,13 +1,19 @@
-require 'json'
+module PgQuery
+  class Node
+    def inspect
+      node ? format('<PgQuery::Node: %s: %s>', node, public_send(node).inspect) : '<PgQuery::Node>'
+    end
+  end
+end
 
 module PgQuery
   def self.parse(query)
-    tree, stderr = _raw_parse(query)
+    result, stderr = parse_protobuf(query)
 
     begin
-      tree = JSON.parse(tree, max_nesting: 1000)
-    rescue JSON::ParserError
-      raise ParseError.new('Failed to parse JSON', __FILE__, __LINE__, -1)
+      result = PgQuery::ParseResult.decode(result)
+    rescue Google::Protobuf::ParseError
+      raise PgQuery::ParseError.new('Failed to parse tree', __FILE__, __LINE__, -1)
     end
 
     warnings = []
@@ -16,10 +22,10 @@ module PgQuery
       warnings << line.strip
     end
 
-    PgQuery::ParseResult.new(query, tree, warnings)
+    PgQuery::ParserResult.new(query, result, warnings)
   end
 
-  class ParseResult
+  class ParserResult
     attr_reader :query
     attr_reader :tree
     attr_reader :warnings
@@ -71,134 +77,139 @@ module PgQuery
       @cte_names = []
       @aliases = {}
 
-      statements = @tree.dup
+      statements = @tree.stmts.dup.to_a.map { |s| s.stmt }
       from_clause_items = [] # types: select, dml, ddl
       subselect_items = []
 
       loop do
         statement = statements.shift
         if statement
-          case statement.keys[0]
-          when RAW_STMT
-            statements << statement[RAW_STMT][STMT_FIELD]
+          case statement.node
+          when :list
+            statements += statement.list.items
           # The following statement types do not modify tables and are added to from_clause_items
           # (and subsequently @tables)
-          when SELECT_STMT
-            case statement[SELECT_STMT]['op']
-            when 0
-              (statement[SELECT_STMT][FROM_CLAUSE_FIELD] || []).each do |item|
-                if item[RANGE_SUBSELECT]
-                  statements << item[RANGE_SUBSELECT]['subquery']
+          when :select_stmt
+            subselect_items.concat(statement.select_stmt.target_list)
+            subselect_items << statement.select_stmt.where_clause if statement.select_stmt.where_clause
+            subselect_items.concat(statement.select_stmt.sort_clause.collect { |h| h.sort_by.node })
+            subselect_items.concat(statement.select_stmt.group_clause)
+            subselect_items << statement.select_stmt.having_clause if statement.select_stmt.having_clause
+
+            case statement.select_stmt.op
+            when :SETOP_NONE
+              (statement.select_stmt.from_clause || []).each do |item|
+                if item.node == :range_subselect
+                  statements << item.range_subselect.subquery
                 else
                   from_clause_items << { item: item, type: :select }
                 end
               end
-            when 1
-              statements << statement[SELECT_STMT]['larg'] if statement[SELECT_STMT]['larg']
-              statements << statement[SELECT_STMT]['rarg'] if statement[SELECT_STMT]['rarg']
+            when :SETOP_UNION
+              statements << PgQuery::Node.new(select_stmt: statement.select_stmt.larg) if statement.select_stmt.larg
+              statements << PgQuery::Node.new(select_stmt: statement.select_stmt.rarg) if statement.select_stmt.rarg
             end
 
-            if (with_clause = statement[SELECT_STMT]['withClause'])
-              cte_statements, cte_names = statements_and_cte_names_for_with_clause(with_clause)
+            if statement.select_stmt.with_clause
+              cte_statements, cte_names = statements_and_cte_names_for_with_clause(statement.select_stmt.with_clause)
               @cte_names.concat(cte_names)
               statements.concat(cte_statements)
             end
           # The following statements modify the contents of a table
-          when INSERT_STMT, UPDATE_STMT, DELETE_STMT
-            value = statement.values[0]
-            from_clause_items << { item: value['relation'], type: :dml }
-            statements << value['selectStmt'] if value.key?('selectStmt')
-            statements << value['withClause'] if value.key?('withClause')
+          when :insert_stmt, :update_stmt, :delete_stmt
+            value = statement.public_send(statement.node)
+            from_clause_items << { item: PgQuery::Node.new(range_var: value.relation), type: :dml }
+            statements << value.select_stmt if statement.node == :insert_stmt && value.select_stmt
 
-            if (with_clause = value['withClause'])
-              cte_statements, cte_names = statements_and_cte_names_for_with_clause(with_clause)
+            subselect_items.concat(statement.update_stmt.target_list) if statement.node == :update_stmt
+            subselect_items << statement.update_stmt.where_clause if statement.node == :update_stmt && statement.update_stmt.where_clause
+            subselect_items << statement.delete_stmt.where_clause if statement.node == :delete_stmt && statement.delete_stmt.where_clause
+
+            if value.with_clause
+              cte_statements, cte_names = statements_and_cte_names_for_with_clause(value.with_clause)
               @cte_names.concat(cte_names)
               statements.concat(cte_statements)
             end
-          when COPY_STMT
-            from_clause_items << { item: statement.values[0]['relation'], type: :dml } if statement.values[0]['relation']
-            statements << statement.values[0]['query']
+          when :copy_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.copy_stmt.relation), type: :dml } if statement.copy_stmt.relation
+            statements << statement.copy_stmt.query
           # The following statement types are DDL (changing table structure)
-          when ALTER_TABLE_STMT, CREATE_STMT
-            from_clause_items << { item: statement.values[0]['relation'], type: :ddl }
-          when CREATE_TABLE_AS_STMT
-            if statement[CREATE_TABLE_AS_STMT]['into'] && statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel']
-              from_clause_items << { item: statement[CREATE_TABLE_AS_STMT]['into'][INTO_CLAUSE]['rel'], type: :ddl }
+          when :alter_table_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.alter_table_stmt.relation), type: :ddl }
+          when :create_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.create_stmt.relation), type: :ddl }
+          when :create_table_as_stmt
+            if statement.create_table_as_stmt.into && statement.create_table_as_stmt.into.rel
+              from_clause_items << { item: PgQuery::Node.new(range_var: statement.create_table_as_stmt.into.rel), type: :ddl }
             end
-            if statement[CREATE_TABLE_AS_STMT]['query']
-              statements << statement[CREATE_TABLE_AS_STMT]['query']
-            end
-          when TRUNCATE_STMT
-            from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :ddl } }
-          when VIEW_STMT
-            from_clause_items << { item: statement[VIEW_STMT]['view'], type: :ddl }
-            statements << statement[VIEW_STMT]['query']
-          when INDEX_STMT, CREATE_TRIG_STMT, RULE_STMT
-            from_clause_items << { item: statement.values[0]['relation'], type: :ddl }
-          when VACUUM_STMT
-            from_clause_items += statement.values[0]['rels'].map { |r| { item: r[VACUUM_RELATION]['relation'], type: :ddl } }
-          when REFRESH_MAT_VIEW_STMT
-            from_clause_items << { item: statement[REFRESH_MAT_VIEW_STMT]['relation'], type: :ddl }
-          when DROP_STMT
-            objects = statement[DROP_STMT]['objects'].map do |obj|
-              if obj.is_a?(Array)
-                obj.map { |obj2| obj2['String'] && obj2['String']['str'] }
-              else
-                obj['String'] && obj['String']['str']
+            statements << statement.create_table_as_stmt.query if statement.create_table_as_stmt.query
+          when :truncate_stmt
+            from_clause_items += statement.truncate_stmt.relations.map { |r| { item: r, type: :ddl } }
+          when :view_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.view_stmt.view), type: :ddl }
+            statements << statement.view_stmt.query
+          when :index_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.index_stmt.relation), type: :ddl }
+          when :create_trig_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.create_trig_stmt.relation), type: :ddl }
+          when :rule_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.rule_stmt.relation), type: :ddl }
+          when :vacuum_stmt
+            from_clause_items += statement.vacuum_stmt.rels.map { |r| { item: PgQuery::Node.new(range_var: r.vacuum_relation.relation), type: :ddl } if r.node == :vacuum_relation }
+          when :refresh_mat_view_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.refresh_mat_view_stmt.relation), type: :ddl }
+          when :drop_stmt
+            objects = statement.drop_stmt.objects.map do |obj|
+              case obj.node
+              when :list
+                obj.list.items.map { |obj2| obj2.string.str if obj2.node == :string }
+              when :string
+                obj.string.str
               end
             end
-            case statement[DROP_STMT]['removeType']
-            when OBJECT_TYPE_TABLE
+            case statement.drop_stmt.remove_type
+            when :OBJECT_TABLE
               @tables += objects.map { |r| { name: r.join('.'), type: :ddl } }
-            when OBJECT_TYPE_RULE, OBJECT_TYPE_TRIGGER
+            when :OBJECT_RULE, :OBJECT_TRIGGER
               @tables += objects.map { |r| { name: r[0..-2].join('.'), type: :ddl } }
             end
-          when GRANT_STMT
-            objects = statement[GRANT_STMT]['objects']
-            case statement[GRANT_STMT]['objtype']
-            when OBJECT_TYPE_COLUMN # Column # rubocop:disable Lint/EmptyWhen
+          when :grant_stmt
+            objects = statement.grant_stmt.objects
+            case statement.grant_stmt.objtype
+            when :OBJECT_COLUMN # Column # rubocop:disable Lint/EmptyWhen
               # FIXME
-            when OBJECT_TYPE_TABLE # Table
+            when :OBJECT_TABLE # Table
               from_clause_items += objects.map { |o| { item: o, type: :ddl } }
-            when OBJECT_TYPE_SEQUENCE # Sequence # rubocop:disable Lint/EmptyWhen
+            when :OBJECT_SEQUENCE # Sequence # rubocop:disable Lint/EmptyWhen
               # FIXME
             end
-          when LOCK_STMT
-            from_clause_items += statement.values[0]['relations'].map { |r| { item: r, type: :ddl } }
+          when :lock_stmt
+            from_clause_items += statement.lock_stmt.relations.map { |r| { item: r, type: :ddl } }
           # The following are other statements that don't fit into query/DML/DDL
-          when EXPLAIN_STMT
-            statements << statement[EXPLAIN_STMT]['query']
-          end
-
-          statement_value = statement.values[0]
-          unless statement.empty?
-            subselect_items.concat(statement_value['targetList']) if statement_value['targetList']
-            subselect_items << statement_value['whereClause'] if statement_value['whereClause']
-            subselect_items.concat(statement_value['sortClause'].collect { |h| h[SORT_BY]['node'] }) if statement_value['sortClause']
-            subselect_items.concat(statement_value['groupClause']) if statement_value['groupClause']
-            subselect_items << statement_value['havingClause'] if statement_value['havingClause']
+          when :explain_stmt
+            statements << statement.explain_stmt.query
           end
         end
 
         next_item = subselect_items.shift
         if next_item
-          case next_item.keys[0]
-          when A_EXPR
+          case next_item.node
+          when :a_expr
             %w[lexpr rexpr].each do |side|
-              elem = next_item.values[0][side]
+              elem = next_item.a_expr.public_send(side)
               next unless elem
-              if elem.is_a?(Array)
+              if elem.is_a?(Array) # FIXME - this needs to traverse a list
                 subselect_items += elem
               else
                 subselect_items << elem
               end
             end
-          when BOOL_EXPR
-            subselect_items.concat(next_item.values[0]['args'])
-          when RES_TARGET
-            subselect_items << next_item[RES_TARGET]['val']
-          when SUB_LINK
-            statements << next_item[SUB_LINK]['subselect']
+          when :bool_expr
+            subselect_items.concat(next_item.bool_expr.args)
+          when :res_target
+            subselect_items << next_item.res_target.val
+          when :sub_link
+            statements << next_item.sub_link.subselect
           end
         end
 
@@ -209,31 +220,30 @@ module PgQuery
         next_item = from_clause_items.shift
         break unless next_item && next_item[:item]
 
-        case next_item[:item].keys[0]
-        when JOIN_EXPR
-          %w[larg rarg].each do |side|
-            from_clause_items << { item: next_item[:item][JOIN_EXPR][side], type: next_item[:type] }
-          end
-        when ROW_EXPR
-          from_clause_items += next_item[:item][ROW_EXPR]['args'].map { |a| { item: a, type: next_item[:type] } }
-        when RANGE_VAR
-          rangevar = next_item[:item][RANGE_VAR]
-          next if !rangevar['schemaname'] && @cte_names.include?(rangevar['relname'])
+        case next_item[:item].node
+        when :join_expr
+          from_clause_items << { item: next_item[:item].join_expr.larg, type: next_item[:type] }
+          from_clause_items << { item: next_item[:item].join_expr.rarg, type: next_item[:type] }
+        when :row_expr
+          from_clause_items += next_item[:item].row_expr.args.map { |a| { item: a, type: next_item[:type] } }
+        when :range_var
+          rangevar = next_item[:item].range_var
+          next if rangevar.schemaname.empty? && @cte_names.include?(rangevar.relname)
 
-          table = [rangevar['schemaname'], rangevar['relname']].compact.join('.')
+          table = [rangevar.schemaname, rangevar.relname].reject { |s| s.nil? || s.empty? }.join('.')
           @tables << {
             name: table,
             type: next_item[:type],
-            location: rangevar['location'],
-            schemaname: rangevar['schemaname'],
-            relname: rangevar['relname'],
-            inh: rangevar['inh']
+            location: rangevar.location,
+            schemaname: (rangevar.schemaname if !rangevar.schemaname.empty?),
+            relname: rangevar.relname,
+            inh: rangevar.inh
           }
-          @aliases[rangevar['alias'][ALIAS]['aliasname']] = table if rangevar['alias']
-        when RANGE_SUBSELECT
-          from_clause_items << { item: next_item[:item][RANGE_SUBSELECT]['subquery'], type: next_item[:type] }
-        when SELECT_STMT
-          from_clause = next_item[:item][SELECT_STMT][FROM_CLAUSE_FIELD]
+          @aliases[rangevar.alias.aliasname] = table if rangevar.alias
+        when :range_subselect
+          from_clause_items << { item: next_item[:item].range_subselect.subquery, type: next_item[:type] }
+        when :select_stmt
+          from_clause = next_item[:item].select_stmt.from_clause
           from_clause_items += from_clause.map { |r| { item: r, type: next_item[:type] } } if from_clause
         end
       end
@@ -242,14 +252,14 @@ module PgQuery
       @cte_names.uniq!
     end
 
-    def statements_and_cte_names_for_with_clause(with_clause)
+    def statements_and_cte_names_for_with_clause(with_clause) # FIXME
       statements = []
       cte_names = []
 
-      with_clause[WITH_CLAUSE]['ctes'].each do |item|
-        next unless item[COMMON_TABLE_EXPR]
-        cte_names << item[COMMON_TABLE_EXPR]['ctename']
-        statements << item[COMMON_TABLE_EXPR]['ctequery']
+      with_clause.ctes.each do |item|
+        next unless item.node == :common_table_expr
+        cte_names << item.common_table_expr.ctename
+        statements << item.common_table_expr.ctequery
       end
 
       [statements, cte_names]

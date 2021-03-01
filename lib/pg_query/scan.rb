@@ -1,5 +1,3 @@
-require 'pg_query/scan_output_pb'
-
 module PgQuery
   class ScanError < ArgumentError
     attr_reader :location
@@ -12,7 +10,7 @@ module PgQuery
   def self.scan(query)
     out, stderr = _raw_scan(query)
 
-    result = PgQuery::ScanOutput.decode(out)
+    result = PgQuery::ScanResult.decode(out)
 
     warnings = []
     stderr.each_line do |line|
