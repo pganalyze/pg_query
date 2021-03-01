@@ -8,7 +8,6 @@ require 'pg_query/pg_query'
 require 'pg_query/constants'
 require 'pg_query/parse'
 require 'pg_query/treewalker'
-require 'pg_query/deep_dup'
 
 require 'pg_query/filter_columns'
 require 'pg_query/fingerprint'

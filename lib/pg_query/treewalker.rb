@@ -11,9 +11,10 @@ class PgQuery::ParserResult
       when Google::Protobuf::MessageExts
         parent_node.to_h.keys.each do |parent_field|
           node = parent_node[parent_field.to_s]
+          next if node.nil?
           location = parent_location + [parent_field]
 
-          yield(parent_node, parent_field, node, location) if node.kind_of?(Google::Protobuf::MessageExts)
+          yield(parent_node, parent_field, node, location) if node.kind_of?(Google::Protobuf::MessageExts) || node.kind_of?(Google::Protobuf::RepeatedField)
 
           nodes << [node, location] unless node.nil?
         end
