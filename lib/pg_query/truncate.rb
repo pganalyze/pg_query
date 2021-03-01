@@ -1,13 +1,12 @@
-module PgQuery
-  A_TRUNCATED = 'A_Truncated'.freeze
 
+module PgQuery
   class ParserResult
     PossibleTruncation = Struct.new(:location, :node_type, :length, :is_array)
 
     # Truncates the query string to be below the specified length, first trying to
     # omit less important parts of the query, and only then cutting off the end.
     def truncate(max_length)
-      output = deparse(@tree)
+      output = deparse
 
       # Early exit if we're already below the max length
       return output if output.size <= max_length
@@ -17,16 +16,29 @@ module PgQuery
       # Truncate the deepest possible truncation that is the longest first
       truncations.sort_by! { |t| [-t.location.size, -t.length] }
 
-      tree = deep_dup(@tree)
+      tree = dup_tree
       truncations.each do |truncation|
         next if truncation.length < 3
 
-        find_tree_location(tree, truncation.location) do |expr, k|
-          expr[k] = { A_TRUNCATED => nil }
-          expr[k] = [expr[k]] if truncation.is_array
+        find_tree_location(tree, truncation.location) do |node, k|
+          dummy_column_ref = PgQuery::Node.new(column_ref: PgQuery::ColumnRef.new(fields: [PgQuery::Node.new(string: PgQuery::String.new(str: "…"))]))
+          case truncation.node_type
+          when :target_list
+            node.target_list.replace([
+              PgQuery::Node.new(res_target: PgQuery::ResTarget.new(val: dummy_column_ref))
+            ])
+          when :where_clause
+            node.where_clause = dummy_column_ref
+          when :ctequery
+            node.ctequery = PgQuery::Node.new(select_stmt: PgQuery::SelectStmt.new(where_clause: dummy_column_ref, op: :SETOP_NONE))
+          when :cols
+            node.cols.replace([PgQuery::Node.from(PgQuery::ResTarget.new(name: "…"))])
+          else
+            raise ArgumentError, format('Unexpected truncation node type: %s', truncation.node_type)
+          end
         end
 
-        output = deparse(tree)
+        output = PgQuery.deparse(tree).gsub('SELECT WHERE "…"', '...').gsub('"…"', '...')
         return output if output.size <= max_length
       end
 
@@ -41,18 +53,23 @@ module PgQuery
 
       treewalker! @tree do |_expr, k, v, location|
         case k
-        when TARGET_LIST_FIELD
-          length = deparse([{ SELECT_STMT => { k => v } }]).size - 7 # 'SELECT '.size
-
-          truncations << PossibleTruncation.new(location, TARGET_LIST_FIELD, length, true)
-        when 'whereClause'
-          length = deparse([{ SELECT_STMT => { k => v } }]).size
-
-          truncations << PossibleTruncation.new(location, 'whereClause', length, false)
-        when 'ctequery'
-          truncations << PossibleTruncation.new(location, 'ctequery', deparse([v]).size, false)
-        when 'cols'
-          truncations << PossibleTruncation.new(location, 'cols', deparse(v).size, true)
+        when :target_list
+          length = PgQuery.deparse_stmt(PgQuery::SelectStmt.new(k => v.to_a, op: :SETOP_NONE)).size - 7 # 'SELECT '.size
+          truncations << PossibleTruncation.new(location, :target_list, length, true)
+        when :where_clause
+          length = PgQuery.deparse_expr(v).size
+          truncations << PossibleTruncation.new(location, :where_clause, length, false)
+        when :ctequery
+          length = PgQuery.deparse_stmt(v[v.node.to_s]).size
+          truncations << PossibleTruncation.new(location, :ctequery, length, false)
+        when :cols
+          length = PgQuery.deparse_stmt(
+            PgQuery::InsertStmt.new(
+              relation: PgQuery::RangeVar.new(relname: "x", inh: true),
+              cols: v.to_a
+            )
+          ).size - 31 # "INSERT INTO x () DEFAULT VALUES".size
+          truncations << PossibleTruncation.new(location, :cols, length, true)
         end
       end
 

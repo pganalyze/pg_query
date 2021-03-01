@@ -31,6 +31,10 @@ module PgQuery
       @cte_names = nil
     end
 
+    def dup_tree
+      ParseResult.decode(ParseResult.encode(@tree))
+    end
+
     def tables
       tables_with_details.map { |t| t[:name] }.uniq
     end
