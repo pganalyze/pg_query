@@ -1,12 +1,4 @@
 module PgQuery
-  class Node
-    def inspect
-      node ? format('<PgQuery::Node: %s: %s>', node, public_send(node).inspect) : '<PgQuery::Node>'
-    end
-  end
-end
-
-module PgQuery
   def self.parse(query)
     result, stderr = parse_protobuf(query)
 
