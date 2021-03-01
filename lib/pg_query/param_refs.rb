@@ -1,47 +1,48 @@
-module PgQuery
-  class ParseResult
-    def param_refs # rubocop:disable Metrics/CyclomaticComplexity
-      results = []
+class PgQuery::ParserResult
+  def param_refs # rubocop:disable Metrics/CyclomaticComplexity
+    results = []
 
-      treewalker! @tree do |_, _, v|
-        next unless v.is_a?(Hash)
+    treewalker! @tree do |_, _, node, location|
+      case node
+      when PgQuery::ParamRef
+        # Ignore param refs inside type casts, as these are already handled
+        next if location[-3..-1] == [:type_cast, :arg, :param_ref]
 
-        if v[PARAM_REF]
-          results << { 'location' => v[PARAM_REF]['location'],
-                      'length' => param_ref_length(v[PARAM_REF]) }
-        elsif v[TYPE_CAST]
-          next unless v[TYPE_CAST]['arg'] && v[TYPE_CAST]['typeName']
+        results << { 'location' => node.location,
+                     'length' => param_ref_length(node) }
+      when PgQuery::TypeCast
+        next unless node.arg && node.type_name
 
-          p = v[TYPE_CAST]['arg'].delete(PARAM_REF)
-          t = v[TYPE_CAST]['typeName'].delete(TYPE_NAME)
-          next unless p && t
+        p = node.arg.param_ref
+        t = node.type_name
+        next unless p && t
 
-          location = p['location']
-          typeloc  = t['location']
-          typename = t['names']
-          length   = param_ref_length(p)
+        location = p.location
+        typeloc  = t.location
+        length   = param_ref_length(p)
 
-          if typeloc < location
-            length += location - typeloc
-            location = typeloc
-          end
-
-          results << { 'location' => location, 'length' => length, 'typename' => typename }
+        if location == -1
+          location = typeloc
+        elsif typeloc < location
+          length += location - typeloc
+          location = typeloc
         end
-      end
 
-      results.sort_by! { |r| r['location'] }
-      results
+        results << { 'location' => location, 'length' => length, 'typename' => t.names.map { |n| n.string.str } }
+      end
     end
 
-    private
+    results.sort_by! { |r| r['location'] }
+    results
+  end
 
-    def param_ref_length(paramref_node)
-      if paramref_node['number'] == 0 # rubocop:disable Style/NumericPredicate
-        1 # Actually a ? replacement character
-      else
-        ('$' + paramref_node['number'].to_s).size
-      end
+  private
+
+  def param_ref_length(paramref_node)
+    if paramref_node.number == 0 # rubocop:disable Style/NumericPredicate
+      1 # Actually a ? replacement character
+    else
+      ('$' + paramref_node.number.to_s).size
     end
   end
 end

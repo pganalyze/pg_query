@@ -1,53 +1,34 @@
-class PgQuery::ParseResult
+class PgQuery::ParserResult
   private
 
-  def treewalker!(normalized_parsetree)
-    exprs = normalized_parsetree.dup.map { |e| [e, []] }
+  def treewalker!(tree)
+    nodes = [[tree.dup, []]]
 
     loop do
-      expr, parent_location = exprs.shift
+      parent_node, parent_location = nodes.shift
 
-      if expr.is_a?(Hash)
-        expr.each do |k, v|
-          location = parent_location + [k]
+      case parent_node
+      when Google::Protobuf::MessageExts
+        parent_node.to_h.keys.each do |parent_field|
+          node = parent_node[parent_field.to_s]
+          location = parent_location + [parent_field]
 
-          yield(expr, k, v, location)
+          yield(parent_node, parent_field, node, location) if node.kind_of?(Google::Protobuf::MessageExts)
 
-          exprs << [v, location] unless v.nil?
+          nodes << [node, location] unless node.nil?
         end
-      elsif expr.is_a?(Array)
-        exprs += expr.map.with_index { |e, idx| [e, parent_location + [idx]] }
+      when Google::Protobuf::RepeatedField
+        nodes += parent_node.map.with_index { |e, idx| [e, parent_location + [idx]] }
       end
 
-      break if exprs.empty?
+      break if nodes.empty?
     end
   end
 
-  def find_tree_location(normalized_parsetree, searched_location)
-    treewalker! normalized_parsetree do |expr, k, v, location|
+  def find_tree_location(tree, searched_location)
+    treewalker! tree do |parent_node, parent_field, node, location|
       next unless location == searched_location
-      yield(expr, k, v)
+      yield(parent_node, parent_field, node)
     end
-  end
-
-  def transform_nodes!(parsetree)
-    result = deep_dup(parsetree)
-    exprs = result.dup
-
-    loop do
-      expr = exprs.shift
-
-      if expr.is_a?(Hash)
-        yield(expr) if expr.size == 1 && expr.keys[0][/^[A-Z]+/]
-
-        exprs += expr.values.compact
-      elsif expr.is_a?(Array)
-        exprs += expr
-      end
-
-      break if exprs.empty?
-    end
-
-    result
   end
 end
