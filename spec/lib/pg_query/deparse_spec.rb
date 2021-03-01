@@ -1,45 +1,44 @@
 require 'spec_helper'
 
-describe PgQuery::Deparse do
+describe PgQuery do
   let(:oneline_query) { query.gsub(/\s+/, ' ').gsub('( ', '(').gsub(' )', ')').strip.chomp(';') }
-  let(:parsetree) { PgQuery.parse(query).tree }
 
-  describe '.from' do
-    subject { described_class.from(parsetree.first) }
+  describe '.deparse' do
+    subject { PgQuery.parse(query).deparse }
 
     context 'SELECT' do
       context 'basic statement' do
-        let(:query) { 'SELECT "a" AS b FROM "x" WHERE "y" = 5 AND "z" = "y"' }
+        let(:query) { 'SELECT a AS b FROM x WHERE y = 5 AND z = y' }
 
         it { is_expected.to eq query }
       end
 
       context 'with empty target list' do
-        let(:query) { 'SELECT FROM "x" WHERE "y" = 5 AND "z" = "y"' }
+        let(:query) { 'SELECT FROM x WHERE y = 5 AND z = y' }
 
         it { is_expected.to eq query }
       end
 
       context 'basic statement with schema' do
-        let(:query) { 'SELECT "a" AS b FROM "public"."x" WHERE "y" = 5 AND "z" = "y"' }
+        let(:query) { 'SELECT a AS b FROM public.x WHERE y = 5 AND z = y' }
 
         it { is_expected.to eq query }
       end
 
       context 'with DISTINCT' do
-        let(:query) { 'SELECT DISTINCT "a", "b", * FROM "c" WHERE "d" = "e"' }
+        let(:query) { 'SELECT DISTINCT a, b, * FROM c WHERE d = e' }
 
         it { is_expected.to eq query }
       end
 
       context 'with DISTINCT ON' do
-        let(:query) { 'SELECT DISTINCT ON ("a") "a", "b" FROM "c"' }
+        let(:query) { 'SELECT DISTINCT ON (a) a, b FROM c' }
 
         it { is_expected.to eq query }
       end
 
       context 'with INTO' do
-        let(:query) { 'SELECT * INTO "films_recent" FROM "films" WHERE "date_prod" >= \'2002-01-01\'' }
+        let(:query) { 'SELECT * INTO films_recent FROM films WHERE date_prod >= \'2002-01-01\'' }
 
         it { is_expected.to eq query }
       end
@@ -57,25 +56,25 @@ describe PgQuery::Deparse do
       end
 
       context 'complex SELECT statement' do
-        let(:query) { 'SELECT "memory_total_bytes", "memory_swap_total_bytes" - "memory_swap_free_bytes" AS swap, date_part(?, "s"."collected_at") AS collected_at FROM "snapshots" s JOIN "system_snapshots" ON "snapshot_id" = "s"."id" WHERE "s"."database_id" = ? AND "s"."collected_at" >= ? AND "s"."collected_at" <= ? ORDER BY "collected_at" ASC' }
+        let(:query) { 'SELECT memory_total_bytes, memory_swap_total_bytes - memory_swap_free_bytes AS swap, date_part(?, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON snapshot_id = s.id WHERE s.database_id = ? AND s.collected_at >= ? AND s.collected_at <= ? ORDER BY collected_at ASC' }
 
         it { is_expected.to eq query }
       end
 
       context 'ORDER BY with NULLS FIRST' do
-        let(:query) { 'SELECT * FROM "a" ORDER BY "x" ASC NULLS FIRST' }
+        let(:query) { 'SELECT * FROM a ORDER BY x ASC NULLS FIRST' }
 
         it { is_expected.to eq query }
       end
 
       context 'ORDER BY with NULLS LAST' do
-        let(:query) { 'SELECT * FROM "a" ORDER BY "x" ASC NULLS LAST' }
+        let(:query) { 'SELECT * FROM a ORDER BY x ASC NULLS LAST' }
 
         it { is_expected.to eq query }
       end
 
       context 'ORDER BY with COLLATE' do
-        let(:query) { 'SELECT * FROM "a" ORDER BY "x" COLLATE "tr_TR" DESC NULLS LAST' }
+        let(:query) { 'SELECT * FROM a ORDER BY x COLLATE "tr_TR" DESC NULLS LAST' }
 
         it { is_expected.to eq query }
       end
@@ -87,19 +86,19 @@ describe PgQuery::Deparse do
       end
 
       context 'UNION or UNION ALL' do
-        let(:query) { 'WITH kodsis AS (SELECT * FROM "application"), kodsis2 AS (SELECT * FROM "application") SELECT * FROM "kodsis" UNION SELECT * FROM "kodsis" ORDER BY "id" DESC' }
+        let(:query) { 'WITH kodsis AS (SELECT * FROM application), kodsis2 AS (SELECT * FROM application) SELECT * FROM kodsis UNION SELECT * FROM kodsis ORDER BY id DESC' }
 
         it { is_expected.to eq query }
       end
 
       context 'UNION with ORDER' do
-        let(:query) { 'SELECT "id", "name" FROM "table1" UNION ( SELECT "id", "name" FROM "table2" ORDER BY "name" ) ORDER BY "id" ASC' }
+        let(:query) { 'SELECT id, name FROM table1 UNION (SELECT id, name FROM table2 ORDER BY name) ORDER BY id ASC' }
 
         it { is_expected.to eq query }
       end
 
       context 'EXCEPT' do
-        let(:query) { "SELECT \"a\" FROM \"kodsis\" EXCEPT SELECT \"a\" FROM \"application\"" }
+        let(:query) { "SELECT a FROM kodsis EXCEPT SELECT a FROM application" }
 
         it { is_expected.to eq query }
       end
@@ -111,37 +110,37 @@ describe PgQuery::Deparse do
       end
 
       context 'with specific column alias' do
-        let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(\"first\", \"last\")" }
+        let(:query) { "SELECT * FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow')) names(first, last)" }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'with LIKE filter' do
-        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" LIKE 'postgresql:%';" }
+        let(:query) { "SELECT * FROM users WHERE name LIKE 'postgresql:%';" }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'with NOT LIKE filter' do
-        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" NOT LIKE 'postgresql:%';" }
+        let(:query) { "SELECT * FROM users WHERE name NOT LIKE 'postgresql:%';" }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'with ILIKE filter' do
-        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" ILIKE 'postgresql:%';" }
+        let(:query) { "SELECT * FROM users WHERE name ILIKE 'postgresql:%';" }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'with NOT ILIKE filter' do
-        let(:query) { "SELECT * FROM \"users\" WHERE \"name\" NOT ILIKE 'postgresql:%';" }
+        let(:query) { "SELECT * FROM users WHERE name NOT ILIKE 'postgresql:%';" }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'simple WITH statement' do
-        let(:query) { 'WITH t AS (SELECT random() AS x FROM generate_series(1, 3)) SELECT * FROM "t"' }
+        let(:query) { 'WITH t AS (SELECT random() AS x FROM generate_series(1, 3)) SELECT * FROM t' }
 
         it { is_expected.to eq query }
       end
@@ -150,19 +149,19 @@ describe PgQuery::Deparse do
         # Taken from http://www.postgresql.org/docs/9.1/static/queries-with.html
         let(:query) do
           %(
-          WITH RECURSIVE search_graph ("id", "link", "data", "depth", "path", "cycle") AS (
-              SELECT "g"."id", "g"."link", "g"."data", 1,
-                ARRAY[ROW("g"."f1", "g"."f2")],
+          WITH RECURSIVE search_graph(id, link, data, depth, path, cycle) AS (
+              SELECT g.id, g.link, g.data, 1,
+                ARRAY[ROW(g.f1, g.f2)],
                 false
-              FROM "graph" g
+              FROM graph g
             UNION ALL
-              SELECT "g"."id", "g"."link", "g"."data", "sg"."depth" + 1,
-                "path" || ROW("g"."f1", "g"."f2"),
-                ROW("g"."f1", "g"."f2") = ANY("path")
-              FROM "graph" g, "search_graph" sg
-              WHERE "g"."id" = "sg"."link" AND NOT "cycle"
+              SELECT g.id, g.link, g.data, sg.depth + 1,
+                path || ROW(g.f1, g.f2),
+                ROW(g.f1, g.f2) = ANY(path)
+              FROM graph g, search_graph sg
+              WHERE g.id = sg.link AND NOT cycle
           )
-          SELECT "id", "data", "link" FROM "search_graph";
+          SELECT id, data, link FROM search_graph;
           )
         end
 
@@ -170,25 +169,25 @@ describe PgQuery::Deparse do
       end
 
       context 'OVERLAY' do
-        let(:query) { 'SELECT OVERLAY("m"."name" PLACING \'******\' FROM 3 FOR 6) AS tc_kimlik FROM "tb_test" m' }
+        let(:query) { 'SELECT OVERLAY(m.name PLACING \'******\' FROM 3 FOR 6) AS tc_kimlik FROM tb_test m' }
 
         it { is_expected.to eq query }
       end
 
       context 'SUM' do
-        let(:query) { 'SELECT sum("price_cents") FROM "products"' }
+        let(:query) { 'SELECT sum(price_cents) FROM products' }
 
         it { is_expected.to eq query }
       end
 
       context 'ARRAY' do
-        let(:query) { 'SELECT ARRAY(SELECT "id" FROM "products")::bigint[]' }
+        let(:query) { 'SELECT ARRAY(SELECT id FROM products)::bigint[]' }
 
         it { is_expected.to eq query }
       end
 
       context 'LATERAL' do
-        let(:query) { 'SELECT "m"."name" AS mname, "pname" FROM "manufacturers" m, LATERAL get_product_names("m"."id") pname' }
+        let(:query) { 'SELECT m.name AS mname, pname FROM manufacturers m, LATERAL get_product_names(m.id) pname' }
 
         it { is_expected.to eq query }
       end
@@ -196,8 +195,8 @@ describe PgQuery::Deparse do
       context 'LATERAL JOIN' do
         let(:query) do
           %(
-          SELECT "m"."name" AS mname, "pname"
-            FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+          SELECT m.name AS mname, pname
+            FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
           )
         end
 
@@ -208,11 +207,11 @@ describe PgQuery::Deparse do
         let(:query) do
           %(
           SELECT *
-                  FROM "tb_test_main" mh
+                  FROM tb_test_main mh
                   JOIN LATERAL (
-                    SELECT "ftnrm".* FROM "test" ftnrm WHERE "ftnrm"."hizmet_id" = "mh"."id"
+                    SELECT ftnrm.* FROM test ftnrm WHERE ftnrm.hizmet_id = mh.id
                     UNION ALL
-                    SELECT "ftarc".* FROM "test"."test2" ftarc WHERE "ftarc"."hizmet_id" = "mh"."id"
+                    SELECT ftarc.* FROM test.test2 ftarc WHERE ftarc.hizmet_id = mh.id
                   ) ft ON true
           )
         end
@@ -222,39 +221,39 @@ describe PgQuery::Deparse do
 
       context 'CROSS JOIN' do
         let(:query) do
-          'SELECT "x", "y" FROM "a" CROSS JOIN "b"'
+          'SELECT x, y FROM a CROSS JOIN b'
         end
 
         it { is_expected.to eq query }
       end
 
       context 'NATURAL JOIN' do
-        let(:query) { 'SELECT "x", "y" FROM "a" NATURAL JOIN "b"' }
+        let(:query) { 'SELECT x, y FROM a NATURAL JOIN b' }
 
         it { is_expected.to eq query }
       end
 
       context 'LEFT JOIN' do
-        let(:query) { 'SELECT "x", "y" FROM "a" LEFT JOIN "b" ON 1 > 0' }
+        let(:query) { 'SELECT x, y FROM a LEFT JOIN b ON 1 > 0' }
 
         it { is_expected.to eq query }
       end
 
       context 'RIGHT JOIN' do
-        let(:query) { 'SELECT "x", "y" FROM "a" RIGHT JOIN "b" ON 1 > 0' }
+        let(:query) { 'SELECT x, y FROM a RIGHT JOIN b ON 1 > 0' }
 
         it { is_expected.to eq query }
       end
 
       context 'FULL JOIN' do
-        let(:query) { 'SELECT "x", "y" FROM "a" FULL JOIN "b" ON 1 > 0' }
+        let(:query) { 'SELECT x, y FROM a FULL JOIN b ON 1 > 0' }
 
         it { is_expected.to eq query }
       end
 
       context 'JOIN with USING' do
         let(:query) do
-          'SELECT "x", "y" FROM "a" JOIN "b" USING ("z")'
+          'SELECT x, y FROM a JOIN b USING (z)'
         end
 
         it { is_expected.to eq query }
@@ -267,31 +266,31 @@ describe PgQuery::Deparse do
       end
 
       context 'IS NULL' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NULL' }
+        let(:query) { 'SELECT * FROM x WHERE y IS NULL' }
 
         it { is_expected.to eq query }
       end
 
       context 'IS NOT NULL' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT NULL' }
+        let(:query) { 'SELECT * FROM x WHERE y IS NOT NULL' }
 
         it { is_expected.to eq query }
       end
 
       context 'COUNT' do
-        let(:query) { 'SELECT count(*) FROM "x" WHERE "y" IS NOT NULL' }
+        let(:query) { 'SELECT count(*) FROM x WHERE y IS NOT NULL' }
 
         it { is_expected.to eq query }
       end
 
       context 'COUNT DISTINCT' do
-        let(:query) { 'SELECT count(DISTINCT "a") FROM "x" WHERE "y" IS NOT NULL' }
+        let(:query) { 'SELECT count(DISTINCT a) FROM x WHERE y IS NOT NULL' }
 
         it { is_expected.to eq query }
       end
 
       context 'basic CASE WHEN statements' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' END FROM "accounts" a' }
+        let(:query) { 'SELECT CASE WHEN a.status = 1 THEN \'active\' WHEN a.status = 2 THEN \'inactive\' END FROM accounts a' }
 
         it { is_expected.to eq query }
       end
@@ -303,19 +302,19 @@ describe PgQuery::Deparse do
       end
 
       context 'CASE WHEN statements with ELSE clause' do
-        let(:query) { 'SELECT CASE WHEN "a"."status" = 1 THEN \'active\' WHEN "a"."status" = 2 THEN \'inactive\' ELSE \'unknown\' END FROM "accounts" a' }
+        let(:query) { 'SELECT CASE WHEN a.status = 1 THEN \'active\' WHEN a.status = 2 THEN \'inactive\' ELSE \'unknown\' END FROM accounts a' }
 
         it { is_expected.to eq query }
       end
 
       context 'CASE WHEN statements in WHERE clause' do
-        let(:query) { 'SELECT * FROM "accounts" WHERE "status" = CASE WHEN "x" = 1 THEN \'active\' ELSE \'inactive\' END' }
+        let(:query) { 'SELECT * FROM accounts WHERE status = CASE WHEN x = 1 THEN \'active\' ELSE \'inactive\' END' }
 
         it { is_expected.to eq query }
       end
 
       context 'CASE WHEN EXISTS' do
-        let(:query) { "SELECT CASE WHEN EXISTS(SELECT 1) THEN 1 ELSE 2 END" }
+        let(:query) { "SELECT CASE WHEN EXISTS (SELECT 1) THEN 1 ELSE 2 END" }
 
         it { is_expected.to eq query }
       end
@@ -333,73 +332,73 @@ describe PgQuery::Deparse do
       end
 
       context 'IN expression' do
-        let(:query) { 'SELECT * FROM "x" WHERE "id" IN (1, 2, 3)' }
+        let(:query) { 'SELECT * FROM x WHERE id IN (1, 2, 3)' }
 
         it { is_expected.to eq query }
       end
 
       context 'IN expression Subselect' do
-        let(:query) { 'SELECT * FROM "x" WHERE "id" IN (SELECT "id" FROM "account")' }
+        let(:query) { 'SELECT * FROM x WHERE id IN (SELECT id FROM account)' }
 
         it { is_expected.to eq query }
       end
 
       context 'NOT IN expression' do
-        let(:query) { 'SELECT * FROM "x" WHERE "id" NOT IN (1, 2, 3)' }
+        let(:query) { 'SELECT * FROM x WHERE id NOT IN (1, 2, 3)' }
 
         it { is_expected.to eq query }
       end
 
       context 'Subselect JOIN' do
-        let(:query) { 'SELECT * FROM "x" JOIN (SELECT "n" FROM "z") b ON "a"."id" = "b"."id"' }
+        let(:query) { 'SELECT * FROM x JOIN (SELECT n FROM z) b ON a.id = b.id' }
 
         it { is_expected.to eq query }
       end
 
       context 'simple indirection' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" = "z"[?]' }
+        let(:query) { 'SELECT * FROM x WHERE y = z[?]' }
 
         it { is_expected.to eq query }
       end
 
       context 'query indirection' do
-        let(:query) { 'SELECT (foo(1))."y"' }
+        let(:query) { 'SELECT (foo(1)).y' }
 
         it { is_expected.to eq query }
       end
 
       context 'array indirection' do
-        let(:query) { "SELECT \"proname\", (SELECT regexp_split_to_array(\"proargtypes\"::text, ' ') )[\"idx\"] AS argtype, \"proargnames\"[\"idx\"] AS argname FROM \"pg_proc\"" }
+        let(:query) { "SELECT proname, (SELECT regexp_split_to_array(proargtypes::text, ' ') )[idx] AS argtype, proargnames[idx] AS argname FROM pg_proc" }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'sub query indirection' do
-        let(:query) { "SELECT COALESCE(((SELECT customer.sp_person(\"n\".\"id\") AS sp_person)).\"city_id\", NULL::int) AS city_id FROM \"customer\".\"tb_customer\" n" }
+        let(:query) { "SELECT COALESCE((SELECT customer.sp_person(n.id) AS sp_person).city_id, NULL::int) AS city_id FROM customer.tb_customer n" }
 
         it { is_expected.to eq query }
       end
 
       context 'complex indirection' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" = "z"[?][?]' }
+        let(:query) { 'SELECT * FROM x WHERE y = z[?][?]' }
 
         it { is_expected.to eq query }
       end
 
       context 'indirection with star' do
-        let(:query) { 'SELECT ("k" #= hstore(\'{id}\'::text[], ARRAY[1::text])).* FROM "test" k' }
+        let(:query) { 'SELECT (k #= hstore(\'{id}\'::text[], ARRAY[1::text])).* FROM test k' }
 
         it { is_expected.to eq query }
       end
 
       context 'NOT' do
-        let(:query) { 'SELECT * FROM "x" WHERE NOT "y"' }
+        let(:query) { 'SELECT * FROM x WHERE NOT y' }
 
         it { is_expected.to eq query }
       end
 
       context 'OR' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" OR "y"' }
+        let(:query) { 'SELECT * FROM x WHERE x OR y' }
 
         it { is_expected.to eq query }
       end
@@ -423,115 +422,115 @@ describe PgQuery::Deparse do
       end
 
       context 'ALL' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" = ALL(?)' }
+        let(:query) { 'SELECT * FROM x WHERE x = ALL(?)' }
 
         it { is_expected.to eq query }
       end
 
       context 'ANY' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" = ANY(?)' }
+        let(:query) { 'SELECT * FROM x WHERE x = ANY(?)' }
 
         it { is_expected.to eq query }
       end
 
       context 'COALESCE' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" = COALESCE("y", ?)' }
+        let(:query) { 'SELECT * FROM x WHERE x = COALESCE(y, ?)' }
 
         it { is_expected.to eq query }
       end
 
       context 'GROUP BY' do
-        let(:query) { 'SELECT "a", "b", max("c") FROM "c" WHERE "d" = 1 GROUP BY "a", "b"' }
+        let(:query) { 'SELECT a, b, max(c) FROM c WHERE d = 1 GROUP BY a, b' }
 
         it { is_expected.to eq query }
       end
 
       context 'LIMIT' do
-        let(:query) { 'SELECT * FROM "x" LIMIT 50' }
+        let(:query) { 'SELECT * FROM x LIMIT 50' }
 
         it { is_expected.to eq query }
       end
 
       context 'OFFSET' do
-        let(:query) { 'SELECT * FROM "x" OFFSET 50' }
+        let(:query) { 'SELECT * FROM x OFFSET 50' }
 
         it { is_expected.to eq query }
       end
 
       context 'FLOAT' do
-        let(:query) { 'SELECT "amount" * 0.5' }
+        let(:query) { 'SELECT amount * 0.5' }
 
         it { is_expected.to eq query }
       end
 
       context 'BETWEEN' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" BETWEEN \'2016-01-01\' AND \'2016-02-02\'' }
+        let(:query) { 'SELECT * FROM x WHERE x BETWEEN \'2016-01-01\' AND \'2016-02-02\'' }
 
         it { is_expected.to eq query }
       end
 
       context 'NOT BETWEEN' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" NOT BETWEEN \'2016-01-01\' AND \'2016-02-02\'' }
+        let(:query) { 'SELECT * FROM x WHERE x NOT BETWEEN \'2016-01-01\' AND \'2016-02-02\'' }
 
         it { is_expected.to eq query }
       end
 
       context 'BETWEEN SYMMETRIC' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" BETWEEN SYMMETRIC 20 AND 10' }
+        let(:query) { 'SELECT * FROM x WHERE x BETWEEN SYMMETRIC 20 AND 10' }
 
         it { is_expected.to eq query }
       end
 
       context 'NOT BETWEEN SYMMETRIC' do
-        let(:query) { 'SELECT * FROM "x" WHERE "x" NOT BETWEEN SYMMETRIC 20 AND 10' }
+        let(:query) { 'SELECT * FROM x WHERE x NOT BETWEEN SYMMETRIC 20 AND 10' }
 
         it { is_expected.to eq query }
       end
 
       context 'NULLIF' do
-        let(:query) { 'SELECT NULLIF("id", 0) AS id FROM "x"' }
+        let(:query) { 'SELECT NULLIF(id, 0) AS id FROM x' }
 
         it { is_expected.to eq query }
       end
 
       context 'return NULL' do
-        let(:query) { 'SELECT NULL FROM "x"' }
+        let(:query) { 'SELECT NULL FROM x' }
 
         it { is_expected.to eq query }
       end
 
       context 'IS true' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS TRUE' }
+        let(:query) { 'SELECT * FROM x WHERE y IS TRUE' }
 
         it { is_expected.to eq query }
       end
 
       context 'IS NOT true' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT TRUE' }
+        let(:query) { 'SELECT * FROM x WHERE y IS NOT TRUE' }
 
         it { is_expected.to eq query }
       end
 
       context 'IS false' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS FALSE' }
+        let(:query) { 'SELECT * FROM x WHERE y IS FALSE' }
 
         it { is_expected.to eq query }
       end
 
       context 'IS NOT false' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT FALSE' }
+        let(:query) { 'SELECT * FROM x WHERE y IS NOT FALSE' }
 
         it { is_expected.to eq query }
       end
 
       context 'IS unknown' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS UNKNOWN' }
+        let(:query) { 'SELECT * FROM x WHERE y IS UNKNOWN' }
 
         it { is_expected.to eq query }
       end
 
       context 'IS NOT unknown' do
-        let(:query) { 'SELECT * FROM "x" WHERE "y" IS NOT UNKNOWN' }
+        let(:query) { 'SELECT * FROM x WHERE y IS NOT UNKNOWN' }
 
         it { is_expected.to eq query }
       end
@@ -565,8 +564,8 @@ describe PgQuery::Deparse do
       context 'with columndef list returning an array' do
         let(:query) do
           %q{
-          SELECT "row_cols"[0] AS dept, "row_cols"[1] AS sub, "admin", "ordinary" FROM crosstab(
-          'SELECT ARRAY["department", "sub"] AS row_cols, "role", COUNT("id") FROM "users" GROUP BY "department", "role" ORDER BY "department", "role"',
+          SELECT row_cols[0] AS dept, row_cols[1] AS sub, admin, ordinary FROM crosstab(
+          'SELECT ARRAY[department, sub] AS row_cols, role, COUNT(id) FROM users GROUP BY department, role ORDER BY department, role',
           'VALUES (''admin''::text), (''ordinary''::text)')
           AS (row_cols varchar[], admin int, ordinary int)
           }
@@ -584,7 +583,7 @@ describe PgQuery::Deparse do
       end
 
       context 'with parentheses' do
-        let(:query) { "SELECT (1 + 3)::int8" }
+        let(:query) { "SELECT CAST(1 + 3 AS int8)" }
 
         it { is_expected.to eq query }
       end
@@ -596,7 +595,7 @@ describe PgQuery::Deparse do
       end
 
       context 'boolean column reference' do
-        let(:query) { "SELECT \"table_field\"::bool, \"table_field\"::boolean FROM \"t\"" }
+        let(:query) { "SELECT table_field::bool, table_field::boolean FROM t" }
 
         it { is_expected.to eq query }
       end
@@ -637,25 +636,25 @@ describe PgQuery::Deparse do
 
     context 'INSERT' do
       context 'basic' do
-        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\')' }
+        let(:query) { 'INSERT INTO x (y, z) VALUES (1, \'abc\')' }
 
         it { is_expected.to eq query }
       end
 
       context 'special column name' do
-        let(:query) { 'INSERT INTO "x" ("user") VALUES (\'abc\')' }
+        let(:query) { 'INSERT INTO x ("user") VALUES (\'abc\')' }
 
         it { is_expected.to eq query }
       end
 
       context 'with RETURNING' do
-        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') RETURNING "id"' }
+        let(:query) { 'INSERT INTO x (y, z) VALUES (1, \'abc\') RETURNING id' }
 
         it { is_expected.to eq query }
       end
 
       context 'INTO SELECT' do
-        let(:query) { 'INSERT INTO "x" SELECT * FROM "y"' }
+        let(:query) { 'INSERT INTO x SELECT * FROM y' }
 
         it { is_expected.to eq query }
       end
@@ -665,11 +664,11 @@ describe PgQuery::Deparse do
           '''
           WITH moved AS (
             DELETE
-            FROM "employees"
-            WHERE "manager_name" = \'Mary\'
+            FROM employees
+            WHERE manager_name = \'Mary\'
           )
-          INSERT INTO "employees_of_mary"
-          SELECT * FROM "moved";
+          INSERT INTO employees_of_mary
+          SELECT * FROM moved;
           '''
         end
 
@@ -677,25 +676,25 @@ describe PgQuery::Deparse do
       end
 
       context 'ON CONFLICT' do
-        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO UPDATE SET "user" = EXCLUDED."user" RETURNING "y"' }
+        let(:query) { 'INSERT INTO x (y, z) VALUES (1, \'abc\') ON CONFLICT (y) DO UPDATE SET "user" = excluded."user" RETURNING y' }
 
         it { is_expected.to eq query }
       end
 
       context 'ON CONFLICT DO NOTHING' do
-        let(:query) { 'INSERT INTO "x" (y, z) VALUES (1, \'abc\') ON CONFLICT ("y") DO NOTHING RETURNING "y"' }
+        let(:query) { 'INSERT INTO x (y, z) VALUES (1, \'abc\') ON CONFLICT (y) DO NOTHING RETURNING y' }
 
         it { is_expected.to eq query }
       end
 
       context 'ON CONFLICT DO NOTHING with WHERE clause' do
-        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (10, \'Conrad International\') ON CONFLICT ("did") WHERE "is_active" DO NOTHING' }
+        let(:query) { 'INSERT INTO distributors (did, dname) VALUES (10, \'Conrad International\') ON CONFLICT (did) WHERE is_active DO NOTHING' }
 
         it { is_expected.to eq query }
       end
 
       context 'ON CONFLICT DO NOTHING on CONSTRAINT' do
-        let(:query) { 'INSERT INTO "distributors" (did, dname) VALUES (9, \'Antwerp Design\') ON CONFLICT ON CONSTRAINT "distributors_pkey" DO NOTHING' }
+        let(:query) { 'INSERT INTO distributors (did, dname) VALUES (9, \'Antwerp Design\') ON CONFLICT ON CONSTRAINT distributors_pkey DO NOTHING' }
 
         it { is_expected.to eq query }
       end
@@ -703,12 +702,12 @@ describe PgQuery::Deparse do
       context 'HAVING' do
         let(:query) do
           '''
-          INSERT INTO "employees"
-          SELECT * FROM "people"
+          INSERT INTO employees
+          SELECT * FROM people
           WHERE 1 = 1
-          GROUP BY "name"
-          HAVING count("name") > 1
-          ORDER BY "name" DESC
+          GROUP BY name
+          HAVING count(name) > 1
+          ORDER BY name DESC
           LIMIT 10
           OFFSET 15
           FOR UPDATE
@@ -719,7 +718,7 @@ describe PgQuery::Deparse do
       end
 
       context 'DEFAULT' do
-        let(:query) { "INSERT INTO \"films\" VALUES ('T_601', 'Yojimbo', 106, DEFAULT, 'Drama', DEFAULT)" }
+        let(:query) { "INSERT INTO films VALUES ('T_601', 'Yojimbo', 106, DEFAULT, 'Drama', DEFAULT)" }
 
         it { is_expected.to eq query }
       end
@@ -727,7 +726,7 @@ describe PgQuery::Deparse do
       context 'with locks' do
         let(:query) do
           '''
-          SELECT * FROM "people" FOR UPDATE OF "name", "email"
+          SELECT * FROM people FOR UPDATE OF name, email
           '''
         end
 
@@ -737,7 +736,7 @@ describe PgQuery::Deparse do
       context 'with cast varchar' do
         let(:query) do
           '''
-          SELECT "name"::varchar(255) FROM "people"
+          SELECT name::varchar(255) FROM people
           '''
         end
 
@@ -747,7 +746,7 @@ describe PgQuery::Deparse do
       context 'with cast varchar and no arguments' do
         let(:query) do
           '''
-          SELECT "name"::varchar FROM "people"
+          SELECT name::varchar FROM people
           '''
         end
 
@@ -757,7 +756,7 @@ describe PgQuery::Deparse do
       context 'with cast numeric' do
         let(:query) do
           '''
-          SELECT "age"::numeric(5, 2) FROM "people"
+          SELECT age::numeric(5, 2) FROM people
           '''
         end
 
@@ -767,7 +766,7 @@ describe PgQuery::Deparse do
       context 'with cast numeric and no arguments' do
         let(:query) do
           '''
-          SELECT "age"::numeric FROM "people"
+          SELECT age::numeric FROM people
           '''
         end
 
@@ -777,14 +776,14 @@ describe PgQuery::Deparse do
 
     context 'UPDATE' do
       context 'basic' do
-        let(:query) { 'UPDATE "x" SET y = 1 WHERE "z" = \'abc\'' }
+        let(:query) { 'UPDATE x SET y = 1 WHERE z = \'abc\'' }
 
         it { is_expected.to eq query }
       end
 
       context 'elaborate' do
         let(:query) do
-          'UPDATE ONLY "x" table_x SET y = 1 WHERE "z" = \'abc\' RETURNING "y" AS changed_y'
+          'UPDATE ONLY x table_x SET y = 1 WHERE z = \'abc\' RETURNING y AS changed_y'
         end
 
         it { is_expected.to eq query }
@@ -795,10 +794,10 @@ describe PgQuery::Deparse do
           '''
           WITH archived AS (
             DELETE
-            FROM "employees"
-            WHERE "manager_name" = \'Mary\'
+            FROM employees
+            WHERE manager_name = \'Mary\'
           )
-          UPDATE "users" SET archived = true WHERE "users"."id" IN (SELECT "user_id" FROM "moved")
+          UPDATE users SET archived = true WHERE users.id IN (SELECT user_id FROM moved)
           '''
         end
 
@@ -810,11 +809,11 @@ describe PgQuery::Deparse do
           '''
           WITH archived AS (
             DELETE
-            FROM "employees"
-            WHERE "manager_name" = \'Mary\'
-            RETURNING "user_id"
+            FROM employees
+            WHERE manager_name = \'Mary\'
+            RETURNING user_id
           )
-          UPDATE "users" SET archived = true FROM "archived" WHERE "archived"."user_id" = "id" RETURNING "id"
+          UPDATE users SET archived = true FROM archived WHERE archived.user_id = id RETURNING id
           '''
         end
 
@@ -824,14 +823,14 @@ describe PgQuery::Deparse do
       context 'from generated sequence' do
         let(:query) do
           '''
-            INSERT INTO "jackdanger_card_totals" (id, amount_cents, created_at)
+            INSERT INTO jackdanger_card_totals (id, amount_cents, created_at)
             SELECT
-              "series"."i",
+              series.i,
               random() * 1000,
               (SELECT
                  \'2015-08-25 00:00:00 -0700\'::timestamp +
                 ((\'2015-08-25 23:59:59 -0700\'::timestamp - \'2015-08-25 00:00:00 -0700\'::timestamp) * random()))
-              FROM generate_series(1, 10000) series("i");
+              FROM generate_series(1, 10000) series(i);
           '''
         end
 
@@ -839,13 +838,13 @@ describe PgQuery::Deparse do
       end
 
       context 'multiple columns' do
-        let(:query) { 'UPDATE "foo" SET a = ?, b = ?' }
+        let(:query) { 'UPDATE foo SET a = ?, b = ?' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'special column name' do
-        let(:query) { "UPDATE \"x\" SET \"user\" = 'emin'" }
+        let(:query) { "UPDATE x SET \"user\" = 'emin'" }
 
         it { is_expected.to eq query }
       end
@@ -853,13 +852,13 @@ describe PgQuery::Deparse do
 
     context 'DELETE' do
       context 'basic' do
-        let(:query) { 'DELETE FROM "x" WHERE "y" = 1' }
+        let(:query) { 'DELETE FROM x WHERE y = 1' }
 
         it { is_expected.to eq query }
       end
 
       context 'elaborate' do
-        let(:query) { 'DELETE FROM ONLY "x" table_x USING "table_z" WHERE "y" = 1 RETURNING *' }
+        let(:query) { 'DELETE FROM ONLY x table_x USING table_z WHERE y = 1 RETURNING *' }
 
         it { is_expected.to eq query }
       end
@@ -869,10 +868,10 @@ describe PgQuery::Deparse do
           '''
           WITH archived AS (
             DELETE
-            FROM "employees"
-            WHERE "manager_name" = \'Mary\'
+            FROM employees
+            WHERE manager_name = \'Mary\'
           )
-          DELETE FROM "users" WHERE "users"."id" IN (SELECT "user_id" FROM "moved")
+          DELETE FROM users WHERE users.id IN (SELECT user_id FROM moved)
           '''
         end
 
@@ -884,7 +883,7 @@ describe PgQuery::Deparse do
       context 'with function' do
         let(:query) do
           """
-          CREATE CAST (bigint AS int4) WITH FUNCTION \"int4\"(bigint) AS ASSIGNMENT
+          CREATE CAST (bigint AS int4) WITH FUNCTION int4(bigint) AS ASSIGNMENT
           """.strip
         end
 
@@ -914,7 +913,7 @@ describe PgQuery::Deparse do
       context 'with check' do
         let(:query) do
           """
-          CREATE DOMAIN \"us_postal_code\" AS text
+          CREATE DOMAIN us_postal_code AS text
           CHECK (
              \"VALUE\" ~ '^\d{5}$'
           OR \"VALUE\" ~ '^\d{5}-\d{4}$'
@@ -931,9 +930,9 @@ describe PgQuery::Deparse do
       context 'with inline function definition' do
         let(:query) do
           """
-          CREATE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+          CREATE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
-          $$ language \"sql\"
+          $$ LANGUAGE sql
           """.strip
         end
 
@@ -943,9 +942,9 @@ describe PgQuery::Deparse do
       context 'with or replace' do
         let(:query) do
           """
-          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+          CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
-          $$ language \"sql\"
+          $$ LANGUAGE sql
           """.strip
         end
 
@@ -955,9 +954,9 @@ describe PgQuery::Deparse do
       context 'with immutable' do
         let(:query) do
           """
-          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+          CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
-          $$ language \"sql\" IMMUTABLE
+          $$ LANGUAGE sql IMMUTABLE
           """.strip
         end
 
@@ -967,9 +966,9 @@ describe PgQuery::Deparse do
       context 'with STRICT (aka return null on null input)' do
         let(:query) do
           """
-          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+          CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
-          $$ language \"sql\" IMMUTABLE RETURNS NULL ON NULL INPUT
+          $$ LANGUAGE sql IMMUTABLE RETURNS NULL ON NULL INPUT
           """.strip
         end
 
@@ -979,9 +978,9 @@ describe PgQuery::Deparse do
       context 'with called on null input' do
         let(:query) do
           """
-          CREATE OR REPLACE FUNCTION \"getfoo\"(int) RETURNS SETOF users AS $$
+          CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
-          $$ language \"sql\" IMMUTABLE CALLED ON NULL INPUT
+          $$ LANGUAGE sql IMMUTABLE CALLED ON NULL INPUT
           """.strip
         end
 
@@ -991,9 +990,9 @@ describe PgQuery::Deparse do
       context 'without parameters' do
         let(:query) do
           """
-          CREATE OR REPLACE FUNCTION \"getfoo\"() RETURNS text AS $$
+          CREATE OR REPLACE FUNCTION getfoo() RETURNS text AS $$
               SELECT name FROM \"users\" LIMIT 1
-          $$ language \"sql\" IMMUTABLE CALLED ON NULL INPUT
+          $$ LANGUAGE sql IMMUTABLE CALLED ON NULL INPUT
           """.strip
         end
 
@@ -1010,13 +1009,13 @@ describe PgQuery::Deparse do
       end
 
       context 'with authorization' do
-        let(:query) { 'CREATE SCHEMA AUTHORIZATION "joe"' }
+        let(:query) { 'CREATE SCHEMA AUTHORIZATION joe' }
 
         it { is_expected.to eq query }
       end
 
       context 'with if not exist' do
-        let(:query) { 'CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION "joe"' }
+        let(:query) { 'CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe' }
 
         it { is_expected.to eq query }
       end
@@ -1025,9 +1024,9 @@ describe PgQuery::Deparse do
         let(:query) do
           """
           CREATE SCHEMA hollywood
-          CREATE TABLE \"films\" (title text, release date, awards text[])
+          CREATE TABLE films (title text, release date, awards text[])
           CREATE VIEW winners AS
-              SELECT \"title\", \"release\" FROM \"films\" WHERE \"awards\" IS NOT NULL
+              SELECT title, release FROM films WHERE awards IS NOT NULL
           """.strip
         end
 
@@ -1039,7 +1038,7 @@ describe PgQuery::Deparse do
       context 'top-level' do
         let(:query) do
           '''
-            CREATE UNLOGGED TABLE "cities" (
+            CREATE UNLOGGED TABLE cities (
                 name            text,
                 population      real,
                 altitude        double,
@@ -1056,7 +1055,7 @@ describe PgQuery::Deparse do
       context 'with common types' do
         let(:query) do
           '''
-            CREATE TABLE IF NOT EXISTS "distributors" (
+            CREATE TABLE IF NOT EXISTS distributors (
                 name       varchar(40) DEFAULT \'Luso Films\',
                 len        interval hour to second(3),
                 name       varchar(40) DEFAULT \'Luso Films\',
@@ -1065,7 +1064,7 @@ describe PgQuery::Deparse do
                 stamptz    timestamp with time zone,
                 time       time NOT NULL,
                 timetz     time with time zone,
-                CONSTRAINT name_len PRIMARY KEY ("name", "len")
+                CONSTRAINT name_len PRIMARY KEY (name, len)
             );
           '''
         end
@@ -1082,7 +1081,7 @@ describe PgQuery::Deparse do
 
         it do
           is_expected.to eq(
-            'CREATE TABLE "types" (a real, b double precision, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))'
+            'CREATE TABLE types (a real, b double precision, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))'
           )
         end
       end
@@ -1096,7 +1095,7 @@ describe PgQuery::Deparse do
 
         it do
           is_expected.to eq(
-            'CREATE TABLE "types" (a geometry("point") NOT NULL)'
+            'CREATE TABLE types (a geometry(point) NOT NULL)'
           )
         end
       end
@@ -1104,7 +1103,7 @@ describe PgQuery::Deparse do
       context 'with column definition options' do
         let(:query) do
           '''
-          CREATE TABLE "tablename" (
+          CREATE TABLE tablename (
               colname int NOT NULL DEFAULT nextval(\'tablename_colname_seq\')
           );
           '''
@@ -1116,9 +1115,9 @@ describe PgQuery::Deparse do
       context 'inheriting' do
         let(:query) do
           '''
-            CREATE TABLE "capitals" (
+            CREATE TABLE capitals (
                 state           char(2)
-            ) INHERITS ("cities");
+            ) INHERITS (cities);
           '''
         end
 
@@ -1126,19 +1125,19 @@ describe PgQuery::Deparse do
       end
 
       context 'temporary table' do
-        let(:query) { 'CREATE TEMPORARY TABLE "temp" AS SELECT "c" FROM "t"' }
+        let(:query) { 'CREATE TEMPORARY TABLE temp AS SELECT c FROM t' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'create table as' do
-        let(:query) { 'CREATE TABLE "films2" AS SELECT * FROM "films"' }
+        let(:query) { 'CREATE TABLE films2 AS SELECT * FROM films' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'create table ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP }' do
-        let(:query) { 'CREATE TEMPORARY TABLE "films_recent" ON COMMIT DROP AS SELECT * FROM "films" WHERE "date_prod" > $1' }
+        let(:query) { 'CREATE TEMPORARY TABLE films_recent ON COMMIT DROP AS SELECT * FROM films WHERE date_prod > $1' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1146,13 +1145,13 @@ describe PgQuery::Deparse do
 
     context 'DROP GENERAL' do
       context 'server' do
-        let(:query) { 'DROP SERVER IF EXISTS "foo"' }
+        let(:query) { 'DROP SERVER IF EXISTS foo' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'PUBLICATION' do
-        let(:query) { 'DROP PUBLICATION "mypublication"' }
+        let(:query) { 'DROP PUBLICATION mypublication' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1170,37 +1169,37 @@ describe PgQuery::Deparse do
       end
 
       context 'CONVERSION' do
-        let(:query) { 'DROP CONVERSION "myname"' }
+        let(:query) { 'DROP CONVERSION myname' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'SEQUENCE' do
-        let(:query) { 'DROP SEQUENCE "serial"' }
+        let(:query) { 'DROP SEQUENCE serial' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'INDEX' do
-        let(:query) { 'DROP INDEX "title_idx"' }
+        let(:query) { 'DROP INDEX title_idx' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'MATERIALIZED VIEW' do
-        let(:query) { 'DROP MATERIALIZED VIEW "order_summary"' }
+        let(:query) { 'DROP MATERIALIZED VIEW order_summary' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TRIGGER' do
-        let(:query) { 'DROP TRIGGER "if_dist_exists" ON "films"' }
+        let(:query) { 'DROP TRIGGER if_dist_exists ON films' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'RULE' do
-        let(:query) { 'DROP RULE "newrule" ON "mytable"' }
+        let(:query) { 'DROP RULE newrule ON mytable' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1212,55 +1211,55 @@ describe PgQuery::Deparse do
       end
 
       context 'OPERATOR FAMILY' do
-        let(:query) { 'DROP OPERATOR FAMILY "float_ops" USING "btree"' }
+        let(:query) { 'DROP OPERATOR FAMILY float_ops USING btree' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'AGGREGATE' do
-        let(:query) { 'DROP AGGREGATE "myavg"(int), "myavg"(bigint)' }
+        let(:query) { 'DROP AGGREGATE myavg(int), myavg(bigint)' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'COLLATION' do
-        let(:query) { 'DROP COLLATION "german"' }
+        let(:query) { 'DROP COLLATION german' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FOREIGN DATA WRAPPER' do
-        let(:query) { 'DROP FOREIGN DATA WRAPPER "dbi"' }
+        let(:query) { 'DROP FOREIGN DATA WRAPPER dbi' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'ACCESS METHOD' do
-        let(:query) { 'DROP ACCESS METHOD "heptree"' }
+        let(:query) { 'DROP ACCESS METHOD heptree' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'STATISTICS' do
-        let(:query) { 'DROP STATISTICS IF EXISTS "accounting"."users_uid_creation", "public"."grants_user_role"' }
+        let(:query) { 'DROP STATISTICS IF EXISTS accounting.users_uid_creation, public.grants_user_role' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TEXT SEARCH DICTIONARY' do
-        let(:query) { 'DROP TEXT SEARCH DICTIONARY "english"' }
+        let(:query) { 'DROP TEXT SEARCH DICTIONARY english' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'OPERATOR CLASS' do
-        let(:query) { 'DROP OPERATOR CLASS "widget_ops" USING "btree"' }
+        let(:query) { 'DROP OPERATOR CLASS widget_ops USING btree' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'POLICY' do
-        let(:query) { 'DROP POLICY "p1" ON "my_table"' }
+        let(:query) { 'DROP POLICY p1 ON my_table' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1272,25 +1271,25 @@ describe PgQuery::Deparse do
       end
 
       context 'TEXT SEARCH CONFIGURATION' do
-        let(:query) { 'DROP TEXT SEARCH CONFIGURATION "my_english"' }
+        let(:query) { 'DROP TEXT SEARCH CONFIGURATION my_english' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'EVENT TRIGGER' do
-        let(:query) { 'DROP EVENT TRIGGER "snitch"' }
+        let(:query) { 'DROP EVENT TRIGGER snitch' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TEXT SEARCH PARSER' do
-        let(:query) { 'DROP TEXT SEARCH PARSER "my_parser"' }
+        let(:query) { 'DROP TEXT SEARCH PARSER my_parser' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'EXTENSION' do
-        let(:query) { 'DROP EXTENSION "hstore"' }
+        let(:query) { 'DROP EXTENSION hstore' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1302,37 +1301,37 @@ describe PgQuery::Deparse do
       end
 
       context 'TEXT SEARCH TEMPLATE' do
-        let(:query) { 'DROP TEXT SEARCH TEMPLATE "thesaurus"' }
+        let(:query) { 'DROP TEXT SEARCH TEMPLATE thesaurus' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TRANSFORM' do
-        let(:query) { 'DROP TRANSFORM FOR hstore LANGUAGE "plpythonu"' }
+        let(:query) { 'DROP TRANSFORM FOR hstore LANGUAGE plpythonu' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FOREIGN TABLE' do
-        let(:query) { 'DROP FOREIGN TABLE "films", "distributors"' }
+        let(:query) { 'DROP FOREIGN TABLE films, distributors' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FUNCTION with param' do
-        let(:query) { 'DROP FUNCTION "sqrt"(int)' }
+        let(:query) { 'DROP FUNCTION sqrt(int)' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FUNCTION without param' do
-        let(:query) { 'DROP FUNCTION "update_employee_salaries"()' }
+        let(:query) { 'DROP FUNCTION update_employee_salaries()' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FUNCTION without param and parentheses' do
-        let(:query) { 'DROP FUNCTION "update_employee_salaries"' }
+        let(:query) { 'DROP FUNCTION update_employee_salaries' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1340,20 +1339,20 @@ describe PgQuery::Deparse do
 
     context 'DROP TABLE' do
       context 'cascade' do
-        let(:query) { 'DROP TABLE IF EXISTS "any_table" CASCADE;' }
+        let(:query) { 'DROP TABLE IF EXISTS any_table CASCADE;' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'restrict' do
-        let(:query) { 'DROP TABLE IF EXISTS "any_table";' }
+        let(:query) { 'DROP TABLE IF EXISTS any_table;' }
 
         it { is_expected.to eq oneline_query }
       end
     end
 
     context 'DROP SCHEMA' do
-      let(:query) { 'DROP SCHEMA IF EXISTS "any_schema"' }
+      let(:query) { 'DROP SCHEMA IF EXISTS any_schema' }
 
       it { is_expected.to eq oneline_query }
     end
@@ -1362,13 +1361,13 @@ describe PgQuery::Deparse do
       context 'with column modifications' do
         let(:query) do
           '''
-          ALTER TABLE "distributors"
+          ALTER TABLE distributors
             DROP CONSTRAINT distributors_pkey,
             ADD CONSTRAINT distributors_pkey PRIMARY KEY USING INDEX dist_id_temp_idx,
-            ADD CONSTRAINT zipchk CHECK (char_length("zipcode") = 5),
+            ADD CONSTRAINT zipchk CHECK (char_length(zipcode) = 5),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp TYPE timestamp with time zone
-              USING \'epoch\'::timestamp with time zone + (date_part(\'epoch\', "tstamp") * \'1 second\'::interval),
+              USING \'epoch\'::timestamp with time zone + (date_part(\'epoch\', tstamp) * \'1 second\'::interval),
             ALTER COLUMN tstamp SET DEFAULT now(),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp SET STATISTICS -5,
@@ -1381,19 +1380,19 @@ describe PgQuery::Deparse do
       end
 
       context 'rename' do
-        let(:query) { 'ALTER TABLE "distributors" RENAME TO "suppliers"' }
+        let(:query) { 'ALTER TABLE distributors RENAME TO suppliers' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FOREIGN KEY' do
-        let(:query) { 'ALTER TABLE "distributors" ADD CONSTRAINT distfk FOREIGN KEY ("address") REFERENCES "addresses" ("address");' }
+        let(:query) { 'ALTER TABLE distributors ADD CONSTRAINT distfk FOREIGN KEY (address) REFERENCES addresses (address);' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FOREIGN KEY NOT VALID' do
-        let(:query) { 'ALTER TABLE "distributors" ADD CONSTRAINT distfk FOREIGN KEY ("address") REFERENCES "addresses" ("address") NOT VALID;' }
+        let(:query) { 'ALTER TABLE distributors ADD CONSTRAINT distfk FOREIGN KEY (address) REFERENCES addresses (address) NOT VALID;' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1401,79 +1400,79 @@ describe PgQuery::Deparse do
 
     context 'RENAME' do
       context 'TRIGGER' do
-        let(:query) { 'ALTER TRIGGER emp_stamp ON "emp" RENAME TO "emp_track_chgs"' }
+        let(:query) { 'ALTER TRIGGER emp_stamp ON emp RENAME TO emp_track_chgs' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'CONVERSION' do
-        let(:query) { 'ALTER CONVERSION "iso_8859_1_to_utf8" RENAME TO "latin1_to_unicode"' }
+        let(:query) { 'ALTER CONVERSION iso_8859_1_to_utf8 RENAME TO latin1_to_unicode' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TABLE CONSTRAINT' do
-        let(:query) { 'ALTER TABLE "distributors" RENAME CONSTRAINT zipchk TO "zip_check"' }
+        let(:query) { 'ALTER TABLE distributors RENAME CONSTRAINT zipchk TO zip_check' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'INDEX' do
-        let(:query) { 'ALTER INDEX "distributors" RENAME TO "suppliers"' }
+        let(:query) { 'ALTER INDEX distributors RENAME TO suppliers' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'MATERIALIZED VIEW' do
-        let(:query) { 'ALTER MATERIALIZED VIEW "foo" RENAME TO "bar"' }
+        let(:query) { 'ALTER MATERIALIZED VIEW foo RENAME TO bar' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TABLESPACE' do
-        let(:query) { 'ALTER TABLESPACE index_space RENAME TO "fast_raid"' }
+        let(:query) { 'ALTER TABLESPACE index_space RENAME TO fast_raid' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'COLUMN' do
-        let(:query) { 'ALTER TABLE "distributors" RENAME COLUMN address TO "city"' }
+        let(:query) { 'ALTER TABLE distributors RENAME COLUMN address TO city' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'COLLATION' do
-        let(:query) { 'ALTER COLLATION "de_DE" RENAME TO "german"' }
+        let(:query) { 'ALTER COLLATION "de_DE" RENAME TO german' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TYPE' do
-        let(:query) { 'ALTER TYPE "electronic_mail" RENAME TO "email"' }
+        let(:query) { 'ALTER TYPE electronic_mail RENAME TO email' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'DOMAIN CONSTRAINT' do
-        let(:query) { 'ALTER DOMAIN "zipcode" RENAME CONSTRAINT zipchk TO "zip_check"' }
+        let(:query) { 'ALTER DOMAIN zipcode RENAME CONSTRAINT zipchk TO zip_check' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'AGGREGATE' do
-        let(:query) { 'ALTER AGGREGATE "myavg"(int) RENAME TO "my_average"' }
+        let(:query) { 'ALTER AGGREGATE myavg(int) RENAME TO my_average' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FUNCTION' do
-        let(:query) { 'ALTER FUNCTION "sqrt"(int) RENAME TO "square_root"' }
+        let(:query) { 'ALTER FUNCTION sqrt(int) RENAME TO square_root' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'RULE' do
-        let(:query) { 'ALTER RULE notify_all ON "emp" RENAME TO "notify_me"' }
+        let(:query) { 'ALTER RULE notify_all ON emp RENAME TO notify_me' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1520,13 +1519,13 @@ describe PgQuery::Deparse do
     context 'COMMENTS' do
       let(:query) do
         '''
-        CREATE TABLE "remove_comments" (
+        CREATE TABLE remove_comments (
           id int -- inline comment in multiline
         );
         '''
       end
 
-      it { is_expected.to eq('CREATE TABLE "remove_comments" (id int)') }
+      it { is_expected.to eq('CREATE TABLE remove_comments (id int)') }
     end
 
     context 'OVER' do
@@ -1537,19 +1536,19 @@ describe PgQuery::Deparse do
       end
 
       context 'OVER with PARTITION BY' do
-        let(:query) { 'SELECT rank(*) OVER (PARTITION BY "id")' }
+        let(:query) { 'SELECT rank(*) OVER (PARTITION BY id)' }
 
         it { is_expected.to eq query }
       end
 
       context 'OVER with ORDER BY' do
-        let(:query) { 'SELECT rank(*) OVER (ORDER BY "id")' }
+        let(:query) { 'SELECT rank(*) OVER (ORDER BY id)' }
 
         it { is_expected.to eq query }
       end
 
       context 'complex OVER' do
-        let(:query) { 'SELECT rank(*) OVER (PARTITION BY "id", "id2" ORDER BY "id" DESC, "id2")' }
+        let(:query) { 'SELECT rank(*) OVER (PARTITION BY id, id2 ORDER BY id DESC, id2)' }
 
         it { is_expected.to eq query }
       end
@@ -1563,7 +1562,7 @@ describe PgQuery::Deparse do
 
     context 'FILTER' do
       context 'FILTER ( WHERE )' do
-        let(:query) { 'SELECT max("create_date"::date) FILTER (WHERE "cancel_date" IS NULL) OVER (ORDER BY "create_date" DESC) FROM "tb_x"' }
+        let(:query) { 'SELECT max(create_date::date) FILTER (WHERE cancel_date IS NULL) OVER (ORDER BY create_date DESC) FROM tb_x' }
 
         it { is_expected.to eq query }
       end
@@ -1571,30 +1570,30 @@ describe PgQuery::Deparse do
 
     context 'VIEWS' do
       context 'rename view' do
-        let(:query) { 'ALTER VIEW "foo" RENAME TO "bar"' }
+        let(:query) { 'ALTER VIEW foo RENAME TO bar' }
 
         it { is_expected.to eq query }
       end
 
       context 'with check option' do
-        let(:query) { 'CREATE OR REPLACE TEMPORARY VIEW view_a AS SELECT * FROM a(1) WITH CASCADED CHECK OPTION' }
+        let(:query) { 'CREATE OR REPLACE TEMPORARY VIEW view_a AS SELECT * FROM a(1) WITH CHECK OPTION' }
 
         it { is_expected.to eq query }
       end
 
       context 'drop' do
-        let(:query) { 'DROP VIEW "kinds"' }
+        let(:query) { 'DROP VIEW kinds' }
 
         it { is_expected.to eq query }
       end
 
       context 'recursive' do
         let(:shorthand_query) { 'CREATE RECURSIVE VIEW view_a (a, b) AS SELECT * FROM a(1)' }
-        let(:query) { 'CREATE VIEW view_a ("a", "b") AS WITH RECURSIVE view_a ("a", "b") AS (SELECT * FROM a(1)) SELECT "a", "b" FROM "view_a"' }
+        let(:query) { 'CREATE VIEW view_a (a, b) AS WITH RECURSIVE view_a(a, b) AS (SELECT * FROM a(1)) SELECT a, b FROM view_a' }
 
         it 'parses both and deparses into the normalized form' do
-          expect(described_class.from(PgQuery.parse(query).tree.first)).to eq(query)
-          expect(described_class.from(PgQuery.parse(shorthand_query).tree.first)).to eq(query)
+          expect(PgQuery.parse(query).deparse).to eq(query)
+          expect(PgQuery.parse(shorthand_query).deparse).to eq(query)
         end
       end
     end
@@ -1612,7 +1611,7 @@ describe PgQuery::Deparse do
       context 'with string value' do
         let(:query) do
           '''
-          SET search_path TO \'my_schema\', \'public\';
+          SET search_path TO my_schema, public;
           '''
         end
 
@@ -1621,7 +1620,7 @@ describe PgQuery::Deparse do
       context 'with local scope' do
         let(:query) do
           '''
-          SET LOCAL search_path TO \'my_schema\', \'public\';
+          SET LOCAL search_path TO my_schema, public;
           '''
         end
 
@@ -1647,43 +1646,43 @@ describe PgQuery::Deparse do
       end
 
       context 'with table name' do
-        let(:query) { 'VACUUM "t"' }
+        let(:query) { 'VACUUM t' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'full' do
-        let(:query) { 'VACUUM FULL "t"' }
+        let(:query) { 'VACUUM (FULL) t' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'freeze' do
-        let(:query) { 'VACUUM FREEZE "t"' }
+        let(:query) { 'VACUUM (FREEZE) t' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'verbose' do
-        let(:query) { 'VACUUM VERBOSE "t"' }
+        let(:query) { 'VACUUM (VERBOSE) t' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'analyze' do
-        let(:query) { 'VACUUM ANALYZE "t"' }
+        let(:query) { 'VACUUM (ANALYZE) t' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'combine operations' do
-        let(:query) { 'VACUUM FULL FREEZE VERBOSE ANALYZE' }
+        let(:query) { 'VACUUM (FULL, FREEZE, VERBOSE, ANALYZE)' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'adding column names' do
-        let(:query) { 'VACUUM ANALYZE "t" ("a", "b")' }
+        let(:query) { 'VACUUM (ANALYZE) t(a, b)' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1691,13 +1690,13 @@ describe PgQuery::Deparse do
 
     context 'LOCK' do
       context 'basic statement' do
-        let(:query) { 'LOCK TABLE "t"' }
+        let(:query) { 'LOCK TABLE t' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'multiple tables' do
-        let(:query) { 'LOCK TABLE "t", "u"' }
+        let(:query) { 'LOCK TABLE t, u' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1705,19 +1704,19 @@ describe PgQuery::Deparse do
 
     context 'EXPLAIN' do
       context 'basic statement' do
-        let(:query) { 'EXPLAIN SELECT "a" FROM "b"' }
+        let(:query) { 'EXPLAIN SELECT a FROM b' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'analyze' do
-        let(:query) { 'EXPLAIN ANALYZE SELECT "a" FROM "b"' }
+        let(:query) { 'EXPLAIN (ANALYZE) SELECT a FROM b' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'analyze and buffers' do
-        let(:query) { 'EXPLAIN (ANALYZE, BUFFERS) SELECT "a" FROM "b"' }
+        let(:query) { 'EXPLAIN (ANALYZE, BUFFERS) SELECT a FROM b' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1725,37 +1724,37 @@ describe PgQuery::Deparse do
 
     context 'COPY' do
       context 'FROM' do
-        let(:query) { 'COPY "t" FROM STDIN' }
+        let(:query) { 'COPY t FROM STDIN' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FROM with columns' do
-        let(:query) { 'COPY "t" ("c1", "c2") FROM STDIN' }
+        let(:query) { 'COPY t(c1, c2) FROM STDIN' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FROM program' do
-        let(:query) { 'COPY "t" FROM PROGRAM \'/bin/false\'' }
+        let(:query) { 'COPY t FROM PROGRAM \'/bin/false\'' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'FROM filename' do
-        let(:query) { 'COPY "t" FROM \'/dev/null\'' }
+        let(:query) { 'COPY t FROM \'/dev/null\'' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'TO' do
-        let(:query) { 'COPY "t" TO STDOUT' }
+        let(:query) { 'COPY t TO STDOUT' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'SUBQUERY' do
-        let(:query) { 'COPY (SELECT 1 FROM "foo") TO STDOUT' }
+        let(:query) { 'COPY (SELECT 1 FROM foo) TO STDOUT' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1769,7 +1768,7 @@ describe PgQuery::Deparse do
       end
 
       context 'with language' do
-        let(:query) { 'DO $$ BEGIN PERFORM * FROM information_schema.tables; END $$ language "plpgsql"' }
+        let(:query) { 'DO $$ BEGIN PERFORM * FROM information_schema.tables; END $$ LANGUAGE plpgsql' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1801,31 +1800,31 @@ describe PgQuery::Deparse do
     context 'DefineStmt' do
       context 'CREATE AGGREGATE' do
         context 'minimal' do
-          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4) (sfunc="sfunc1", stype="stype1")' }
+          let(:query) { 'CREATE AGGREGATE aggregate1 (int4) (sfunc = sfunc1, stype = stype1)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'multiple arg type' do
-          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4, bool) (sfunc="sfunc1", stype="stype1")' }
+          let(:query) { 'CREATE AGGREGATE aggregate1 (int4, bool) (sfunc = sfunc1, stype = stype1)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'wildcard arg type' do
-          let(:query) { 'CREATE AGGREGATE "aggregate1" (*) (sfunc="sfunc1", stype="stype1")' }
+          let(:query) { 'CREATE AGGREGATE aggregate1 (*) (sfunc = sfunc1, stype = stype1)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'attributes without values' do
-          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4) (sfunc="sfunc1", stype="stype1", finalfunc_extra, mfinalfuncextra)' }
+          let(:query) { 'CREATE AGGREGATE aggregate1 (int4) (sfunc = sfunc1, stype = stype1, finalfunc_extra, mfinalfuncextra)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'attributes with predefined values' do
-          let(:query) { 'CREATE AGGREGATE "aggregate1" (int4) (sfunc="sfunc1", stype="stype1", finalfunc_modify="read_only", parallel="restricted")' }
+          let(:query) { 'CREATE AGGREGATE aggregate1 (int4) (sfunc = sfunc1, stype = stype1, finalfunc_modify = read_only, parallel = restricted)' }
 
           it { is_expected.to eq oneline_query }
         end
@@ -1833,19 +1832,19 @@ describe PgQuery::Deparse do
 
       context 'CREATE OPERATOR' do
         context 'minimal' do
-          let(:query) { 'CREATE OPERATOR + (procedure="plusfunc")' }
+          let(:query) { 'CREATE OPERATOR + (procedure = plusfunc)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'more arguments' do
-          let(:query) { 'CREATE OPERATOR + (procedure="plusfunc", leftarg="int4", rightarg="int4")' }
+          let(:query) { 'CREATE OPERATOR + (procedure = plusfunc, leftarg = int4, rightarg = int4)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'empty arguments' do
-          let(:query) { 'CREATE OPERATOR + (procedure="plusfunc", hashes, merges)' }
+          let(:query) { 'CREATE OPERATOR + (procedure = plusfunc, hashes, merges)' }
 
           it { is_expected.to eq oneline_query }
         end
@@ -1853,49 +1852,49 @@ describe PgQuery::Deparse do
 
       context 'CREATE TYPE' do
         context 'shell' do
-          let(:query) { 'CREATE TYPE "type1"' }
+          let(:query) { 'CREATE TYPE type1' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'composite' do
-          let(:query) { 'CREATE TYPE "type1" AS (attr1 int4, attr2 bool)' }
+          let(:query) { 'CREATE TYPE type1 AS (attr1 int4, attr2 bool)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'composite with collate' do
-          let(:query) { 'CREATE TYPE "type1" AS (attr1 int4 COLLATE "collation1", attr2 bool)' }
+          let(:query) { 'CREATE TYPE type1 AS (attr1 int4 COLLATE collation1, attr2 bool)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'enum' do
-          let(:query) { 'CREATE TYPE "type1" AS ENUM (\'value1\', \'value2\', \'value3\')' }
+          let(:query) { 'CREATE TYPE type1 AS ENUM (\'value1\', \'value2\', \'value3\')' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'range' do
-          let(:query) { 'CREATE TYPE "type1" AS RANGE (subtype=int4)' }
+          let(:query) { 'CREATE TYPE type1 AS RANGE (subtype = int4)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'range with multiple params' do
-          let(:query) { 'CREATE TYPE "type1" AS RANGE (subtype=int4, receive=receive_func, passedbyvalue)' }
+          let(:query) { 'CREATE TYPE type1 AS RANGE (subtype = int4, receive = receive_func, passedbyvalue)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'base' do
-          let(:query) { 'CREATE TYPE "type1" (input="input1", output="output1")' }
+          let(:query) { 'CREATE TYPE type1 (input = input1, output = output1)' }
 
           it { is_expected.to eq oneline_query }
         end
 
         context 'base with multiple params' do
-          let(:query) { 'CREATE TYPE "type1" (input="input1", output="output1", passedbyvalue)' }
+          let(:query) { 'CREATE TYPE type1 (input = input1, output = output1, passedbyvalue)' }
 
           it { is_expected.to eq oneline_query }
         end
@@ -1916,19 +1915,19 @@ describe PgQuery::Deparse do
       end
 
       context 'all tables' do
-        let(:query) { 'GRANT select ON ALL TABLES IN SCHEMA "schema" TO "user"' }
+        let(:query) { 'GRANT select ON ALL TABLES IN SCHEMA schema TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'multiple users' do
-        let(:query) { 'GRANT select ON "table" TO "user1", "user2"' }
+        let(:query) { 'GRANT select ON "table" TO user1, user2' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'user public' do
-        let(:query) { 'GRANT select ON "table" TO PUBLIC' }
+        let(:query) { 'GRANT select ON "table" TO public' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1964,79 +1963,79 @@ describe PgQuery::Deparse do
       end
 
       context 'with column names' do
-        let(:query) { 'GRANT select ("column1", "column2") ON "table" TO "user"' }
+        let(:query) { 'GRANT select (column1, column2) ON "table" TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'sequence' do
-        let(:query) { 'GRANT usage ON SEQUENCE "sequence" TO "user"' }
+        let(:query) { 'GRANT usage ON SEQUENCE sequence TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'all sequences' do
-        let(:query) { 'GRANT usage ON ALL SEQUENCES IN SCHEMA "schema" TO "user"' }
+        let(:query) { 'GRANT usage ON ALL SEQUENCES IN SCHEMA schema TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'database' do
-        let(:query) { 'GRANT create ON DATABASE "database" TO "user"' }
+        let(:query) { 'GRANT create ON DATABASE database TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'domain' do
-        let(:query) { 'GRANT usage ON DOMAIN "domain" TO "user"' }
+        let(:query) { 'GRANT usage ON DOMAIN domain TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'foreign data wrapper' do
-        let(:query) { 'GRANT usage ON FOREIGN DATA WRAPPER "fdw" TO "user"' }
+        let(:query) { 'GRANT usage ON FOREIGN DATA WRAPPER fdw TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'foreign server' do
-        let(:query) { 'GRANT usage ON FOREIGN SERVER "server" TO "user"' }
+        let(:query) { 'GRANT usage ON FOREIGN SERVER server TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'function with unspecified args' do
-        let(:query) { 'GRANT execute ON FUNCTION "function" TO "user"' }
+        let(:query) { 'GRANT execute ON FUNCTION function TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'function without args' do
-        let(:query) { 'GRANT execute ON FUNCTION "function"() TO "user"' }
+        let(:query) { 'GRANT execute ON FUNCTION function() TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'function without 1 arg' do
-        let(:query) { 'GRANT execute ON FUNCTION "function"(string) TO "user"' }
+        let(:query) { 'GRANT execute ON FUNCTION function(string) TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'function without multiple args' do
-        let(:query) { 'GRANT execute ON FUNCTION "function"(string, string, boolean) TO "user"' }
+        let(:query) { 'GRANT execute ON FUNCTION function(string, string, boolean) TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'all functions' do
-        let(:query) { 'GRANT execute ON ALL FUNCTIONS IN SCHEMA "schema" TO "user"' }
+        let(:query) { 'GRANT execute ON ALL FUNCTIONS IN SCHEMA schema TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'language' do
-        let(:query) { 'GRANT usage ON LANGUAGE "plpgsql" TO "user"' }
+        let(:query) { 'GRANT usage ON LANGUAGE plpgsql TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -2048,19 +2047,19 @@ describe PgQuery::Deparse do
       end
 
       context 'schema' do
-        let(:query) { 'GRANT create ON SCHEMA "schema" TO "user"' }
+        let(:query) { 'GRANT create ON SCHEMA schema TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'tablespace' do
-        let(:query) { 'GRANT create ON TABLESPACE "tablespace" TO "user"' }
+        let(:query) { 'GRANT create ON TABLESPACE tablespace TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'type' do
-        let(:query) { 'GRANT usage ON TYPE "type" TO "user"' }
+        let(:query) { 'GRANT usage ON TYPE type TO "user"' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -2092,23 +2091,23 @@ describe PgQuery::Deparse do
 
     context 'REVOKE' do
       context 'PRIVILEGES' do
-        let(:shorthand_query) { 'REVOKE ALL PRIVILEGES ON "kinds" FROM "manuel"' }
-        let(:query) { 'REVOKE ALL ON "kinds" FROM "manuel"' }
+        let(:shorthand_query) { 'REVOKE ALL PRIVILEGES ON kinds FROM manuel' }
+        let(:query) { 'REVOKE ALL ON kinds FROM manuel' }
 
         it 'parses both and deparses into the normalized form' do
-          expect(described_class.from(PgQuery.parse(query).tree.first)).to eq(query)
-          expect(described_class.from(PgQuery.parse(shorthand_query).tree.first)).to eq(query)
+          expect(PgQuery.parse(query).deparse).to eq(query)
+          expect(PgQuery.parse(shorthand_query).deparse).to eq(query)
         end
       end
 
       context 'role' do
-        let(:query) { 'REVOKE admins FROM "joe"' }
+        let(:query) { 'REVOKE admins FROM joe' }
 
         it { is_expected.to eq oneline_query }
       end
 
       context 'basic select statement' do
-        let(:query) { 'REVOKE insert ON "films" FROM "PUBLIC"' }
+        let(:query) { 'REVOKE insert ON films FROM public' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -2121,8 +2120,8 @@ describe PgQuery::Deparse do
     context 'for single query' do
       let(:query) do
         '''
-        SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true
+        SELECT m.name AS mname, pname
+          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
         '''
       end
 
@@ -2132,10 +2131,10 @@ describe PgQuery::Deparse do
     context 'for multiple queries' do
       let(:query) do
         '''
-        SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
-        INSERT INTO "manufacturers_daily" (a, b)
-          SELECT "a", "b" FROM "manufacturers";
+        SELECT m.name AS mname, pname
+          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
+        INSERT INTO manufacturers_daily (a, b)
+          SELECT a, b FROM manufacturers;
         '''
       end
 
@@ -2145,44 +2144,15 @@ describe PgQuery::Deparse do
     context 'for multiple queries with a semicolon inside a value' do
       let(:query) do
         '''
-        SELECT "m"."name" AS mname, "pname"
-          FROM "manufacturers" m LEFT JOIN LATERAL get_product_names("m"."id") pname ON true;
-        UPDATE "users" SET name = \'bobby; drop tables\';
-        INSERT INTO "manufacturers_daily" (a, b)
-          SELECT "a", "b" FROM "manufacturers";
+        SELECT m.name AS mname, pname
+          FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
+        UPDATE users SET name = \'bobby; drop tables\';
+        INSERT INTO manufacturers_daily (a, b)
+          SELECT a, b FROM manufacturers;
         '''
       end
 
       it { is_expected.to eq oneline_query }
-    end
-  end
-
-  describe PgQuery::Deparse::Interval do
-    describe '.from_int' do
-      it 'unpacks the parts of the interval' do
-        # Supported combinations taken directly from gram.y
-        {
-          # the SQL form    => what PG stores
-          %w[year]          => %w[YEAR],
-          %w[month]         => %w[MONTH],
-          %w[day]           => %w[DAY],
-          %w[hour]          => %w[HOUR],
-          %w[minute]        => %w[MINUTE],
-          %w[second]        => %w[SECOND],
-          %w[year month]    => %w[YEAR MONTH],
-          %w[day hour]      => %w[DAY HOUR],
-          %w[day minute]    => %w[DAY HOUR MINUTE],
-          %w[day second]    => %w[DAY HOUR MINUTE SECOND],
-          %w[hour minute]   => %w[HOUR MINUTE],
-          %w[hour second]   => %w[HOUR MINUTE SECOND],
-          %w[minute second] => %w[MINUTE SECOND]
-        }.each do |sql_parts, storage_parts|
-          number = storage_parts.reduce(0) do |num, part|
-            num | (1 << described_class::KEYS[part])
-          end
-          expect(described_class.from_int(number).sort).to eq(sql_parts.sort)
-        end
-      end
     end
   end
 end

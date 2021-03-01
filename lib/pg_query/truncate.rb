@@ -1,7 +1,7 @@
 module PgQuery
   A_TRUNCATED = 'A_Truncated'.freeze
 
-  class ParseResult
+  class ParserResult
     PossibleTruncation = Struct.new(:location, :node_type, :length, :is_array)
 
     # Truncates the query string to be below the specified length, first trying to
