@@ -35,6 +35,7 @@ task :update_source do
   extbakdir = File.join(workdir, 'extbak')
 
   unless File.exist?(filename)
+    system("mkdir #{workdir}")
     File.open(filename, 'wb') do |target_file|
       URI.open('https://codeload.github.com/lfittl/libpg_query/tar.gz/' + LIB_PG_QUERY_TAG, 'rb') do |read_file|
         target_file.write(read_file.read)

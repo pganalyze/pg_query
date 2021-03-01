@@ -22,7 +22,7 @@ describe PgQuery, '#param_refs' do
           },
           {
             "location"=>51,
-            "length"=>2,
+            "length"=>11,
             "typename"=>['pg_catalog', 'interval']
           }
         ]
