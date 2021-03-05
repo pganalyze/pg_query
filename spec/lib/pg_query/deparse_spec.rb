@@ -393,7 +393,7 @@ describe PgQuery::Deparse do
       end
 
       context 'indirection function with star' do
-        let(:query) { 'SELECT ("a").*, ("b").* FROM (SELECT sp_function("b"."col") as a FROM "tb_other") b' }
+        let(:query) { 'SELECT ("a").*, ("b").* FROM (SELECT sp_function("b"."col") AS a FROM "tb_other") b' }
 
         it { is_expected.to eq query }
       end
