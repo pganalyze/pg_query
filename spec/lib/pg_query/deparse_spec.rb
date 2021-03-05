@@ -392,6 +392,12 @@ describe PgQuery::Deparse do
         it { is_expected.to eq query }
       end
 
+      context 'indirection function with star' do
+        let(:query) { 'SELECT ("a").*, ("b").* FROM (SELECT sp_function("b"."col") as a FROM "tb_other") as b' }
+
+        it { is_expected.to eq query }
+      end
+
       context 'NOT' do
         let(:query) { 'SELECT * FROM "x" WHERE NOT "y"' }
 

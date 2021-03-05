@@ -314,7 +314,7 @@ class PgQuery
       if node['indirection']
         array_indirection = node['indirection'].select { |a| a.key?(A_INDICES) }
       end
-      output << if node['arg'].key?(FUNC_CALL) || node['arg'].key?(A_EXPR) || (node['arg'].key?(SUB_LINK) && array_indirection.count.zero?)
+      output << if node['arg'].key?(FUNC_CALL) || node['arg'].key?(COLUMN_REF) || node['arg'].key?(A_EXPR) || (node['arg'].key?(SUB_LINK) && array_indirection.count.zero?)
                   "(#{arg})."
                 else
                   arg
