@@ -307,7 +307,7 @@ class PgQuery
       '*'
     end
 
-    def deparse_a_indirection(node)
+    def deparse_a_indirection(node) # rubocop:disable Metrics/CyclomaticComplexity
       output = []
       arg = deparse_item(node['arg'])
       array_indirection = []
