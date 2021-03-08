@@ -5,7 +5,7 @@ module PgQuery
 
     # Truncates the query string to be below the specified length, first trying to
     # omit less important parts of the query, and only then cutting off the end.
-    def truncate(max_length)
+    def truncate(max_length) # rubocop:disable Metrics/CyclomaticComplexity
       output = deparse
 
       # Early exit if we're already below the max length
@@ -20,19 +20,21 @@ module PgQuery
       truncations.each do |truncation|
         next if truncation.length < 3
 
-        find_tree_location(tree, truncation.location) do |node, k|
-          dummy_column_ref = PgQuery::Node.new(column_ref: PgQuery::ColumnRef.new(fields: [PgQuery::Node.new(string: PgQuery::String.new(str: "…"))]))
+        find_tree_location(tree, truncation.location) do |node, _k|
+          dummy_column_ref = PgQuery::Node.new(column_ref: PgQuery::ColumnRef.new(fields: [PgQuery::Node.new(string: PgQuery::String.new(str: '…'))]))
           case truncation.node_type
           when :target_list
-            node.target_list.replace([
-              PgQuery::Node.new(res_target: PgQuery::ResTarget.new(val: dummy_column_ref))
-            ])
+            node.target_list.replace(
+              [
+                PgQuery::Node.new(res_target: PgQuery::ResTarget.new(val: dummy_column_ref))
+              ]
+            )
           when :where_clause
             node.where_clause = dummy_column_ref
           when :ctequery
             node.ctequery = PgQuery::Node.new(select_stmt: PgQuery::SelectStmt.new(where_clause: dummy_column_ref, op: :SETOP_NONE))
           when :cols
-            node.cols.replace([PgQuery::Node.from(PgQuery::ResTarget.new(name: "…"))])
+            node.cols.replace([PgQuery::Node.from(PgQuery::ResTarget.new(name: '…'))])
           else
             raise ArgumentError, format('Unexpected truncation node type: %s', truncation.node_type)
           end
@@ -65,7 +67,7 @@ module PgQuery
         when :cols
           length = PgQuery.deparse_stmt(
             PgQuery::InsertStmt.new(
-              relation: PgQuery::RangeVar.new(relname: "x", inh: true),
+              relation: PgQuery::RangeVar.new(relname: 'x', inh: true),
               cols: v.to_a
             )
           ).size - 31 # "INSERT INTO x () DEFAULT VALUES".size

@@ -22,11 +22,11 @@ describe PgQuery do
                     PgQuery::ParamRef.new(number: 1, location: 7)
                   ),
                   location: 7
-                ),
+                )
               )
             ],
             from_clause: [
-              PgQuery::Node.from(PgQuery::RangeVar.new(relname: "x", inh: true, relpersistence: "p", location: 15)),
+              PgQuery::Node.from(PgQuery::RangeVar.new(relname: "x", inh: true, relpersistence: "p", location: 15))
             ],
             limit_option: :LIMIT_OPTION_DEFAULT,
             op: :SETOP_NONE
@@ -120,10 +120,12 @@ describe PgQuery do
             funcname: [PgQuery::Node.from_string('pg_catalog'), PgQuery::Node.from_string('date_part')],
             args: [
               PgQuery::Node.from(PgQuery::ParamRef.new(number: 1, location: 15)),
-              PgQuery::Node.from(PgQuery::FuncCall.new(
-                funcname: [PgQuery::Node.from_string('now')],
-                location: 23,
-              ))
+              PgQuery::Node.from(
+                PgQuery::FuncCall.new(
+                  funcname: [PgQuery::Node.from_string('now')],
+                  location: 23
+                )
+              )
             ],
             location: 7
           )
@@ -177,11 +179,11 @@ describe PgQuery do
                       PgQuery::ParamRef.new(number: 0, location: 7)
                     ),
                     location: 7
-                  ),
+                  )
                 )
               ],
               from_clause: [
-                PgQuery::Node.from(PgQuery::RangeVar.new(relname: "x", inh: true, relpersistence: "p", location: 14)),
+                PgQuery::Node.from(PgQuery::RangeVar.new(relname: "x", inh: true, relpersistence: "p", location: 14))
               ],
               limit_option: :LIMIT_OPTION_DEFAULT,
               op: :SETOP_NONE
@@ -228,7 +230,7 @@ describe PgQuery do
         PgQuery::Node.from(
           PgQuery::TypeCast.new(
             arg: PgQuery::Node.from(
-              PgQuery::ParamRef.new(number: 0, location: 16),
+              PgQuery::ParamRef.new(number: 0, location: 16)
             ),
             type_name: PgQuery::TypeName.new(
               names: [
@@ -589,10 +591,12 @@ describe PgQuery do
             funcname: [PgQuery::Node.from_string('pg_catalog'), PgQuery::Node.from_string('date_part')],
             args: [
               PgQuery::Node.from(PgQuery::ParamRef.new(number: 0, location: 15)),
-              PgQuery::Node.from(PgQuery::FuncCall.new(
-                funcname: [PgQuery::Node.from_string('now')],
-                location: 22,
-              ))
+              PgQuery::Node.from(
+                PgQuery::FuncCall.new(
+                  funcname: [PgQuery::Node.from_string('now')],
+                  location: 22
+                )
+              )
             ],
             location: 7
           )
