@@ -45,7 +45,7 @@ task :update_source do
     checksum = Digest::SHA256.hexdigest(File.read(filename))
 
     #if checksum != LIB_PG_QUERY_SHA256SUM
-    #  raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{expected_sha256}"
+    #  raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{LIB_PG_QUERY_SHA256SUM}"
     #end
   end
 
@@ -61,7 +61,7 @@ task :update_source do
   FileUtils.rm_rf extdir
 
   # Reduce everything down to one directory
-  system("mkdir #{extdir}")
+  system("mkdir -p #{extdir}")
   system("cp -a #{libdir}/src/* #{extdir}/")
   system("mv #{extdir}/postgres/* #{extdir}/")
   system("rmdir #{extdir}/postgres")
@@ -69,17 +69,20 @@ task :update_source do
   # Make sure every .c file in the top-level directory is its own translation unit
   system("mv #{extdir}/*{_conds,_defs,_helper}.c #{extdir}/include")
   # Protobuf definitions
-  #system("cp -a #{libdir}/protobuf/parse_tree.proto nodes/")
-  #system("PATH=$(PWD)/bin:$(PATH) protoc --go_out=. nodes/parse_tree.proto")
   system("protoc --proto_path=#{libdir}/protobuf --ruby_out=#{File.join(__dir__, 'lib/pg_query')} #{libdir}/protobuf/pg_query.proto")
-  # Protobuf library code
   system("mkdir -p #{extdir}/include/protobuf")
   system("cp -a #{libdir}/protobuf/*.h #{extdir}/include/protobuf")
-  system("mkdir -p #{extdir}/include/protobuf-c")
-  system("cp -a #{libdir}/protobuf-c/*.h #{extdir}/include/protobuf-c")
-  system("cp -a #{libdir}/protobuf-c/*.h #{extdir}/include")
   system("cp -a #{libdir}/protobuf/*.c #{extdir}/")
-  system("cp -a #{libdir}/protobuf-c/*.c #{extdir}/")
+  # Protobuf library code
+  system("mkdir -p #{extdir}/include/protobuf-c")
+  system("cp -a #{libdir}/vendor/protobuf-c/*.h #{extdir}/include")
+  system("cp -a #{libdir}/vendor/protobuf-c/*.h #{extdir}/include/protobuf-c")
+  system("cp -a #{libdir}/vendor/protobuf-c/*.c #{extdir}/")
+  # xxhash library code
+  system("mkdir -p #{extdir}/include/xxhash")
+  system("cp -a #{libdir}/vendor/xxhash/*.h #{extdir}/include")
+  system("cp -a #{libdir}/vendor/xxhash/*.h #{extdir}/include/xxhash")
+  system("cp -a #{libdir}/vendor/xxhash/*.c #{extdir}/")
   # Other support files
   system("cp -a #{libdir}/testdata/* #{testfilesdir}")
   # Copy back the custom ext files
