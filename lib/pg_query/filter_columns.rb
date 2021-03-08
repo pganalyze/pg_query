@@ -62,6 +62,8 @@ class PgQuery
           condition_items += next_item[BOOL_EXPR]['args']
         elsif next_item[ROW_EXPR]
           condition_items += next_item[ROW_EXPR]['args']
+        elsif next_item[COALESCE_EXPR]
+          condition_items += next_item[COALESCE_EXPR]['args']
         elsif next_item[COLUMN_REF]
           column, table = next_item[COLUMN_REF]['fields'].map { |f| f['String']['str'] }.reverse
           filter_columns << [@aliases[table] || table, column]
