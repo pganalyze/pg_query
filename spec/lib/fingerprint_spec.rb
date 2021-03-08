@@ -31,12 +31,12 @@ end
 
 describe PgQuery, "#fingerprint" do
   fingerprint_defs.each do |testdef|
-    it format("returns expected hash value for '%s'", testdef['input']) do
-      expect(fingerprint(testdef['input'])).to eq(testdef['expectedHash'])
-    end
-
     it format("returns expected hash parts for '%s'", testdef['input']) do
       expect(fingerprint_parts(testdef['input'])).to eq(testdef['expectedParts'])
+    end
+
+    it format("returns expected hash value for '%s'", testdef['input']) do
+      expect(fingerprint(testdef['input'])).to eq(testdef['expectedHash'])
     end
   end
 

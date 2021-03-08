@@ -6,6 +6,8 @@ AllCops:
     - vendor/**/*
     - tmp/**/*
     - lib/pg_query/pg_query_pb.rb
+    - lib/pg_query/json_field_names.rb
+    - Rakefile
 
 Layout/AlignHash:
   Exclude:
