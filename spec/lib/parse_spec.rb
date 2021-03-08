@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'json'
 
 describe PgQuery, '.parse' do
   it "parses a simple query" do
@@ -30,6 +31,9 @@ describe PgQuery, '.parse' do
         )
       )
     )
+    # Note this currently has the incorrect JSON names in some places, due to
+    # the Ruby Protobuf library not respecting json_name
+    # (https://github.com/protocolbuffers/protobuf/pull/8356)
     expect(JSON.parse(PgQuery::ParseResult.encode_json(query.tree))).to eq(
       "version" => PgQuery::PG_VERSION_NUM,
       "stmts" => [

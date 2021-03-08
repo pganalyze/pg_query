@@ -1,4 +1,5 @@
 #include "pg_query.h"
+#include "xxhash/xxhash.h"
 #include <ruby.h>
 
 void raise_ruby_parse_error(PgQueryProtobufParseResult result);
@@ -11,6 +12,7 @@ VALUE pg_query_ruby_deparse_protobuf(VALUE self, VALUE input);
 VALUE pg_query_ruby_normalize(VALUE self, VALUE input);
 VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input);
 VALUE pg_query_ruby_scan(VALUE self, VALUE input);
+VALUE pg_query_ruby_hash_xxh3_64(VALUE self, VALUE input, VALUE seed);
 
 void Init_pg_query(void)
 {
@@ -23,6 +25,7 @@ void Init_pg_query(void)
 	rb_define_singleton_method(cPgQuery, "normalize", pg_query_ruby_normalize, 1);
 	rb_define_singleton_method(cPgQuery, "fingerprint", pg_query_ruby_fingerprint, 1);
 	rb_define_singleton_method(cPgQuery, "_raw_scan", pg_query_ruby_scan, 1);
+	rb_define_singleton_method(cPgQuery, "hash_xxh3_64", pg_query_ruby_hash_xxh3_64, 2);
 	rb_define_const(cPgQuery, "PG_VERSION", rb_str_new2(PG_VERSION));
 	rb_define_const(cPgQuery, "PG_MAJORVERSION", rb_str_new2(PG_MAJORVERSION));
 	rb_define_const(cPgQuery, "PG_VERSION_NUM", INT2NUM(PG_VERSION_NUM));
@@ -211,4 +214,12 @@ VALUE pg_query_ruby_scan(VALUE self, VALUE input)
 	pg_query_free_scan_result(result);
 
 	return output;
+}
+
+VALUE pg_query_ruby_hash_xxh3_64(VALUE self, VALUE input, VALUE seed)
+{
+	Check_Type(input, T_STRING);
+	Check_Type(seed, T_FIXNUM);
+
+	return ULONG2NUM(XXH3_64bits_withSeed(StringValuePtr(input), RSTRING_LEN(input), NUM2ULONG(seed)));
 }
