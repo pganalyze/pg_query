@@ -1,7 +1,6 @@
 pkg
 tmp
 .DS_Store
-spec/files/fingerprint.json
 
 *.bundle
 *.o
