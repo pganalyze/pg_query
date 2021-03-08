@@ -23,6 +23,9 @@ void Init_pg_query(void)
 	rb_define_singleton_method(cPgQuery, "normalize", pg_query_ruby_normalize, 1);
 	rb_define_singleton_method(cPgQuery, "fingerprint", pg_query_ruby_fingerprint, 1);
 	rb_define_singleton_method(cPgQuery, "_raw_scan", pg_query_ruby_scan, 1);
+	rb_define_const(cPgQuery, "PG_VERSION", rb_str_new2(PG_VERSION));
+	rb_define_const(cPgQuery, "PG_MAJORVERSION", rb_str_new2(PG_MAJORVERSION));
+	rb_define_const(cPgQuery, "PG_VERSION_NUM", INT2NUM(PG_VERSION_NUM));
 }
 
 void raise_ruby_parse_error(PgQueryProtobufParseResult result)
@@ -180,8 +183,8 @@ VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input)
 
 	if (result.error) raise_ruby_fingerprint_error(result);
 
-	if (result.hexdigest) {
-		output = rb_str_new2(result.hexdigest);
+	if (result.fingerprint_str) {
+		output = rb_str_new2(result.fingerprint_str);
 	} else {
 		output = Qnil;
 	}

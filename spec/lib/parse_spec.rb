@@ -30,8 +30,8 @@ describe PgQuery, '.parse' do
         )
       )
     )
-    expect(JSON.parse(PgQuery::ParseResult.encode_json(query.tree))).to eq({
-      "version" => 130002,
+    expect(JSON.parse(PgQuery::ParseResult.encode_json(query.tree))).to eq(
+      "version" => PgQuery::PG_VERSION_NUM,
       "stmts" => [
         {
           "stmt" => {
@@ -59,7 +59,7 @@ describe PgQuery, '.parse' do
           }
         }
       ]
-    })
+    )
   end
 
   it "handles errors" do
@@ -87,7 +87,7 @@ describe PgQuery, '.parse' do
 
   it "parses empty queries" do
     query = described_class.parse("-- nothing")
-    expect(query.tree).to eq PgQuery::ParseResult.new(version: 130002, stmts: [])
+    expect(query.tree).to eq PgQuery::ParseResult.new(version: PgQuery::PG_VERSION_NUM, stmts: [])
     expect(query.tables).to eq []
     expect(query.warnings).to be_empty
   end
@@ -201,7 +201,7 @@ describe PgQuery, '.parse' do
               relname: 'test',
               inh: true,
               relpersistence: 'p',
-              location: 5,
+              location: 5
             ),
             attlist: [
               PgQuery::Node.new(string: PgQuery::String.new(str: 'id'))
@@ -1464,7 +1464,7 @@ $BODY$
                     relname: 'abc',
                     inh: true,
                     relpersistence: 'p',
-                    location: 23,
+                    location: 23
                   ))
                 ],
                 limit_option: :LIMIT_OPTION_DEFAULT,

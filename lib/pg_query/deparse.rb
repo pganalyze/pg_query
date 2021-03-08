@@ -1,7 +1,7 @@
 module PgQuery
   class ParserResult
     def deparse
-       PgQuery.deparse(@tree)
+      PgQuery.deparse(@tree)
     end
   end
 
@@ -12,7 +12,7 @@ module PgQuery
 
   # Convenience method for deparsing a statement of a specific type
   def self.deparse_stmt(stmt)
-    deparse(PgQuery::ParseResult.new(version: 130002, stmts: [PgQuery::RawStmt.new(stmt: PgQuery::Node.from(stmt))]))
+    deparse(PgQuery::ParseResult.new(version: PG_VERSION_NUM, stmts: [PgQuery::RawStmt.new(stmt: PgQuery::Node.from(stmt))]))
   end
 
   # Convenience method for deparsing an expression

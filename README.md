@@ -163,11 +163,18 @@ Not supported:
 
 ## Developer tasks
 
-### Regenerate Protocol Buffers
+### Update libpg_query source
 
-```
-protoc --proto_path=protobuf --ruby_out=lib/pg_query protobuf/*.proto
-```
+In order to update to a newer Postgres parser, first update [libpg_query](https://github.com/lfittl/libpg_query) to the new Postgres version and tag a release.
+
+Once that is done, follow the following steps:
+
+1. Update `LIB_PG_QUERY_TAG` and `LIB_PG_QUERY_SHA256SUM` in `Rakefile`
+
+2. Run `rake update_source` to update the source code
+
+3. Commit the `Rakefile` and the modified files in `ext/pg_query` to this source tree and make a PR
+
 
 ## Resources
 
