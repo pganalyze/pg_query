@@ -22,4 +22,8 @@ describe PgQuery, '#filter_columns' do
   it 'recognizes boolean tests' do
     expect(filter_columns('SELECT * FROM x WHERE x.y IS TRUE AND x.z IS NOT FALSE')).to eq [['x', 'y'], ['x', 'z']]
   end
+
+  it 'finds COALESCE argument names' do
+    expect(filter_columns('SELECT * FROM x WHERE x.y = COALESCE(z.a, z.b)')).to eq [['x', 'y'], ['z', 'a'], ['z', 'b']]
+  end
 end

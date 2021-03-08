@@ -62,6 +62,8 @@ module PgQuery
             condition_items << next_item.a_expr.rexpr if next_item.a_expr.rexpr
           when :bool_expr
             condition_items += next_item.bool_expr.args
+          when :coalesce_expr
+            condition_items += next_item.coalesce_expr.args
           when :row_expr
             condition_items += next_item.row_expr.args
           when :column_ref
