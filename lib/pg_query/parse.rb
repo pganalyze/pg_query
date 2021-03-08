@@ -73,7 +73,7 @@ module PgQuery
       @cte_names = []
       @aliases = {}
 
-      statements = @tree.stmts.dup.to_a.map { |s| s.stmt }
+      statements = @tree.stmts.dup.to_a.map(&:stmt)
       from_clause_items = [] # types: select, dml, ddl
       subselect_items = []
 
@@ -194,7 +194,7 @@ module PgQuery
             %w[lexpr rexpr].each do |side|
               elem = next_item.a_expr.public_send(side)
               next unless elem
-              if elem.is_a?(Array) # FIXME - this needs to traverse a list
+              if elem.is_a?(Array) # FIXME: this needs to traverse a list
                 subselect_items += elem
               else
                 subselect_items << elem
@@ -231,7 +231,7 @@ module PgQuery
             name: table,
             type: next_item[:type],
             location: rangevar.location,
-            schemaname: (rangevar.schemaname if !rangevar.schemaname.empty?),
+            schemaname: (rangevar.schemaname unless rangevar.schemaname.empty?),
             relname: rangevar.relname,
             inh: rangevar.inh
           }
