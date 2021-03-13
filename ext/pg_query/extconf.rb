@@ -7,7 +7,7 @@ require 'open-uri'
 LIB_PG_QUERY_TAG = '10-1.0.4'.freeze
 LIB_PG_QUERY_SHA256SUM = '88cc90296e5fcaaebd0b360c46698b7c5badddf86f120e249ef682a820d41338'.freeze
 
-workdir = Dir.pwd
+workdir = File.expand_path(with_config('pg_query-workdir', Dir.pwd))
 libdir = File.join(workdir, 'libpg_query-' + LIB_PG_QUERY_TAG)
 gemdir = File.join(__dir__, '../..')
 libfile = libdir + '/libpg_query.a'
@@ -28,7 +28,7 @@ unless File.exist?(filename)
 end
 
 unless Dir.exist?(libdir)
-  system("tar -xzf #{filename}") || raise('ERROR')
+  system("tar -xzf #{filename} -C #{workdir}") || raise('ERROR')
 end
 
 unless Dir.exist?(libfile)
