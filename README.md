@@ -18,7 +18,7 @@ gem install pg_query
 
 Due to compiling parts of PostgreSQL, installation might take a while on slower systems. Expect up to 5 minutes.
 
-For some reason download `libpg_query-xx.tar.gz` from https://codeload.github.com/lfittl/libpg_query/tar.gz/ is very slow(Download from China),
+For some reason download `libpg_query-xx.tar.gz` from https://codeload.github.com/lfittl/libpg_query/tar.gz/ is very slow when downloading from China.
 we can pre-download this file to `/tmp/`, then use `--with-pg_query-workdir=/tmp/` to compile it without downloading.
 
 ```
