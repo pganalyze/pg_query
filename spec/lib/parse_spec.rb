@@ -69,7 +69,7 @@ describe PgQuery, '.parse' do
   it "handles errors" do
     expect { described_class.parse("SELECT 'ERR") }.to(raise_error do |error|
       expect(error).to be_a(PgQuery::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1234)"
+      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1230)"
       expect(error.location).to eq 8 # 8th character in query string
     end)
   end
@@ -432,7 +432,7 @@ describe PgQuery, '.parse' do
   it 'fails to parse CREATE TABLE WITH OIDS' do
     expect { described_class.parse("CREATE TABLE test (a int4) WITH OIDS") }.to(raise_error do |error|
       expect(error).to be_a(PgQuery::ParseError)
-      expect(error.message).to eq "syntax error at or near \"OIDS\" (scan.l:1234)"
+      expect(error.message).to eq "syntax error at or near \"OIDS\" (scan.l:1230)"
       expect(error.location).to eq 33 # 33rd character in query string
     end)
   end
