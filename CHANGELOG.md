@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.0.0     2021-03-18
+
+* Update to PostgreSQL 13 parser
+* Update to libpg_query v2, and new Protobuf-based format
+  * WARNING: This is a breaking change if you are directly interacting with the
+    parsetree (helpers like `table` and such still work the same way)
+* Use actual Ruby classes for parser result, instead of decoded JSON
+  * This is essentialy to enable easy and fast two-way communication with
+    the C library, and as a bonus makes for a better interaction on the Ruby
+    side, as we are handling actual objects instead of hashes and arrays.
+* Use new deparser maintained directly in libpg_query
+  * This replaces the complete Ruby deparser with a new, more complete deparser
+    that is directly maintained in libpg_query. Further deparser improvements
+    should be directly contributed to [libpg_query](https://github.com/pganalyze/libpg_query)
+* Tables helper: Return more details through "tables_with_details" method
+  * This is renamed from the previously badly named "tables_with_types"
+    method. Note that this change should not affect the output of the
+    primary "tables" helper.
+* Replace on-demand libpg_query source download with bundled source code
+  * Its unnecessary to download the source on-demand, and makes this more
+    complex than it needs to be. Instead, introduce a new "update_source" rake
+    task that can be called to refresh the source for a specified revision.
+* Re-implement smart truncation without requiring a special node type
+  * This ensures the truncate method works with the new deparser, without
+    the C level code needing to know about it. We may add it in the C library
+    in the future for edge cases that can't be covered by this slightly
+    hack-ish approach, but for now this avoids unnecessary C library
+    deparser modifications with non-standard node types.
+* Update Ruby finterprinting to new fingerprint format and XXH3 hash
+  * Note that its recommended to use PgQuery.fingerprint for performance
+    reasons, but when the tree has been modified, it can be convenient to
+    run a Ruby-side fingerprint instead of the C-based one that is faster.
+
+
 ## 1.3.0     2020-12-28
 
 * Incorporate newer libpg_query updates in 10-1.0.3 and 10-1.0.4
