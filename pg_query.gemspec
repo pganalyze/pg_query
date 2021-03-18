@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.extensions = %w[ext/pg_query/extconf.rb]
 
   s.files = Dir['CHANGELOG.md', 'LICENSE', 'README.md', 'Rakefile', 'lib/**/*.rb',
-                'ext/pg_query/*.{c,h,sym,rb}', 'ext/pg_query/patches/*']
+                'ext/pg_query/*.{c,h,sym,rb}', 'ext/pg_query/include/**/*']
 
   # Don't unnecessarily include the Postgres source in rdoc (sloooow!)
   s.rdoc_options     = %w[--main README.md --exclude ext/]
