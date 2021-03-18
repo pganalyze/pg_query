@@ -1,10 +1,10 @@
-# pg_query [ ![](https://img.shields.io/gem/v/pg_query.svg)](https://rubygems.org/gems/pg_query) [ ![](https://img.shields.io/gem/dt/pg_query.svg)](https://rubygems.org/gems/pg_query) [ ![](https://travis-ci.org/lfittl/pg_query.svg?branch=master)](https://travis-ci.org/lfittl/pg_query)
+# pg_query [ ![](https://img.shields.io/gem/v/pg_query.svg)](https://rubygems.org/gems/pg_query) [ ![](https://img.shields.io/gem/dt/pg_query.svg)](https://rubygems.org/gems/pg_query)
 
 This Ruby extension uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree.
 
 In addition the extension allows you to normalize queries (replacing constant values with ?) and parse these normalized queries into a parsetree again.
 
-When you build this extension, it builds parts of the PostgreSQL server source (see [libpg_query](https://github.com/lfittl/libpg_query)), and then statically links it into this extension.
+When you build this extension, it builds parts of the PostgreSQL server source (see [libpg_query](https://github.com/pganalyze/libpg_query)), and then statically links it into this extension.
 
 This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
 
@@ -143,7 +143,7 @@ PgQuery.fingerprint("SELECT ?")
 
 ## Differences from Upstream PostgreSQL
 
-This gem is based on [libpg_query](https://github.com/lfittl/libpg_query),
+This gem is based on [libpg_query](https://github.com/pganalyze/libpg_query),
 which uses the latest stable PostgreSQL version, but with a patch applied
 to support parsing normalized queries containing `?` replacement characters.
 
@@ -165,7 +165,7 @@ Not supported:
 
 ### Update libpg_query source
 
-In order to update to a newer Postgres parser, first update [libpg_query](https://github.com/lfittl/libpg_query) to the new Postgres version and tag a release.
+In order to update to a newer Postgres parser, first update [libpg_query](https://github.com/pganalyze/libpg_query) to the new Postgres version and tag a release.
 
 Once that is done, follow the following steps:
 
@@ -178,7 +178,7 @@ Once that is done, follow the following steps:
 
 ## Resources
 
-See [libpg_query](https://github.com/lfittl/libpg_query/blob/10-latest/README.md#resources) for pg_query in other languages, as well as products/tools built on pg_query.
+See [libpg_query](https://github.com/pganalyze/libpg_query/blob/13-latest/README.md#resources) for pg_query in other languages, as well as products/tools built on pg_query.
 
 ## Original Author
 

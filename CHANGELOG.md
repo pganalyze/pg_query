@@ -74,33 +74,33 @@
 ## 1.1.0     2018-10-04
 
 * Deparsing improvements by [@herwinw](https://github.com/herwinw)
-  * Add NULLS FIRST/LAST to ORDER BY [#95](https://github.com/lfittl/pg_query/pull/95)
-  * VACUUM [#97](https://github.com/lfittl/pg_query/pull/97)
-  * UPDATE with multiple columns [#99](https://github.com/lfittl/pg_query/pull/99)
-  * DISTINCT ON [#101](https://github.com/lfittl/pg_query/pull/101)
-  * CREATE TABLE AS [#102](https://github.com/lfittl/pg_query/pull/102)
-  * SQL value functions [#103](https://github.com/lfittl/pg_query/pull/103)
-  * LOCK [#105](https://github.com/lfittl/pg_query/pull/105)
-  * EXPLAIN [#107](https://github.com/lfittl/pg_query/pull/107)
-  * COPY [#108](https://github.com/lfittl/pg_query/pull/108)
-  * DO [#109](https://github.com/lfittl/pg_query/pull/109)
-* Ignore pg_query.so in git checkout [#110](https://github.com/lfittl/pg_query/pull/110) [@herwinw](https://github.com/herwinw)
-* Prefer __dir__ over File.dirname(__FILE__) [#110](https://github.com/lfittl/pg_query/pull/104) [@herwinw](https://github.com/herwinw)
+  * Add NULLS FIRST/LAST to ORDER BY [#95](https://github.com/pganalyze/pg_query/pull/95)
+  * VACUUM [#97](https://github.com/pganalyze/pg_query/pull/97)
+  * UPDATE with multiple columns [#99](https://github.com/pganalyze/pg_query/pull/99)
+  * DISTINCT ON [#101](https://github.com/pganalyze/pg_query/pull/101)
+  * CREATE TABLE AS [#102](https://github.com/pganalyze/pg_query/pull/102)
+  * SQL value functions [#103](https://github.com/pganalyze/pg_query/pull/103)
+  * LOCK [#105](https://github.com/pganalyze/pg_query/pull/105)
+  * EXPLAIN [#107](https://github.com/pganalyze/pg_query/pull/107)
+  * COPY [#108](https://github.com/pganalyze/pg_query/pull/108)
+  * DO [#109](https://github.com/pganalyze/pg_query/pull/109)
+* Ignore pg_query.so in git checkout [#110](https://github.com/pganalyze/pg_query/pull/110) [@herwinw](https://github.com/herwinw)
+* Prefer __dir__ over File.dirname(__FILE__) [#110](https://github.com/pganalyze/pg_query/pull/104) [@herwinw](https://github.com/herwinw)
 
 
 ## 1.0.2     2018-04-11
 
 * Deparsing improvements
-  * SELECT DISTINCT clause [#77](https://github.com/lfittl/pg_query/pull/77) [@Papierkorb](https://github.com/Papierkorb)
-  * "CASE expr WHEN ... END" clause [#78](https://github.com/lfittl/pg_query/pull/78) [@Papierkorb](https://github.com/Papierkorb)
-  * LEFT/RIGHT/FULL/NATURAL JOIN [#79](https://github.com/lfittl/pg_query/pull/79) [@Papierkorb](https://github.com/Papierkorb)
-  * SELECT that includes schema name [#80](https://github.com/lfittl/pg_query/pull/80) [@jcsjcs](https://github.com/jcsjcs)
+  * SELECT DISTINCT clause [#77](https://github.com/pganalyze/pg_query/pull/77) [@Papierkorb](https://github.com/Papierkorb)
+  * "CASE expr WHEN ... END" clause [#78](https://github.com/pganalyze/pg_query/pull/78) [@Papierkorb](https://github.com/Papierkorb)
+  * LEFT/RIGHT/FULL/NATURAL JOIN [#79](https://github.com/pganalyze/pg_query/pull/79) [@Papierkorb](https://github.com/Papierkorb)
+  * SELECT that includes schema name [#80](https://github.com/pganalyze/pg_query/pull/80) [@jcsjcs](https://github.com/jcsjcs)
 
 
 ## 1.0.1     2018-02-02
 
-* Parse CTEs and nested selects in INSERT/UPDATE [#76](https://github.com/lfittl/pg_query/pull/76) [@jcoleman](https://github.com/jcoleman)
-* Drop explicit json dependency [#74](https://github.com/lfittl/pg_query/pull/74) [@yuki24](https://github.com/yuki24)
+* Parse CTEs and nested selects in INSERT/UPDATE [#76](https://github.com/pganalyze/pg_query/pull/76) [@jcoleman](https://github.com/jcoleman)
+* Drop explicit json dependency [#74](https://github.com/pganalyze/pg_query/pull/74) [@yuki24](https://github.com/yuki24)
 
 
 ## 1.0.0     2017-10-31
@@ -121,18 +121,18 @@
 ## 0.13.4    2017-10-20
 
 * Update to libpg_query 9.5-1.7.0
-  - Fixes compilation old gcc before 4.6.0 [#73](https://github.com/lfittl/pg_query/issues/73)
+  - Fixes compilation old gcc before 4.6.0 [#73](https://github.com/pganalyze/pg_query/issues/73)
 
 
 ## 0.13.3    2017-09-04
 
-* Fix table detection for SELECTs that have sub-SELECTs without FROM clause [#69](https://github.com/lfittl/pg_query/issues/69)
+* Fix table detection for SELECTs that have sub-SELECTs without FROM clause [#69](https://github.com/pganalyze/pg_query/issues/69)
 
 
 ## 0.13.2    2017-08-10
 
-* Support table detection in sub-SELECTs in JOINs [#68](https://github.com/lfittl/pg_query/pull/65) [@seanmdick](https://github.com/seanmdick)
-* Legacy ".parsetree" helper: Fix "Between" and "In" operator does not have "AEXPR" [#66](https://github.com/lfittl/pg_query/issues/66)
+* Support table detection in sub-SELECTs in JOINs [#68](https://github.com/pganalyze/pg_query/pull/65) [@seanmdick](https://github.com/seanmdick)
+* Legacy ".parsetree" helper: Fix "Between" and "In" operator does not have "AEXPR" [#66](https://github.com/pganalyze/pg_query/issues/66)
   * For new applications please use ".tree" method which uses the native structure
     returned from libpg_query which resembles Postgres node names more closely
 
@@ -145,7 +145,7 @@
 
 ## 0.13.0    2017-07-30
 
-* Introduce split between SELECT/DML/DDL for tables method [#65](https://github.com/lfittl/pg_query/pull/65) [@chrisfrommann](https://github.com/chrisfrommann)
+* Introduce split between SELECT/DML/DDL for tables method [#65](https://github.com/pganalyze/pg_query/pull/65) [@chrisfrommann](https://github.com/chrisfrommann)
   * Backwards compatible, use the new select_tables/dml_tables/ddl_tables to
     access the categorized table references
 * Update libpg_query to 9.5-1.6.2
@@ -173,14 +173,14 @@
 
 ## 0.11.5    2017-07-09
 
-* Deparse coldeflist [#64](https://github.com/lfittl/pg_query/pull/64) [@jcsjcs](https://github.com/jcsjcs)
-* Use Integer class for checking integer instead of Fixnum [#62](https://github.com/lfittl/pg_query/pull/62) [@makimoto](https://github.com/makimoto)
+* Deparse coldeflist [#64](https://github.com/pganalyze/pg_query/pull/64) [@jcsjcs](https://github.com/jcsjcs)
+* Use Integer class for checking integer instead of Fixnum [#62](https://github.com/pganalyze/pg_query/pull/62) [@makimoto](https://github.com/makimoto)
 
 
 ## 0.11.4    2017-01-18
 
-* Compatibility with Ruby 2.4 [#59](https://github.com/lfittl/pg_query/pull/59) [@merqlove](https://github.com/merqlove)
-* Deparse varchar and numeric casts without arguments [#61](https://github.com/lfittl/pg_query/pull/61) [@jcsjcs](https://github.com/jcsjcs)
+* Compatibility with Ruby 2.4 [#59](https://github.com/pganalyze/pg_query/pull/59) [@merqlove](https://github.com/merqlove)
+* Deparse varchar and numeric casts without arguments [#61](https://github.com/pganalyze/pg_query/pull/61) [@jcsjcs](https://github.com/jcsjcs)
 
 
 ## 0.11.3    2016-12-06
@@ -189,11 +189,11 @@
   * Cut off fingerprints at 100 nodes deep to avoid excessive runtimes/memory
   * Fix warning on Linux due to missing asprintf include
 * Improved deparsing [@jcsjcs](https://github.com/jcsjcs)
-  * Float [#54](https://github.com/lfittl/pg_query/pull/54)
-  * BETWEEN [#55](https://github.com/lfittl/pg_query/pull/55)
-  * NULLIF [#56](https://github.com/lfittl/pg_query/pull/56)
-  * SELECT NULL and BooleanTest [#57](https://github.com/lfittl/pg_query/pull/57)
-* Fix build on BSD systems [#58](https://github.com/lfittl/pg_query/pull/58) [@myfreeweb](https://github.com/myfreeweb)
+  * Float [#54](https://github.com/pganalyze/pg_query/pull/54)
+  * BETWEEN [#55](https://github.com/pganalyze/pg_query/pull/55)
+  * NULLIF [#56](https://github.com/pganalyze/pg_query/pull/56)
+  * SELECT NULL and BooleanTest [#57](https://github.com/pganalyze/pg_query/pull/57)
+* Fix build on BSD systems [#58](https://github.com/pganalyze/pg_query/pull/58) [@myfreeweb](https://github.com/myfreeweb)
 
 
 ## 0.11.2    2016-06-27
@@ -212,9 +212,9 @@
 ## 0.11.0    2016-06-22
 
 * Improved table name analysis (#tables method)
-  * Don't include CTE names, make them accessible as #cte_names instead [#52](https://github.com/lfittl/pg_query/issues/52)
-  * Include table names in target list sub selects [#38](https://github.com/lfittl/pg_query/issues/38)
-  * Add support for ORDER/GROUP BY, HAVING, and booleans in WHERE [#53](https://github.com/lfittl/pg_query/pull/53) [@jcoleman](https://github.com/jcoleman)
+  * Don't include CTE names, make them accessible as #cte_names instead [#52](https://github.com/pganalyze/pg_query/issues/52)
+  * Include table names in target list sub selects [#38](https://github.com/pganalyze/pg_query/issues/38)
+  * Add support for ORDER/GROUP BY, HAVING, and booleans in WHERE [#53](https://github.com/pganalyze/pg_query/pull/53) [@jcoleman](https://github.com/jcoleman)
   * Fix parsing of DROP TYPE statements
 
 
@@ -223,19 +223,19 @@
 * Based on PostgreSQL 9.5.3
 * Use LLVM extracted parser for significantly improved build times (via libpg_query)
 * Deparsing Improvements
-  * SET statements [#48](https://github.com/lfittl/pg_query/pull/48) [@Winslett](https://github.com/Winslett)
-  * LIKE/NOT LIKE [#49](https://github.com/lfittl/pg_query/pull/49) [@Winslett](https://github.com/Winslett)
-  * CREATE FUNCTION improvements [#50](https://github.com/lfittl/pg_query/pull/50) [@Winslett](https://github.com/Winslett)
+  * SET statements [#48](https://github.com/pganalyze/pg_query/pull/48) [@Winslett](https://github.com/Winslett)
+  * LIKE/NOT LIKE [#49](https://github.com/pganalyze/pg_query/pull/49) [@Winslett](https://github.com/Winslett)
+  * CREATE FUNCTION improvements [#50](https://github.com/pganalyze/pg_query/pull/50) [@Winslett](https://github.com/Winslett)
 
 
 ## 0.9.2    2016-05-03
 
-* Fix issue with A_CONST string values in `.parsetree` compatibility layer (Fixes [#47](https://github.com/lfittl/pg_query/issues/47))
+* Fix issue with A_CONST string values in `.parsetree` compatibility layer (Fixes [#47](https://github.com/pganalyze/pg_query/issues/47))
 
 
 ## 0.9.1    2016-04-20
 
-* Add support for Ruby 1.9 (Fixes [#44](https://github.com/lfittl/pg_query/issues/44))
+* Add support for Ruby 1.9 (Fixes [#44](https://github.com/pganalyze/pg_query/issues/44))
 
 
 ## 0.9.0    2016-04-17
@@ -261,14 +261,14 @@
 ## 0.7.2    2015-12-20
 
 * Deparsing
-  * Quote all column refs [#40](https://github.com/lfittl/pg_query/pull/40) [@avinoamr](https://github.com/avinoamr)
-  * Quote all range vars [#43](https://github.com/lfittl/pg_query/pull/43) [@avinoamr](https://github.com/avinoamr)
-  * Support for COUNT(DISTINCT ...) [#42](https://github.com/lfittl/pg_query/pull/42) [@avinoamr](https://github.com/avinoamr)
+  * Quote all column refs [#40](https://github.com/pganalyze/pg_query/pull/40) [@avinoamr](https://github.com/avinoamr)
+  * Quote all range vars [#43](https://github.com/pganalyze/pg_query/pull/43) [@avinoamr](https://github.com/avinoamr)
+  * Support for COUNT(DISTINCT ...) [#42](https://github.com/pganalyze/pg_query/pull/42) [@avinoamr](https://github.com/avinoamr)
 
 
 ## 0.7.1    2015-11-17
 
-* Abstracted parser access into libpg_query [#24](https://github.com/lfittl/pg_query/pull/35)
+* Abstracted parser access into libpg_query [#24](https://github.com/pganalyze/pg_query/pull/35)
 * libpg_query
   * Use UTF-8 encoding for parsing [#4](https://github.com/lfittl/libpg_query/pull/4) [@zhm](https://github.com/zhm)
   * Add type to A_CONST nodes[#5](https://github.com/lfittl/libpg_query/pull/5) [@zhm](https://github.com/zhm)
@@ -276,20 +276,20 @@
 
 ## 0.7.0    2015-10-17
 
-* Restructure build process to use upstream tarballs [#35](https://github.com/lfittl/pg_query/pull/35)
-  * Avoid bison/flex dependency to make deployment easier [#31](https://github.com/lfittl/pg_query/issues/31)
-* Solve issues with deployments to Heroku [#32](https://github.com/lfittl/pg_query/issues/32)
+* Restructure build process to use upstream tarballs [#35](https://github.com/pganalyze/pg_query/pull/35)
+  * Avoid bison/flex dependency to make deployment easier [#31](https://github.com/pganalyze/pg_query/issues/31)
+* Solve issues with deployments to Heroku [#32](https://github.com/pganalyze/pg_query/issues/32)
 * Deparsing
-  * HAVING and FOR UPDATE [#36](https://github.com/lfittl/pg_query/pull/36) [@JackDanger](https://github.com/JackDanger)
+  * HAVING and FOR UPDATE [#36](https://github.com/pganalyze/pg_query/pull/36) [@JackDanger](https://github.com/JackDanger)
 
 
 ## 0.6.4    2015-10-01
 
 * Deparsing
-  * Constraints & Interval Types [#28](https://github.com/lfittl/pg_query/pull/28) [@JackDanger](https://github.com/JackDanger)
-  * Cross joins [#29](https://github.com/lfittl/pg_query/pull/29) [@mme](https://github.com/mme)
-  * ALTER TABLE [#30](https://github.com/lfittl/pg_query/pull/30) [@JackDanger](https://github.com/JackDanger)
-  * LIMIT and OFFSET [#33](https://github.com/lfittl/pg_query/pull/33) [@jcsjcs](https://github.com/jcsjcs)
+  * Constraints & Interval Types [#28](https://github.com/pganalyze/pg_query/pull/28) [@JackDanger](https://github.com/JackDanger)
+  * Cross joins [#29](https://github.com/pganalyze/pg_query/pull/29) [@mme](https://github.com/mme)
+  * ALTER TABLE [#30](https://github.com/pganalyze/pg_query/pull/30) [@JackDanger](https://github.com/JackDanger)
+  * LIMIT and OFFSET [#33](https://github.com/pganalyze/pg_query/pull/33) [@jcsjcs](https://github.com/jcsjcs)
 
 
 ## 0.6.3    2015-08-20

@@ -1177,7 +1177,7 @@ $BODY$
     )
   end
 
-  # https://github.com/lfittl/pg_query/issues/38
+  # https://github.com/pganalyze/pg_query/issues/38
   it 'correctly finds nested tables in select clause' do
     query = described_class.parse("select u.email, (select count(*) from enrollments e where e.user_id = u.id) as num_enrollments from users u")
     expect(query.warnings).to eq []
@@ -1185,7 +1185,7 @@ $BODY$
     expect(query.select_tables).to eq ['users', 'enrollments']
   end
 
-  # https://github.com/lfittl/pg_query/issues/52
+  # https://github.com/pganalyze/pg_query/issues/52
   it 'correctly separates CTE names from table names' do
     query = described_class.parse("WITH cte_name AS (SELECT 1) SELECT * FROM table_name, cte_name")
     expect(query.cte_names).to eq ['cte_name']
