@@ -4,8 +4,8 @@ require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '13-latest-develop'.freeze
-LIB_PG_QUERY_SHA256SUM = 'FIXFORRELEASE'.freeze
+LIB_PG_QUERY_TAG = '13-2.0.0'.freeze
+LIB_PG_QUERY_SHA256SUM = 'e5e6514b1ae0e1ab19a2441de3088988bf1b89778164f9c725c3d85c6903133e'.freeze
 
 Rake::ExtensionTask.new 'pg_query' do |ext|
   ext.lib_dir = 'lib/pg_query'
@@ -44,9 +44,9 @@ task :update_source do
 
     checksum = Digest::SHA256.hexdigest(File.read(filename))
 
-    # if checksum != LIB_PG_QUERY_SHA256SUM
-    #  raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{LIB_PG_QUERY_SHA256SUM}"
-    # end
+    if checksum != LIB_PG_QUERY_SHA256SUM
+      raise "SHA256 of #{filename} does not match: got #{checksum}, expected #{LIB_PG_QUERY_SHA256SUM}"
+    end
   end
 
   unless Dir.exist?(libdir)
