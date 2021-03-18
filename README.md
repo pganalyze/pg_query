@@ -25,17 +25,49 @@ Due to compiling parts of PostgreSQL, installation might take a while on slower 
 ```ruby
 PgQuery.parse("SELECT 1")
 
-=> #<PgQuery:0x007fe92b27ea18
- @tree=
-  [{"SelectStmt"=>
-     {"targetList"=>
-       [{"ResTarget"=>
-          {"val"=>{"A_Const"=>{"val"=>{"Integer"=>{"ival"=>1}}, "location"=>7}},
-           "location"=>7}}],
-      "op"=>0,
-  }}],
- @query="SELECT 1",
- @warnings=[]>
+=> #<PgQuery::ParserResult:0x00007fb69a958820
+  @query="SELECT 1",
+  @tree=<PgQuery::ParseResult:
+    version: 130002,
+    stmts: [
+      <PgQuery::RawStmt:
+        stmt: <PgQuery::Node:
+          select_stmt: <PgQuery::SelectStmt:
+            distinct_clause: [],
+            target_list: [
+              <PgQuery::Node:
+                res_target: <PgQuery::ResTarget:
+                  name: "",
+                  indirection: [],
+                  val: <PgQuery::Node:
+                    a_const: <PgQuery::A_Const:
+                      val: <PgQuery::Node:
+                        integer: <PgQuery::Integer: ival: 1>
+                      >,
+                      location: 7
+                    >
+                  >,
+                  location: 7
+                >
+              >
+            ],
+            from_clause: [],
+            group_clause: [],
+            window_clause: [],
+            values_lists: [],
+            sort_clause: [],
+            limit_option: :LIMIT_OPTION_DEFAULT,
+            locking_clause: [],
+            op: :SETOP_NONE,
+            all: false
+          >
+        >,
+        stmt_location: 0,
+        stmt_len: 0
+      >
+    ]
+  >,
+  @warnings=[]>
 ```
 
 ### Modifying a parsed query and turning it into SQL again
@@ -43,34 +75,13 @@ PgQuery.parse("SELECT 1")
 ```ruby
 parsed_query = PgQuery.parse("SELECT * FROM users")
 
-=> #<PgQuery:0x007ff3e956c8b0
- @tree=
-  [{"SelectStmt"=>
-    {"targetList"=>
-      [{"ResTarget"=>
-        {"val"=>
-          {"ColumnRef"=> {"fields"=>[{"A_Star"=>{}}], "location"=>7}},
-         "location"=>7}
-      }],
-     "fromClause"=>
-      [{"RangeVar"=>
-        {"relname"=>"users",
-         "inhOpt"=>2,
-         "relpersistence"=>"p",
-         "location"=>14}}],
-   }}],
- @query="SELECT * FROM users",
- @warnings=[]>
-
 # Modify the parse tree in some way
-parsed_query.tree[0]['SelectStmt']['fromClause'][0]['RangeVar']['relname'] = 'other_users'
+parsed_query.tree.stmts[0].stmt.select_stmt.from_clause[0].range_var.relname = 'other_users'
 
 # Turn it into SQL again
 parsed_query.deparse
-=> "SELECT * FROM \"other_users\""
+=> "SELECT * FROM other_users"
 ```
-
-Note: The deparsing feature is experimental and does not support outputting all SQL yet.
 
 ### Parsing a normalized query
 
@@ -83,29 +94,10 @@ PgQuery.normalize("SELECT 1 FROM x WHERE y = 'foo'")
 # Parsing a normalized query (pre-Postgres 10 style)
 PgQuery.parse("SELECT ? FROM x WHERE y = ?")
 
-=> #<PgQuery:0x007fb99455a438
- @tree=
-  [{"SelectStmt"=>
-     {"targetList"=>
-       [{"ResTarget"=>
-          {"val"=>{"ParamRef"=>{"location"=>7}},
-           "location"=>7}}],
-      "fromClause"=>
-       [{"RangeVar"=>
-          {"relname"=>"x",
-           "inhOpt"=>2,
-           "relpersistence"=>"p",
-           "location"=>14}}],
-      "whereClause"=>
-       {"A_Expr"=>
-         {"kind"=>0,
-          "name"=>[{"String"=>{"str"=>"="}}],
-          "lexpr"=>{"ColumnRef"=>{"fields"=>[{"String"=>{"str"=>"y"}}], "location"=>22}},
-          "rexpr"=>{"ParamRef"=>{"location"=>26}},
-          "location"=>24}},
-  }}],
- @query="SELECT ? FROM x WHERE y = ?",
- @warnings=[]>
+=> #<PgQuery::ParserResult:0x00007fb69a97a5d8
+  @query="SELECT ? FROM x WHERE y = ?",
+  @tree=<PgQuery::ParseResult: ...>,
+  @warnings=[]>
 ```
 
 ### Extracting tables from a query
@@ -129,16 +121,16 @@ PgQuery.parse("SELECT ? FROM x WHERE x.y = ? AND z = ?").filter_columns
 ```ruby
 PgQuery.parse("SELECT 1").fingerprint
 
-=> "8e1acac181c6d28f4a923392cf1c4eda49ee4cd2"
+=> "50fde20626009aba"
 
 PgQuery.parse("SELECT 2; --- comment").fingerprint
 
-=> "8e1acac181c6d28f4a923392cf1c4eda49ee4cd2"
+=> "50fde20626009aba"
 
-# Faster fingerprint method that is implemented inside the native library
+# Faster fingerprint method that is implemented inside the native C library
 PgQuery.fingerprint("SELECT ?")
 
-=> "8e1acac181c6d28f4a923392cf1c4eda49ee4cd2"
+=> "50fde20626009aba"
 ```
 
 ## Differences from Upstream PostgreSQL
