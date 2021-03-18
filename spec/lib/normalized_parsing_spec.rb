@@ -277,7 +277,7 @@ describe PgQuery do
       # support that due to keyword/function duality (e.g. JOIN)
       expect { described_class.parse("SELECT ? 10") }.to raise_error do |error|
         expect(error).to be_a(described_class::ParseError)
-        expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1234)"
+        expect(error.message).to eq "syntax error at or near \"10\" (scan.l:1230)"
       end
     end
 
