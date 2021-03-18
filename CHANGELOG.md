@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1     2021-03-18
+
+* Fix Gem spec to correctly reference include files
+  - This would have shown as a build failure when using the published `2.0.0` gem
+
+
 ## 2.0.0     2021-03-18
 
 * Update to PostgreSQL 13 parser
