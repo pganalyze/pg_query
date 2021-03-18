@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+* `COALESCE` arguments are included in `#filter_columns`
+
 ## 2.0.1     2021-03-18
 
 * Fix Gem spec to correctly reference include files
