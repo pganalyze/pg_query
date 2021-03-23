@@ -1,4 +1,5 @@
 require 'bundler/gem_tasks'
+require 'rake/clean'
 require 'rake/extensiontask'
 require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
@@ -20,11 +21,9 @@ task default: %i[spec lint]
 task test: :spec
 task lint: :rubocop
 
-task :clean do
-  FileUtils.rm_rf File.join(__dir__, 'tmp/')
-  FileUtils.rm_f Dir.glob(File.join(__dir__, 'ext/pg_query/*.o'))
-  FileUtils.rm_f File.join(__dir__, 'lib/pg_query/pg_query.bundle')
-end
+CLEAN << 'tmp/**/*'
+CLEAN << 'ext/pg_query/*.o'
+CLEAN << 'lib/pg_query/pg_query.bundle'
 
 task :update_source do
   workdir = File.join(__dir__, 'tmp')
