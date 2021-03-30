@@ -3,8 +3,9 @@
 require 'digest'
 require 'mkmf'
 require 'open-uri'
+require 'pathname'
 
-$objs = Dir.glob(File.join(__dir__, '*.c')).map { |f| f.gsub('.c', '.o') }
+$objs = Dir.glob(File.join(__dir__, '*.c')).map { |f| Pathname.new(f).sub_ext('.o').to_s }
 
 $CFLAGS << " -I#{File.join(__dir__, 'include')} -O3 -Wall -fno-strict-aliasing -fwrapv -fstack-protector -Wno-unused-function -Wno-unused-variable -g"
 
