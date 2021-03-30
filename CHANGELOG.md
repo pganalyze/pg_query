@@ -48,7 +48,7 @@
 
 * Incorporate newer libpg_query updates in 10-1.0.3 and 10-1.0.4
   * Adds support for running on ARM
-  * Fixes a sprintf warning during builds
+  * Fixes an asprintf warning during builds
   * Updates to newer Postgres 10 patch release (10.15)
 * Deparsing improvements by [@emin100]
   * Add support for additional DROP statements ([#147](https://github.com/pganalyze/pg_query/pull/147))
