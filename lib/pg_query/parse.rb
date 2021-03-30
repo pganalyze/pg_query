@@ -4,8 +4,8 @@ module PgQuery
 
     begin
       result = PgQuery::ParseResult.decode(result)
-    rescue Google::Protobuf::ParseError
-      raise PgQuery::ParseError.new('Failed to parse tree', __FILE__, __LINE__, -1)
+    rescue Google::Protobuf::ParseError => e
+      raise PgQuery::ParseError.new(format('Failed to parse tree: %s', e.message), __FILE__, __LINE__, -1)
     end
 
     warnings = []
