@@ -3,6 +3,15 @@
 ## Unreleased
 
 * `COALESCE` arguments are now included in `#filter_columns`
+* Improve error message for protobuf parse failures
+* Extconf: Fix object path regexp
+  - This accidentally replaced `.c` in the wrong parts of the path in some cases,
+    causing build failures
+* Update to libpg_query 13-2.0.2
+  - Fix ARM builds: Avoid dependency on cpuid.h header
+  - Simplify deparser of TableLikeClause
+  - Fix asprintf warnings by ensuring _GNU_SOURCE is set early enough
+
 
 ## 2.0.1     2021-03-18
 
