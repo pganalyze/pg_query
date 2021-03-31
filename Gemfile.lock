@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pg_query (2.0.1)
+    pg_query (2.0.2)
       google-protobuf (~> 3.15.5)
 
 GEM
