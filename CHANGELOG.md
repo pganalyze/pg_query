@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+
+## 2.0.2     2021-03-31
+
 * `COALESCE` arguments are now included in `#filter_columns`
 * Improve error message for protobuf parse failures
 * Extconf: Fix object path regexp
