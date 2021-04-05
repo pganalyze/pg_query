@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Update to libpg_query 13-2.0.3
+  - Normalize: Fix handling of two subsequent DefElem elements (avoids crash)
+
 
 ## 2.0.2     2021-03-31
 
