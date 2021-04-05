@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* ...
+
+
+## 2.0.3     2021-04-05
+
 * Update to libpg_query 13-2.0.4
   - Normalize: Fix handling of two subsequent DefElem elements (avoids crash)
   - Deparser: Fix crash in CopyStmt with HEADER or FREEZE inside WITH parens
