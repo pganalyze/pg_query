@@ -30,4 +30,19 @@ describe PgQuery, '#truncate' do
     query = 'SELECT CASE WHEN $2.typtype = ? THEN $2.typtypmod ELSE $1.atttypmod END'
     expect(described_class.parse(query).truncate(50)).to eq 'SELECT ...'
   end
+
+  it 'handles UPDATE target list' do
+    query = 'UPDATE x SET a = 1, c = 2, e = \'str\''
+    expect(described_class.parse(query).truncate(30)).to eq 'UPDATE x SET ... = ...'
+  end
+
+  it 'handles ON CONFLICT target list' do
+    query = 'INSERT INTO y(a) VALUES(1) ON CONFLICT DO UPDATE SET a = 123456789'
+    expect(described_class.parse(query).truncate(65)).to eq 'INSERT INTO y (a) VALUES (1) ON CONFLICT DO UPDATE SET ... = ...'
+  end
+
+  it 'handles GRANT access privileges' do
+    query = 'GRANT SELECT (abc, def, ghj) ON TABLE t1 TO r1'
+    expect(described_class.parse(query).truncate(35)).to eq 'GRANT select (abc, def, ghj) ON ...'
+  end
 end

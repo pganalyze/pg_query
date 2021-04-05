@@ -24,9 +24,10 @@ module PgQuery
           dummy_column_ref = PgQuery::Node.new(column_ref: PgQuery::ColumnRef.new(fields: [PgQuery::Node.new(string: PgQuery::String.new(str: '…'))]))
           case truncation.node_type
           when :target_list
+            res_target_name = '…' if node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::OnConflictClause)
             node.target_list.replace(
               [
-                PgQuery::Node.new(res_target: PgQuery::ResTarget.new(val: dummy_column_ref))
+                PgQuery::Node.new(res_target: PgQuery::ResTarget.new(name: res_target_name, val: dummy_column_ref))
               ]
             )
           when :where_clause
@@ -34,7 +35,7 @@ module PgQuery
           when :ctequery
             node.ctequery = PgQuery::Node.new(select_stmt: PgQuery::SelectStmt.new(where_clause: dummy_column_ref, op: :SETOP_NONE))
           when :cols
-            node.cols.replace([PgQuery::Node.from(PgQuery::ResTarget.new(name: '…'))])
+            node.cols.replace([PgQuery::Node.from(PgQuery::ResTarget.new(name: '…'))]) if node.is_a?(PgQuery::InsertStmt)
           else
             raise ArgumentError, format('Unexpected truncation node type: %s', truncation.node_type)
           end
@@ -53,18 +54,25 @@ module PgQuery
     def find_possible_truncations
       truncations = []
 
-      treewalker! @tree do |_expr, k, v, location|
+      treewalker! @tree do |node, k, v, location|
         case k
         when :target_list
+          next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::OnConflictClause)
           length = PgQuery.deparse_stmt(PgQuery::SelectStmt.new(k => v.to_a, op: :SETOP_NONE)).size - 7 # 'SELECT '.size
           truncations << PossibleTruncation.new(location, :target_list, length, true)
         when :where_clause
+          next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::DeleteStmt) ||
+            node.is_a?(PgQuery::CopyStmt) || node.is_a?(PgQuery::IndexStmt) || node.is_a?(PgQuery::RuleStmt) ||
+            node.is_a?(PgQuery::InferClause) || node.is_a?(PgQuery::OnConflictClause)
+
           length = PgQuery.deparse_expr(v).size
           truncations << PossibleTruncation.new(location, :where_clause, length, false)
         when :ctequery
+          next unless node.is_a?(PgQuery::CommonTableExpr)
           length = PgQuery.deparse_stmt(v[v.node.to_s]).size
           truncations << PossibleTruncation.new(location, :ctequery, length, false)
         when :cols
+          next unless node.is_a?(PgQuery::InsertStmt)
           length = PgQuery.deparse_stmt(
             PgQuery::InsertStmt.new(
               relation: PgQuery::RangeVar.new(relname: 'x', inh: true),
