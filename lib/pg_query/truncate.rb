@@ -51,7 +51,7 @@ module PgQuery
 
     private
 
-    def find_possible_truncations
+    def find_possible_truncations # rubocop:disable Metrics/CyclomaticComplexity
       truncations = []
 
       treewalker! @tree do |node, k, v, location|
@@ -62,8 +62,8 @@ module PgQuery
           truncations << PossibleTruncation.new(location, :target_list, length, true)
         when :where_clause
           next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::DeleteStmt) ||
-            node.is_a?(PgQuery::CopyStmt) || node.is_a?(PgQuery::IndexStmt) || node.is_a?(PgQuery::RuleStmt) ||
-            node.is_a?(PgQuery::InferClause) || node.is_a?(PgQuery::OnConflictClause)
+                      node.is_a?(PgQuery::CopyStmt) || node.is_a?(PgQuery::IndexStmt) || node.is_a?(PgQuery::RuleStmt) ||
+                      node.is_a?(PgQuery::InferClause) || node.is_a?(PgQuery::OnConflictClause)
 
           length = PgQuery.deparse_expr(v).size
           truncations << PossibleTruncation.new(location, :where_clause, length, false)
