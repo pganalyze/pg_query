@@ -133,6 +133,18 @@ PgQuery.fingerprint("SELECT ?")
 => "50fde20626009aba"
 ```
 
+### Scanning a query into tokens
+
+```ruby
+PgQuery.scan('SELECT 1 --comment')
+
+=> [<PgQuery::ScanResult: version: 130002, tokens: [
+<PgQuery::ScanToken: start: 0, end: 6, token: :SELECT, keyword_kind: :RESERVED_KEYWORD>,
+<PgQuery::ScanToken: start: 7, end: 8, token: :ICONST, keyword_kind: :NO_KEYWORD>,
+<PgQuery::ScanToken: start: 9, end: 18, token: :SQL_COMMENT, keyword_kind: :NO_KEYWORD>]>,
+ []]
+```
+
 ## Differences from Upstream PostgreSQL
 
 This gem is based on [libpg_query](https://github.com/pganalyze/libpg_query),
