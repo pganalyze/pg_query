@@ -5,6 +5,9 @@ AllCops:
     - ext/pg_query/extconf.rb
     - vendor/**/*
     - tmp/**/*
+    - lib/pg_query/pg_query_pb.rb
+    - lib/pg_query/json_field_names.rb
+    - Rakefile
 
 Layout/AlignHash:
   Exclude:
@@ -67,6 +70,9 @@ RSpec/MultipleExpectations:
   Enabled: false
 
 RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/DescribedClass:
   Enabled: false
 
 # extend self preserves private methods,

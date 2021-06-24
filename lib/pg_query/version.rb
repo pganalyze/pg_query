@@ -1,3 +1,3 @@
-class PgQuery
-  VERSION = '1.3.0'.freeze
+module PgQuery
+  VERSION = '2.0.3'.freeze
 end

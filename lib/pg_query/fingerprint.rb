@@ -1,115 +1,150 @@
 require 'digest'
 
-class PgQuery
-  def fingerprint
-    hash = Digest::SHA1.new
-    fingerprint_tree(hash)
-    format('%02x', FINGERPRINT_VERSION) + hash.hexdigest
-  end
-
-  private
-
-  FINGERPRINT_VERSION = 2
-
-  class FingerprintSubHash
-    attr_reader :parts
-
-    def initialize
-      @parts = []
+module PgQuery
+  class ParserResult
+    def fingerprint
+      hash = FingerprintSubHash.new
+      fingerprint_tree(hash)
+      fp = PgQuery.hash_xxh3_64(hash.parts.join, FINGERPRINT_VERSION)
+      format('%016x', fp)
     end
 
-    def update(part)
-      @parts << part
-    end
+    private
 
-    def flush_to(hash)
-      parts.each do |part|
-        hash.update part
-      end
-    end
-  end
+    FINGERPRINT_VERSION = 3
 
-  def ignored_fingerprint_value?(val)
-    [nil, 0, false, [], ''].include?(val)
-  end
+    class FingerprintSubHash
+      attr_reader :parts
 
-  def fingerprint_value(val, hash, parent_node_name, parent_field_name, need_to_write_name)
-    return if ignored_fingerprint_value?(val)
-
-    subhash = FingerprintSubHash.new
-
-    if val.is_a?(Hash)
-      fingerprint_node(val, subhash, parent_node_name, parent_field_name)
-    elsif val.is_a?(Array)
-      fingerprint_list(val, subhash, parent_node_name, parent_field_name)
-    else
-      subhash.update val.to_s
-    end
-
-    return if subhash.parts.empty?
-
-    hash.update(parent_field_name) if need_to_write_name
-    subhash.flush_to(hash)
-  end
-
-  def fingerprint_node(node, hash, parent_node_name = nil, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
-    node_name = node.keys.first
-    return if [A_CONST, ALIAS, PARAM_REF, SET_TO_DEFAULT, INT_LIST, OID_LIST, NULL].include?(node_name)
-
-    hash.update node_name
-
-    fields = node.values.first
-    fields.sort_by { |k, _| k }.each do |field_name, val|
-      next if ignored_fingerprint_value?(val)
-
-      case field_name
-      when 'location'
-        next
-      when 'name'
-        next if node_name == RES_TARGET && parent_node_name == SELECT_STMT && parent_field_name == TARGET_LIST_FIELD
-        next if [PREPARE_STMT, EXECUTE_STMT, DEALLOCATE_STMT].include?(node_name)
-      when 'gid'
-        next if node_name == TRANSACTION_STMT
-      when 'options'
-        next if node_name == TRANSACTION_STMT
-      when 'portalname'
-        next if [DECLARE_CURSOR_STMT, FETCH_STMT, CLOSE_PORTAL_STMT].include?(node_name)
-      when 'relname'
-        next if node_name == RANGE_VAR && fields[RELPERSISTENCE_FIELD] == 't'
-      when 'stmt_len'
-        next if node_name == RAW_STMT
-      when 'stmt_location'
-        next if node_name == RAW_STMT
+      def initialize
+        @parts = []
       end
 
-      fingerprint_value(val, hash, node_name, field_name, true)
-    end
-  end
-
-  def fingerprint_list(values, hash, parent_node_name, parent_field_name)
-    if [FROM_CLAUSE_FIELD, TARGET_LIST_FIELD, COLS_FIELD, REXPR_FIELD, VALUES_LISTS_FIELD].include?(parent_field_name)
-      values_subhashes = values.map do |val|
-        subhash = FingerprintSubHash.new
-        fingerprint_value(val, subhash, parent_node_name, parent_field_name, false)
-        subhash
+      def update(part)
+        @parts << part
       end
 
-      values_subhashes.uniq!(&:parts)
-      values_subhashes.sort_by!(&:parts)
-
-      values_subhashes.each do |subhash|
-        subhash.flush_to(hash)
-      end
-    else
-      values.each do |val|
-        fingerprint_value(val, hash, parent_node_name, parent_field_name, false)
+      def flush_to(hash)
+        parts.each do |part|
+          hash.update part
+        end
       end
     end
-  end
 
-  def fingerprint_tree(hash)
-    @tree.each do |node|
-      fingerprint_node(node, hash)
+    def ignored_fingerprint_value?(val)
+      [nil, 0, false, [], ''].include?(val)
+    end
+
+    def fingerprint_value(val, hash, parent_node_name, parent_field_name, need_to_write_name) # rubocop:disable Metrics/CyclomaticComplexity
+      subhash = FingerprintSubHash.new
+
+      if val.is_a?(Google::Protobuf::RepeatedField)
+        fingerprint_list(val, subhash, parent_node_name, parent_field_name)
+      elsif val.is_a?(List)
+        fingerprint_list(val.items, subhash, parent_node_name, parent_field_name)
+      elsif val.is_a?(Google::Protobuf::MessageExts)
+        fingerprint_node(val, subhash, parent_node_name, parent_field_name)
+      elsif !ignored_fingerprint_value?(val)
+        subhash.update val.to_s
+      end
+
+      return if subhash.parts.empty?
+
+      hash.update(parent_field_name) if need_to_write_name
+      subhash.flush_to(hash)
+    end
+
+    def ignored_node_type?(node)
+      [A_Const, Alias, ParamRef, SetToDefault, IntList, OidList, Null].include?(node.class) ||
+        node.is_a?(TypeCast) && (node.arg.node == :a_const || node.arg.node == :param_ref)
+    end
+
+    def node_protobuf_field_name_to_json_name(node_class, field)
+      # Use protobuf descriptor once json_name support is fixed: https://github.com/protocolbuffers/protobuf/pull/8356
+      # node_class.descriptor.find { |d| d.name == field.to_s }.json_name
+      INTERNAL_PROTO_FIELD_NAME_TO_JSON_NAME.fetch([node_class, field])
+    end
+
+    def fingerprint_node(node, hash, parent_node_name = nil, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
+      return if ignored_node_type?(node)
+
+      if node.is_a?(Node)
+        return if node.node.nil?
+        node_val = node[node.node.to_s]
+        unless ignored_node_type?(node_val)
+          unless node_val.is_a?(List)
+            postgres_node_name = node_protobuf_field_name_to_json_name(node.class, node.node)
+            hash.update(postgres_node_name)
+          end
+          fingerprint_value(node_val, hash, parent_node_name, parent_field_name, false)
+        end
+        return
+      end
+
+      postgres_node_name = node.class.name.split('::').last
+
+      node.to_h.keys.sort.each do |field_name|
+        val = node[field_name.to_s]
+
+        postgres_field_name = node_protobuf_field_name_to_json_name(node.class, field_name)
+
+        case postgres_field_name
+        when 'location'
+          next
+        when 'name'
+          next if [PrepareStmt, ExecuteStmt, DeallocateStmt].include?(node.class)
+          next if node.is_a?(ResTarget) && parent_node_name == 'SelectStmt' && parent_field_name == 'targetList'
+        when 'gid', 'options', 'savepoint_name'
+          next if node.is_a?(TransactionStmt)
+        when 'portalname'
+          next if [DeclareCursorStmt, FetchStmt, ClosePortalStmt].include?(node.class)
+        when 'relname'
+          next if node.is_a?(RangeVar) && node.relpersistence == 't'
+          if node.is_a?(RangeVar)
+            fingerprint_value(val.gsub(/\d{2,}/, ''), hash, postgres_node_name, postgres_field_name, true)
+            next
+          end
+        when 'stmt_len'
+          next if node.is_a?(RawStmt)
+        when 'stmt_location'
+          next if node.is_a?(RawStmt)
+        when 'kind'
+          if node.is_a?(A_Expr) && (val == :AEXPR_OP_ANY || val == :AEXPR_IN)
+            fingerprint_value(:AEXPR_OP, hash, postgres_node_name, postgres_field_name, true)
+            next
+          end
+        end
+
+        fingerprint_value(val, hash, postgres_node_name, postgres_field_name, true)
+      end
+    end
+
+    def fingerprint_list(values, hash, parent_node_name, parent_field_name)
+      if %w[fromClause targetList cols rexpr valuesLists args].include?(parent_field_name)
+        values_subhashes = values.map do |val|
+          subhash = FingerprintSubHash.new
+          fingerprint_value(val, subhash, parent_node_name, parent_field_name, false)
+          subhash
+        end
+
+        values_subhashes.uniq!(&:parts)
+        values_subhashes.sort_by! { |s| PgQuery.hash_xxh3_64(s.parts.join, FINGERPRINT_VERSION) }
+
+        values_subhashes.each do |subhash|
+          subhash.flush_to(hash)
+        end
+      else
+        values.each do |val|
+          fingerprint_value(val, hash, parent_node_name, parent_field_name, false)
+        end
+      end
+    end
+
+    def fingerprint_tree(hash)
+      @tree.stmts.each do |node|
+        hash.update 'RawStmt'
+        fingerprint_node(node, hash)
+      end
     end
   end
 end
