@@ -89,7 +89,7 @@ module PgQuery
 
     protected
 
-    def load_objects!
+    def load_objects! # rubocop:disable Metrics/CyclomaticComplexity
       @tables = [] # types: select, dml, ddl
       @cte_names = []
       @aliases = {}
@@ -217,7 +217,6 @@ module PgQuery
             }
           when :rename_stmt
             if statement.rename_stmt.rename_type == :OBJECT_FUNCTION
-              p statement.rename_stmt
               original_name = statement.rename_stmt.object.object_with_args.objname[0].string.str
               new_name = statement.rename_stmt.newname
               @functions += [
