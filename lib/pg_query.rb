@@ -10,7 +10,6 @@ require 'pg_query/parse'
 require 'pg_query/treewalker'
 
 require 'pg_query/filter_columns'
-require 'pg_query/json_field_names'
 require 'pg_query/fingerprint'
 require 'pg_query/param_refs'
 require 'pg_query/deparse'

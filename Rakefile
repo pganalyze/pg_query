@@ -86,18 +86,4 @@ task :update_source do
   system("cp -a #{libdir}/testdata/* #{testfilesdir}")
   # Copy back the custom ext files
   system("cp -a #{extbakdir}/pg_query_ruby.{c,sym} #{extbakdir}/extconf.rb #{extdir}")
-
-  # Generate JSON field name helper (workaround until https://github.com/protocolbuffers/protobuf/pull/8356 is merged)
-  str = "module PgQuery\n  INTERNAL_PROTO_FIELD_NAME_TO_JSON_NAME = {\n"
-  cur_type = nil
-  File.read(File.join(libdir, 'protobuf/pg_query.proto')).each_line do |line|
-    if line[/^message (\w+)/]
-      cur_type = $1
-      next
-    end
-    next unless line[/(repeated )?\w+ (\w+) = \d+( \[json_name="(\w+)"\])?;/]
-    str += format("    [%s, :%s] => '%s',\n", cur_type, $2, $4 || $2)
-  end
-  str += "  }\nend\n"
-  File.write(File.join(__dir__, 'lib/pg_query/json_field_names.rb'), str)
 end

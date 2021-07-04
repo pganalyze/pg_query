@@ -18,6 +18,10 @@
   - google-protobuf 3.15.x has a bug that causes a seg fault in Ruby under
     certain conditions (https://github.com/protocolbuffers/protobuf/pull/8639). Use
     google-protobuf 3.17.1 instead.
+* Use Protobuf definition for determining JSON field names
+  - Note you may see a breaking change if you were using `PgQuery::ParseResult.encode_json`
+    to map the protobuf result to JSON, since this now respects the intended JSON names
+    from the Proto3 definition (instead of the differently formatted Protobuf field names)
 
 
 ## 2.0.3     2021-04-05

@@ -31,26 +31,23 @@ describe PgQuery, '.parse' do
         )
       )
     )
-    # Note this currently has the incorrect JSON names in some places, due to
-    # the Ruby Protobuf library not respecting json_name
-    # (https://github.com/protocolbuffers/protobuf/pull/8356)
     expect(JSON.parse(PgQuery::ParseResult.encode_json(query.tree))).to eq(
       "version" => PgQuery::PG_VERSION_NUM,
       "stmts" => [
         {
           "stmt" => {
-            "selectStmt" => {
+            "SelectStmt" => {
               "limitOption" => "LIMIT_OPTION_DEFAULT",
               "op" => "SETOP_NONE",
               "targetList" => [
                 {
-                  "resTarget" => {
+                  "ResTarget" => {
                     "location"=>7,
                     "val" => {
-                      "aConst" => {
+                      "A_Const" => {
                         "location" => 7,
                         "val" => {
-                          "integer" => {
+                          "Integer" => {
                             "ival" => 1
                           }
                         }
