@@ -22,6 +22,7 @@
   - Note you may see a breaking change if you were using `PgQuery::ParseResult.encode_json`
     to map the protobuf result to JSON, since this now respects the intended JSON names
     from the Proto3 definition (instead of the differently formatted Protobuf field names)
+* Rakefile: Fix "rake clean" by using CLEAN.include instead of CLEAN.<<
 
 
 ## 2.0.3     2021-04-05
