@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* ...
+
+
+## 2.1.0     2021-07-04
+
 * Update to libpg_query 13-2.0.6
   - Update to Postgres 13.3 patch release
   - Normalize: Don't touch "GROUP BY 1" and "ORDER BY 1" expressions, keep original text 
