@@ -2438,6 +2438,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :ASCII_62, 62
       value :ASCII_63, 63
       value :ASCII_91, 91
+      value :ASCII_92, 92
       value :ASCII_93, 93
       value :ASCII_94, 94
       value :IDENT, 258

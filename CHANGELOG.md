@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-* ...
+* Update to libpg_query 13-2.0.5
+  - Update to Postgres 13.3 patch release
+  - Normalize: Don't touch "GROUP BY 1" type statements, keep original text 
+  - Fingerprint: Cache list item hashes to fingerprint complex queries faster
+  - Deparser: Emit the RangeVar catalogname if present
+  - Fix crash in pg_scan function when encountering backslash escapes
 
 
 ## 2.0.3     2021-04-05
