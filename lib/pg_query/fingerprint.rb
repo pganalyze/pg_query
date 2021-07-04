@@ -60,9 +60,7 @@ module PgQuery
     end
 
     def node_protobuf_field_name_to_json_name(node_class, field)
-      # Use protobuf descriptor once json_name support is fixed: https://github.com/protocolbuffers/protobuf/pull/8356
-      # node_class.descriptor.find { |d| d.name == field.to_s }.json_name
-      INTERNAL_PROTO_FIELD_NAME_TO_JSON_NAME.fetch([node_class, field])
+      node_class.descriptor.find { |d| d.name == field.to_s }.json_name
     end
 
     def fingerprint_node(node, hash, parent_node_name = nil, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity

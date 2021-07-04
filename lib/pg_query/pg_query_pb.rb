@@ -15,234 +15,234 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     end
     add_message "pg_query.Node" do
       oneof :node do
-        optional :alias, :message, 1, "pg_query.Alias"
-        optional :range_var, :message, 2, "pg_query.RangeVar"
-        optional :table_func, :message, 3, "pg_query.TableFunc"
-        optional :expr, :message, 4, "pg_query.Expr"
-        optional :var, :message, 5, "pg_query.Var"
-        optional :param, :message, 6, "pg_query.Param"
-        optional :aggref, :message, 7, "pg_query.Aggref"
-        optional :grouping_func, :message, 8, "pg_query.GroupingFunc"
-        optional :window_func, :message, 9, "pg_query.WindowFunc"
-        optional :subscripting_ref, :message, 10, "pg_query.SubscriptingRef"
-        optional :func_expr, :message, 11, "pg_query.FuncExpr"
-        optional :named_arg_expr, :message, 12, "pg_query.NamedArgExpr"
-        optional :op_expr, :message, 13, "pg_query.OpExpr"
-        optional :distinct_expr, :message, 14, "pg_query.DistinctExpr"
-        optional :null_if_expr, :message, 15, "pg_query.NullIfExpr"
-        optional :scalar_array_op_expr, :message, 16, "pg_query.ScalarArrayOpExpr"
-        optional :bool_expr, :message, 17, "pg_query.BoolExpr"
-        optional :sub_link, :message, 18, "pg_query.SubLink"
-        optional :sub_plan, :message, 19, "pg_query.SubPlan"
-        optional :alternative_sub_plan, :message, 20, "pg_query.AlternativeSubPlan"
-        optional :field_select, :message, 21, "pg_query.FieldSelect"
-        optional :field_store, :message, 22, "pg_query.FieldStore"
-        optional :relabel_type, :message, 23, "pg_query.RelabelType"
-        optional :coerce_via_io, :message, 24, "pg_query.CoerceViaIO"
-        optional :array_coerce_expr, :message, 25, "pg_query.ArrayCoerceExpr"
-        optional :convert_rowtype_expr, :message, 26, "pg_query.ConvertRowtypeExpr"
-        optional :collate_expr, :message, 27, "pg_query.CollateExpr"
-        optional :case_expr, :message, 28, "pg_query.CaseExpr"
-        optional :case_when, :message, 29, "pg_query.CaseWhen"
-        optional :case_test_expr, :message, 30, "pg_query.CaseTestExpr"
-        optional :array_expr, :message, 31, "pg_query.ArrayExpr"
-        optional :row_expr, :message, 32, "pg_query.RowExpr"
-        optional :row_compare_expr, :message, 33, "pg_query.RowCompareExpr"
-        optional :coalesce_expr, :message, 34, "pg_query.CoalesceExpr"
-        optional :min_max_expr, :message, 35, "pg_query.MinMaxExpr"
-        optional :sqlvalue_function, :message, 36, "pg_query.SQLValueFunction"
-        optional :xml_expr, :message, 37, "pg_query.XmlExpr"
-        optional :null_test, :message, 38, "pg_query.NullTest"
-        optional :boolean_test, :message, 39, "pg_query.BooleanTest"
-        optional :coerce_to_domain, :message, 40, "pg_query.CoerceToDomain"
-        optional :coerce_to_domain_value, :message, 41, "pg_query.CoerceToDomainValue"
-        optional :set_to_default, :message, 42, "pg_query.SetToDefault"
-        optional :current_of_expr, :message, 43, "pg_query.CurrentOfExpr"
-        optional :next_value_expr, :message, 44, "pg_query.NextValueExpr"
-        optional :inference_elem, :message, 45, "pg_query.InferenceElem"
-        optional :target_entry, :message, 46, "pg_query.TargetEntry"
-        optional :range_tbl_ref, :message, 47, "pg_query.RangeTblRef"
-        optional :join_expr, :message, 48, "pg_query.JoinExpr"
-        optional :from_expr, :message, 49, "pg_query.FromExpr"
-        optional :on_conflict_expr, :message, 50, "pg_query.OnConflictExpr"
-        optional :into_clause, :message, 51, "pg_query.IntoClause"
-        optional :raw_stmt, :message, 52, "pg_query.RawStmt"
-        optional :query, :message, 53, "pg_query.Query"
-        optional :insert_stmt, :message, 54, "pg_query.InsertStmt"
-        optional :delete_stmt, :message, 55, "pg_query.DeleteStmt"
-        optional :update_stmt, :message, 56, "pg_query.UpdateStmt"
-        optional :select_stmt, :message, 57, "pg_query.SelectStmt"
-        optional :alter_table_stmt, :message, 58, "pg_query.AlterTableStmt"
-        optional :alter_table_cmd, :message, 59, "pg_query.AlterTableCmd"
-        optional :alter_domain_stmt, :message, 60, "pg_query.AlterDomainStmt"
-        optional :set_operation_stmt, :message, 61, "pg_query.SetOperationStmt"
-        optional :grant_stmt, :message, 62, "pg_query.GrantStmt"
-        optional :grant_role_stmt, :message, 63, "pg_query.GrantRoleStmt"
-        optional :alter_default_privileges_stmt, :message, 64, "pg_query.AlterDefaultPrivilegesStmt"
-        optional :close_portal_stmt, :message, 65, "pg_query.ClosePortalStmt"
-        optional :cluster_stmt, :message, 66, "pg_query.ClusterStmt"
-        optional :copy_stmt, :message, 67, "pg_query.CopyStmt"
-        optional :create_stmt, :message, 68, "pg_query.CreateStmt"
-        optional :define_stmt, :message, 69, "pg_query.DefineStmt"
-        optional :drop_stmt, :message, 70, "pg_query.DropStmt"
-        optional :truncate_stmt, :message, 71, "pg_query.TruncateStmt"
-        optional :comment_stmt, :message, 72, "pg_query.CommentStmt"
-        optional :fetch_stmt, :message, 73, "pg_query.FetchStmt"
-        optional :index_stmt, :message, 74, "pg_query.IndexStmt"
-        optional :create_function_stmt, :message, 75, "pg_query.CreateFunctionStmt"
-        optional :alter_function_stmt, :message, 76, "pg_query.AlterFunctionStmt"
-        optional :do_stmt, :message, 77, "pg_query.DoStmt"
-        optional :rename_stmt, :message, 78, "pg_query.RenameStmt"
-        optional :rule_stmt, :message, 79, "pg_query.RuleStmt"
-        optional :notify_stmt, :message, 80, "pg_query.NotifyStmt"
-        optional :listen_stmt, :message, 81, "pg_query.ListenStmt"
-        optional :unlisten_stmt, :message, 82, "pg_query.UnlistenStmt"
-        optional :transaction_stmt, :message, 83, "pg_query.TransactionStmt"
-        optional :view_stmt, :message, 84, "pg_query.ViewStmt"
-        optional :load_stmt, :message, 85, "pg_query.LoadStmt"
-        optional :create_domain_stmt, :message, 86, "pg_query.CreateDomainStmt"
-        optional :createdb_stmt, :message, 87, "pg_query.CreatedbStmt"
-        optional :dropdb_stmt, :message, 88, "pg_query.DropdbStmt"
-        optional :vacuum_stmt, :message, 89, "pg_query.VacuumStmt"
-        optional :explain_stmt, :message, 90, "pg_query.ExplainStmt"
-        optional :create_table_as_stmt, :message, 91, "pg_query.CreateTableAsStmt"
-        optional :create_seq_stmt, :message, 92, "pg_query.CreateSeqStmt"
-        optional :alter_seq_stmt, :message, 93, "pg_query.AlterSeqStmt"
-        optional :variable_set_stmt, :message, 94, "pg_query.VariableSetStmt"
-        optional :variable_show_stmt, :message, 95, "pg_query.VariableShowStmt"
-        optional :discard_stmt, :message, 96, "pg_query.DiscardStmt"
-        optional :create_trig_stmt, :message, 97, "pg_query.CreateTrigStmt"
-        optional :create_plang_stmt, :message, 98, "pg_query.CreatePLangStmt"
-        optional :create_role_stmt, :message, 99, "pg_query.CreateRoleStmt"
-        optional :alter_role_stmt, :message, 100, "pg_query.AlterRoleStmt"
-        optional :drop_role_stmt, :message, 101, "pg_query.DropRoleStmt"
-        optional :lock_stmt, :message, 102, "pg_query.LockStmt"
-        optional :constraints_set_stmt, :message, 103, "pg_query.ConstraintsSetStmt"
-        optional :reindex_stmt, :message, 104, "pg_query.ReindexStmt"
-        optional :check_point_stmt, :message, 105, "pg_query.CheckPointStmt"
-        optional :create_schema_stmt, :message, 106, "pg_query.CreateSchemaStmt"
-        optional :alter_database_stmt, :message, 107, "pg_query.AlterDatabaseStmt"
-        optional :alter_database_set_stmt, :message, 108, "pg_query.AlterDatabaseSetStmt"
-        optional :alter_role_set_stmt, :message, 109, "pg_query.AlterRoleSetStmt"
-        optional :create_conversion_stmt, :message, 110, "pg_query.CreateConversionStmt"
-        optional :create_cast_stmt, :message, 111, "pg_query.CreateCastStmt"
-        optional :create_op_class_stmt, :message, 112, "pg_query.CreateOpClassStmt"
-        optional :create_op_family_stmt, :message, 113, "pg_query.CreateOpFamilyStmt"
-        optional :alter_op_family_stmt, :message, 114, "pg_query.AlterOpFamilyStmt"
-        optional :prepare_stmt, :message, 115, "pg_query.PrepareStmt"
-        optional :execute_stmt, :message, 116, "pg_query.ExecuteStmt"
-        optional :deallocate_stmt, :message, 117, "pg_query.DeallocateStmt"
-        optional :declare_cursor_stmt, :message, 118, "pg_query.DeclareCursorStmt"
-        optional :create_table_space_stmt, :message, 119, "pg_query.CreateTableSpaceStmt"
-        optional :drop_table_space_stmt, :message, 120, "pg_query.DropTableSpaceStmt"
-        optional :alter_object_depends_stmt, :message, 121, "pg_query.AlterObjectDependsStmt"
-        optional :alter_object_schema_stmt, :message, 122, "pg_query.AlterObjectSchemaStmt"
-        optional :alter_owner_stmt, :message, 123, "pg_query.AlterOwnerStmt"
-        optional :alter_operator_stmt, :message, 124, "pg_query.AlterOperatorStmt"
-        optional :alter_type_stmt, :message, 125, "pg_query.AlterTypeStmt"
-        optional :drop_owned_stmt, :message, 126, "pg_query.DropOwnedStmt"
-        optional :reassign_owned_stmt, :message, 127, "pg_query.ReassignOwnedStmt"
-        optional :composite_type_stmt, :message, 128, "pg_query.CompositeTypeStmt"
-        optional :create_enum_stmt, :message, 129, "pg_query.CreateEnumStmt"
-        optional :create_range_stmt, :message, 130, "pg_query.CreateRangeStmt"
-        optional :alter_enum_stmt, :message, 131, "pg_query.AlterEnumStmt"
-        optional :alter_tsdictionary_stmt, :message, 132, "pg_query.AlterTSDictionaryStmt"
-        optional :alter_tsconfiguration_stmt, :message, 133, "pg_query.AlterTSConfigurationStmt"
-        optional :create_fdw_stmt, :message, 134, "pg_query.CreateFdwStmt"
-        optional :alter_fdw_stmt, :message, 135, "pg_query.AlterFdwStmt"
-        optional :create_foreign_server_stmt, :message, 136, "pg_query.CreateForeignServerStmt"
-        optional :alter_foreign_server_stmt, :message, 137, "pg_query.AlterForeignServerStmt"
-        optional :create_user_mapping_stmt, :message, 138, "pg_query.CreateUserMappingStmt"
-        optional :alter_user_mapping_stmt, :message, 139, "pg_query.AlterUserMappingStmt"
-        optional :drop_user_mapping_stmt, :message, 140, "pg_query.DropUserMappingStmt"
-        optional :alter_table_space_options_stmt, :message, 141, "pg_query.AlterTableSpaceOptionsStmt"
-        optional :alter_table_move_all_stmt, :message, 142, "pg_query.AlterTableMoveAllStmt"
-        optional :sec_label_stmt, :message, 143, "pg_query.SecLabelStmt"
-        optional :create_foreign_table_stmt, :message, 144, "pg_query.CreateForeignTableStmt"
-        optional :import_foreign_schema_stmt, :message, 145, "pg_query.ImportForeignSchemaStmt"
-        optional :create_extension_stmt, :message, 146, "pg_query.CreateExtensionStmt"
-        optional :alter_extension_stmt, :message, 147, "pg_query.AlterExtensionStmt"
-        optional :alter_extension_contents_stmt, :message, 148, "pg_query.AlterExtensionContentsStmt"
-        optional :create_event_trig_stmt, :message, 149, "pg_query.CreateEventTrigStmt"
-        optional :alter_event_trig_stmt, :message, 150, "pg_query.AlterEventTrigStmt"
-        optional :refresh_mat_view_stmt, :message, 151, "pg_query.RefreshMatViewStmt"
-        optional :replica_identity_stmt, :message, 152, "pg_query.ReplicaIdentityStmt"
-        optional :alter_system_stmt, :message, 153, "pg_query.AlterSystemStmt"
-        optional :create_policy_stmt, :message, 154, "pg_query.CreatePolicyStmt"
-        optional :alter_policy_stmt, :message, 155, "pg_query.AlterPolicyStmt"
-        optional :create_transform_stmt, :message, 156, "pg_query.CreateTransformStmt"
-        optional :create_am_stmt, :message, 157, "pg_query.CreateAmStmt"
-        optional :create_publication_stmt, :message, 158, "pg_query.CreatePublicationStmt"
-        optional :alter_publication_stmt, :message, 159, "pg_query.AlterPublicationStmt"
-        optional :create_subscription_stmt, :message, 160, "pg_query.CreateSubscriptionStmt"
-        optional :alter_subscription_stmt, :message, 161, "pg_query.AlterSubscriptionStmt"
-        optional :drop_subscription_stmt, :message, 162, "pg_query.DropSubscriptionStmt"
-        optional :create_stats_stmt, :message, 163, "pg_query.CreateStatsStmt"
-        optional :alter_collation_stmt, :message, 164, "pg_query.AlterCollationStmt"
-        optional :call_stmt, :message, 165, "pg_query.CallStmt"
-        optional :alter_stats_stmt, :message, 166, "pg_query.AlterStatsStmt"
-        optional :a_expr, :message, 167, "pg_query.A_Expr"
-        optional :column_ref, :message, 168, "pg_query.ColumnRef"
-        optional :param_ref, :message, 169, "pg_query.ParamRef"
-        optional :a_const, :message, 170, "pg_query.A_Const"
-        optional :func_call, :message, 171, "pg_query.FuncCall"
-        optional :a_star, :message, 172, "pg_query.A_Star"
-        optional :a_indices, :message, 173, "pg_query.A_Indices"
-        optional :a_indirection, :message, 174, "pg_query.A_Indirection"
-        optional :a_array_expr, :message, 175, "pg_query.A_ArrayExpr"
-        optional :res_target, :message, 176, "pg_query.ResTarget"
-        optional :multi_assign_ref, :message, 177, "pg_query.MultiAssignRef"
-        optional :type_cast, :message, 178, "pg_query.TypeCast"
-        optional :collate_clause, :message, 179, "pg_query.CollateClause"
-        optional :sort_by, :message, 180, "pg_query.SortBy"
-        optional :window_def, :message, 181, "pg_query.WindowDef"
-        optional :range_subselect, :message, 182, "pg_query.RangeSubselect"
-        optional :range_function, :message, 183, "pg_query.RangeFunction"
-        optional :range_table_sample, :message, 184, "pg_query.RangeTableSample"
-        optional :range_table_func, :message, 185, "pg_query.RangeTableFunc"
-        optional :range_table_func_col, :message, 186, "pg_query.RangeTableFuncCol"
-        optional :type_name, :message, 187, "pg_query.TypeName"
-        optional :column_def, :message, 188, "pg_query.ColumnDef"
-        optional :index_elem, :message, 189, "pg_query.IndexElem"
-        optional :constraint, :message, 190, "pg_query.Constraint"
-        optional :def_elem, :message, 191, "pg_query.DefElem"
-        optional :range_tbl_entry, :message, 192, "pg_query.RangeTblEntry"
-        optional :range_tbl_function, :message, 193, "pg_query.RangeTblFunction"
-        optional :table_sample_clause, :message, 194, "pg_query.TableSampleClause"
-        optional :with_check_option, :message, 195, "pg_query.WithCheckOption"
-        optional :sort_group_clause, :message, 196, "pg_query.SortGroupClause"
-        optional :grouping_set, :message, 197, "pg_query.GroupingSet"
-        optional :window_clause, :message, 198, "pg_query.WindowClause"
-        optional :object_with_args, :message, 199, "pg_query.ObjectWithArgs"
-        optional :access_priv, :message, 200, "pg_query.AccessPriv"
-        optional :create_op_class_item, :message, 201, "pg_query.CreateOpClassItem"
-        optional :table_like_clause, :message, 202, "pg_query.TableLikeClause"
-        optional :function_parameter, :message, 203, "pg_query.FunctionParameter"
-        optional :locking_clause, :message, 204, "pg_query.LockingClause"
-        optional :row_mark_clause, :message, 205, "pg_query.RowMarkClause"
-        optional :xml_serialize, :message, 206, "pg_query.XmlSerialize"
-        optional :with_clause, :message, 207, "pg_query.WithClause"
-        optional :infer_clause, :message, 208, "pg_query.InferClause"
-        optional :on_conflict_clause, :message, 209, "pg_query.OnConflictClause"
-        optional :common_table_expr, :message, 210, "pg_query.CommonTableExpr"
-        optional :role_spec, :message, 211, "pg_query.RoleSpec"
-        optional :trigger_transition, :message, 212, "pg_query.TriggerTransition"
-        optional :partition_elem, :message, 213, "pg_query.PartitionElem"
-        optional :partition_spec, :message, 214, "pg_query.PartitionSpec"
-        optional :partition_bound_spec, :message, 215, "pg_query.PartitionBoundSpec"
-        optional :partition_range_datum, :message, 216, "pg_query.PartitionRangeDatum"
-        optional :partition_cmd, :message, 217, "pg_query.PartitionCmd"
-        optional :vacuum_relation, :message, 218, "pg_query.VacuumRelation"
-        optional :inline_code_block, :message, 219, "pg_query.InlineCodeBlock"
-        optional :call_context, :message, 220, "pg_query.CallContext"
-        optional :integer, :message, 221, "pg_query.Integer"
-        optional :float, :message, 222, "pg_query.Float"
-        optional :string, :message, 223, "pg_query.String"
-        optional :bit_string, :message, 224, "pg_query.BitString"
-        optional :null, :message, 225, "pg_query.Null"
-        optional :list, :message, 226, "pg_query.List"
-        optional :int_list, :message, 227, "pg_query.IntList"
-        optional :oid_list, :message, 228, "pg_query.OidList"
+        optional :alias, :message, 1, "pg_query.Alias", json_name: "Alias"
+        optional :range_var, :message, 2, "pg_query.RangeVar", json_name: "RangeVar"
+        optional :table_func, :message, 3, "pg_query.TableFunc", json_name: "TableFunc"
+        optional :expr, :message, 4, "pg_query.Expr", json_name: "Expr"
+        optional :var, :message, 5, "pg_query.Var", json_name: "Var"
+        optional :param, :message, 6, "pg_query.Param", json_name: "Param"
+        optional :aggref, :message, 7, "pg_query.Aggref", json_name: "Aggref"
+        optional :grouping_func, :message, 8, "pg_query.GroupingFunc", json_name: "GroupingFunc"
+        optional :window_func, :message, 9, "pg_query.WindowFunc", json_name: "WindowFunc"
+        optional :subscripting_ref, :message, 10, "pg_query.SubscriptingRef", json_name: "SubscriptingRef"
+        optional :func_expr, :message, 11, "pg_query.FuncExpr", json_name: "FuncExpr"
+        optional :named_arg_expr, :message, 12, "pg_query.NamedArgExpr", json_name: "NamedArgExpr"
+        optional :op_expr, :message, 13, "pg_query.OpExpr", json_name: "OpExpr"
+        optional :distinct_expr, :message, 14, "pg_query.DistinctExpr", json_name: "DistinctExpr"
+        optional :null_if_expr, :message, 15, "pg_query.NullIfExpr", json_name: "NullIfExpr"
+        optional :scalar_array_op_expr, :message, 16, "pg_query.ScalarArrayOpExpr", json_name: "ScalarArrayOpExpr"
+        optional :bool_expr, :message, 17, "pg_query.BoolExpr", json_name: "BoolExpr"
+        optional :sub_link, :message, 18, "pg_query.SubLink", json_name: "SubLink"
+        optional :sub_plan, :message, 19, "pg_query.SubPlan", json_name: "SubPlan"
+        optional :alternative_sub_plan, :message, 20, "pg_query.AlternativeSubPlan", json_name: "AlternativeSubPlan"
+        optional :field_select, :message, 21, "pg_query.FieldSelect", json_name: "FieldSelect"
+        optional :field_store, :message, 22, "pg_query.FieldStore", json_name: "FieldStore"
+        optional :relabel_type, :message, 23, "pg_query.RelabelType", json_name: "RelabelType"
+        optional :coerce_via_io, :message, 24, "pg_query.CoerceViaIO", json_name: "CoerceViaIO"
+        optional :array_coerce_expr, :message, 25, "pg_query.ArrayCoerceExpr", json_name: "ArrayCoerceExpr"
+        optional :convert_rowtype_expr, :message, 26, "pg_query.ConvertRowtypeExpr", json_name: "ConvertRowtypeExpr"
+        optional :collate_expr, :message, 27, "pg_query.CollateExpr", json_name: "CollateExpr"
+        optional :case_expr, :message, 28, "pg_query.CaseExpr", json_name: "CaseExpr"
+        optional :case_when, :message, 29, "pg_query.CaseWhen", json_name: "CaseWhen"
+        optional :case_test_expr, :message, 30, "pg_query.CaseTestExpr", json_name: "CaseTestExpr"
+        optional :array_expr, :message, 31, "pg_query.ArrayExpr", json_name: "ArrayExpr"
+        optional :row_expr, :message, 32, "pg_query.RowExpr", json_name: "RowExpr"
+        optional :row_compare_expr, :message, 33, "pg_query.RowCompareExpr", json_name: "RowCompareExpr"
+        optional :coalesce_expr, :message, 34, "pg_query.CoalesceExpr", json_name: "CoalesceExpr"
+        optional :min_max_expr, :message, 35, "pg_query.MinMaxExpr", json_name: "MinMaxExpr"
+        optional :sqlvalue_function, :message, 36, "pg_query.SQLValueFunction", json_name: "SQLValueFunction"
+        optional :xml_expr, :message, 37, "pg_query.XmlExpr", json_name: "XmlExpr"
+        optional :null_test, :message, 38, "pg_query.NullTest", json_name: "NullTest"
+        optional :boolean_test, :message, 39, "pg_query.BooleanTest", json_name: "BooleanTest"
+        optional :coerce_to_domain, :message, 40, "pg_query.CoerceToDomain", json_name: "CoerceToDomain"
+        optional :coerce_to_domain_value, :message, 41, "pg_query.CoerceToDomainValue", json_name: "CoerceToDomainValue"
+        optional :set_to_default, :message, 42, "pg_query.SetToDefault", json_name: "SetToDefault"
+        optional :current_of_expr, :message, 43, "pg_query.CurrentOfExpr", json_name: "CurrentOfExpr"
+        optional :next_value_expr, :message, 44, "pg_query.NextValueExpr", json_name: "NextValueExpr"
+        optional :inference_elem, :message, 45, "pg_query.InferenceElem", json_name: "InferenceElem"
+        optional :target_entry, :message, 46, "pg_query.TargetEntry", json_name: "TargetEntry"
+        optional :range_tbl_ref, :message, 47, "pg_query.RangeTblRef", json_name: "RangeTblRef"
+        optional :join_expr, :message, 48, "pg_query.JoinExpr", json_name: "JoinExpr"
+        optional :from_expr, :message, 49, "pg_query.FromExpr", json_name: "FromExpr"
+        optional :on_conflict_expr, :message, 50, "pg_query.OnConflictExpr", json_name: "OnConflictExpr"
+        optional :into_clause, :message, 51, "pg_query.IntoClause", json_name: "IntoClause"
+        optional :raw_stmt, :message, 52, "pg_query.RawStmt", json_name: "RawStmt"
+        optional :query, :message, 53, "pg_query.Query", json_name: "Query"
+        optional :insert_stmt, :message, 54, "pg_query.InsertStmt", json_name: "InsertStmt"
+        optional :delete_stmt, :message, 55, "pg_query.DeleteStmt", json_name: "DeleteStmt"
+        optional :update_stmt, :message, 56, "pg_query.UpdateStmt", json_name: "UpdateStmt"
+        optional :select_stmt, :message, 57, "pg_query.SelectStmt", json_name: "SelectStmt"
+        optional :alter_table_stmt, :message, 58, "pg_query.AlterTableStmt", json_name: "AlterTableStmt"
+        optional :alter_table_cmd, :message, 59, "pg_query.AlterTableCmd", json_name: "AlterTableCmd"
+        optional :alter_domain_stmt, :message, 60, "pg_query.AlterDomainStmt", json_name: "AlterDomainStmt"
+        optional :set_operation_stmt, :message, 61, "pg_query.SetOperationStmt", json_name: "SetOperationStmt"
+        optional :grant_stmt, :message, 62, "pg_query.GrantStmt", json_name: "GrantStmt"
+        optional :grant_role_stmt, :message, 63, "pg_query.GrantRoleStmt", json_name: "GrantRoleStmt"
+        optional :alter_default_privileges_stmt, :message, 64, "pg_query.AlterDefaultPrivilegesStmt", json_name: "AlterDefaultPrivilegesStmt"
+        optional :close_portal_stmt, :message, 65, "pg_query.ClosePortalStmt", json_name: "ClosePortalStmt"
+        optional :cluster_stmt, :message, 66, "pg_query.ClusterStmt", json_name: "ClusterStmt"
+        optional :copy_stmt, :message, 67, "pg_query.CopyStmt", json_name: "CopyStmt"
+        optional :create_stmt, :message, 68, "pg_query.CreateStmt", json_name: "CreateStmt"
+        optional :define_stmt, :message, 69, "pg_query.DefineStmt", json_name: "DefineStmt"
+        optional :drop_stmt, :message, 70, "pg_query.DropStmt", json_name: "DropStmt"
+        optional :truncate_stmt, :message, 71, "pg_query.TruncateStmt", json_name: "TruncateStmt"
+        optional :comment_stmt, :message, 72, "pg_query.CommentStmt", json_name: "CommentStmt"
+        optional :fetch_stmt, :message, 73, "pg_query.FetchStmt", json_name: "FetchStmt"
+        optional :index_stmt, :message, 74, "pg_query.IndexStmt", json_name: "IndexStmt"
+        optional :create_function_stmt, :message, 75, "pg_query.CreateFunctionStmt", json_name: "CreateFunctionStmt"
+        optional :alter_function_stmt, :message, 76, "pg_query.AlterFunctionStmt", json_name: "AlterFunctionStmt"
+        optional :do_stmt, :message, 77, "pg_query.DoStmt", json_name: "DoStmt"
+        optional :rename_stmt, :message, 78, "pg_query.RenameStmt", json_name: "RenameStmt"
+        optional :rule_stmt, :message, 79, "pg_query.RuleStmt", json_name: "RuleStmt"
+        optional :notify_stmt, :message, 80, "pg_query.NotifyStmt", json_name: "NotifyStmt"
+        optional :listen_stmt, :message, 81, "pg_query.ListenStmt", json_name: "ListenStmt"
+        optional :unlisten_stmt, :message, 82, "pg_query.UnlistenStmt", json_name: "UnlistenStmt"
+        optional :transaction_stmt, :message, 83, "pg_query.TransactionStmt", json_name: "TransactionStmt"
+        optional :view_stmt, :message, 84, "pg_query.ViewStmt", json_name: "ViewStmt"
+        optional :load_stmt, :message, 85, "pg_query.LoadStmt", json_name: "LoadStmt"
+        optional :create_domain_stmt, :message, 86, "pg_query.CreateDomainStmt", json_name: "CreateDomainStmt"
+        optional :createdb_stmt, :message, 87, "pg_query.CreatedbStmt", json_name: "CreatedbStmt"
+        optional :dropdb_stmt, :message, 88, "pg_query.DropdbStmt", json_name: "DropdbStmt"
+        optional :vacuum_stmt, :message, 89, "pg_query.VacuumStmt", json_name: "VacuumStmt"
+        optional :explain_stmt, :message, 90, "pg_query.ExplainStmt", json_name: "ExplainStmt"
+        optional :create_table_as_stmt, :message, 91, "pg_query.CreateTableAsStmt", json_name: "CreateTableAsStmt"
+        optional :create_seq_stmt, :message, 92, "pg_query.CreateSeqStmt", json_name: "CreateSeqStmt"
+        optional :alter_seq_stmt, :message, 93, "pg_query.AlterSeqStmt", json_name: "AlterSeqStmt"
+        optional :variable_set_stmt, :message, 94, "pg_query.VariableSetStmt", json_name: "VariableSetStmt"
+        optional :variable_show_stmt, :message, 95, "pg_query.VariableShowStmt", json_name: "VariableShowStmt"
+        optional :discard_stmt, :message, 96, "pg_query.DiscardStmt", json_name: "DiscardStmt"
+        optional :create_trig_stmt, :message, 97, "pg_query.CreateTrigStmt", json_name: "CreateTrigStmt"
+        optional :create_plang_stmt, :message, 98, "pg_query.CreatePLangStmt", json_name: "CreatePLangStmt"
+        optional :create_role_stmt, :message, 99, "pg_query.CreateRoleStmt", json_name: "CreateRoleStmt"
+        optional :alter_role_stmt, :message, 100, "pg_query.AlterRoleStmt", json_name: "AlterRoleStmt"
+        optional :drop_role_stmt, :message, 101, "pg_query.DropRoleStmt", json_name: "DropRoleStmt"
+        optional :lock_stmt, :message, 102, "pg_query.LockStmt", json_name: "LockStmt"
+        optional :constraints_set_stmt, :message, 103, "pg_query.ConstraintsSetStmt", json_name: "ConstraintsSetStmt"
+        optional :reindex_stmt, :message, 104, "pg_query.ReindexStmt", json_name: "ReindexStmt"
+        optional :check_point_stmt, :message, 105, "pg_query.CheckPointStmt", json_name: "CheckPointStmt"
+        optional :create_schema_stmt, :message, 106, "pg_query.CreateSchemaStmt", json_name: "CreateSchemaStmt"
+        optional :alter_database_stmt, :message, 107, "pg_query.AlterDatabaseStmt", json_name: "AlterDatabaseStmt"
+        optional :alter_database_set_stmt, :message, 108, "pg_query.AlterDatabaseSetStmt", json_name: "AlterDatabaseSetStmt"
+        optional :alter_role_set_stmt, :message, 109, "pg_query.AlterRoleSetStmt", json_name: "AlterRoleSetStmt"
+        optional :create_conversion_stmt, :message, 110, "pg_query.CreateConversionStmt", json_name: "CreateConversionStmt"
+        optional :create_cast_stmt, :message, 111, "pg_query.CreateCastStmt", json_name: "CreateCastStmt"
+        optional :create_op_class_stmt, :message, 112, "pg_query.CreateOpClassStmt", json_name: "CreateOpClassStmt"
+        optional :create_op_family_stmt, :message, 113, "pg_query.CreateOpFamilyStmt", json_name: "CreateOpFamilyStmt"
+        optional :alter_op_family_stmt, :message, 114, "pg_query.AlterOpFamilyStmt", json_name: "AlterOpFamilyStmt"
+        optional :prepare_stmt, :message, 115, "pg_query.PrepareStmt", json_name: "PrepareStmt"
+        optional :execute_stmt, :message, 116, "pg_query.ExecuteStmt", json_name: "ExecuteStmt"
+        optional :deallocate_stmt, :message, 117, "pg_query.DeallocateStmt", json_name: "DeallocateStmt"
+        optional :declare_cursor_stmt, :message, 118, "pg_query.DeclareCursorStmt", json_name: "DeclareCursorStmt"
+        optional :create_table_space_stmt, :message, 119, "pg_query.CreateTableSpaceStmt", json_name: "CreateTableSpaceStmt"
+        optional :drop_table_space_stmt, :message, 120, "pg_query.DropTableSpaceStmt", json_name: "DropTableSpaceStmt"
+        optional :alter_object_depends_stmt, :message, 121, "pg_query.AlterObjectDependsStmt", json_name: "AlterObjectDependsStmt"
+        optional :alter_object_schema_stmt, :message, 122, "pg_query.AlterObjectSchemaStmt", json_name: "AlterObjectSchemaStmt"
+        optional :alter_owner_stmt, :message, 123, "pg_query.AlterOwnerStmt", json_name: "AlterOwnerStmt"
+        optional :alter_operator_stmt, :message, 124, "pg_query.AlterOperatorStmt", json_name: "AlterOperatorStmt"
+        optional :alter_type_stmt, :message, 125, "pg_query.AlterTypeStmt", json_name: "AlterTypeStmt"
+        optional :drop_owned_stmt, :message, 126, "pg_query.DropOwnedStmt", json_name: "DropOwnedStmt"
+        optional :reassign_owned_stmt, :message, 127, "pg_query.ReassignOwnedStmt", json_name: "ReassignOwnedStmt"
+        optional :composite_type_stmt, :message, 128, "pg_query.CompositeTypeStmt", json_name: "CompositeTypeStmt"
+        optional :create_enum_stmt, :message, 129, "pg_query.CreateEnumStmt", json_name: "CreateEnumStmt"
+        optional :create_range_stmt, :message, 130, "pg_query.CreateRangeStmt", json_name: "CreateRangeStmt"
+        optional :alter_enum_stmt, :message, 131, "pg_query.AlterEnumStmt", json_name: "AlterEnumStmt"
+        optional :alter_tsdictionary_stmt, :message, 132, "pg_query.AlterTSDictionaryStmt", json_name: "AlterTSDictionaryStmt"
+        optional :alter_tsconfiguration_stmt, :message, 133, "pg_query.AlterTSConfigurationStmt", json_name: "AlterTSConfigurationStmt"
+        optional :create_fdw_stmt, :message, 134, "pg_query.CreateFdwStmt", json_name: "CreateFdwStmt"
+        optional :alter_fdw_stmt, :message, 135, "pg_query.AlterFdwStmt", json_name: "AlterFdwStmt"
+        optional :create_foreign_server_stmt, :message, 136, "pg_query.CreateForeignServerStmt", json_name: "CreateForeignServerStmt"
+        optional :alter_foreign_server_stmt, :message, 137, "pg_query.AlterForeignServerStmt", json_name: "AlterForeignServerStmt"
+        optional :create_user_mapping_stmt, :message, 138, "pg_query.CreateUserMappingStmt", json_name: "CreateUserMappingStmt"
+        optional :alter_user_mapping_stmt, :message, 139, "pg_query.AlterUserMappingStmt", json_name: "AlterUserMappingStmt"
+        optional :drop_user_mapping_stmt, :message, 140, "pg_query.DropUserMappingStmt", json_name: "DropUserMappingStmt"
+        optional :alter_table_space_options_stmt, :message, 141, "pg_query.AlterTableSpaceOptionsStmt", json_name: "AlterTableSpaceOptionsStmt"
+        optional :alter_table_move_all_stmt, :message, 142, "pg_query.AlterTableMoveAllStmt", json_name: "AlterTableMoveAllStmt"
+        optional :sec_label_stmt, :message, 143, "pg_query.SecLabelStmt", json_name: "SecLabelStmt"
+        optional :create_foreign_table_stmt, :message, 144, "pg_query.CreateForeignTableStmt", json_name: "CreateForeignTableStmt"
+        optional :import_foreign_schema_stmt, :message, 145, "pg_query.ImportForeignSchemaStmt", json_name: "ImportForeignSchemaStmt"
+        optional :create_extension_stmt, :message, 146, "pg_query.CreateExtensionStmt", json_name: "CreateExtensionStmt"
+        optional :alter_extension_stmt, :message, 147, "pg_query.AlterExtensionStmt", json_name: "AlterExtensionStmt"
+        optional :alter_extension_contents_stmt, :message, 148, "pg_query.AlterExtensionContentsStmt", json_name: "AlterExtensionContentsStmt"
+        optional :create_event_trig_stmt, :message, 149, "pg_query.CreateEventTrigStmt", json_name: "CreateEventTrigStmt"
+        optional :alter_event_trig_stmt, :message, 150, "pg_query.AlterEventTrigStmt", json_name: "AlterEventTrigStmt"
+        optional :refresh_mat_view_stmt, :message, 151, "pg_query.RefreshMatViewStmt", json_name: "RefreshMatViewStmt"
+        optional :replica_identity_stmt, :message, 152, "pg_query.ReplicaIdentityStmt", json_name: "ReplicaIdentityStmt"
+        optional :alter_system_stmt, :message, 153, "pg_query.AlterSystemStmt", json_name: "AlterSystemStmt"
+        optional :create_policy_stmt, :message, 154, "pg_query.CreatePolicyStmt", json_name: "CreatePolicyStmt"
+        optional :alter_policy_stmt, :message, 155, "pg_query.AlterPolicyStmt", json_name: "AlterPolicyStmt"
+        optional :create_transform_stmt, :message, 156, "pg_query.CreateTransformStmt", json_name: "CreateTransformStmt"
+        optional :create_am_stmt, :message, 157, "pg_query.CreateAmStmt", json_name: "CreateAmStmt"
+        optional :create_publication_stmt, :message, 158, "pg_query.CreatePublicationStmt", json_name: "CreatePublicationStmt"
+        optional :alter_publication_stmt, :message, 159, "pg_query.AlterPublicationStmt", json_name: "AlterPublicationStmt"
+        optional :create_subscription_stmt, :message, 160, "pg_query.CreateSubscriptionStmt", json_name: "CreateSubscriptionStmt"
+        optional :alter_subscription_stmt, :message, 161, "pg_query.AlterSubscriptionStmt", json_name: "AlterSubscriptionStmt"
+        optional :drop_subscription_stmt, :message, 162, "pg_query.DropSubscriptionStmt", json_name: "DropSubscriptionStmt"
+        optional :create_stats_stmt, :message, 163, "pg_query.CreateStatsStmt", json_name: "CreateStatsStmt"
+        optional :alter_collation_stmt, :message, 164, "pg_query.AlterCollationStmt", json_name: "AlterCollationStmt"
+        optional :call_stmt, :message, 165, "pg_query.CallStmt", json_name: "CallStmt"
+        optional :alter_stats_stmt, :message, 166, "pg_query.AlterStatsStmt", json_name: "AlterStatsStmt"
+        optional :a_expr, :message, 167, "pg_query.A_Expr", json_name: "A_Expr"
+        optional :column_ref, :message, 168, "pg_query.ColumnRef", json_name: "ColumnRef"
+        optional :param_ref, :message, 169, "pg_query.ParamRef", json_name: "ParamRef"
+        optional :a_const, :message, 170, "pg_query.A_Const", json_name: "A_Const"
+        optional :func_call, :message, 171, "pg_query.FuncCall", json_name: "FuncCall"
+        optional :a_star, :message, 172, "pg_query.A_Star", json_name: "A_Star"
+        optional :a_indices, :message, 173, "pg_query.A_Indices", json_name: "A_Indices"
+        optional :a_indirection, :message, 174, "pg_query.A_Indirection", json_name: "A_Indirection"
+        optional :a_array_expr, :message, 175, "pg_query.A_ArrayExpr", json_name: "A_ArrayExpr"
+        optional :res_target, :message, 176, "pg_query.ResTarget", json_name: "ResTarget"
+        optional :multi_assign_ref, :message, 177, "pg_query.MultiAssignRef", json_name: "MultiAssignRef"
+        optional :type_cast, :message, 178, "pg_query.TypeCast", json_name: "TypeCast"
+        optional :collate_clause, :message, 179, "pg_query.CollateClause", json_name: "CollateClause"
+        optional :sort_by, :message, 180, "pg_query.SortBy", json_name: "SortBy"
+        optional :window_def, :message, 181, "pg_query.WindowDef", json_name: "WindowDef"
+        optional :range_subselect, :message, 182, "pg_query.RangeSubselect", json_name: "RangeSubselect"
+        optional :range_function, :message, 183, "pg_query.RangeFunction", json_name: "RangeFunction"
+        optional :range_table_sample, :message, 184, "pg_query.RangeTableSample", json_name: "RangeTableSample"
+        optional :range_table_func, :message, 185, "pg_query.RangeTableFunc", json_name: "RangeTableFunc"
+        optional :range_table_func_col, :message, 186, "pg_query.RangeTableFuncCol", json_name: "RangeTableFuncCol"
+        optional :type_name, :message, 187, "pg_query.TypeName", json_name: "TypeName"
+        optional :column_def, :message, 188, "pg_query.ColumnDef", json_name: "ColumnDef"
+        optional :index_elem, :message, 189, "pg_query.IndexElem", json_name: "IndexElem"
+        optional :constraint, :message, 190, "pg_query.Constraint", json_name: "Constraint"
+        optional :def_elem, :message, 191, "pg_query.DefElem", json_name: "DefElem"
+        optional :range_tbl_entry, :message, 192, "pg_query.RangeTblEntry", json_name: "RangeTblEntry"
+        optional :range_tbl_function, :message, 193, "pg_query.RangeTblFunction", json_name: "RangeTblFunction"
+        optional :table_sample_clause, :message, 194, "pg_query.TableSampleClause", json_name: "TableSampleClause"
+        optional :with_check_option, :message, 195, "pg_query.WithCheckOption", json_name: "WithCheckOption"
+        optional :sort_group_clause, :message, 196, "pg_query.SortGroupClause", json_name: "SortGroupClause"
+        optional :grouping_set, :message, 197, "pg_query.GroupingSet", json_name: "GroupingSet"
+        optional :window_clause, :message, 198, "pg_query.WindowClause", json_name: "WindowClause"
+        optional :object_with_args, :message, 199, "pg_query.ObjectWithArgs", json_name: "ObjectWithArgs"
+        optional :access_priv, :message, 200, "pg_query.AccessPriv", json_name: "AccessPriv"
+        optional :create_op_class_item, :message, 201, "pg_query.CreateOpClassItem", json_name: "CreateOpClassItem"
+        optional :table_like_clause, :message, 202, "pg_query.TableLikeClause", json_name: "TableLikeClause"
+        optional :function_parameter, :message, 203, "pg_query.FunctionParameter", json_name: "FunctionParameter"
+        optional :locking_clause, :message, 204, "pg_query.LockingClause", json_name: "LockingClause"
+        optional :row_mark_clause, :message, 205, "pg_query.RowMarkClause", json_name: "RowMarkClause"
+        optional :xml_serialize, :message, 206, "pg_query.XmlSerialize", json_name: "XmlSerialize"
+        optional :with_clause, :message, 207, "pg_query.WithClause", json_name: "WithClause"
+        optional :infer_clause, :message, 208, "pg_query.InferClause", json_name: "InferClause"
+        optional :on_conflict_clause, :message, 209, "pg_query.OnConflictClause", json_name: "OnConflictClause"
+        optional :common_table_expr, :message, 210, "pg_query.CommonTableExpr", json_name: "CommonTableExpr"
+        optional :role_spec, :message, 211, "pg_query.RoleSpec", json_name: "RoleSpec"
+        optional :trigger_transition, :message, 212, "pg_query.TriggerTransition", json_name: "TriggerTransition"
+        optional :partition_elem, :message, 213, "pg_query.PartitionElem", json_name: "PartitionElem"
+        optional :partition_spec, :message, 214, "pg_query.PartitionSpec", json_name: "PartitionSpec"
+        optional :partition_bound_spec, :message, 215, "pg_query.PartitionBoundSpec", json_name: "PartitionBoundSpec"
+        optional :partition_range_datum, :message, 216, "pg_query.PartitionRangeDatum", json_name: "PartitionRangeDatum"
+        optional :partition_cmd, :message, 217, "pg_query.PartitionCmd", json_name: "PartitionCmd"
+        optional :vacuum_relation, :message, 218, "pg_query.VacuumRelation", json_name: "VacuumRelation"
+        optional :inline_code_block, :message, 219, "pg_query.InlineCodeBlock", json_name: "InlineCodeBlock"
+        optional :call_context, :message, 220, "pg_query.CallContext", json_name: "CallContext"
+        optional :integer, :message, 221, "pg_query.Integer", json_name: "Integer"
+        optional :float, :message, 222, "pg_query.Float", json_name: "Float"
+        optional :string, :message, 223, "pg_query.String", json_name: "String"
+        optional :bit_string, :message, 224, "pg_query.BitString", json_name: "BitString"
+        optional :null, :message, 225, "pg_query.Null", json_name: "Null"
+        optional :list, :message, 226, "pg_query.List", json_name: "List"
+        optional :int_list, :message, 227, "pg_query.IntList", json_name: "IntList"
+        optional :oid_list, :message, 228, "pg_query.OidList", json_name: "OidList"
       end
     end
     add_message "pg_query.Integer" do
@@ -269,1599 +269,1600 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :items, :message, 1, "pg_query.Node"
     end
     add_message "pg_query.Alias" do
-      optional :aliasname, :string, 1
-      repeated :colnames, :message, 2, "pg_query.Node"
+      optional :aliasname, :string, 1, json_name: "aliasname"
+      repeated :colnames, :message, 2, "pg_query.Node", json_name: "colnames"
     end
     add_message "pg_query.RangeVar" do
-      optional :catalogname, :string, 1
-      optional :schemaname, :string, 2
-      optional :relname, :string, 3
-      optional :inh, :bool, 4
-      optional :relpersistence, :string, 5
-      optional :alias, :message, 6, "pg_query.Alias"
-      optional :location, :int32, 7
+      optional :catalogname, :string, 1, json_name: "catalogname"
+      optional :schemaname, :string, 2, json_name: "schemaname"
+      optional :relname, :string, 3, json_name: "relname"
+      optional :inh, :bool, 4, json_name: "inh"
+      optional :relpersistence, :string, 5, json_name: "relpersistence"
+      optional :alias, :message, 6, "pg_query.Alias", json_name: "alias"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.TableFunc" do
-      repeated :ns_uris, :message, 1, "pg_query.Node"
-      repeated :ns_names, :message, 2, "pg_query.Node"
-      optional :docexpr, :message, 3, "pg_query.Node"
-      optional :rowexpr, :message, 4, "pg_query.Node"
-      repeated :colnames, :message, 5, "pg_query.Node"
-      repeated :coltypes, :message, 6, "pg_query.Node"
-      repeated :coltypmods, :message, 7, "pg_query.Node"
-      repeated :colcollations, :message, 8, "pg_query.Node"
-      repeated :colexprs, :message, 9, "pg_query.Node"
-      repeated :coldefexprs, :message, 10, "pg_query.Node"
-      repeated :notnulls, :uint64, 11
-      optional :ordinalitycol, :int32, 12
-      optional :location, :int32, 13
+      repeated :ns_uris, :message, 1, "pg_query.Node", json_name: "ns_uris"
+      repeated :ns_names, :message, 2, "pg_query.Node", json_name: "ns_names"
+      optional :docexpr, :message, 3, "pg_query.Node", json_name: "docexpr"
+      optional :rowexpr, :message, 4, "pg_query.Node", json_name: "rowexpr"
+      repeated :colnames, :message, 5, "pg_query.Node", json_name: "colnames"
+      repeated :coltypes, :message, 6, "pg_query.Node", json_name: "coltypes"
+      repeated :coltypmods, :message, 7, "pg_query.Node", json_name: "coltypmods"
+      repeated :colcollations, :message, 8, "pg_query.Node", json_name: "colcollations"
+      repeated :colexprs, :message, 9, "pg_query.Node", json_name: "colexprs"
+      repeated :coldefexprs, :message, 10, "pg_query.Node", json_name: "coldefexprs"
+      repeated :notnulls, :uint64, 11, json_name: "notnulls"
+      optional :ordinalitycol, :int32, 12, json_name: "ordinalitycol"
+      optional :location, :int32, 13, json_name: "location"
     end
     add_message "pg_query.Expr" do
     end
     add_message "pg_query.Var" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :varno, :uint32, 2
-      optional :varattno, :int32, 3
-      optional :vartype, :uint32, 4
-      optional :vartypmod, :int32, 5
-      optional :varcollid, :uint32, 6
-      optional :varlevelsup, :uint32, 7
-      optional :varnosyn, :uint32, 8
-      optional :varattnosyn, :int32, 9
-      optional :location, :int32, 10
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :varno, :uint32, 2, json_name: "varno"
+      optional :varattno, :int32, 3, json_name: "varattno"
+      optional :vartype, :uint32, 4, json_name: "vartype"
+      optional :vartypmod, :int32, 5, json_name: "vartypmod"
+      optional :varcollid, :uint32, 6, json_name: "varcollid"
+      optional :varlevelsup, :uint32, 7, json_name: "varlevelsup"
+      optional :varnosyn, :uint32, 8, json_name: "varnosyn"
+      optional :varattnosyn, :int32, 9, json_name: "varattnosyn"
+      optional :location, :int32, 10, json_name: "location"
     end
     add_message "pg_query.Param" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :paramkind, :enum, 2, "pg_query.ParamKind"
-      optional :paramid, :int32, 3
-      optional :paramtype, :uint32, 4
-      optional :paramtypmod, :int32, 5
-      optional :paramcollid, :uint32, 6
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :paramkind, :enum, 2, "pg_query.ParamKind", json_name: "paramkind"
+      optional :paramid, :int32, 3, json_name: "paramid"
+      optional :paramtype, :uint32, 4, json_name: "paramtype"
+      optional :paramtypmod, :int32, 5, json_name: "paramtypmod"
+      optional :paramcollid, :uint32, 6, json_name: "paramcollid"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.Aggref" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :aggfnoid, :uint32, 2
-      optional :aggtype, :uint32, 3
-      optional :aggcollid, :uint32, 4
-      optional :inputcollid, :uint32, 5
-      optional :aggtranstype, :uint32, 6
-      repeated :aggargtypes, :message, 7, "pg_query.Node"
-      repeated :aggdirectargs, :message, 8, "pg_query.Node"
-      repeated :args, :message, 9, "pg_query.Node"
-      repeated :aggorder, :message, 10, "pg_query.Node"
-      repeated :aggdistinct, :message, 11, "pg_query.Node"
-      optional :aggfilter, :message, 12, "pg_query.Node"
-      optional :aggstar, :bool, 13
-      optional :aggvariadic, :bool, 14
-      optional :aggkind, :string, 15
-      optional :agglevelsup, :uint32, 16
-      optional :aggsplit, :enum, 17, "pg_query.AggSplit"
-      optional :location, :int32, 18
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :aggfnoid, :uint32, 2, json_name: "aggfnoid"
+      optional :aggtype, :uint32, 3, json_name: "aggtype"
+      optional :aggcollid, :uint32, 4, json_name: "aggcollid"
+      optional :inputcollid, :uint32, 5, json_name: "inputcollid"
+      optional :aggtranstype, :uint32, 6, json_name: "aggtranstype"
+      repeated :aggargtypes, :message, 7, "pg_query.Node", json_name: "aggargtypes"
+      repeated :aggdirectargs, :message, 8, "pg_query.Node", json_name: "aggdirectargs"
+      repeated :args, :message, 9, "pg_query.Node", json_name: "args"
+      repeated :aggorder, :message, 10, "pg_query.Node", json_name: "aggorder"
+      repeated :aggdistinct, :message, 11, "pg_query.Node", json_name: "aggdistinct"
+      optional :aggfilter, :message, 12, "pg_query.Node", json_name: "aggfilter"
+      optional :aggstar, :bool, 13, json_name: "aggstar"
+      optional :aggvariadic, :bool, 14, json_name: "aggvariadic"
+      optional :aggkind, :string, 15, json_name: "aggkind"
+      optional :agglevelsup, :uint32, 16, json_name: "agglevelsup"
+      optional :aggsplit, :enum, 17, "pg_query.AggSplit", json_name: "aggsplit"
+      optional :location, :int32, 18, json_name: "location"
     end
     add_message "pg_query.GroupingFunc" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      repeated :args, :message, 2, "pg_query.Node"
-      repeated :refs, :message, 3, "pg_query.Node"
-      repeated :cols, :message, 4, "pg_query.Node"
-      optional :agglevelsup, :uint32, 5
-      optional :location, :int32, 6
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      repeated :args, :message, 2, "pg_query.Node", json_name: "args"
+      repeated :refs, :message, 3, "pg_query.Node", json_name: "refs"
+      repeated :cols, :message, 4, "pg_query.Node", json_name: "cols"
+      optional :agglevelsup, :uint32, 5, json_name: "agglevelsup"
+      optional :location, :int32, 6, json_name: "location"
     end
     add_message "pg_query.WindowFunc" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :winfnoid, :uint32, 2
-      optional :wintype, :uint32, 3
-      optional :wincollid, :uint32, 4
-      optional :inputcollid, :uint32, 5
-      repeated :args, :message, 6, "pg_query.Node"
-      optional :aggfilter, :message, 7, "pg_query.Node"
-      optional :winref, :uint32, 8
-      optional :winstar, :bool, 9
-      optional :winagg, :bool, 10
-      optional :location, :int32, 11
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :winfnoid, :uint32, 2, json_name: "winfnoid"
+      optional :wintype, :uint32, 3, json_name: "wintype"
+      optional :wincollid, :uint32, 4, json_name: "wincollid"
+      optional :inputcollid, :uint32, 5, json_name: "inputcollid"
+      repeated :args, :message, 6, "pg_query.Node", json_name: "args"
+      optional :aggfilter, :message, 7, "pg_query.Node", json_name: "aggfilter"
+      optional :winref, :uint32, 8, json_name: "winref"
+      optional :winstar, :bool, 9, json_name: "winstar"
+      optional :winagg, :bool, 10, json_name: "winagg"
+      optional :location, :int32, 11, json_name: "location"
     end
     add_message "pg_query.SubscriptingRef" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :refcontainertype, :uint32, 2
-      optional :refelemtype, :uint32, 3
-      optional :reftypmod, :int32, 4
-      optional :refcollid, :uint32, 5
-      repeated :refupperindexpr, :message, 6, "pg_query.Node"
-      repeated :reflowerindexpr, :message, 7, "pg_query.Node"
-      optional :refexpr, :message, 8, "pg_query.Node"
-      optional :refassgnexpr, :message, 9, "pg_query.Node"
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :refcontainertype, :uint32, 2, json_name: "refcontainertype"
+      optional :refelemtype, :uint32, 3, json_name: "refelemtype"
+      optional :reftypmod, :int32, 4, json_name: "reftypmod"
+      optional :refcollid, :uint32, 5, json_name: "refcollid"
+      repeated :refupperindexpr, :message, 6, "pg_query.Node", json_name: "refupperindexpr"
+      repeated :reflowerindexpr, :message, 7, "pg_query.Node", json_name: "reflowerindexpr"
+      optional :refexpr, :message, 8, "pg_query.Node", json_name: "refexpr"
+      optional :refassgnexpr, :message, 9, "pg_query.Node", json_name: "refassgnexpr"
     end
     add_message "pg_query.FuncExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :funcid, :uint32, 2
-      optional :funcresulttype, :uint32, 3
-      optional :funcretset, :bool, 4
-      optional :funcvariadic, :bool, 5
-      optional :funcformat, :enum, 6, "pg_query.CoercionForm"
-      optional :funccollid, :uint32, 7
-      optional :inputcollid, :uint32, 8
-      repeated :args, :message, 9, "pg_query.Node"
-      optional :location, :int32, 10
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :funcid, :uint32, 2, json_name: "funcid"
+      optional :funcresulttype, :uint32, 3, json_name: "funcresulttype"
+      optional :funcretset, :bool, 4, json_name: "funcretset"
+      optional :funcvariadic, :bool, 5, json_name: "funcvariadic"
+      optional :funcformat, :enum, 6, "pg_query.CoercionForm", json_name: "funcformat"
+      optional :funccollid, :uint32, 7, json_name: "funccollid"
+      optional :inputcollid, :uint32, 8, json_name: "inputcollid"
+      repeated :args, :message, 9, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 10, json_name: "location"
     end
     add_message "pg_query.NamedArgExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :name, :string, 3
-      optional :argnumber, :int32, 4
-      optional :location, :int32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :name, :string, 3, json_name: "name"
+      optional :argnumber, :int32, 4, json_name: "argnumber"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.OpExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :opno, :uint32, 2
-      optional :opfuncid, :uint32, 3
-      optional :opresulttype, :uint32, 4
-      optional :opretset, :bool, 5
-      optional :opcollid, :uint32, 6
-      optional :inputcollid, :uint32, 7
-      repeated :args, :message, 8, "pg_query.Node"
-      optional :location, :int32, 9
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :opno, :uint32, 2, json_name: "opno"
+      optional :opfuncid, :uint32, 3, json_name: "opfuncid"
+      optional :opresulttype, :uint32, 4, json_name: "opresulttype"
+      optional :opretset, :bool, 5, json_name: "opretset"
+      optional :opcollid, :uint32, 6, json_name: "opcollid"
+      optional :inputcollid, :uint32, 7, json_name: "inputcollid"
+      repeated :args, :message, 8, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 9, json_name: "location"
     end
     add_message "pg_query.DistinctExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :opno, :uint32, 2
-      optional :opfuncid, :uint32, 3
-      optional :opresulttype, :uint32, 4
-      optional :opretset, :bool, 5
-      optional :opcollid, :uint32, 6
-      optional :inputcollid, :uint32, 7
-      repeated :args, :message, 8, "pg_query.Node"
-      optional :location, :int32, 9
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :opno, :uint32, 2, json_name: "opno"
+      optional :opfuncid, :uint32, 3, json_name: "opfuncid"
+      optional :opresulttype, :uint32, 4, json_name: "opresulttype"
+      optional :opretset, :bool, 5, json_name: "opretset"
+      optional :opcollid, :uint32, 6, json_name: "opcollid"
+      optional :inputcollid, :uint32, 7, json_name: "inputcollid"
+      repeated :args, :message, 8, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 9, json_name: "location"
     end
     add_message "pg_query.NullIfExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :opno, :uint32, 2
-      optional :opfuncid, :uint32, 3
-      optional :opresulttype, :uint32, 4
-      optional :opretset, :bool, 5
-      optional :opcollid, :uint32, 6
-      optional :inputcollid, :uint32, 7
-      repeated :args, :message, 8, "pg_query.Node"
-      optional :location, :int32, 9
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :opno, :uint32, 2, json_name: "opno"
+      optional :opfuncid, :uint32, 3, json_name: "opfuncid"
+      optional :opresulttype, :uint32, 4, json_name: "opresulttype"
+      optional :opretset, :bool, 5, json_name: "opretset"
+      optional :opcollid, :uint32, 6, json_name: "opcollid"
+      optional :inputcollid, :uint32, 7, json_name: "inputcollid"
+      repeated :args, :message, 8, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 9, json_name: "location"
     end
     add_message "pg_query.ScalarArrayOpExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :opno, :uint32, 2
-      optional :opfuncid, :uint32, 3
-      optional :use_or, :bool, 4
-      optional :inputcollid, :uint32, 5
-      repeated :args, :message, 6, "pg_query.Node"
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :opno, :uint32, 2, json_name: "opno"
+      optional :opfuncid, :uint32, 3, json_name: "opfuncid"
+      optional :use_or, :bool, 4, json_name: "useOr"
+      optional :inputcollid, :uint32, 5, json_name: "inputcollid"
+      repeated :args, :message, 6, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.BoolExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :boolop, :enum, 2, "pg_query.BoolExprType"
-      repeated :args, :message, 3, "pg_query.Node"
-      optional :location, :int32, 4
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :boolop, :enum, 2, "pg_query.BoolExprType", json_name: "boolop"
+      repeated :args, :message, 3, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 4, json_name: "location"
     end
     add_message "pg_query.SubLink" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :sub_link_type, :enum, 2, "pg_query.SubLinkType"
-      optional :sub_link_id, :int32, 3
-      optional :testexpr, :message, 4, "pg_query.Node"
-      repeated :oper_name, :message, 5, "pg_query.Node"
-      optional :subselect, :message, 6, "pg_query.Node"
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :sub_link_type, :enum, 2, "pg_query.SubLinkType", json_name: "subLinkType"
+      optional :sub_link_id, :int32, 3, json_name: "subLinkId"
+      optional :testexpr, :message, 4, "pg_query.Node", json_name: "testexpr"
+      repeated :oper_name, :message, 5, "pg_query.Node", json_name: "operName"
+      optional :subselect, :message, 6, "pg_query.Node", json_name: "subselect"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.SubPlan" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :sub_link_type, :enum, 2, "pg_query.SubLinkType"
-      optional :testexpr, :message, 3, "pg_query.Node"
-      repeated :param_ids, :message, 4, "pg_query.Node"
-      optional :plan_id, :int32, 5
-      optional :plan_name, :string, 6
-      optional :first_col_type, :uint32, 7
-      optional :first_col_typmod, :int32, 8
-      optional :first_col_collation, :uint32, 9
-      optional :use_hash_table, :bool, 10
-      optional :unknown_eq_false, :bool, 11
-      optional :parallel_safe, :bool, 12
-      repeated :set_param, :message, 13, "pg_query.Node"
-      repeated :par_param, :message, 14, "pg_query.Node"
-      repeated :args, :message, 15, "pg_query.Node"
-      optional :startup_cost, :double, 16
-      optional :per_call_cost, :double, 17
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :sub_link_type, :enum, 2, "pg_query.SubLinkType", json_name: "subLinkType"
+      optional :testexpr, :message, 3, "pg_query.Node", json_name: "testexpr"
+      repeated :param_ids, :message, 4, "pg_query.Node", json_name: "paramIds"
+      optional :plan_id, :int32, 5, json_name: "plan_id"
+      optional :plan_name, :string, 6, json_name: "plan_name"
+      optional :first_col_type, :uint32, 7, json_name: "firstColType"
+      optional :first_col_typmod, :int32, 8, json_name: "firstColTypmod"
+      optional :first_col_collation, :uint32, 9, json_name: "firstColCollation"
+      optional :use_hash_table, :bool, 10, json_name: "useHashTable"
+      optional :unknown_eq_false, :bool, 11, json_name: "unknownEqFalse"
+      optional :parallel_safe, :bool, 12, json_name: "parallel_safe"
+      repeated :set_param, :message, 13, "pg_query.Node", json_name: "setParam"
+      repeated :par_param, :message, 14, "pg_query.Node", json_name: "parParam"
+      repeated :args, :message, 15, "pg_query.Node", json_name: "args"
+      optional :startup_cost, :double, 16, json_name: "startup_cost"
+      optional :per_call_cost, :double, 17, json_name: "per_call_cost"
     end
     add_message "pg_query.AlternativeSubPlan" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      repeated :subplans, :message, 2, "pg_query.Node"
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      repeated :subplans, :message, 2, "pg_query.Node", json_name: "subplans"
     end
     add_message "pg_query.FieldSelect" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :fieldnum, :int32, 3
-      optional :resulttype, :uint32, 4
-      optional :resulttypmod, :int32, 5
-      optional :resultcollid, :uint32, 6
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :fieldnum, :int32, 3, json_name: "fieldnum"
+      optional :resulttype, :uint32, 4, json_name: "resulttype"
+      optional :resulttypmod, :int32, 5, json_name: "resulttypmod"
+      optional :resultcollid, :uint32, 6, json_name: "resultcollid"
     end
     add_message "pg_query.FieldStore" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      repeated :newvals, :message, 3, "pg_query.Node"
-      repeated :fieldnums, :message, 4, "pg_query.Node"
-      optional :resulttype, :uint32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      repeated :newvals, :message, 3, "pg_query.Node", json_name: "newvals"
+      repeated :fieldnums, :message, 4, "pg_query.Node", json_name: "fieldnums"
+      optional :resulttype, :uint32, 5, json_name: "resulttype"
     end
     add_message "pg_query.RelabelType" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :resulttype, :uint32, 3
-      optional :resulttypmod, :int32, 4
-      optional :resultcollid, :uint32, 5
-      optional :relabelformat, :enum, 6, "pg_query.CoercionForm"
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :resulttype, :uint32, 3, json_name: "resulttype"
+      optional :resulttypmod, :int32, 4, json_name: "resulttypmod"
+      optional :resultcollid, :uint32, 5, json_name: "resultcollid"
+      optional :relabelformat, :enum, 6, "pg_query.CoercionForm", json_name: "relabelformat"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.CoerceViaIO" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :resulttype, :uint32, 3
-      optional :resultcollid, :uint32, 4
-      optional :coerceformat, :enum, 5, "pg_query.CoercionForm"
-      optional :location, :int32, 6
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :resulttype, :uint32, 3, json_name: "resulttype"
+      optional :resultcollid, :uint32, 4, json_name: "resultcollid"
+      optional :coerceformat, :enum, 5, "pg_query.CoercionForm", json_name: "coerceformat"
+      optional :location, :int32, 6, json_name: "location"
     end
     add_message "pg_query.ArrayCoerceExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :elemexpr, :message, 3, "pg_query.Node"
-      optional :resulttype, :uint32, 4
-      optional :resulttypmod, :int32, 5
-      optional :resultcollid, :uint32, 6
-      optional :coerceformat, :enum, 7, "pg_query.CoercionForm"
-      optional :location, :int32, 8
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :elemexpr, :message, 3, "pg_query.Node", json_name: "elemexpr"
+      optional :resulttype, :uint32, 4, json_name: "resulttype"
+      optional :resulttypmod, :int32, 5, json_name: "resulttypmod"
+      optional :resultcollid, :uint32, 6, json_name: "resultcollid"
+      optional :coerceformat, :enum, 7, "pg_query.CoercionForm", json_name: "coerceformat"
+      optional :location, :int32, 8, json_name: "location"
     end
     add_message "pg_query.ConvertRowtypeExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :resulttype, :uint32, 3
-      optional :convertformat, :enum, 4, "pg_query.CoercionForm"
-      optional :location, :int32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :resulttype, :uint32, 3, json_name: "resulttype"
+      optional :convertformat, :enum, 4, "pg_query.CoercionForm", json_name: "convertformat"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.CollateExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :coll_oid, :uint32, 3
-      optional :location, :int32, 4
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :coll_oid, :uint32, 3, json_name: "collOid"
+      optional :location, :int32, 4, json_name: "location"
     end
     add_message "pg_query.CaseExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :casetype, :uint32, 2
-      optional :casecollid, :uint32, 3
-      optional :arg, :message, 4, "pg_query.Node"
-      repeated :args, :message, 5, "pg_query.Node"
-      optional :defresult, :message, 6, "pg_query.Node"
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :casetype, :uint32, 2, json_name: "casetype"
+      optional :casecollid, :uint32, 3, json_name: "casecollid"
+      optional :arg, :message, 4, "pg_query.Node", json_name: "arg"
+      repeated :args, :message, 5, "pg_query.Node", json_name: "args"
+      optional :defresult, :message, 6, "pg_query.Node", json_name: "defresult"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.CaseWhen" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :expr, :message, 2, "pg_query.Node"
-      optional :result, :message, 3, "pg_query.Node"
-      optional :location, :int32, 4
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :expr, :message, 2, "pg_query.Node", json_name: "expr"
+      optional :result, :message, 3, "pg_query.Node", json_name: "result"
+      optional :location, :int32, 4, json_name: "location"
     end
     add_message "pg_query.CaseTestExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :type_id, :uint32, 2
-      optional :type_mod, :int32, 3
-      optional :collation, :uint32, 4
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :type_id, :uint32, 2, json_name: "typeId"
+      optional :type_mod, :int32, 3, json_name: "typeMod"
+      optional :collation, :uint32, 4, json_name: "collation"
     end
     add_message "pg_query.ArrayExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :array_typeid, :uint32, 2
-      optional :array_collid, :uint32, 3
-      optional :element_typeid, :uint32, 4
-      repeated :elements, :message, 5, "pg_query.Node"
-      optional :multidims, :bool, 6
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :array_typeid, :uint32, 2, json_name: "array_typeid"
+      optional :array_collid, :uint32, 3, json_name: "array_collid"
+      optional :element_typeid, :uint32, 4, json_name: "element_typeid"
+      repeated :elements, :message, 5, "pg_query.Node", json_name: "elements"
+      optional :multidims, :bool, 6, json_name: "multidims"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.RowExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      repeated :args, :message, 2, "pg_query.Node"
-      optional :row_typeid, :uint32, 3
-      optional :row_format, :enum, 4, "pg_query.CoercionForm"
-      repeated :colnames, :message, 5, "pg_query.Node"
-      optional :location, :int32, 6
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      repeated :args, :message, 2, "pg_query.Node", json_name: "args"
+      optional :row_typeid, :uint32, 3, json_name: "row_typeid"
+      optional :row_format, :enum, 4, "pg_query.CoercionForm", json_name: "row_format"
+      repeated :colnames, :message, 5, "pg_query.Node", json_name: "colnames"
+      optional :location, :int32, 6, json_name: "location"
     end
     add_message "pg_query.RowCompareExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :rctype, :enum, 2, "pg_query.RowCompareType"
-      repeated :opnos, :message, 3, "pg_query.Node"
-      repeated :opfamilies, :message, 4, "pg_query.Node"
-      repeated :inputcollids, :message, 5, "pg_query.Node"
-      repeated :largs, :message, 6, "pg_query.Node"
-      repeated :rargs, :message, 7, "pg_query.Node"
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :rctype, :enum, 2, "pg_query.RowCompareType", json_name: "rctype"
+      repeated :opnos, :message, 3, "pg_query.Node", json_name: "opnos"
+      repeated :opfamilies, :message, 4, "pg_query.Node", json_name: "opfamilies"
+      repeated :inputcollids, :message, 5, "pg_query.Node", json_name: "inputcollids"
+      repeated :largs, :message, 6, "pg_query.Node", json_name: "largs"
+      repeated :rargs, :message, 7, "pg_query.Node", json_name: "rargs"
     end
     add_message "pg_query.CoalesceExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :coalescetype, :uint32, 2
-      optional :coalescecollid, :uint32, 3
-      repeated :args, :message, 4, "pg_query.Node"
-      optional :location, :int32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :coalescetype, :uint32, 2, json_name: "coalescetype"
+      optional :coalescecollid, :uint32, 3, json_name: "coalescecollid"
+      repeated :args, :message, 4, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.MinMaxExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :minmaxtype, :uint32, 2
-      optional :minmaxcollid, :uint32, 3
-      optional :inputcollid, :uint32, 4
-      optional :op, :enum, 5, "pg_query.MinMaxOp"
-      repeated :args, :message, 6, "pg_query.Node"
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :minmaxtype, :uint32, 2, json_name: "minmaxtype"
+      optional :minmaxcollid, :uint32, 3, json_name: "minmaxcollid"
+      optional :inputcollid, :uint32, 4, json_name: "inputcollid"
+      optional :op, :enum, 5, "pg_query.MinMaxOp", json_name: "op"
+      repeated :args, :message, 6, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.SQLValueFunction" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :op, :enum, 2, "pg_query.SQLValueFunctionOp"
-      optional :type, :uint32, 3
-      optional :typmod, :int32, 4
-      optional :location, :int32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :op, :enum, 2, "pg_query.SQLValueFunctionOp", json_name: "op"
+      optional :type, :uint32, 3, json_name: "type"
+      optional :typmod, :int32, 4, json_name: "typmod"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.XmlExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :op, :enum, 2, "pg_query.XmlExprOp"
-      optional :name, :string, 3
-      repeated :named_args, :message, 4, "pg_query.Node"
-      repeated :arg_names, :message, 5, "pg_query.Node"
-      repeated :args, :message, 6, "pg_query.Node"
-      optional :xmloption, :enum, 7, "pg_query.XmlOptionType"
-      optional :type, :uint32, 8
-      optional :typmod, :int32, 9
-      optional :location, :int32, 10
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :op, :enum, 2, "pg_query.XmlExprOp", json_name: "op"
+      optional :name, :string, 3, json_name: "name"
+      repeated :named_args, :message, 4, "pg_query.Node", json_name: "named_args"
+      repeated :arg_names, :message, 5, "pg_query.Node", json_name: "arg_names"
+      repeated :args, :message, 6, "pg_query.Node", json_name: "args"
+      optional :xmloption, :enum, 7, "pg_query.XmlOptionType", json_name: "xmloption"
+      optional :type, :uint32, 8, json_name: "type"
+      optional :typmod, :int32, 9, json_name: "typmod"
+      optional :location, :int32, 10, json_name: "location"
     end
     add_message "pg_query.NullTest" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :nulltesttype, :enum, 3, "pg_query.NullTestType"
-      optional :argisrow, :bool, 4
-      optional :location, :int32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :nulltesttype, :enum, 3, "pg_query.NullTestType", json_name: "nulltesttype"
+      optional :argisrow, :bool, 4, json_name: "argisrow"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.BooleanTest" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :booltesttype, :enum, 3, "pg_query.BoolTestType"
-      optional :location, :int32, 4
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :booltesttype, :enum, 3, "pg_query.BoolTestType", json_name: "booltesttype"
+      optional :location, :int32, 4, json_name: "location"
     end
     add_message "pg_query.CoerceToDomain" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :arg, :message, 2, "pg_query.Node"
-      optional :resulttype, :uint32, 3
-      optional :resulttypmod, :int32, 4
-      optional :resultcollid, :uint32, 5
-      optional :coercionformat, :enum, 6, "pg_query.CoercionForm"
-      optional :location, :int32, 7
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :arg, :message, 2, "pg_query.Node", json_name: "arg"
+      optional :resulttype, :uint32, 3, json_name: "resulttype"
+      optional :resulttypmod, :int32, 4, json_name: "resulttypmod"
+      optional :resultcollid, :uint32, 5, json_name: "resultcollid"
+      optional :coercionformat, :enum, 6, "pg_query.CoercionForm", json_name: "coercionformat"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.CoerceToDomainValue" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :type_id, :uint32, 2
-      optional :type_mod, :int32, 3
-      optional :collation, :uint32, 4
-      optional :location, :int32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :type_id, :uint32, 2, json_name: "typeId"
+      optional :type_mod, :int32, 3, json_name: "typeMod"
+      optional :collation, :uint32, 4, json_name: "collation"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.SetToDefault" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :type_id, :uint32, 2
-      optional :type_mod, :int32, 3
-      optional :collation, :uint32, 4
-      optional :location, :int32, 5
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :type_id, :uint32, 2, json_name: "typeId"
+      optional :type_mod, :int32, 3, json_name: "typeMod"
+      optional :collation, :uint32, 4, json_name: "collation"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.CurrentOfExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :cvarno, :uint32, 2
-      optional :cursor_name, :string, 3
-      optional :cursor_param, :int32, 4
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :cvarno, :uint32, 2, json_name: "cvarno"
+      optional :cursor_name, :string, 3, json_name: "cursor_name"
+      optional :cursor_param, :int32, 4, json_name: "cursor_param"
     end
     add_message "pg_query.NextValueExpr" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :seqid, :uint32, 2
-      optional :type_id, :uint32, 3
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :seqid, :uint32, 2, json_name: "seqid"
+      optional :type_id, :uint32, 3, json_name: "typeId"
     end
     add_message "pg_query.InferenceElem" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :expr, :message, 2, "pg_query.Node"
-      optional :infercollid, :uint32, 3
-      optional :inferopclass, :uint32, 4
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :expr, :message, 2, "pg_query.Node", json_name: "expr"
+      optional :infercollid, :uint32, 3, json_name: "infercollid"
+      optional :inferopclass, :uint32, 4, json_name: "inferopclass"
     end
     add_message "pg_query.TargetEntry" do
-      optional :xpr, :message, 1, "pg_query.Node"
-      optional :expr, :message, 2, "pg_query.Node"
-      optional :resno, :int32, 3
-      optional :resname, :string, 4
-      optional :ressortgroupref, :uint32, 5
-      optional :resorigtbl, :uint32, 6
-      optional :resorigcol, :int32, 7
-      optional :resjunk, :bool, 8
+      optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
+      optional :expr, :message, 2, "pg_query.Node", json_name: "expr"
+      optional :resno, :int32, 3, json_name: "resno"
+      optional :resname, :string, 4, json_name: "resname"
+      optional :ressortgroupref, :uint32, 5, json_name: "ressortgroupref"
+      optional :resorigtbl, :uint32, 6, json_name: "resorigtbl"
+      optional :resorigcol, :int32, 7, json_name: "resorigcol"
+      optional :resjunk, :bool, 8, json_name: "resjunk"
     end
     add_message "pg_query.RangeTblRef" do
-      optional :rtindex, :int32, 1
+      optional :rtindex, :int32, 1, json_name: "rtindex"
     end
     add_message "pg_query.JoinExpr" do
-      optional :jointype, :enum, 1, "pg_query.JoinType"
-      optional :is_natural, :bool, 2
-      optional :larg, :message, 3, "pg_query.Node"
-      optional :rarg, :message, 4, "pg_query.Node"
-      repeated :using_clause, :message, 5, "pg_query.Node"
-      optional :quals, :message, 6, "pg_query.Node"
-      optional :alias, :message, 7, "pg_query.Alias"
-      optional :rtindex, :int32, 8
+      optional :jointype, :enum, 1, "pg_query.JoinType", json_name: "jointype"
+      optional :is_natural, :bool, 2, json_name: "isNatural"
+      optional :larg, :message, 3, "pg_query.Node", json_name: "larg"
+      optional :rarg, :message, 4, "pg_query.Node", json_name: "rarg"
+      repeated :using_clause, :message, 5, "pg_query.Node", json_name: "usingClause"
+      optional :quals, :message, 6, "pg_query.Node", json_name: "quals"
+      optional :alias, :message, 7, "pg_query.Alias", json_name: "alias"
+      optional :rtindex, :int32, 8, json_name: "rtindex"
     end
     add_message "pg_query.FromExpr" do
-      repeated :fromlist, :message, 1, "pg_query.Node"
-      optional :quals, :message, 2, "pg_query.Node"
+      repeated :fromlist, :message, 1, "pg_query.Node", json_name: "fromlist"
+      optional :quals, :message, 2, "pg_query.Node", json_name: "quals"
     end
     add_message "pg_query.OnConflictExpr" do
-      optional :action, :enum, 1, "pg_query.OnConflictAction"
-      repeated :arbiter_elems, :message, 2, "pg_query.Node"
-      optional :arbiter_where, :message, 3, "pg_query.Node"
-      optional :constraint, :uint32, 4
-      repeated :on_conflict_set, :message, 5, "pg_query.Node"
-      optional :on_conflict_where, :message, 6, "pg_query.Node"
-      optional :excl_rel_index, :int32, 7
-      repeated :excl_rel_tlist, :message, 8, "pg_query.Node"
+      optional :action, :enum, 1, "pg_query.OnConflictAction", json_name: "action"
+      repeated :arbiter_elems, :message, 2, "pg_query.Node", json_name: "arbiterElems"
+      optional :arbiter_where, :message, 3, "pg_query.Node", json_name: "arbiterWhere"
+      optional :constraint, :uint32, 4, json_name: "constraint"
+      repeated :on_conflict_set, :message, 5, "pg_query.Node", json_name: "onConflictSet"
+      optional :on_conflict_where, :message, 6, "pg_query.Node", json_name: "onConflictWhere"
+      optional :excl_rel_index, :int32, 7, json_name: "exclRelIndex"
+      repeated :excl_rel_tlist, :message, 8, "pg_query.Node", json_name: "exclRelTlist"
     end
     add_message "pg_query.IntoClause" do
-      optional :rel, :message, 1, "pg_query.RangeVar"
-      repeated :col_names, :message, 2, "pg_query.Node"
-      optional :access_method, :string, 3
-      repeated :options, :message, 4, "pg_query.Node"
-      optional :on_commit, :enum, 5, "pg_query.OnCommitAction"
-      optional :table_space_name, :string, 6
-      optional :view_query, :message, 7, "pg_query.Node"
-      optional :skip_data, :bool, 8
+      optional :rel, :message, 1, "pg_query.RangeVar", json_name: "rel"
+      repeated :col_names, :message, 2, "pg_query.Node", json_name: "colNames"
+      optional :access_method, :string, 3, json_name: "accessMethod"
+      repeated :options, :message, 4, "pg_query.Node", json_name: "options"
+      optional :on_commit, :enum, 5, "pg_query.OnCommitAction", json_name: "onCommit"
+      optional :table_space_name, :string, 6, json_name: "tableSpaceName"
+      optional :view_query, :message, 7, "pg_query.Node", json_name: "viewQuery"
+      optional :skip_data, :bool, 8, json_name: "skipData"
     end
     add_message "pg_query.RawStmt" do
-      optional :stmt, :message, 1, "pg_query.Node"
-      optional :stmt_location, :int32, 2
-      optional :stmt_len, :int32, 3
+      optional :stmt, :message, 1, "pg_query.Node", json_name: "stmt"
+      optional :stmt_location, :int32, 2, json_name: "stmt_location"
+      optional :stmt_len, :int32, 3, json_name: "stmt_len"
     end
     add_message "pg_query.Query" do
-      optional :command_type, :enum, 1, "pg_query.CmdType"
-      optional :query_source, :enum, 2, "pg_query.QuerySource"
-      optional :can_set_tag, :bool, 3
-      optional :utility_stmt, :message, 4, "pg_query.Node"
-      optional :result_relation, :int32, 5
-      optional :has_aggs, :bool, 6
-      optional :has_window_funcs, :bool, 7
-      optional :has_target_srfs, :bool, 8
-      optional :has_sub_links, :bool, 9
-      optional :has_distinct_on, :bool, 10
-      optional :has_recursive, :bool, 11
-      optional :has_modifying_cte, :bool, 12
-      optional :has_for_update, :bool, 13
-      optional :has_row_security, :bool, 14
-      repeated :cte_list, :message, 15, "pg_query.Node"
-      repeated :rtable, :message, 16, "pg_query.Node"
-      optional :jointree, :message, 17, "pg_query.FromExpr"
-      repeated :target_list, :message, 18, "pg_query.Node"
-      optional :override, :enum, 19, "pg_query.OverridingKind"
-      optional :on_conflict, :message, 20, "pg_query.OnConflictExpr"
-      repeated :returning_list, :message, 21, "pg_query.Node"
-      repeated :group_clause, :message, 22, "pg_query.Node"
-      repeated :grouping_sets, :message, 23, "pg_query.Node"
-      optional :having_qual, :message, 24, "pg_query.Node"
-      repeated :window_clause, :message, 25, "pg_query.Node"
-      repeated :distinct_clause, :message, 26, "pg_query.Node"
-      repeated :sort_clause, :message, 27, "pg_query.Node"
-      optional :limit_offset, :message, 28, "pg_query.Node"
-      optional :limit_count, :message, 29, "pg_query.Node"
-      optional :limit_option, :enum, 30, "pg_query.LimitOption"
-      repeated :row_marks, :message, 31, "pg_query.Node"
-      optional :set_operations, :message, 32, "pg_query.Node"
-      repeated :constraint_deps, :message, 33, "pg_query.Node"
-      repeated :with_check_options, :message, 34, "pg_query.Node"
-      optional :stmt_location, :int32, 35
-      optional :stmt_len, :int32, 36
+      optional :command_type, :enum, 1, "pg_query.CmdType", json_name: "commandType"
+      optional :query_source, :enum, 2, "pg_query.QuerySource", json_name: "querySource"
+      optional :can_set_tag, :bool, 3, json_name: "canSetTag"
+      optional :utility_stmt, :message, 4, "pg_query.Node", json_name: "utilityStmt"
+      optional :result_relation, :int32, 5, json_name: "resultRelation"
+      optional :has_aggs, :bool, 6, json_name: "hasAggs"
+      optional :has_window_funcs, :bool, 7, json_name: "hasWindowFuncs"
+      optional :has_target_srfs, :bool, 8, json_name: "hasTargetSRFs"
+      optional :has_sub_links, :bool, 9, json_name: "hasSubLinks"
+      optional :has_distinct_on, :bool, 10, json_name: "hasDistinctOn"
+      optional :has_recursive, :bool, 11, json_name: "hasRecursive"
+      optional :has_modifying_cte, :bool, 12, json_name: "hasModifyingCTE"
+      optional :has_for_update, :bool, 13, json_name: "hasForUpdate"
+      optional :has_row_security, :bool, 14, json_name: "hasRowSecurity"
+      repeated :cte_list, :message, 15, "pg_query.Node", json_name: "cteList"
+      repeated :rtable, :message, 16, "pg_query.Node", json_name: "rtable"
+      optional :jointree, :message, 17, "pg_query.FromExpr", json_name: "jointree"
+      repeated :target_list, :message, 18, "pg_query.Node", json_name: "targetList"
+      optional :override, :enum, 19, "pg_query.OverridingKind", json_name: "override"
+      optional :on_conflict, :message, 20, "pg_query.OnConflictExpr", json_name: "onConflict"
+      repeated :returning_list, :message, 21, "pg_query.Node", json_name: "returningList"
+      repeated :group_clause, :message, 22, "pg_query.Node", json_name: "groupClause"
+      repeated :grouping_sets, :message, 23, "pg_query.Node", json_name: "groupingSets"
+      optional :having_qual, :message, 24, "pg_query.Node", json_name: "havingQual"
+      repeated :window_clause, :message, 25, "pg_query.Node", json_name: "windowClause"
+      repeated :distinct_clause, :message, 26, "pg_query.Node", json_name: "distinctClause"
+      repeated :sort_clause, :message, 27, "pg_query.Node", json_name: "sortClause"
+      optional :limit_offset, :message, 28, "pg_query.Node", json_name: "limitOffset"
+      optional :limit_count, :message, 29, "pg_query.Node", json_name: "limitCount"
+      optional :limit_option, :enum, 30, "pg_query.LimitOption", json_name: "limitOption"
+      repeated :row_marks, :message, 31, "pg_query.Node", json_name: "rowMarks"
+      optional :set_operations, :message, 32, "pg_query.Node", json_name: "setOperations"
+      repeated :constraint_deps, :message, 33, "pg_query.Node", json_name: "constraintDeps"
+      repeated :with_check_options, :message, 34, "pg_query.Node", json_name: "withCheckOptions"
+      optional :stmt_location, :int32, 35, json_name: "stmt_location"
+      optional :stmt_len, :int32, 36, json_name: "stmt_len"
     end
     add_message "pg_query.InsertStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      repeated :cols, :message, 2, "pg_query.Node"
-      optional :select_stmt, :message, 3, "pg_query.Node"
-      optional :on_conflict_clause, :message, 4, "pg_query.OnConflictClause"
-      repeated :returning_list, :message, 5, "pg_query.Node"
-      optional :with_clause, :message, 6, "pg_query.WithClause"
-      optional :override, :enum, 7, "pg_query.OverridingKind"
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      repeated :cols, :message, 2, "pg_query.Node", json_name: "cols"
+      optional :select_stmt, :message, 3, "pg_query.Node", json_name: "selectStmt"
+      optional :on_conflict_clause, :message, 4, "pg_query.OnConflictClause", json_name: "onConflictClause"
+      repeated :returning_list, :message, 5, "pg_query.Node", json_name: "returningList"
+      optional :with_clause, :message, 6, "pg_query.WithClause", json_name: "withClause"
+      optional :override, :enum, 7, "pg_query.OverridingKind", json_name: "override"
     end
     add_message "pg_query.DeleteStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      repeated :using_clause, :message, 2, "pg_query.Node"
-      optional :where_clause, :message, 3, "pg_query.Node"
-      repeated :returning_list, :message, 4, "pg_query.Node"
-      optional :with_clause, :message, 5, "pg_query.WithClause"
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      repeated :using_clause, :message, 2, "pg_query.Node", json_name: "usingClause"
+      optional :where_clause, :message, 3, "pg_query.Node", json_name: "whereClause"
+      repeated :returning_list, :message, 4, "pg_query.Node", json_name: "returningList"
+      optional :with_clause, :message, 5, "pg_query.WithClause", json_name: "withClause"
     end
     add_message "pg_query.UpdateStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      repeated :target_list, :message, 2, "pg_query.Node"
-      optional :where_clause, :message, 3, "pg_query.Node"
-      repeated :from_clause, :message, 4, "pg_query.Node"
-      repeated :returning_list, :message, 5, "pg_query.Node"
-      optional :with_clause, :message, 6, "pg_query.WithClause"
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      repeated :target_list, :message, 2, "pg_query.Node", json_name: "targetList"
+      optional :where_clause, :message, 3, "pg_query.Node", json_name: "whereClause"
+      repeated :from_clause, :message, 4, "pg_query.Node", json_name: "fromClause"
+      repeated :returning_list, :message, 5, "pg_query.Node", json_name: "returningList"
+      optional :with_clause, :message, 6, "pg_query.WithClause", json_name: "withClause"
     end
     add_message "pg_query.SelectStmt" do
-      repeated :distinct_clause, :message, 1, "pg_query.Node"
-      optional :into_clause, :message, 2, "pg_query.IntoClause"
-      repeated :target_list, :message, 3, "pg_query.Node"
-      repeated :from_clause, :message, 4, "pg_query.Node"
-      optional :where_clause, :message, 5, "pg_query.Node"
-      repeated :group_clause, :message, 6, "pg_query.Node"
-      optional :having_clause, :message, 7, "pg_query.Node"
-      repeated :window_clause, :message, 8, "pg_query.Node"
-      repeated :values_lists, :message, 9, "pg_query.Node"
-      repeated :sort_clause, :message, 10, "pg_query.Node"
-      optional :limit_offset, :message, 11, "pg_query.Node"
-      optional :limit_count, :message, 12, "pg_query.Node"
-      optional :limit_option, :enum, 13, "pg_query.LimitOption"
-      repeated :locking_clause, :message, 14, "pg_query.Node"
-      optional :with_clause, :message, 15, "pg_query.WithClause"
-      optional :op, :enum, 16, "pg_query.SetOperation"
-      optional :all, :bool, 17
-      optional :larg, :message, 18, "pg_query.SelectStmt"
-      optional :rarg, :message, 19, "pg_query.SelectStmt"
+      repeated :distinct_clause, :message, 1, "pg_query.Node", json_name: "distinctClause"
+      optional :into_clause, :message, 2, "pg_query.IntoClause", json_name: "intoClause"
+      repeated :target_list, :message, 3, "pg_query.Node", json_name: "targetList"
+      repeated :from_clause, :message, 4, "pg_query.Node", json_name: "fromClause"
+      optional :where_clause, :message, 5, "pg_query.Node", json_name: "whereClause"
+      repeated :group_clause, :message, 6, "pg_query.Node", json_name: "groupClause"
+      optional :having_clause, :message, 7, "pg_query.Node", json_name: "havingClause"
+      repeated :window_clause, :message, 8, "pg_query.Node", json_name: "windowClause"
+      repeated :values_lists, :message, 9, "pg_query.Node", json_name: "valuesLists"
+      repeated :sort_clause, :message, 10, "pg_query.Node", json_name: "sortClause"
+      optional :limit_offset, :message, 11, "pg_query.Node", json_name: "limitOffset"
+      optional :limit_count, :message, 12, "pg_query.Node", json_name: "limitCount"
+      optional :limit_option, :enum, 13, "pg_query.LimitOption", json_name: "limitOption"
+      repeated :locking_clause, :message, 14, "pg_query.Node", json_name: "lockingClause"
+      optional :with_clause, :message, 15, "pg_query.WithClause", json_name: "withClause"
+      optional :op, :enum, 16, "pg_query.SetOperation", json_name: "op"
+      optional :all, :bool, 17, json_name: "all"
+      optional :larg, :message, 18, "pg_query.SelectStmt", json_name: "larg"
+      optional :rarg, :message, 19, "pg_query.SelectStmt", json_name: "rarg"
     end
     add_message "pg_query.AlterTableStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      repeated :cmds, :message, 2, "pg_query.Node"
-      optional :relkind, :enum, 3, "pg_query.ObjectType"
-      optional :missing_ok, :bool, 4
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      repeated :cmds, :message, 2, "pg_query.Node", json_name: "cmds"
+      optional :relkind, :enum, 3, "pg_query.ObjectType", json_name: "relkind"
+      optional :missing_ok, :bool, 4, json_name: "missing_ok"
     end
     add_message "pg_query.AlterTableCmd" do
-      optional :subtype, :enum, 1, "pg_query.AlterTableType"
-      optional :name, :string, 2
-      optional :num, :int32, 3
-      optional :newowner, :message, 4, "pg_query.RoleSpec"
-      optional :def, :message, 5, "pg_query.Node"
-      optional :behavior, :enum, 6, "pg_query.DropBehavior"
-      optional :missing_ok, :bool, 7
+      optional :subtype, :enum, 1, "pg_query.AlterTableType", json_name: "subtype"
+      optional :name, :string, 2, json_name: "name"
+      optional :num, :int32, 3, json_name: "num"
+      optional :newowner, :message, 4, "pg_query.RoleSpec", json_name: "newowner"
+      optional :def, :message, 5, "pg_query.Node", json_name: "def"
+      optional :behavior, :enum, 6, "pg_query.DropBehavior", json_name: "behavior"
+      optional :missing_ok, :bool, 7, json_name: "missing_ok"
     end
     add_message "pg_query.AlterDomainStmt" do
-      optional :subtype, :string, 1
-      repeated :type_name, :message, 2, "pg_query.Node"
-      optional :name, :string, 3
-      optional :def, :message, 4, "pg_query.Node"
-      optional :behavior, :enum, 5, "pg_query.DropBehavior"
-      optional :missing_ok, :bool, 6
+      optional :subtype, :string, 1, json_name: "subtype"
+      repeated :type_name, :message, 2, "pg_query.Node", json_name: "typeName"
+      optional :name, :string, 3, json_name: "name"
+      optional :def, :message, 4, "pg_query.Node", json_name: "def"
+      optional :behavior, :enum, 5, "pg_query.DropBehavior", json_name: "behavior"
+      optional :missing_ok, :bool, 6, json_name: "missing_ok"
     end
     add_message "pg_query.SetOperationStmt" do
-      optional :op, :enum, 1, "pg_query.SetOperation"
-      optional :all, :bool, 2
-      optional :larg, :message, 3, "pg_query.Node"
-      optional :rarg, :message, 4, "pg_query.Node"
-      repeated :col_types, :message, 5, "pg_query.Node"
-      repeated :col_typmods, :message, 6, "pg_query.Node"
-      repeated :col_collations, :message, 7, "pg_query.Node"
-      repeated :group_clauses, :message, 8, "pg_query.Node"
+      optional :op, :enum, 1, "pg_query.SetOperation", json_name: "op"
+      optional :all, :bool, 2, json_name: "all"
+      optional :larg, :message, 3, "pg_query.Node", json_name: "larg"
+      optional :rarg, :message, 4, "pg_query.Node", json_name: "rarg"
+      repeated :col_types, :message, 5, "pg_query.Node", json_name: "colTypes"
+      repeated :col_typmods, :message, 6, "pg_query.Node", json_name: "colTypmods"
+      repeated :col_collations, :message, 7, "pg_query.Node", json_name: "colCollations"
+      repeated :group_clauses, :message, 8, "pg_query.Node", json_name: "groupClauses"
     end
     add_message "pg_query.GrantStmt" do
-      optional :is_grant, :bool, 1
-      optional :targtype, :enum, 2, "pg_query.GrantTargetType"
-      optional :objtype, :enum, 3, "pg_query.ObjectType"
-      repeated :objects, :message, 4, "pg_query.Node"
-      repeated :privileges, :message, 5, "pg_query.Node"
-      repeated :grantees, :message, 6, "pg_query.Node"
-      optional :grant_option, :bool, 7
-      optional :behavior, :enum, 8, "pg_query.DropBehavior"
+      optional :is_grant, :bool, 1, json_name: "is_grant"
+      optional :targtype, :enum, 2, "pg_query.GrantTargetType", json_name: "targtype"
+      optional :objtype, :enum, 3, "pg_query.ObjectType", json_name: "objtype"
+      repeated :objects, :message, 4, "pg_query.Node", json_name: "objects"
+      repeated :privileges, :message, 5, "pg_query.Node", json_name: "privileges"
+      repeated :grantees, :message, 6, "pg_query.Node", json_name: "grantees"
+      optional :grant_option, :bool, 7, json_name: "grant_option"
+      optional :behavior, :enum, 8, "pg_query.DropBehavior", json_name: "behavior"
     end
     add_message "pg_query.GrantRoleStmt" do
-      repeated :granted_roles, :message, 1, "pg_query.Node"
-      repeated :grantee_roles, :message, 2, "pg_query.Node"
-      optional :is_grant, :bool, 3
-      optional :admin_opt, :bool, 4
-      optional :grantor, :message, 5, "pg_query.RoleSpec"
-      optional :behavior, :enum, 6, "pg_query.DropBehavior"
+      repeated :granted_roles, :message, 1, "pg_query.Node", json_name: "granted_roles"
+      repeated :grantee_roles, :message, 2, "pg_query.Node", json_name: "grantee_roles"
+      optional :is_grant, :bool, 3, json_name: "is_grant"
+      optional :admin_opt, :bool, 4, json_name: "admin_opt"
+      optional :grantor, :message, 5, "pg_query.RoleSpec", json_name: "grantor"
+      optional :behavior, :enum, 6, "pg_query.DropBehavior", json_name: "behavior"
     end
     add_message "pg_query.AlterDefaultPrivilegesStmt" do
-      repeated :options, :message, 1, "pg_query.Node"
-      optional :action, :message, 2, "pg_query.GrantStmt"
+      repeated :options, :message, 1, "pg_query.Node", json_name: "options"
+      optional :action, :message, 2, "pg_query.GrantStmt", json_name: "action"
     end
     add_message "pg_query.ClosePortalStmt" do
-      optional :portalname, :string, 1
+      optional :portalname, :string, 1, json_name: "portalname"
     end
     add_message "pg_query.ClusterStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      optional :indexname, :string, 2
-      optional :options, :int32, 3
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      optional :indexname, :string, 2, json_name: "indexname"
+      optional :options, :int32, 3, json_name: "options"
     end
     add_message "pg_query.CopyStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      optional :query, :message, 2, "pg_query.Node"
-      repeated :attlist, :message, 3, "pg_query.Node"
-      optional :is_from, :bool, 4
-      optional :is_program, :bool, 5
-      optional :filename, :string, 6
-      repeated :options, :message, 7, "pg_query.Node"
-      optional :where_clause, :message, 8, "pg_query.Node"
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      optional :query, :message, 2, "pg_query.Node", json_name: "query"
+      repeated :attlist, :message, 3, "pg_query.Node", json_name: "attlist"
+      optional :is_from, :bool, 4, json_name: "is_from"
+      optional :is_program, :bool, 5, json_name: "is_program"
+      optional :filename, :string, 6, json_name: "filename"
+      repeated :options, :message, 7, "pg_query.Node", json_name: "options"
+      optional :where_clause, :message, 8, "pg_query.Node", json_name: "whereClause"
     end
     add_message "pg_query.CreateStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      repeated :table_elts, :message, 2, "pg_query.Node"
-      repeated :inh_relations, :message, 3, "pg_query.Node"
-      optional :partbound, :message, 4, "pg_query.PartitionBoundSpec"
-      optional :partspec, :message, 5, "pg_query.PartitionSpec"
-      optional :of_typename, :message, 6, "pg_query.TypeName"
-      repeated :constraints, :message, 7, "pg_query.Node"
-      repeated :options, :message, 8, "pg_query.Node"
-      optional :oncommit, :enum, 9, "pg_query.OnCommitAction"
-      optional :tablespacename, :string, 10
-      optional :access_method, :string, 11
-      optional :if_not_exists, :bool, 12
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      repeated :table_elts, :message, 2, "pg_query.Node", json_name: "tableElts"
+      repeated :inh_relations, :message, 3, "pg_query.Node", json_name: "inhRelations"
+      optional :partbound, :message, 4, "pg_query.PartitionBoundSpec", json_name: "partbound"
+      optional :partspec, :message, 5, "pg_query.PartitionSpec", json_name: "partspec"
+      optional :of_typename, :message, 6, "pg_query.TypeName", json_name: "ofTypename"
+      repeated :constraints, :message, 7, "pg_query.Node", json_name: "constraints"
+      repeated :options, :message, 8, "pg_query.Node", json_name: "options"
+      optional :oncommit, :enum, 9, "pg_query.OnCommitAction", json_name: "oncommit"
+      optional :tablespacename, :string, 10, json_name: "tablespacename"
+      optional :access_method, :string, 11, json_name: "accessMethod"
+      optional :if_not_exists, :bool, 12, json_name: "if_not_exists"
     end
     add_message "pg_query.DefineStmt" do
-      optional :kind, :enum, 1, "pg_query.ObjectType"
-      optional :oldstyle, :bool, 2
-      repeated :defnames, :message, 3, "pg_query.Node"
-      repeated :args, :message, 4, "pg_query.Node"
-      repeated :definition, :message, 5, "pg_query.Node"
-      optional :if_not_exists, :bool, 6
-      optional :replace, :bool, 7
+      optional :kind, :enum, 1, "pg_query.ObjectType", json_name: "kind"
+      optional :oldstyle, :bool, 2, json_name: "oldstyle"
+      repeated :defnames, :message, 3, "pg_query.Node", json_name: "defnames"
+      repeated :args, :message, 4, "pg_query.Node", json_name: "args"
+      repeated :definition, :message, 5, "pg_query.Node", json_name: "definition"
+      optional :if_not_exists, :bool, 6, json_name: "if_not_exists"
+      optional :replace, :bool, 7, json_name: "replace"
     end
     add_message "pg_query.DropStmt" do
-      repeated :objects, :message, 1, "pg_query.Node"
-      optional :remove_type, :enum, 2, "pg_query.ObjectType"
-      optional :behavior, :enum, 3, "pg_query.DropBehavior"
-      optional :missing_ok, :bool, 4
-      optional :concurrent, :bool, 5
+      repeated :objects, :message, 1, "pg_query.Node", json_name: "objects"
+      optional :remove_type, :enum, 2, "pg_query.ObjectType", json_name: "removeType"
+      optional :behavior, :enum, 3, "pg_query.DropBehavior", json_name: "behavior"
+      optional :missing_ok, :bool, 4, json_name: "missing_ok"
+      optional :concurrent, :bool, 5, json_name: "concurrent"
     end
     add_message "pg_query.TruncateStmt" do
-      repeated :relations, :message, 1, "pg_query.Node"
-      optional :restart_seqs, :bool, 2
-      optional :behavior, :enum, 3, "pg_query.DropBehavior"
+      repeated :relations, :message, 1, "pg_query.Node", json_name: "relations"
+      optional :restart_seqs, :bool, 2, json_name: "restart_seqs"
+      optional :behavior, :enum, 3, "pg_query.DropBehavior", json_name: "behavior"
     end
     add_message "pg_query.CommentStmt" do
-      optional :objtype, :enum, 1, "pg_query.ObjectType"
-      optional :object, :message, 2, "pg_query.Node"
-      optional :comment, :string, 3
+      optional :objtype, :enum, 1, "pg_query.ObjectType", json_name: "objtype"
+      optional :object, :message, 2, "pg_query.Node", json_name: "object"
+      optional :comment, :string, 3, json_name: "comment"
     end
     add_message "pg_query.FetchStmt" do
-      optional :direction, :enum, 1, "pg_query.FetchDirection"
-      optional :how_many, :int64, 2
-      optional :portalname, :string, 3
-      optional :ismove, :bool, 4
+      optional :direction, :enum, 1, "pg_query.FetchDirection", json_name: "direction"
+      optional :how_many, :int64, 2, json_name: "howMany"
+      optional :portalname, :string, 3, json_name: "portalname"
+      optional :ismove, :bool, 4, json_name: "ismove"
     end
     add_message "pg_query.IndexStmt" do
-      optional :idxname, :string, 1
-      optional :relation, :message, 2, "pg_query.RangeVar"
-      optional :access_method, :string, 3
-      optional :table_space, :string, 4
-      repeated :index_params, :message, 5, "pg_query.Node"
-      repeated :index_including_params, :message, 6, "pg_query.Node"
-      repeated :options, :message, 7, "pg_query.Node"
-      optional :where_clause, :message, 8, "pg_query.Node"
-      repeated :exclude_op_names, :message, 9, "pg_query.Node"
-      optional :idxcomment, :string, 10
-      optional :index_oid, :uint32, 11
-      optional :old_node, :uint32, 12
-      optional :old_create_subid, :uint32, 13
-      optional :old_first_relfilenode_subid, :uint32, 14
-      optional :unique, :bool, 15
-      optional :primary, :bool, 16
-      optional :isconstraint, :bool, 17
-      optional :deferrable, :bool, 18
-      optional :initdeferred, :bool, 19
-      optional :transformed, :bool, 20
-      optional :concurrent, :bool, 21
-      optional :if_not_exists, :bool, 22
-      optional :reset_default_tblspc, :bool, 23
+      optional :idxname, :string, 1, json_name: "idxname"
+      optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
+      optional :access_method, :string, 3, json_name: "accessMethod"
+      optional :table_space, :string, 4, json_name: "tableSpace"
+      repeated :index_params, :message, 5, "pg_query.Node", json_name: "indexParams"
+      repeated :index_including_params, :message, 6, "pg_query.Node", json_name: "indexIncludingParams"
+      repeated :options, :message, 7, "pg_query.Node", json_name: "options"
+      optional :where_clause, :message, 8, "pg_query.Node", json_name: "whereClause"
+      repeated :exclude_op_names, :message, 9, "pg_query.Node", json_name: "excludeOpNames"
+      optional :idxcomment, :string, 10, json_name: "idxcomment"
+      optional :index_oid, :uint32, 11, json_name: "indexOid"
+      optional :old_node, :uint32, 12, json_name: "oldNode"
+      optional :old_create_subid, :uint32, 13, json_name: "oldCreateSubid"
+      optional :old_first_relfilenode_subid, :uint32, 14, json_name: "oldFirstRelfilenodeSubid"
+      optional :unique, :bool, 15, json_name: "unique"
+      optional :primary, :bool, 16, json_name: "primary"
+      optional :isconstraint, :bool, 17, json_name: "isconstraint"
+      optional :deferrable, :bool, 18, json_name: "deferrable"
+      optional :initdeferred, :bool, 19, json_name: "initdeferred"
+      optional :transformed, :bool, 20, json_name: "transformed"
+      optional :concurrent, :bool, 21, json_name: "concurrent"
+      optional :if_not_exists, :bool, 22, json_name: "if_not_exists"
+      optional :reset_default_tblspc, :bool, 23, json_name: "reset_default_tblspc"
     end
     add_message "pg_query.CreateFunctionStmt" do
-      optional :is_procedure, :bool, 1
-      optional :replace, :bool, 2
-      repeated :funcname, :message, 3, "pg_query.Node"
-      repeated :parameters, :message, 4, "pg_query.Node"
-      optional :return_type, :message, 5, "pg_query.TypeName"
-      repeated :options, :message, 6, "pg_query.Node"
+      optional :is_procedure, :bool, 1, json_name: "is_procedure"
+      optional :replace, :bool, 2, json_name: "replace"
+      repeated :funcname, :message, 3, "pg_query.Node", json_name: "funcname"
+      repeated :parameters, :message, 4, "pg_query.Node", json_name: "parameters"
+      optional :return_type, :message, 5, "pg_query.TypeName", json_name: "returnType"
+      repeated :options, :message, 6, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterFunctionStmt" do
-      optional :objtype, :enum, 1, "pg_query.ObjectType"
-      optional :func, :message, 2, "pg_query.ObjectWithArgs"
-      repeated :actions, :message, 3, "pg_query.Node"
+      optional :objtype, :enum, 1, "pg_query.ObjectType", json_name: "objtype"
+      optional :func, :message, 2, "pg_query.ObjectWithArgs", json_name: "func"
+      repeated :actions, :message, 3, "pg_query.Node", json_name: "actions"
     end
     add_message "pg_query.DoStmt" do
-      repeated :args, :message, 1, "pg_query.Node"
+      repeated :args, :message, 1, "pg_query.Node", json_name: "args"
     end
     add_message "pg_query.RenameStmt" do
-      optional :rename_type, :enum, 1, "pg_query.ObjectType"
-      optional :relation_type, :enum, 2, "pg_query.ObjectType"
-      optional :relation, :message, 3, "pg_query.RangeVar"
-      optional :object, :message, 4, "pg_query.Node"
-      optional :subname, :string, 5
-      optional :newname, :string, 6
-      optional :behavior, :enum, 7, "pg_query.DropBehavior"
-      optional :missing_ok, :bool, 8
+      optional :rename_type, :enum, 1, "pg_query.ObjectType", json_name: "renameType"
+      optional :relation_type, :enum, 2, "pg_query.ObjectType", json_name: "relationType"
+      optional :relation, :message, 3, "pg_query.RangeVar", json_name: "relation"
+      optional :object, :message, 4, "pg_query.Node", json_name: "object"
+      optional :subname, :string, 5, json_name: "subname"
+      optional :newname, :string, 6, json_name: "newname"
+      optional :behavior, :enum, 7, "pg_query.DropBehavior", json_name: "behavior"
+      optional :missing_ok, :bool, 8, json_name: "missing_ok"
     end
     add_message "pg_query.RuleStmt" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      optional :rulename, :string, 2
-      optional :where_clause, :message, 3, "pg_query.Node"
-      optional :event, :enum, 4, "pg_query.CmdType"
-      optional :instead, :bool, 5
-      repeated :actions, :message, 6, "pg_query.Node"
-      optional :replace, :bool, 7
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      optional :rulename, :string, 2, json_name: "rulename"
+      optional :where_clause, :message, 3, "pg_query.Node", json_name: "whereClause"
+      optional :event, :enum, 4, "pg_query.CmdType", json_name: "event"
+      optional :instead, :bool, 5, json_name: "instead"
+      repeated :actions, :message, 6, "pg_query.Node", json_name: "actions"
+      optional :replace, :bool, 7, json_name: "replace"
     end
     add_message "pg_query.NotifyStmt" do
-      optional :conditionname, :string, 1
-      optional :payload, :string, 2
+      optional :conditionname, :string, 1, json_name: "conditionname"
+      optional :payload, :string, 2, json_name: "payload"
     end
     add_message "pg_query.ListenStmt" do
-      optional :conditionname, :string, 1
+      optional :conditionname, :string, 1, json_name: "conditionname"
     end
     add_message "pg_query.UnlistenStmt" do
-      optional :conditionname, :string, 1
+      optional :conditionname, :string, 1, json_name: "conditionname"
     end
     add_message "pg_query.TransactionStmt" do
-      optional :kind, :enum, 1, "pg_query.TransactionStmtKind"
-      repeated :options, :message, 2, "pg_query.Node"
-      optional :savepoint_name, :string, 3
-      optional :gid, :string, 4
-      optional :chain, :bool, 5
+      optional :kind, :enum, 1, "pg_query.TransactionStmtKind", json_name: "kind"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+      optional :savepoint_name, :string, 3, json_name: "savepoint_name"
+      optional :gid, :string, 4, json_name: "gid"
+      optional :chain, :bool, 5, json_name: "chain"
     end
     add_message "pg_query.ViewStmt" do
-      optional :view, :message, 1, "pg_query.RangeVar"
-      repeated :aliases, :message, 2, "pg_query.Node"
-      optional :query, :message, 3, "pg_query.Node"
-      optional :replace, :bool, 4
-      repeated :options, :message, 5, "pg_query.Node"
-      optional :with_check_option, :enum, 6, "pg_query.ViewCheckOption"
+      optional :view, :message, 1, "pg_query.RangeVar", json_name: "view"
+      repeated :aliases, :message, 2, "pg_query.Node", json_name: "aliases"
+      optional :query, :message, 3, "pg_query.Node", json_name: "query"
+      optional :replace, :bool, 4, json_name: "replace"
+      repeated :options, :message, 5, "pg_query.Node", json_name: "options"
+      optional :with_check_option, :enum, 6, "pg_query.ViewCheckOption", json_name: "withCheckOption"
     end
     add_message "pg_query.LoadStmt" do
-      optional :filename, :string, 1
+      optional :filename, :string, 1, json_name: "filename"
     end
     add_message "pg_query.CreateDomainStmt" do
-      repeated :domainname, :message, 1, "pg_query.Node"
-      optional :type_name, :message, 2, "pg_query.TypeName"
-      optional :coll_clause, :message, 3, "pg_query.CollateClause"
-      repeated :constraints, :message, 4, "pg_query.Node"
+      repeated :domainname, :message, 1, "pg_query.Node", json_name: "domainname"
+      optional :type_name, :message, 2, "pg_query.TypeName", json_name: "typeName"
+      optional :coll_clause, :message, 3, "pg_query.CollateClause", json_name: "collClause"
+      repeated :constraints, :message, 4, "pg_query.Node", json_name: "constraints"
     end
     add_message "pg_query.CreatedbStmt" do
-      optional :dbname, :string, 1
-      repeated :options, :message, 2, "pg_query.Node"
+      optional :dbname, :string, 1, json_name: "dbname"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.DropdbStmt" do
-      optional :dbname, :string, 1
-      optional :missing_ok, :bool, 2
-      repeated :options, :message, 3, "pg_query.Node"
+      optional :dbname, :string, 1, json_name: "dbname"
+      optional :missing_ok, :bool, 2, json_name: "missing_ok"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.VacuumStmt" do
-      repeated :options, :message, 1, "pg_query.Node"
-      repeated :rels, :message, 2, "pg_query.Node"
-      optional :is_vacuumcmd, :bool, 3
+      repeated :options, :message, 1, "pg_query.Node", json_name: "options"
+      repeated :rels, :message, 2, "pg_query.Node", json_name: "rels"
+      optional :is_vacuumcmd, :bool, 3, json_name: "is_vacuumcmd"
     end
     add_message "pg_query.ExplainStmt" do
-      optional :query, :message, 1, "pg_query.Node"
-      repeated :options, :message, 2, "pg_query.Node"
+      optional :query, :message, 1, "pg_query.Node", json_name: "query"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.CreateTableAsStmt" do
-      optional :query, :message, 1, "pg_query.Node"
-      optional :into, :message, 2, "pg_query.IntoClause"
-      optional :relkind, :enum, 3, "pg_query.ObjectType"
-      optional :is_select_into, :bool, 4
-      optional :if_not_exists, :bool, 5
+      optional :query, :message, 1, "pg_query.Node", json_name: "query"
+      optional :into, :message, 2, "pg_query.IntoClause", json_name: "into"
+      optional :relkind, :enum, 3, "pg_query.ObjectType", json_name: "relkind"
+      optional :is_select_into, :bool, 4, json_name: "is_select_into"
+      optional :if_not_exists, :bool, 5, json_name: "if_not_exists"
     end
     add_message "pg_query.CreateSeqStmt" do
-      optional :sequence, :message, 1, "pg_query.RangeVar"
-      repeated :options, :message, 2, "pg_query.Node"
-      optional :owner_id, :uint32, 3
-      optional :for_identity, :bool, 4
-      optional :if_not_exists, :bool, 5
+      optional :sequence, :message, 1, "pg_query.RangeVar", json_name: "sequence"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+      optional :owner_id, :uint32, 3, json_name: "ownerId"
+      optional :for_identity, :bool, 4, json_name: "for_identity"
+      optional :if_not_exists, :bool, 5, json_name: "if_not_exists"
     end
     add_message "pg_query.AlterSeqStmt" do
-      optional :sequence, :message, 1, "pg_query.RangeVar"
-      repeated :options, :message, 2, "pg_query.Node"
-      optional :for_identity, :bool, 3
-      optional :missing_ok, :bool, 4
+      optional :sequence, :message, 1, "pg_query.RangeVar", json_name: "sequence"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+      optional :for_identity, :bool, 3, json_name: "for_identity"
+      optional :missing_ok, :bool, 4, json_name: "missing_ok"
     end
     add_message "pg_query.VariableSetStmt" do
-      optional :kind, :enum, 1, "pg_query.VariableSetKind"
-      optional :name, :string, 2
-      repeated :args, :message, 3, "pg_query.Node"
-      optional :is_local, :bool, 4
+      optional :kind, :enum, 1, "pg_query.VariableSetKind", json_name: "kind"
+      optional :name, :string, 2, json_name: "name"
+      repeated :args, :message, 3, "pg_query.Node", json_name: "args"
+      optional :is_local, :bool, 4, json_name: "is_local"
     end
     add_message "pg_query.VariableShowStmt" do
-      optional :name, :string, 1
+      optional :name, :string, 1, json_name: "name"
     end
     add_message "pg_query.DiscardStmt" do
-      optional :target, :enum, 1, "pg_query.DiscardMode"
+      optional :target, :enum, 1, "pg_query.DiscardMode", json_name: "target"
     end
     add_message "pg_query.CreateTrigStmt" do
-      optional :trigname, :string, 1
-      optional :relation, :message, 2, "pg_query.RangeVar"
-      repeated :funcname, :message, 3, "pg_query.Node"
-      repeated :args, :message, 4, "pg_query.Node"
-      optional :row, :bool, 5
-      optional :timing, :int32, 6
-      optional :events, :int32, 7
-      repeated :columns, :message, 8, "pg_query.Node"
-      optional :when_clause, :message, 9, "pg_query.Node"
-      optional :isconstraint, :bool, 10
-      repeated :transition_rels, :message, 11, "pg_query.Node"
-      optional :deferrable, :bool, 12
-      optional :initdeferred, :bool, 13
-      optional :constrrel, :message, 14, "pg_query.RangeVar"
+      optional :trigname, :string, 1, json_name: "trigname"
+      optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
+      repeated :funcname, :message, 3, "pg_query.Node", json_name: "funcname"
+      repeated :args, :message, 4, "pg_query.Node", json_name: "args"
+      optional :row, :bool, 5, json_name: "row"
+      optional :timing, :int32, 6, json_name: "timing"
+      optional :events, :int32, 7, json_name: "events"
+      repeated :columns, :message, 8, "pg_query.Node", json_name: "columns"
+      optional :when_clause, :message, 9, "pg_query.Node", json_name: "whenClause"
+      optional :isconstraint, :bool, 10, json_name: "isconstraint"
+      repeated :transition_rels, :message, 11, "pg_query.Node", json_name: "transitionRels"
+      optional :deferrable, :bool, 12, json_name: "deferrable"
+      optional :initdeferred, :bool, 13, json_name: "initdeferred"
+      optional :constrrel, :message, 14, "pg_query.RangeVar", json_name: "constrrel"
     end
     add_message "pg_query.CreatePLangStmt" do
-      optional :replace, :bool, 1
-      optional :plname, :string, 2
-      repeated :plhandler, :message, 3, "pg_query.Node"
-      repeated :plinline, :message, 4, "pg_query.Node"
-      repeated :plvalidator, :message, 5, "pg_query.Node"
-      optional :pltrusted, :bool, 6
+      optional :replace, :bool, 1, json_name: "replace"
+      optional :plname, :string, 2, json_name: "plname"
+      repeated :plhandler, :message, 3, "pg_query.Node", json_name: "plhandler"
+      repeated :plinline, :message, 4, "pg_query.Node", json_name: "plinline"
+      repeated :plvalidator, :message, 5, "pg_query.Node", json_name: "plvalidator"
+      optional :pltrusted, :bool, 6, json_name: "pltrusted"
     end
     add_message "pg_query.CreateRoleStmt" do
-      optional :stmt_type, :enum, 1, "pg_query.RoleStmtType"
-      optional :role, :string, 2
-      repeated :options, :message, 3, "pg_query.Node"
+      optional :stmt_type, :enum, 1, "pg_query.RoleStmtType", json_name: "stmt_type"
+      optional :role, :string, 2, json_name: "role"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterRoleStmt" do
-      optional :role, :message, 1, "pg_query.RoleSpec"
-      repeated :options, :message, 2, "pg_query.Node"
-      optional :action, :int32, 3
+      optional :role, :message, 1, "pg_query.RoleSpec", json_name: "role"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+      optional :action, :int32, 3, json_name: "action"
     end
     add_message "pg_query.DropRoleStmt" do
-      repeated :roles, :message, 1, "pg_query.Node"
-      optional :missing_ok, :bool, 2
+      repeated :roles, :message, 1, "pg_query.Node", json_name: "roles"
+      optional :missing_ok, :bool, 2, json_name: "missing_ok"
     end
     add_message "pg_query.LockStmt" do
-      repeated :relations, :message, 1, "pg_query.Node"
-      optional :mode, :int32, 2
-      optional :nowait, :bool, 3
+      repeated :relations, :message, 1, "pg_query.Node", json_name: "relations"
+      optional :mode, :int32, 2, json_name: "mode"
+      optional :nowait, :bool, 3, json_name: "nowait"
     end
     add_message "pg_query.ConstraintsSetStmt" do
-      repeated :constraints, :message, 1, "pg_query.Node"
-      optional :deferred, :bool, 2
+      repeated :constraints, :message, 1, "pg_query.Node", json_name: "constraints"
+      optional :deferred, :bool, 2, json_name: "deferred"
     end
     add_message "pg_query.ReindexStmt" do
-      optional :kind, :enum, 1, "pg_query.ReindexObjectType"
-      optional :relation, :message, 2, "pg_query.RangeVar"
-      optional :name, :string, 3
-      optional :options, :int32, 4
-      optional :concurrent, :bool, 5
+      optional :kind, :enum, 1, "pg_query.ReindexObjectType", json_name: "kind"
+      optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
+      optional :name, :string, 3, json_name: "name"
+      optional :options, :int32, 4, json_name: "options"
+      optional :concurrent, :bool, 5, json_name: "concurrent"
     end
     add_message "pg_query.CheckPointStmt" do
     end
     add_message "pg_query.CreateSchemaStmt" do
-      optional :schemaname, :string, 1
-      optional :authrole, :message, 2, "pg_query.RoleSpec"
-      repeated :schema_elts, :message, 3, "pg_query.Node"
-      optional :if_not_exists, :bool, 4
+      optional :schemaname, :string, 1, json_name: "schemaname"
+      optional :authrole, :message, 2, "pg_query.RoleSpec", json_name: "authrole"
+      repeated :schema_elts, :message, 3, "pg_query.Node", json_name: "schemaElts"
+      optional :if_not_exists, :bool, 4, json_name: "if_not_exists"
     end
     add_message "pg_query.AlterDatabaseStmt" do
-      optional :dbname, :string, 1
-      repeated :options, :message, 2, "pg_query.Node"
+      optional :dbname, :string, 1, json_name: "dbname"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterDatabaseSetStmt" do
-      optional :dbname, :string, 1
-      optional :setstmt, :message, 2, "pg_query.VariableSetStmt"
+      optional :dbname, :string, 1, json_name: "dbname"
+      optional :setstmt, :message, 2, "pg_query.VariableSetStmt", json_name: "setstmt"
     end
     add_message "pg_query.AlterRoleSetStmt" do
-      optional :role, :message, 1, "pg_query.RoleSpec"
-      optional :database, :string, 2
-      optional :setstmt, :message, 3, "pg_query.VariableSetStmt"
+      optional :role, :message, 1, "pg_query.RoleSpec", json_name: "role"
+      optional :database, :string, 2, json_name: "database"
+      optional :setstmt, :message, 3, "pg_query.VariableSetStmt", json_name: "setstmt"
     end
     add_message "pg_query.CreateConversionStmt" do
-      repeated :conversion_name, :message, 1, "pg_query.Node"
-      optional :for_encoding_name, :string, 2
-      optional :to_encoding_name, :string, 3
-      repeated :func_name, :message, 4, "pg_query.Node"
-      optional :def, :bool, 5
+      repeated :conversion_name, :message, 1, "pg_query.Node", json_name: "conversion_name"
+      optional :for_encoding_name, :string, 2, json_name: "for_encoding_name"
+      optional :to_encoding_name, :string, 3, json_name: "to_encoding_name"
+      repeated :func_name, :message, 4, "pg_query.Node", json_name: "func_name"
+      optional :def, :bool, 5, json_name: "def"
     end
     add_message "pg_query.CreateCastStmt" do
-      optional :sourcetype, :message, 1, "pg_query.TypeName"
-      optional :targettype, :message, 2, "pg_query.TypeName"
-      optional :func, :message, 3, "pg_query.ObjectWithArgs"
-      optional :context, :enum, 4, "pg_query.CoercionContext"
-      optional :inout, :bool, 5
+      optional :sourcetype, :message, 1, "pg_query.TypeName", json_name: "sourcetype"
+      optional :targettype, :message, 2, "pg_query.TypeName", json_name: "targettype"
+      optional :func, :message, 3, "pg_query.ObjectWithArgs", json_name: "func"
+      optional :context, :enum, 4, "pg_query.CoercionContext", json_name: "context"
+      optional :inout, :bool, 5, json_name: "inout"
     end
     add_message "pg_query.CreateOpClassStmt" do
-      repeated :opclassname, :message, 1, "pg_query.Node"
-      repeated :opfamilyname, :message, 2, "pg_query.Node"
-      optional :amname, :string, 3
-      optional :datatype, :message, 4, "pg_query.TypeName"
-      repeated :items, :message, 5, "pg_query.Node"
-      optional :is_default, :bool, 6
+      repeated :opclassname, :message, 1, "pg_query.Node", json_name: "opclassname"
+      repeated :opfamilyname, :message, 2, "pg_query.Node", json_name: "opfamilyname"
+      optional :amname, :string, 3, json_name: "amname"
+      optional :datatype, :message, 4, "pg_query.TypeName", json_name: "datatype"
+      repeated :items, :message, 5, "pg_query.Node", json_name: "items"
+      optional :is_default, :bool, 6, json_name: "isDefault"
     end
     add_message "pg_query.CreateOpFamilyStmt" do
-      repeated :opfamilyname, :message, 1, "pg_query.Node"
-      optional :amname, :string, 2
+      repeated :opfamilyname, :message, 1, "pg_query.Node", json_name: "opfamilyname"
+      optional :amname, :string, 2, json_name: "amname"
     end
     add_message "pg_query.AlterOpFamilyStmt" do
-      repeated :opfamilyname, :message, 1, "pg_query.Node"
-      optional :amname, :string, 2
-      optional :is_drop, :bool, 3
-      repeated :items, :message, 4, "pg_query.Node"
+      repeated :opfamilyname, :message, 1, "pg_query.Node", json_name: "opfamilyname"
+      optional :amname, :string, 2, json_name: "amname"
+      optional :is_drop, :bool, 3, json_name: "isDrop"
+      repeated :items, :message, 4, "pg_query.Node", json_name: "items"
     end
     add_message "pg_query.PrepareStmt" do
-      optional :name, :string, 1
-      repeated :argtypes, :message, 2, "pg_query.Node"
-      optional :query, :message, 3, "pg_query.Node"
+      optional :name, :string, 1, json_name: "name"
+      repeated :argtypes, :message, 2, "pg_query.Node", json_name: "argtypes"
+      optional :query, :message, 3, "pg_query.Node", json_name: "query"
     end
     add_message "pg_query.ExecuteStmt" do
-      optional :name, :string, 1
-      repeated :params, :message, 2, "pg_query.Node"
+      optional :name, :string, 1, json_name: "name"
+      repeated :params, :message, 2, "pg_query.Node", json_name: "params"
     end
     add_message "pg_query.DeallocateStmt" do
-      optional :name, :string, 1
+      optional :name, :string, 1, json_name: "name"
     end
     add_message "pg_query.DeclareCursorStmt" do
-      optional :portalname, :string, 1
-      optional :options, :int32, 2
-      optional :query, :message, 3, "pg_query.Node"
+      optional :portalname, :string, 1, json_name: "portalname"
+      optional :options, :int32, 2, json_name: "options"
+      optional :query, :message, 3, "pg_query.Node", json_name: "query"
     end
     add_message "pg_query.CreateTableSpaceStmt" do
-      optional :tablespacename, :string, 1
-      optional :owner, :message, 2, "pg_query.RoleSpec"
-      optional :location, :string, 3
-      repeated :options, :message, 4, "pg_query.Node"
+      optional :tablespacename, :string, 1, json_name: "tablespacename"
+      optional :owner, :message, 2, "pg_query.RoleSpec", json_name: "owner"
+      optional :location, :string, 3, json_name: "location"
+      repeated :options, :message, 4, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.DropTableSpaceStmt" do
-      optional :tablespacename, :string, 1
-      optional :missing_ok, :bool, 2
+      optional :tablespacename, :string, 1, json_name: "tablespacename"
+      optional :missing_ok, :bool, 2, json_name: "missing_ok"
     end
     add_message "pg_query.AlterObjectDependsStmt" do
-      optional :object_type, :enum, 1, "pg_query.ObjectType"
-      optional :relation, :message, 2, "pg_query.RangeVar"
-      optional :object, :message, 3, "pg_query.Node"
-      optional :extname, :message, 4, "pg_query.Node"
-      optional :remove, :bool, 5
+      optional :object_type, :enum, 1, "pg_query.ObjectType", json_name: "objectType"
+      optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
+      optional :object, :message, 3, "pg_query.Node", json_name: "object"
+      optional :extname, :message, 4, "pg_query.Node", json_name: "extname"
+      optional :remove, :bool, 5, json_name: "remove"
     end
     add_message "pg_query.AlterObjectSchemaStmt" do
-      optional :object_type, :enum, 1, "pg_query.ObjectType"
-      optional :relation, :message, 2, "pg_query.RangeVar"
-      optional :object, :message, 3, "pg_query.Node"
-      optional :newschema, :string, 4
-      optional :missing_ok, :bool, 5
+      optional :object_type, :enum, 1, "pg_query.ObjectType", json_name: "objectType"
+      optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
+      optional :object, :message, 3, "pg_query.Node", json_name: "object"
+      optional :newschema, :string, 4, json_name: "newschema"
+      optional :missing_ok, :bool, 5, json_name: "missing_ok"
     end
     add_message "pg_query.AlterOwnerStmt" do
-      optional :object_type, :enum, 1, "pg_query.ObjectType"
-      optional :relation, :message, 2, "pg_query.RangeVar"
-      optional :object, :message, 3, "pg_query.Node"
-      optional :newowner, :message, 4, "pg_query.RoleSpec"
+      optional :object_type, :enum, 1, "pg_query.ObjectType", json_name: "objectType"
+      optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
+      optional :object, :message, 3, "pg_query.Node", json_name: "object"
+      optional :newowner, :message, 4, "pg_query.RoleSpec", json_name: "newowner"
     end
     add_message "pg_query.AlterOperatorStmt" do
-      optional :opername, :message, 1, "pg_query.ObjectWithArgs"
-      repeated :options, :message, 2, "pg_query.Node"
+      optional :opername, :message, 1, "pg_query.ObjectWithArgs", json_name: "opername"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterTypeStmt" do
-      repeated :type_name, :message, 1, "pg_query.Node"
-      repeated :options, :message, 2, "pg_query.Node"
+      repeated :type_name, :message, 1, "pg_query.Node", json_name: "typeName"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.DropOwnedStmt" do
-      repeated :roles, :message, 1, "pg_query.Node"
-      optional :behavior, :enum, 2, "pg_query.DropBehavior"
+      repeated :roles, :message, 1, "pg_query.Node", json_name: "roles"
+      optional :behavior, :enum, 2, "pg_query.DropBehavior", json_name: "behavior"
     end
     add_message "pg_query.ReassignOwnedStmt" do
-      repeated :roles, :message, 1, "pg_query.Node"
-      optional :newrole, :message, 2, "pg_query.RoleSpec"
+      repeated :roles, :message, 1, "pg_query.Node", json_name: "roles"
+      optional :newrole, :message, 2, "pg_query.RoleSpec", json_name: "newrole"
     end
     add_message "pg_query.CompositeTypeStmt" do
-      optional :typevar, :message, 1, "pg_query.RangeVar"
-      repeated :coldeflist, :message, 2, "pg_query.Node"
+      optional :typevar, :message, 1, "pg_query.RangeVar", json_name: "typevar"
+      repeated :coldeflist, :message, 2, "pg_query.Node", json_name: "coldeflist"
     end
     add_message "pg_query.CreateEnumStmt" do
-      repeated :type_name, :message, 1, "pg_query.Node"
-      repeated :vals, :message, 2, "pg_query.Node"
+      repeated :type_name, :message, 1, "pg_query.Node", json_name: "typeName"
+      repeated :vals, :message, 2, "pg_query.Node", json_name: "vals"
     end
     add_message "pg_query.CreateRangeStmt" do
-      repeated :type_name, :message, 1, "pg_query.Node"
-      repeated :params, :message, 2, "pg_query.Node"
+      repeated :type_name, :message, 1, "pg_query.Node", json_name: "typeName"
+      repeated :params, :message, 2, "pg_query.Node", json_name: "params"
     end
     add_message "pg_query.AlterEnumStmt" do
-      repeated :type_name, :message, 1, "pg_query.Node"
-      optional :old_val, :string, 2
-      optional :new_val, :string, 3
-      optional :new_val_neighbor, :string, 4
-      optional :new_val_is_after, :bool, 5
-      optional :skip_if_new_val_exists, :bool, 6
+      repeated :type_name, :message, 1, "pg_query.Node", json_name: "typeName"
+      optional :old_val, :string, 2, json_name: "oldVal"
+      optional :new_val, :string, 3, json_name: "newVal"
+      optional :new_val_neighbor, :string, 4, json_name: "newValNeighbor"
+      optional :new_val_is_after, :bool, 5, json_name: "newValIsAfter"
+      optional :skip_if_new_val_exists, :bool, 6, json_name: "skipIfNewValExists"
     end
     add_message "pg_query.AlterTSDictionaryStmt" do
-      repeated :dictname, :message, 1, "pg_query.Node"
-      repeated :options, :message, 2, "pg_query.Node"
+      repeated :dictname, :message, 1, "pg_query.Node", json_name: "dictname"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterTSConfigurationStmt" do
-      optional :kind, :enum, 1, "pg_query.AlterTSConfigType"
-      repeated :cfgname, :message, 2, "pg_query.Node"
-      repeated :tokentype, :message, 3, "pg_query.Node"
-      repeated :dicts, :message, 4, "pg_query.Node"
-      optional :override, :bool, 5
-      optional :replace, :bool, 6
-      optional :missing_ok, :bool, 7
+      optional :kind, :enum, 1, "pg_query.AlterTSConfigType", json_name: "kind"
+      repeated :cfgname, :message, 2, "pg_query.Node", json_name: "cfgname"
+      repeated :tokentype, :message, 3, "pg_query.Node", json_name: "tokentype"
+      repeated :dicts, :message, 4, "pg_query.Node", json_name: "dicts"
+      optional :override, :bool, 5, json_name: "override"
+      optional :replace, :bool, 6, json_name: "replace"
+      optional :missing_ok, :bool, 7, json_name: "missing_ok"
     end
     add_message "pg_query.CreateFdwStmt" do
-      optional :fdwname, :string, 1
-      repeated :func_options, :message, 2, "pg_query.Node"
-      repeated :options, :message, 3, "pg_query.Node"
+      optional :fdwname, :string, 1, json_name: "fdwname"
+      repeated :func_options, :message, 2, "pg_query.Node", json_name: "func_options"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterFdwStmt" do
-      optional :fdwname, :string, 1
-      repeated :func_options, :message, 2, "pg_query.Node"
-      repeated :options, :message, 3, "pg_query.Node"
+      optional :fdwname, :string, 1, json_name: "fdwname"
+      repeated :func_options, :message, 2, "pg_query.Node", json_name: "func_options"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.CreateForeignServerStmt" do
-      optional :servername, :string, 1
-      optional :servertype, :string, 2
-      optional :version, :string, 3
-      optional :fdwname, :string, 4
-      optional :if_not_exists, :bool, 5
-      repeated :options, :message, 6, "pg_query.Node"
+      optional :servername, :string, 1, json_name: "servername"
+      optional :servertype, :string, 2, json_name: "servertype"
+      optional :version, :string, 3, json_name: "version"
+      optional :fdwname, :string, 4, json_name: "fdwname"
+      optional :if_not_exists, :bool, 5, json_name: "if_not_exists"
+      repeated :options, :message, 6, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterForeignServerStmt" do
-      optional :servername, :string, 1
-      optional :version, :string, 2
-      repeated :options, :message, 3, "pg_query.Node"
-      optional :has_version, :bool, 4
+      optional :servername, :string, 1, json_name: "servername"
+      optional :version, :string, 2, json_name: "version"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
+      optional :has_version, :bool, 4, json_name: "has_version"
     end
     add_message "pg_query.CreateUserMappingStmt" do
-      optional :user, :message, 1, "pg_query.RoleSpec"
-      optional :servername, :string, 2
-      optional :if_not_exists, :bool, 3
-      repeated :options, :message, 4, "pg_query.Node"
+      optional :user, :message, 1, "pg_query.RoleSpec", json_name: "user"
+      optional :servername, :string, 2, json_name: "servername"
+      optional :if_not_exists, :bool, 3, json_name: "if_not_exists"
+      repeated :options, :message, 4, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterUserMappingStmt" do
-      optional :user, :message, 1, "pg_query.RoleSpec"
-      optional :servername, :string, 2
-      repeated :options, :message, 3, "pg_query.Node"
+      optional :user, :message, 1, "pg_query.RoleSpec", json_name: "user"
+      optional :servername, :string, 2, json_name: "servername"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.DropUserMappingStmt" do
-      optional :user, :message, 1, "pg_query.RoleSpec"
-      optional :servername, :string, 2
-      optional :missing_ok, :bool, 3
+      optional :user, :message, 1, "pg_query.RoleSpec", json_name: "user"
+      optional :servername, :string, 2, json_name: "servername"
+      optional :missing_ok, :bool, 3, json_name: "missing_ok"
     end
     add_message "pg_query.AlterTableSpaceOptionsStmt" do
-      optional :tablespacename, :string, 1
-      repeated :options, :message, 2, "pg_query.Node"
-      optional :is_reset, :bool, 3
+      optional :tablespacename, :string, 1, json_name: "tablespacename"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+      optional :is_reset, :bool, 3, json_name: "isReset"
     end
     add_message "pg_query.AlterTableMoveAllStmt" do
-      optional :orig_tablespacename, :string, 1
-      optional :objtype, :enum, 2, "pg_query.ObjectType"
-      repeated :roles, :message, 3, "pg_query.Node"
-      optional :new_tablespacename, :string, 4
-      optional :nowait, :bool, 5
+      optional :orig_tablespacename, :string, 1, json_name: "orig_tablespacename"
+      optional :objtype, :enum, 2, "pg_query.ObjectType", json_name: "objtype"
+      repeated :roles, :message, 3, "pg_query.Node", json_name: "roles"
+      optional :new_tablespacename, :string, 4, json_name: "new_tablespacename"
+      optional :nowait, :bool, 5, json_name: "nowait"
     end
     add_message "pg_query.SecLabelStmt" do
-      optional :objtype, :enum, 1, "pg_query.ObjectType"
-      optional :object, :message, 2, "pg_query.Node"
-      optional :provider, :string, 3
-      optional :label, :string, 4
+      optional :objtype, :enum, 1, "pg_query.ObjectType", json_name: "objtype"
+      optional :object, :message, 2, "pg_query.Node", json_name: "object"
+      optional :provider, :string, 3, json_name: "provider"
+      optional :label, :string, 4, json_name: "label"
     end
     add_message "pg_query.CreateForeignTableStmt" do
-      optional :base_stmt, :message, 1, "pg_query.CreateStmt"
-      optional :servername, :string, 2
-      repeated :options, :message, 3, "pg_query.Node"
+      optional :base_stmt, :message, 1, "pg_query.CreateStmt", json_name: "base"
+      optional :servername, :string, 2, json_name: "servername"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.ImportForeignSchemaStmt" do
-      optional :server_name, :string, 1
-      optional :remote_schema, :string, 2
-      optional :local_schema, :string, 3
-      optional :list_type, :enum, 4, "pg_query.ImportForeignSchemaType"
-      repeated :table_list, :message, 5, "pg_query.Node"
-      repeated :options, :message, 6, "pg_query.Node"
+      optional :server_name, :string, 1, json_name: "server_name"
+      optional :remote_schema, :string, 2, json_name: "remote_schema"
+      optional :local_schema, :string, 3, json_name: "local_schema"
+      optional :list_type, :enum, 4, "pg_query.ImportForeignSchemaType", json_name: "list_type"
+      repeated :table_list, :message, 5, "pg_query.Node", json_name: "table_list"
+      repeated :options, :message, 6, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.CreateExtensionStmt" do
-      optional :extname, :string, 1
-      optional :if_not_exists, :bool, 2
-      repeated :options, :message, 3, "pg_query.Node"
+      optional :extname, :string, 1, json_name: "extname"
+      optional :if_not_exists, :bool, 2, json_name: "if_not_exists"
+      repeated :options, :message, 3, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterExtensionStmt" do
-      optional :extname, :string, 1
-      repeated :options, :message, 2, "pg_query.Node"
+      optional :extname, :string, 1, json_name: "extname"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterExtensionContentsStmt" do
-      optional :extname, :string, 1
-      optional :action, :int32, 2
-      optional :objtype, :enum, 3, "pg_query.ObjectType"
-      optional :object, :message, 4, "pg_query.Node"
+      optional :extname, :string, 1, json_name: "extname"
+      optional :action, :int32, 2, json_name: "action"
+      optional :objtype, :enum, 3, "pg_query.ObjectType", json_name: "objtype"
+      optional :object, :message, 4, "pg_query.Node", json_name: "object"
     end
     add_message "pg_query.CreateEventTrigStmt" do
-      optional :trigname, :string, 1
-      optional :eventname, :string, 2
-      repeated :whenclause, :message, 3, "pg_query.Node"
-      repeated :funcname, :message, 4, "pg_query.Node"
+      optional :trigname, :string, 1, json_name: "trigname"
+      optional :eventname, :string, 2, json_name: "eventname"
+      repeated :whenclause, :message, 3, "pg_query.Node", json_name: "whenclause"
+      repeated :funcname, :message, 4, "pg_query.Node", json_name: "funcname"
     end
     add_message "pg_query.AlterEventTrigStmt" do
-      optional :trigname, :string, 1
-      optional :tgenabled, :string, 2
+      optional :trigname, :string, 1, json_name: "trigname"
+      optional :tgenabled, :string, 2, json_name: "tgenabled"
     end
     add_message "pg_query.RefreshMatViewStmt" do
-      optional :concurrent, :bool, 1
-      optional :skip_data, :bool, 2
-      optional :relation, :message, 3, "pg_query.RangeVar"
+      optional :concurrent, :bool, 1, json_name: "concurrent"
+      optional :skip_data, :bool, 2, json_name: "skipData"
+      optional :relation, :message, 3, "pg_query.RangeVar", json_name: "relation"
     end
     add_message "pg_query.ReplicaIdentityStmt" do
-      optional :identity_type, :string, 1
-      optional :name, :string, 2
+      optional :identity_type, :string, 1, json_name: "identity_type"
+      optional :name, :string, 2, json_name: "name"
     end
     add_message "pg_query.AlterSystemStmt" do
-      optional :setstmt, :message, 1, "pg_query.VariableSetStmt"
+      optional :setstmt, :message, 1, "pg_query.VariableSetStmt", json_name: "setstmt"
     end
     add_message "pg_query.CreatePolicyStmt" do
-      optional :policy_name, :string, 1
-      optional :table, :message, 2, "pg_query.RangeVar"
-      optional :cmd_name, :string, 3
-      optional :permissive, :bool, 4
-      repeated :roles, :message, 5, "pg_query.Node"
-      optional :qual, :message, 6, "pg_query.Node"
-      optional :with_check, :message, 7, "pg_query.Node"
+      optional :policy_name, :string, 1, json_name: "policy_name"
+      optional :table, :message, 2, "pg_query.RangeVar", json_name: "table"
+      optional :cmd_name, :string, 3, json_name: "cmd_name"
+      optional :permissive, :bool, 4, json_name: "permissive"
+      repeated :roles, :message, 5, "pg_query.Node", json_name: "roles"
+      optional :qual, :message, 6, "pg_query.Node", json_name: "qual"
+      optional :with_check, :message, 7, "pg_query.Node", json_name: "with_check"
     end
     add_message "pg_query.AlterPolicyStmt" do
-      optional :policy_name, :string, 1
-      optional :table, :message, 2, "pg_query.RangeVar"
-      repeated :roles, :message, 3, "pg_query.Node"
-      optional :qual, :message, 4, "pg_query.Node"
-      optional :with_check, :message, 5, "pg_query.Node"
+      optional :policy_name, :string, 1, json_name: "policy_name"
+      optional :table, :message, 2, "pg_query.RangeVar", json_name: "table"
+      repeated :roles, :message, 3, "pg_query.Node", json_name: "roles"
+      optional :qual, :message, 4, "pg_query.Node", json_name: "qual"
+      optional :with_check, :message, 5, "pg_query.Node", json_name: "with_check"
     end
     add_message "pg_query.CreateTransformStmt" do
-      optional :replace, :bool, 1
-      optional :type_name, :message, 2, "pg_query.TypeName"
-      optional :lang, :string, 3
-      optional :fromsql, :message, 4, "pg_query.ObjectWithArgs"
-      optional :tosql, :message, 5, "pg_query.ObjectWithArgs"
+      optional :replace, :bool, 1, json_name: "replace"
+      optional :type_name, :message, 2, "pg_query.TypeName", json_name: "type_name"
+      optional :lang, :string, 3, json_name: "lang"
+      optional :fromsql, :message, 4, "pg_query.ObjectWithArgs", json_name: "fromsql"
+      optional :tosql, :message, 5, "pg_query.ObjectWithArgs", json_name: "tosql"
     end
     add_message "pg_query.CreateAmStmt" do
-      optional :amname, :string, 1
-      repeated :handler_name, :message, 2, "pg_query.Node"
-      optional :amtype, :string, 3
+      optional :amname, :string, 1, json_name: "amname"
+      repeated :handler_name, :message, 2, "pg_query.Node", json_name: "handler_name"
+      optional :amtype, :string, 3, json_name: "amtype"
     end
     add_message "pg_query.CreatePublicationStmt" do
-      optional :pubname, :string, 1
-      repeated :options, :message, 2, "pg_query.Node"
-      repeated :tables, :message, 3, "pg_query.Node"
-      optional :for_all_tables, :bool, 4
+      optional :pubname, :string, 1, json_name: "pubname"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+      repeated :tables, :message, 3, "pg_query.Node", json_name: "tables"
+      optional :for_all_tables, :bool, 4, json_name: "for_all_tables"
     end
     add_message "pg_query.AlterPublicationStmt" do
-      optional :pubname, :string, 1
-      repeated :options, :message, 2, "pg_query.Node"
-      repeated :tables, :message, 3, "pg_query.Node"
-      optional :for_all_tables, :bool, 4
-      optional :table_action, :enum, 5, "pg_query.DefElemAction"
+      optional :pubname, :string, 1, json_name: "pubname"
+      repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+      repeated :tables, :message, 3, "pg_query.Node", json_name: "tables"
+      optional :for_all_tables, :bool, 4, json_name: "for_all_tables"
+      optional :table_action, :enum, 5, "pg_query.DefElemAction", json_name: "tableAction"
     end
     add_message "pg_query.CreateSubscriptionStmt" do
-      optional :subname, :string, 1
-      optional :conninfo, :string, 2
-      repeated :publication, :message, 3, "pg_query.Node"
-      repeated :options, :message, 4, "pg_query.Node"
+      optional :subname, :string, 1, json_name: "subname"
+      optional :conninfo, :string, 2, json_name: "conninfo"
+      repeated :publication, :message, 3, "pg_query.Node", json_name: "publication"
+      repeated :options, :message, 4, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.AlterSubscriptionStmt" do
-      optional :kind, :enum, 1, "pg_query.AlterSubscriptionType"
-      optional :subname, :string, 2
-      optional :conninfo, :string, 3
-      repeated :publication, :message, 4, "pg_query.Node"
-      repeated :options, :message, 5, "pg_query.Node"
+      optional :kind, :enum, 1, "pg_query.AlterSubscriptionType", json_name: "kind"
+      optional :subname, :string, 2, json_name: "subname"
+      optional :conninfo, :string, 3, json_name: "conninfo"
+      repeated :publication, :message, 4, "pg_query.Node", json_name: "publication"
+      repeated :options, :message, 5, "pg_query.Node", json_name: "options"
     end
     add_message "pg_query.DropSubscriptionStmt" do
-      optional :subname, :string, 1
-      optional :missing_ok, :bool, 2
-      optional :behavior, :enum, 3, "pg_query.DropBehavior"
+      optional :subname, :string, 1, json_name: "subname"
+      optional :missing_ok, :bool, 2, json_name: "missing_ok"
+      optional :behavior, :enum, 3, "pg_query.DropBehavior", json_name: "behavior"
     end
     add_message "pg_query.CreateStatsStmt" do
-      repeated :defnames, :message, 1, "pg_query.Node"
-      repeated :stat_types, :message, 2, "pg_query.Node"
-      repeated :exprs, :message, 3, "pg_query.Node"
-      repeated :relations, :message, 4, "pg_query.Node"
-      optional :stxcomment, :string, 5
-      optional :if_not_exists, :bool, 6
+      repeated :defnames, :message, 1, "pg_query.Node", json_name: "defnames"
+      repeated :stat_types, :message, 2, "pg_query.Node", json_name: "stat_types"
+      repeated :exprs, :message, 3, "pg_query.Node", json_name: "exprs"
+      repeated :relations, :message, 4, "pg_query.Node", json_name: "relations"
+      optional :stxcomment, :string, 5, json_name: "stxcomment"
+      optional :if_not_exists, :bool, 6, json_name: "if_not_exists"
     end
     add_message "pg_query.AlterCollationStmt" do
-      repeated :collname, :message, 1, "pg_query.Node"
+      repeated :collname, :message, 1, "pg_query.Node", json_name: "collname"
     end
     add_message "pg_query.CallStmt" do
-      optional :funccall, :message, 1, "pg_query.FuncCall"
-      optional :funcexpr, :message, 2, "pg_query.FuncExpr"
+      optional :funccall, :message, 1, "pg_query.FuncCall", json_name: "funccall"
+      optional :funcexpr, :message, 2, "pg_query.FuncExpr", json_name: "funcexpr"
     end
     add_message "pg_query.AlterStatsStmt" do
-      repeated :defnames, :message, 1, "pg_query.Node"
-      optional :stxstattarget, :int32, 2
-      optional :missing_ok, :bool, 3
+      repeated :defnames, :message, 1, "pg_query.Node", json_name: "defnames"
+      optional :stxstattarget, :int32, 2, json_name: "stxstattarget"
+      optional :missing_ok, :bool, 3, json_name: "missing_ok"
     end
     add_message "pg_query.A_Expr" do
-      optional :kind, :enum, 1, "pg_query.A_Expr_Kind"
-      repeated :name, :message, 2, "pg_query.Node"
-      optional :lexpr, :message, 3, "pg_query.Node"
-      optional :rexpr, :message, 4, "pg_query.Node"
-      optional :location, :int32, 5
+      optional :kind, :enum, 1, "pg_query.A_Expr_Kind", json_name: "kind"
+      repeated :name, :message, 2, "pg_query.Node", json_name: "name"
+      optional :lexpr, :message, 3, "pg_query.Node", json_name: "lexpr"
+      optional :rexpr, :message, 4, "pg_query.Node", json_name: "rexpr"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.ColumnRef" do
-      repeated :fields, :message, 1, "pg_query.Node"
-      optional :location, :int32, 2
+      repeated :fields, :message, 1, "pg_query.Node", json_name: "fields"
+      optional :location, :int32, 2, json_name: "location"
     end
     add_message "pg_query.ParamRef" do
-      optional :number, :int32, 1
-      optional :location, :int32, 2
+      optional :number, :int32, 1, json_name: "number"
+      optional :location, :int32, 2, json_name: "location"
     end
     add_message "pg_query.A_Const" do
-      optional :val, :message, 1, "pg_query.Node"
-      optional :location, :int32, 2
+      optional :val, :message, 1, "pg_query.Node", json_name: "val"
+      optional :location, :int32, 2, json_name: "location"
     end
     add_message "pg_query.FuncCall" do
-      repeated :funcname, :message, 1, "pg_query.Node"
-      repeated :args, :message, 2, "pg_query.Node"
-      repeated :agg_order, :message, 3, "pg_query.Node"
-      optional :agg_filter, :message, 4, "pg_query.Node"
-      optional :agg_within_group, :bool, 5
-      optional :agg_star, :bool, 6
-      optional :agg_distinct, :bool, 7
-      optional :func_variadic, :bool, 8
-      optional :over, :message, 9, "pg_query.WindowDef"
-      optional :location, :int32, 10
+      repeated :funcname, :message, 1, "pg_query.Node", json_name: "funcname"
+      repeated :args, :message, 2, "pg_query.Node", json_name: "args"
+      repeated :agg_order, :message, 3, "pg_query.Node", json_name: "agg_order"
+      optional :agg_filter, :message, 4, "pg_query.Node", json_name: "agg_filter"
+      optional :agg_within_group, :bool, 5, json_name: "agg_within_group"
+      optional :agg_star, :bool, 6, json_name: "agg_star"
+      optional :agg_distinct, :bool, 7, json_name: "agg_distinct"
+      optional :func_variadic, :bool, 8, json_name: "func_variadic"
+      optional :over, :message, 9, "pg_query.WindowDef", json_name: "over"
+      optional :location, :int32, 10, json_name: "location"
     end
     add_message "pg_query.A_Star" do
     end
     add_message "pg_query.A_Indices" do
-      optional :is_slice, :bool, 1
-      optional :lidx, :message, 2, "pg_query.Node"
-      optional :uidx, :message, 3, "pg_query.Node"
+      optional :is_slice, :bool, 1, json_name: "is_slice"
+      optional :lidx, :message, 2, "pg_query.Node", json_name: "lidx"
+      optional :uidx, :message, 3, "pg_query.Node", json_name: "uidx"
     end
     add_message "pg_query.A_Indirection" do
-      optional :arg, :message, 1, "pg_query.Node"
-      repeated :indirection, :message, 2, "pg_query.Node"
+      optional :arg, :message, 1, "pg_query.Node", json_name: "arg"
+      repeated :indirection, :message, 2, "pg_query.Node", json_name: "indirection"
     end
     add_message "pg_query.A_ArrayExpr" do
-      repeated :elements, :message, 1, "pg_query.Node"
-      optional :location, :int32, 2
+      repeated :elements, :message, 1, "pg_query.Node", json_name: "elements"
+      optional :location, :int32, 2, json_name: "location"
     end
     add_message "pg_query.ResTarget" do
-      optional :name, :string, 1
-      repeated :indirection, :message, 2, "pg_query.Node"
-      optional :val, :message, 3, "pg_query.Node"
-      optional :location, :int32, 4
+      optional :name, :string, 1, json_name: "name"
+      repeated :indirection, :message, 2, "pg_query.Node", json_name: "indirection"
+      optional :val, :message, 3, "pg_query.Node", json_name: "val"
+      optional :location, :int32, 4, json_name: "location"
     end
     add_message "pg_query.MultiAssignRef" do
-      optional :source, :message, 1, "pg_query.Node"
-      optional :colno, :int32, 2
-      optional :ncolumns, :int32, 3
+      optional :source, :message, 1, "pg_query.Node", json_name: "source"
+      optional :colno, :int32, 2, json_name: "colno"
+      optional :ncolumns, :int32, 3, json_name: "ncolumns"
     end
     add_message "pg_query.TypeCast" do
-      optional :arg, :message, 1, "pg_query.Node"
-      optional :type_name, :message, 2, "pg_query.TypeName"
-      optional :location, :int32, 3
+      optional :arg, :message, 1, "pg_query.Node", json_name: "arg"
+      optional :type_name, :message, 2, "pg_query.TypeName", json_name: "typeName"
+      optional :location, :int32, 3, json_name: "location"
     end
     add_message "pg_query.CollateClause" do
-      optional :arg, :message, 1, "pg_query.Node"
-      repeated :collname, :message, 2, "pg_query.Node"
-      optional :location, :int32, 3
+      optional :arg, :message, 1, "pg_query.Node", json_name: "arg"
+      repeated :collname, :message, 2, "pg_query.Node", json_name: "collname"
+      optional :location, :int32, 3, json_name: "location"
     end
     add_message "pg_query.SortBy" do
-      optional :node, :message, 1, "pg_query.Node"
-      optional :sortby_dir, :enum, 2, "pg_query.SortByDir"
-      optional :sortby_nulls, :enum, 3, "pg_query.SortByNulls"
-      repeated :use_op, :message, 4, "pg_query.Node"
-      optional :location, :int32, 5
+      optional :node, :message, 1, "pg_query.Node", json_name: "node"
+      optional :sortby_dir, :enum, 2, "pg_query.SortByDir", json_name: "sortby_dir"
+      optional :sortby_nulls, :enum, 3, "pg_query.SortByNulls", json_name: "sortby_nulls"
+      repeated :use_op, :message, 4, "pg_query.Node", json_name: "useOp"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.WindowDef" do
-      optional :name, :string, 1
-      optional :refname, :string, 2
-      repeated :partition_clause, :message, 3, "pg_query.Node"
-      repeated :order_clause, :message, 4, "pg_query.Node"
-      optional :frame_options, :int32, 5
-      optional :start_offset, :message, 6, "pg_query.Node"
-      optional :end_offset, :message, 7, "pg_query.Node"
-      optional :location, :int32, 8
+      optional :name, :string, 1, json_name: "name"
+      optional :refname, :string, 2, json_name: "refname"
+      repeated :partition_clause, :message, 3, "pg_query.Node", json_name: "partitionClause"
+      repeated :order_clause, :message, 4, "pg_query.Node", json_name: "orderClause"
+      optional :frame_options, :int32, 5, json_name: "frameOptions"
+      optional :start_offset, :message, 6, "pg_query.Node", json_name: "startOffset"
+      optional :end_offset, :message, 7, "pg_query.Node", json_name: "endOffset"
+      optional :location, :int32, 8, json_name: "location"
     end
     add_message "pg_query.RangeSubselect" do
-      optional :lateral, :bool, 1
-      optional :subquery, :message, 2, "pg_query.Node"
-      optional :alias, :message, 3, "pg_query.Alias"
+      optional :lateral, :bool, 1, json_name: "lateral"
+      optional :subquery, :message, 2, "pg_query.Node", json_name: "subquery"
+      optional :alias, :message, 3, "pg_query.Alias", json_name: "alias"
     end
     add_message "pg_query.RangeFunction" do
-      optional :lateral, :bool, 1
-      optional :ordinality, :bool, 2
-      optional :is_rowsfrom, :bool, 3
-      repeated :functions, :message, 4, "pg_query.Node"
-      optional :alias, :message, 5, "pg_query.Alias"
-      repeated :coldeflist, :message, 6, "pg_query.Node"
+      optional :lateral, :bool, 1, json_name: "lateral"
+      optional :ordinality, :bool, 2, json_name: "ordinality"
+      optional :is_rowsfrom, :bool, 3, json_name: "is_rowsfrom"
+      repeated :functions, :message, 4, "pg_query.Node", json_name: "functions"
+      optional :alias, :message, 5, "pg_query.Alias", json_name: "alias"
+      repeated :coldeflist, :message, 6, "pg_query.Node", json_name: "coldeflist"
     end
     add_message "pg_query.RangeTableSample" do
-      optional :relation, :message, 1, "pg_query.Node"
-      repeated :method, :message, 2, "pg_query.Node"
-      repeated :args, :message, 3, "pg_query.Node"
-      optional :repeatable, :message, 4, "pg_query.Node"
-      optional :location, :int32, 5
+      optional :relation, :message, 1, "pg_query.Node", json_name: "relation"
+      repeated :method, :message, 2, "pg_query.Node", json_name: "method"
+      repeated :args, :message, 3, "pg_query.Node", json_name: "args"
+      optional :repeatable, :message, 4, "pg_query.Node", json_name: "repeatable"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.RangeTableFunc" do
-      optional :lateral, :bool, 1
-      optional :docexpr, :message, 2, "pg_query.Node"
-      optional :rowexpr, :message, 3, "pg_query.Node"
-      repeated :namespaces, :message, 4, "pg_query.Node"
-      repeated :columns, :message, 5, "pg_query.Node"
-      optional :alias, :message, 6, "pg_query.Alias"
-      optional :location, :int32, 7
+      optional :lateral, :bool, 1, json_name: "lateral"
+      optional :docexpr, :message, 2, "pg_query.Node", json_name: "docexpr"
+      optional :rowexpr, :message, 3, "pg_query.Node", json_name: "rowexpr"
+      repeated :namespaces, :message, 4, "pg_query.Node", json_name: "namespaces"
+      repeated :columns, :message, 5, "pg_query.Node", json_name: "columns"
+      optional :alias, :message, 6, "pg_query.Alias", json_name: "alias"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.RangeTableFuncCol" do
-      optional :colname, :string, 1
-      optional :type_name, :message, 2, "pg_query.TypeName"
-      optional :for_ordinality, :bool, 3
-      optional :is_not_null, :bool, 4
-      optional :colexpr, :message, 5, "pg_query.Node"
-      optional :coldefexpr, :message, 6, "pg_query.Node"
-      optional :location, :int32, 7
+      optional :colname, :string, 1, json_name: "colname"
+      optional :type_name, :message, 2, "pg_query.TypeName", json_name: "typeName"
+      optional :for_ordinality, :bool, 3, json_name: "for_ordinality"
+      optional :is_not_null, :bool, 4, json_name: "is_not_null"
+      optional :colexpr, :message, 5, "pg_query.Node", json_name: "colexpr"
+      optional :coldefexpr, :message, 6, "pg_query.Node", json_name: "coldefexpr"
+      optional :location, :int32, 7, json_name: "location"
     end
     add_message "pg_query.TypeName" do
-      repeated :names, :message, 1, "pg_query.Node"
-      optional :type_oid, :uint32, 2
-      optional :setof, :bool, 3
-      optional :pct_type, :bool, 4
-      repeated :typmods, :message, 5, "pg_query.Node"
-      optional :typemod, :int32, 6
-      repeated :array_bounds, :message, 7, "pg_query.Node"
-      optional :location, :int32, 8
+      repeated :names, :message, 1, "pg_query.Node", json_name: "names"
+      optional :type_oid, :uint32, 2, json_name: "typeOid"
+      optional :setof, :bool, 3, json_name: "setof"
+      optional :pct_type, :bool, 4, json_name: "pct_type"
+      repeated :typmods, :message, 5, "pg_query.Node", json_name: "typmods"
+      optional :typemod, :int32, 6, json_name: "typemod"
+      repeated :array_bounds, :message, 7, "pg_query.Node", json_name: "arrayBounds"
+      optional :location, :int32, 8, json_name: "location"
     end
     add_message "pg_query.ColumnDef" do
-      optional :colname, :string, 1
-      optional :type_name, :message, 2, "pg_query.TypeName"
-      optional :inhcount, :int32, 3
-      optional :is_local, :bool, 4
-      optional :is_not_null, :bool, 5
-      optional :is_from_type, :bool, 6
-      optional :storage, :string, 7
-      optional :raw_default, :message, 8, "pg_query.Node"
-      optional :cooked_default, :message, 9, "pg_query.Node"
-      optional :identity, :string, 10
-      optional :identity_sequence, :message, 11, "pg_query.RangeVar"
-      optional :generated, :string, 12
-      optional :coll_clause, :message, 13, "pg_query.CollateClause"
-      optional :coll_oid, :uint32, 14
-      repeated :constraints, :message, 15, "pg_query.Node"
-      repeated :fdwoptions, :message, 16, "pg_query.Node"
-      optional :location, :int32, 17
+      optional :colname, :string, 1, json_name: "colname"
+      optional :type_name, :message, 2, "pg_query.TypeName", json_name: "typeName"
+      optional :inhcount, :int32, 3, json_name: "inhcount"
+      optional :is_local, :bool, 4, json_name: "is_local"
+      optional :is_not_null, :bool, 5, json_name: "is_not_null"
+      optional :is_from_type, :bool, 6, json_name: "is_from_type"
+      optional :storage, :string, 7, json_name: "storage"
+      optional :raw_default, :message, 8, "pg_query.Node", json_name: "raw_default"
+      optional :cooked_default, :message, 9, "pg_query.Node", json_name: "cooked_default"
+      optional :identity, :string, 10, json_name: "identity"
+      optional :identity_sequence, :message, 11, "pg_query.RangeVar", json_name: "identitySequence"
+      optional :generated, :string, 12, json_name: "generated"
+      optional :coll_clause, :message, 13, "pg_query.CollateClause", json_name: "collClause"
+      optional :coll_oid, :uint32, 14, json_name: "collOid"
+      repeated :constraints, :message, 15, "pg_query.Node", json_name: "constraints"
+      repeated :fdwoptions, :message, 16, "pg_query.Node", json_name: "fdwoptions"
+      optional :location, :int32, 17, json_name: "location"
     end
     add_message "pg_query.IndexElem" do
-      optional :name, :string, 1
-      optional :expr, :message, 2, "pg_query.Node"
-      optional :indexcolname, :string, 3
-      repeated :collation, :message, 4, "pg_query.Node"
-      repeated :opclass, :message, 5, "pg_query.Node"
-      repeated :opclassopts, :message, 6, "pg_query.Node"
-      optional :ordering, :enum, 7, "pg_query.SortByDir"
-      optional :nulls_ordering, :enum, 8, "pg_query.SortByNulls"
+      optional :name, :string, 1, json_name: "name"
+      optional :expr, :message, 2, "pg_query.Node", json_name: "expr"
+      optional :indexcolname, :string, 3, json_name: "indexcolname"
+      repeated :collation, :message, 4, "pg_query.Node", json_name: "collation"
+      repeated :opclass, :message, 5, "pg_query.Node", json_name: "opclass"
+      repeated :opclassopts, :message, 6, "pg_query.Node", json_name: "opclassopts"
+      optional :ordering, :enum, 7, "pg_query.SortByDir", json_name: "ordering"
+      optional :nulls_ordering, :enum, 8, "pg_query.SortByNulls", json_name: "nulls_ordering"
     end
     add_message "pg_query.Constraint" do
-      optional :contype, :enum, 1, "pg_query.ConstrType"
-      optional :conname, :string, 2
-      optional :deferrable, :bool, 3
-      optional :initdeferred, :bool, 4
-      optional :location, :int32, 5
-      optional :is_no_inherit, :bool, 6
-      optional :raw_expr, :message, 7, "pg_query.Node"
-      optional :cooked_expr, :string, 8
-      optional :generated_when, :string, 9
-      repeated :keys, :message, 10, "pg_query.Node"
-      repeated :including, :message, 11, "pg_query.Node"
-      repeated :exclusions, :message, 12, "pg_query.Node"
-      repeated :options, :message, 13, "pg_query.Node"
-      optional :indexname, :string, 14
-      optional :indexspace, :string, 15
-      optional :reset_default_tblspc, :bool, 16
-      optional :access_method, :string, 17
-      optional :where_clause, :message, 18, "pg_query.Node"
-      optional :pktable, :message, 19, "pg_query.RangeVar"
-      repeated :fk_attrs, :message, 20, "pg_query.Node"
-      repeated :pk_attrs, :message, 21, "pg_query.Node"
-      optional :fk_matchtype, :string, 22
-      optional :fk_upd_action, :string, 23
-      optional :fk_del_action, :string, 24
-      repeated :old_conpfeqop, :message, 25, "pg_query.Node"
-      optional :old_pktable_oid, :uint32, 26
-      optional :skip_validation, :bool, 27
-      optional :initially_valid, :bool, 28
+      optional :contype, :enum, 1, "pg_query.ConstrType", json_name: "contype"
+      optional :conname, :string, 2, json_name: "conname"
+      optional :deferrable, :bool, 3, json_name: "deferrable"
+      optional :initdeferred, :bool, 4, json_name: "initdeferred"
+      optional :location, :int32, 5, json_name: "location"
+      optional :is_no_inherit, :bool, 6, json_name: "is_no_inherit"
+      optional :raw_expr, :message, 7, "pg_query.Node", json_name: "raw_expr"
+      optional :cooked_expr, :string, 8, json_name: "cooked_expr"
+      optional :generated_when, :string, 9, json_name: "generated_when"
+      repeated :keys, :message, 10, "pg_query.Node", json_name: "keys"
+      repeated :including, :message, 11, "pg_query.Node", json_name: "including"
+      repeated :exclusions, :message, 12, "pg_query.Node", json_name: "exclusions"
+      repeated :options, :message, 13, "pg_query.Node", json_name: "options"
+      optional :indexname, :string, 14, json_name: "indexname"
+      optional :indexspace, :string, 15, json_name: "indexspace"
+      optional :reset_default_tblspc, :bool, 16, json_name: "reset_default_tblspc"
+      optional :access_method, :string, 17, json_name: "access_method"
+      optional :where_clause, :message, 18, "pg_query.Node", json_name: "where_clause"
+      optional :pktable, :message, 19, "pg_query.RangeVar", json_name: "pktable"
+      repeated :fk_attrs, :message, 20, "pg_query.Node", json_name: "fk_attrs"
+      repeated :pk_attrs, :message, 21, "pg_query.Node", json_name: "pk_attrs"
+      optional :fk_matchtype, :string, 22, json_name: "fk_matchtype"
+      optional :fk_upd_action, :string, 23, json_name: "fk_upd_action"
+      optional :fk_del_action, :string, 24, json_name: "fk_del_action"
+      repeated :old_conpfeqop, :message, 25, "pg_query.Node", json_name: "old_conpfeqop"
+      optional :old_pktable_oid, :uint32, 26, json_name: "old_pktable_oid"
+      optional :skip_validation, :bool, 27, json_name: "skip_validation"
+      optional :initially_valid, :bool, 28, json_name: "initially_valid"
     end
     add_message "pg_query.DefElem" do
-      optional :defnamespace, :string, 1
-      optional :defname, :string, 2
-      optional :arg, :message, 3, "pg_query.Node"
-      optional :defaction, :enum, 4, "pg_query.DefElemAction"
-      optional :location, :int32, 5
+      optional :defnamespace, :string, 1, json_name: "defnamespace"
+      optional :defname, :string, 2, json_name: "defname"
+      optional :arg, :message, 3, "pg_query.Node", json_name: "arg"
+      optional :defaction, :enum, 4, "pg_query.DefElemAction", json_name: "defaction"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.RangeTblEntry" do
-      optional :rtekind, :enum, 1, "pg_query.RTEKind"
-      optional :relid, :uint32, 2
-      optional :relkind, :string, 3
-      optional :rellockmode, :int32, 4
-      optional :tablesample, :message, 5, "pg_query.TableSampleClause"
-      optional :subquery, :message, 6, "pg_query.Query"
-      optional :security_barrier, :bool, 7
-      optional :jointype, :enum, 8, "pg_query.JoinType"
-      optional :joinmergedcols, :int32, 9
-      repeated :joinaliasvars, :message, 10, "pg_query.Node"
-      repeated :joinleftcols, :message, 11, "pg_query.Node"
-      repeated :joinrightcols, :message, 12, "pg_query.Node"
-      repeated :functions, :message, 13, "pg_query.Node"
-      optional :funcordinality, :bool, 14
-      optional :tablefunc, :message, 15, "pg_query.TableFunc"
-      repeated :values_lists, :message, 16, "pg_query.Node"
-      optional :ctename, :string, 17
-      optional :ctelevelsup, :uint32, 18
-      optional :self_reference, :bool, 19
-      repeated :coltypes, :message, 20, "pg_query.Node"
-      repeated :coltypmods, :message, 21, "pg_query.Node"
-      repeated :colcollations, :message, 22, "pg_query.Node"
-      optional :enrname, :string, 23
-      optional :enrtuples, :double, 24
-      optional :alias, :message, 25, "pg_query.Alias"
-      optional :eref, :message, 26, "pg_query.Alias"
-      optional :lateral, :bool, 27
-      optional :inh, :bool, 28
-      optional :in_from_cl, :bool, 29
-      optional :required_perms, :uint32, 30
-      optional :check_as_user, :uint32, 31
-      repeated :selected_cols, :uint64, 32
-      repeated :inserted_cols, :uint64, 33
-      repeated :updated_cols, :uint64, 34
-      repeated :extra_updated_cols, :uint64, 35
-      repeated :security_quals, :message, 36, "pg_query.Node"
+      optional :rtekind, :enum, 1, "pg_query.RTEKind", json_name: "rtekind"
+      optional :relid, :uint32, 2, json_name: "relid"
+      optional :relkind, :string, 3, json_name: "relkind"
+      optional :rellockmode, :int32, 4, json_name: "rellockmode"
+      optional :tablesample, :message, 5, "pg_query.TableSampleClause", json_name: "tablesample"
+      optional :subquery, :message, 6, "pg_query.Query", json_name: "subquery"
+      optional :security_barrier, :bool, 7, json_name: "security_barrier"
+      optional :jointype, :enum, 8, "pg_query.JoinType", json_name: "jointype"
+      optional :joinmergedcols, :int32, 9, json_name: "joinmergedcols"
+      repeated :joinaliasvars, :message, 10, "pg_query.Node", json_name: "joinaliasvars"
+      repeated :joinleftcols, :message, 11, "pg_query.Node", json_name: "joinleftcols"
+      repeated :joinrightcols, :message, 12, "pg_query.Node", json_name: "joinrightcols"
+      repeated :functions, :message, 13, "pg_query.Node", json_name: "functions"
+      optional :funcordinality, :bool, 14, json_name: "funcordinality"
+      optional :tablefunc, :message, 15, "pg_query.TableFunc", json_name: "tablefunc"
+      repeated :values_lists, :message, 16, "pg_query.Node", json_name: "values_lists"
+      optional :ctename, :string, 17, json_name: "ctename"
+      optional :ctelevelsup, :uint32, 18, json_name: "ctelevelsup"
+      optional :self_reference, :bool, 19, json_name: "self_reference"
+      repeated :coltypes, :message, 20, "pg_query.Node", json_name: "coltypes"
+      repeated :coltypmods, :message, 21, "pg_query.Node", json_name: "coltypmods"
+      repeated :colcollations, :message, 22, "pg_query.Node", json_name: "colcollations"
+      optional :enrname, :string, 23, json_name: "enrname"
+      optional :enrtuples, :double, 24, json_name: "enrtuples"
+      optional :alias, :message, 25, "pg_query.Alias", json_name: "alias"
+      optional :eref, :message, 26, "pg_query.Alias", json_name: "eref"
+      optional :lateral, :bool, 27, json_name: "lateral"
+      optional :inh, :bool, 28, json_name: "inh"
+      optional :in_from_cl, :bool, 29, json_name: "inFromCl"
+      optional :required_perms, :uint32, 30, json_name: "requiredPerms"
+      optional :check_as_user, :uint32, 31, json_name: "checkAsUser"
+      repeated :selected_cols, :uint64, 32, json_name: "selectedCols"
+      repeated :inserted_cols, :uint64, 33, json_name: "insertedCols"
+      repeated :updated_cols, :uint64, 34, json_name: "updatedCols"
+      repeated :extra_updated_cols, :uint64, 35, json_name: "extraUpdatedCols"
+      repeated :security_quals, :message, 36, "pg_query.Node", json_name: "securityQuals"
     end
     add_message "pg_query.RangeTblFunction" do
-      optional :funcexpr, :message, 1, "pg_query.Node"
-      optional :funccolcount, :int32, 2
-      repeated :funccolnames, :message, 3, "pg_query.Node"
-      repeated :funccoltypes, :message, 4, "pg_query.Node"
-      repeated :funccoltypmods, :message, 5, "pg_query.Node"
-      repeated :funccolcollations, :message, 6, "pg_query.Node"
-      repeated :funcparams, :uint64, 7
+      optional :funcexpr, :message, 1, "pg_query.Node", json_name: "funcexpr"
+      optional :funccolcount, :int32, 2, json_name: "funccolcount"
+      repeated :funccolnames, :message, 3, "pg_query.Node", json_name: "funccolnames"
+      repeated :funccoltypes, :message, 4, "pg_query.Node", json_name: "funccoltypes"
+      repeated :funccoltypmods, :message, 5, "pg_query.Node", json_name: "funccoltypmods"
+      repeated :funccolcollations, :message, 6, "pg_query.Node", json_name: "funccolcollations"
+      repeated :funcparams, :uint64, 7, json_name: "funcparams"
     end
     add_message "pg_query.TableSampleClause" do
-      optional :tsmhandler, :uint32, 1
-      repeated :args, :message, 2, "pg_query.Node"
-      optional :repeatable, :message, 3, "pg_query.Node"
+      optional :tsmhandler, :uint32, 1, json_name: "tsmhandler"
+      repeated :args, :message, 2, "pg_query.Node", json_name: "args"
+      optional :repeatable, :message, 3, "pg_query.Node", json_name: "repeatable"
     end
     add_message "pg_query.WithCheckOption" do
-      optional :kind, :enum, 1, "pg_query.WCOKind"
-      optional :relname, :string, 2
-      optional :polname, :string, 3
-      optional :qual, :message, 4, "pg_query.Node"
-      optional :cascaded, :bool, 5
+      optional :kind, :enum, 1, "pg_query.WCOKind", json_name: "kind"
+      optional :relname, :string, 2, json_name: "relname"
+      optional :polname, :string, 3, json_name: "polname"
+      optional :qual, :message, 4, "pg_query.Node", json_name: "qual"
+      optional :cascaded, :bool, 5, json_name: "cascaded"
     end
     add_message "pg_query.SortGroupClause" do
-      optional :tle_sort_group_ref, :uint32, 1
-      optional :eqop, :uint32, 2
-      optional :sortop, :uint32, 3
-      optional :nulls_first, :bool, 4
-      optional :hashable, :bool, 5
+      optional :tle_sort_group_ref, :uint32, 1, json_name: "tleSortGroupRef"
+      optional :eqop, :uint32, 2, json_name: "eqop"
+      optional :sortop, :uint32, 3, json_name: "sortop"
+      optional :nulls_first, :bool, 4, json_name: "nulls_first"
+      optional :hashable, :bool, 5, json_name: "hashable"
     end
     add_message "pg_query.GroupingSet" do
-      optional :kind, :enum, 1, "pg_query.GroupingSetKind"
-      repeated :content, :message, 2, "pg_query.Node"
-      optional :location, :int32, 3
+      optional :kind, :enum, 1, "pg_query.GroupingSetKind", json_name: "kind"
+      repeated :content, :message, 2, "pg_query.Node", json_name: "content"
+      optional :location, :int32, 3, json_name: "location"
     end
     add_message "pg_query.WindowClause" do
-      optional :name, :string, 1
-      optional :refname, :string, 2
-      repeated :partition_clause, :message, 3, "pg_query.Node"
-      repeated :order_clause, :message, 4, "pg_query.Node"
-      optional :frame_options, :int32, 5
-      optional :start_offset, :message, 6, "pg_query.Node"
-      optional :end_offset, :message, 7, "pg_query.Node"
-      optional :start_in_range_func, :uint32, 8
-      optional :end_in_range_func, :uint32, 9
-      optional :in_range_coll, :uint32, 10
-      optional :in_range_asc, :bool, 11
-      optional :in_range_nulls_first, :bool, 12
-      optional :winref, :uint32, 13
-      optional :copied_order, :bool, 14
+      optional :name, :string, 1, json_name: "name"
+      optional :refname, :string, 2, json_name: "refname"
+      repeated :partition_clause, :message, 3, "pg_query.Node", json_name: "partitionClause"
+      repeated :order_clause, :message, 4, "pg_query.Node", json_name: "orderClause"
+      optional :frame_options, :int32, 5, json_name: "frameOptions"
+      optional :start_offset, :message, 6, "pg_query.Node", json_name: "startOffset"
+      optional :end_offset, :message, 7, "pg_query.Node", json_name: "endOffset"
+      optional :start_in_range_func, :uint32, 8, json_name: "startInRangeFunc"
+      optional :end_in_range_func, :uint32, 9, json_name: "endInRangeFunc"
+      optional :in_range_coll, :uint32, 10, json_name: "inRangeColl"
+      optional :in_range_asc, :bool, 11, json_name: "inRangeAsc"
+      optional :in_range_nulls_first, :bool, 12, json_name: "inRangeNullsFirst"
+      optional :winref, :uint32, 13, json_name: "winref"
+      optional :copied_order, :bool, 14, json_name: "copiedOrder"
     end
     add_message "pg_query.ObjectWithArgs" do
-      repeated :objname, :message, 1, "pg_query.Node"
-      repeated :objargs, :message, 2, "pg_query.Node"
-      optional :args_unspecified, :bool, 3
+      repeated :objname, :message, 1, "pg_query.Node", json_name: "objname"
+      repeated :objargs, :message, 2, "pg_query.Node", json_name: "objargs"
+      optional :args_unspecified, :bool, 3, json_name: "args_unspecified"
     end
     add_message "pg_query.AccessPriv" do
-      optional :priv_name, :string, 1
-      repeated :cols, :message, 2, "pg_query.Node"
+      optional :priv_name, :string, 1, json_name: "priv_name"
+      repeated :cols, :message, 2, "pg_query.Node", json_name: "cols"
     end
     add_message "pg_query.CreateOpClassItem" do
-      optional :itemtype, :int32, 1
-      optional :name, :message, 2, "pg_query.ObjectWithArgs"
-      optional :number, :int32, 3
-      repeated :order_family, :message, 4, "pg_query.Node"
-      repeated :class_args, :message, 5, "pg_query.Node"
-      optional :storedtype, :message, 6, "pg_query.TypeName"
+      optional :itemtype, :int32, 1, json_name: "itemtype"
+      optional :name, :message, 2, "pg_query.ObjectWithArgs", json_name: "name"
+      optional :number, :int32, 3, json_name: "number"
+      repeated :order_family, :message, 4, "pg_query.Node", json_name: "order_family"
+      repeated :class_args, :message, 5, "pg_query.Node", json_name: "class_args"
+      optional :storedtype, :message, 6, "pg_query.TypeName", json_name: "storedtype"
     end
     add_message "pg_query.TableLikeClause" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      optional :options, :uint32, 2
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      optional :options, :uint32, 2, json_name: "options"
+      optional :relation_oid, :uint32, 3, json_name: "relationOid"
     end
     add_message "pg_query.FunctionParameter" do
-      optional :name, :string, 1
-      optional :arg_type, :message, 2, "pg_query.TypeName"
-      optional :mode, :enum, 3, "pg_query.FunctionParameterMode"
-      optional :defexpr, :message, 4, "pg_query.Node"
+      optional :name, :string, 1, json_name: "name"
+      optional :arg_type, :message, 2, "pg_query.TypeName", json_name: "argType"
+      optional :mode, :enum, 3, "pg_query.FunctionParameterMode", json_name: "mode"
+      optional :defexpr, :message, 4, "pg_query.Node", json_name: "defexpr"
     end
     add_message "pg_query.LockingClause" do
-      repeated :locked_rels, :message, 1, "pg_query.Node"
-      optional :strength, :enum, 2, "pg_query.LockClauseStrength"
-      optional :wait_policy, :enum, 3, "pg_query.LockWaitPolicy"
+      repeated :locked_rels, :message, 1, "pg_query.Node", json_name: "lockedRels"
+      optional :strength, :enum, 2, "pg_query.LockClauseStrength", json_name: "strength"
+      optional :wait_policy, :enum, 3, "pg_query.LockWaitPolicy", json_name: "waitPolicy"
     end
     add_message "pg_query.RowMarkClause" do
-      optional :rti, :uint32, 1
-      optional :strength, :enum, 2, "pg_query.LockClauseStrength"
-      optional :wait_policy, :enum, 3, "pg_query.LockWaitPolicy"
-      optional :pushed_down, :bool, 4
+      optional :rti, :uint32, 1, json_name: "rti"
+      optional :strength, :enum, 2, "pg_query.LockClauseStrength", json_name: "strength"
+      optional :wait_policy, :enum, 3, "pg_query.LockWaitPolicy", json_name: "waitPolicy"
+      optional :pushed_down, :bool, 4, json_name: "pushedDown"
     end
     add_message "pg_query.XmlSerialize" do
-      optional :xmloption, :enum, 1, "pg_query.XmlOptionType"
-      optional :expr, :message, 2, "pg_query.Node"
-      optional :type_name, :message, 3, "pg_query.TypeName"
-      optional :location, :int32, 4
+      optional :xmloption, :enum, 1, "pg_query.XmlOptionType", json_name: "xmloption"
+      optional :expr, :message, 2, "pg_query.Node", json_name: "expr"
+      optional :type_name, :message, 3, "pg_query.TypeName", json_name: "typeName"
+      optional :location, :int32, 4, json_name: "location"
     end
     add_message "pg_query.WithClause" do
-      repeated :ctes, :message, 1, "pg_query.Node"
-      optional :recursive, :bool, 2
-      optional :location, :int32, 3
+      repeated :ctes, :message, 1, "pg_query.Node", json_name: "ctes"
+      optional :recursive, :bool, 2, json_name: "recursive"
+      optional :location, :int32, 3, json_name: "location"
     end
     add_message "pg_query.InferClause" do
-      repeated :index_elems, :message, 1, "pg_query.Node"
-      optional :where_clause, :message, 2, "pg_query.Node"
-      optional :conname, :string, 3
-      optional :location, :int32, 4
+      repeated :index_elems, :message, 1, "pg_query.Node", json_name: "indexElems"
+      optional :where_clause, :message, 2, "pg_query.Node", json_name: "whereClause"
+      optional :conname, :string, 3, json_name: "conname"
+      optional :location, :int32, 4, json_name: "location"
     end
     add_message "pg_query.OnConflictClause" do
-      optional :action, :enum, 1, "pg_query.OnConflictAction"
-      optional :infer, :message, 2, "pg_query.InferClause"
-      repeated :target_list, :message, 3, "pg_query.Node"
-      optional :where_clause, :message, 4, "pg_query.Node"
-      optional :location, :int32, 5
+      optional :action, :enum, 1, "pg_query.OnConflictAction", json_name: "action"
+      optional :infer, :message, 2, "pg_query.InferClause", json_name: "infer"
+      repeated :target_list, :message, 3, "pg_query.Node", json_name: "targetList"
+      optional :where_clause, :message, 4, "pg_query.Node", json_name: "whereClause"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.CommonTableExpr" do
-      optional :ctename, :string, 1
-      repeated :aliascolnames, :message, 2, "pg_query.Node"
-      optional :ctematerialized, :enum, 3, "pg_query.CTEMaterialize"
-      optional :ctequery, :message, 4, "pg_query.Node"
-      optional :location, :int32, 5
-      optional :cterecursive, :bool, 6
-      optional :cterefcount, :int32, 7
-      repeated :ctecolnames, :message, 8, "pg_query.Node"
-      repeated :ctecoltypes, :message, 9, "pg_query.Node"
-      repeated :ctecoltypmods, :message, 10, "pg_query.Node"
-      repeated :ctecolcollations, :message, 11, "pg_query.Node"
+      optional :ctename, :string, 1, json_name: "ctename"
+      repeated :aliascolnames, :message, 2, "pg_query.Node", json_name: "aliascolnames"
+      optional :ctematerialized, :enum, 3, "pg_query.CTEMaterialize", json_name: "ctematerialized"
+      optional :ctequery, :message, 4, "pg_query.Node", json_name: "ctequery"
+      optional :location, :int32, 5, json_name: "location"
+      optional :cterecursive, :bool, 6, json_name: "cterecursive"
+      optional :cterefcount, :int32, 7, json_name: "cterefcount"
+      repeated :ctecolnames, :message, 8, "pg_query.Node", json_name: "ctecolnames"
+      repeated :ctecoltypes, :message, 9, "pg_query.Node", json_name: "ctecoltypes"
+      repeated :ctecoltypmods, :message, 10, "pg_query.Node", json_name: "ctecoltypmods"
+      repeated :ctecolcollations, :message, 11, "pg_query.Node", json_name: "ctecolcollations"
     end
     add_message "pg_query.RoleSpec" do
-      optional :roletype, :enum, 1, "pg_query.RoleSpecType"
-      optional :rolename, :string, 2
-      optional :location, :int32, 3
+      optional :roletype, :enum, 1, "pg_query.RoleSpecType", json_name: "roletype"
+      optional :rolename, :string, 2, json_name: "rolename"
+      optional :location, :int32, 3, json_name: "location"
     end
     add_message "pg_query.TriggerTransition" do
-      optional :name, :string, 1
-      optional :is_new, :bool, 2
-      optional :is_table, :bool, 3
+      optional :name, :string, 1, json_name: "name"
+      optional :is_new, :bool, 2, json_name: "isNew"
+      optional :is_table, :bool, 3, json_name: "isTable"
     end
     add_message "pg_query.PartitionElem" do
-      optional :name, :string, 1
-      optional :expr, :message, 2, "pg_query.Node"
-      repeated :collation, :message, 3, "pg_query.Node"
-      repeated :opclass, :message, 4, "pg_query.Node"
-      optional :location, :int32, 5
+      optional :name, :string, 1, json_name: "name"
+      optional :expr, :message, 2, "pg_query.Node", json_name: "expr"
+      repeated :collation, :message, 3, "pg_query.Node", json_name: "collation"
+      repeated :opclass, :message, 4, "pg_query.Node", json_name: "opclass"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.PartitionSpec" do
-      optional :strategy, :string, 1
-      repeated :part_params, :message, 2, "pg_query.Node"
-      optional :location, :int32, 3
+      optional :strategy, :string, 1, json_name: "strategy"
+      repeated :part_params, :message, 2, "pg_query.Node", json_name: "partParams"
+      optional :location, :int32, 3, json_name: "location"
     end
     add_message "pg_query.PartitionBoundSpec" do
-      optional :strategy, :string, 1
-      optional :is_default, :bool, 2
-      optional :modulus, :int32, 3
-      optional :remainder, :int32, 4
-      repeated :listdatums, :message, 5, "pg_query.Node"
-      repeated :lowerdatums, :message, 6, "pg_query.Node"
-      repeated :upperdatums, :message, 7, "pg_query.Node"
-      optional :location, :int32, 8
+      optional :strategy, :string, 1, json_name: "strategy"
+      optional :is_default, :bool, 2, json_name: "is_default"
+      optional :modulus, :int32, 3, json_name: "modulus"
+      optional :remainder, :int32, 4, json_name: "remainder"
+      repeated :listdatums, :message, 5, "pg_query.Node", json_name: "listdatums"
+      repeated :lowerdatums, :message, 6, "pg_query.Node", json_name: "lowerdatums"
+      repeated :upperdatums, :message, 7, "pg_query.Node", json_name: "upperdatums"
+      optional :location, :int32, 8, json_name: "location"
     end
     add_message "pg_query.PartitionRangeDatum" do
-      optional :kind, :enum, 1, "pg_query.PartitionRangeDatumKind"
-      optional :value, :message, 2, "pg_query.Node"
-      optional :location, :int32, 3
+      optional :kind, :enum, 1, "pg_query.PartitionRangeDatumKind", json_name: "kind"
+      optional :value, :message, 2, "pg_query.Node", json_name: "value"
+      optional :location, :int32, 3, json_name: "location"
     end
     add_message "pg_query.PartitionCmd" do
-      optional :name, :message, 1, "pg_query.RangeVar"
-      optional :bound, :message, 2, "pg_query.PartitionBoundSpec"
+      optional :name, :message, 1, "pg_query.RangeVar", json_name: "name"
+      optional :bound, :message, 2, "pg_query.PartitionBoundSpec", json_name: "bound"
     end
     add_message "pg_query.VacuumRelation" do
-      optional :relation, :message, 1, "pg_query.RangeVar"
-      optional :oid, :uint32, 2
-      repeated :va_cols, :message, 3, "pg_query.Node"
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      optional :oid, :uint32, 2, json_name: "oid"
+      repeated :va_cols, :message, 3, "pg_query.Node", json_name: "va_cols"
     end
     add_message "pg_query.InlineCodeBlock" do
-      optional :source_text, :string, 1
-      optional :lang_oid, :uint32, 2
-      optional :lang_is_trusted, :bool, 3
-      optional :atomic, :bool, 4
+      optional :source_text, :string, 1, json_name: "source_text"
+      optional :lang_oid, :uint32, 2, json_name: "langOid"
+      optional :lang_is_trusted, :bool, 3, json_name: "langIsTrusted"
+      optional :atomic, :bool, 4, json_name: "atomic"
     end
     add_message "pg_query.CallContext" do
-      optional :atomic, :bool, 1
+      optional :atomic, :bool, 1, json_name: "atomic"
     end
     add_message "pg_query.ScanToken" do
       optional :start, :int32, 1
