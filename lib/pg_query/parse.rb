@@ -139,7 +139,13 @@ module PgQuery
             from_clause_items << { item: PgQuery::Node.new(range_var: value.relation), type: :dml }
             statements << value.select_stmt if statement.node == :insert_stmt && value.select_stmt
 
-            subselect_items.concat(statement.update_stmt.target_list) if statement.node == :update_stmt
+            if statement.node == :update_stmt
+              value.from_clause.each do |item|
+                from_clause_items << { item: item, type: :select }
+              end
+              subselect_items.concat(statement.update_stmt.target_list)
+            end
+
             subselect_items << statement.update_stmt.where_clause if statement.node == :update_stmt && statement.update_stmt.where_clause
             subselect_items << statement.delete_stmt.where_clause if statement.node == :delete_stmt && statement.delete_stmt.where_clause
 
@@ -242,6 +248,10 @@ module PgQuery
             end
           when :bool_expr
             subselect_items.concat(next_item.bool_expr.args)
+          when :coalesce_expr
+            subselect_items.concat(next_item.coalesce_expr.args)
+          when :min_max_expr
+            subselect_items.concat(next_item.min_max_expr.args)
           when :res_target
             subselect_items << next_item.res_target.val
           when :sub_link

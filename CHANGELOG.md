@@ -23,6 +23,7 @@
     to map the protobuf result to JSON, since this now respects the intended JSON names
     from the Proto3 definition (instead of the differently formatted Protobuf field names)
 * Rakefile: Fix "rake clean" by using CLEAN.include instead of CLEAN.<<
+* Find tables inside COALESCE/MIN/MAX functions, UPDATE FROM list
 
 
 ## 2.0.3     2021-04-05
