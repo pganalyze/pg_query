@@ -1226,7 +1226,6 @@ $BODY$
     query = described_class.parse(<<-SQL)
       DROP FUNCTION IF EXISTS testfunc(x integer);
     SQL
-    p query.tree
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
     expect(query.functions).to eq ['testfunc']
@@ -1419,6 +1418,26 @@ $BODY$
     expect(query.cte_names).to match_array(['cte_a', 'cte_b'])
   end
 
+  it 'finds tables inside subselects in MIN/MAX and COALESCE functions' do
+    query = described_class.parse(<<-SQL)
+      SELECT GREATEST(
+               date_trunc($1, $2::timestamptz) + $3::interval,
+               COALESCE(
+                 (
+                   SELECT first_aggregate_starts_at
+                     FROM schema_aggregate_infos
+                    WHERE base_table = $4 LIMIT $5
+                 ),
+                 now() + $6::interval
+               )
+            ) AS first_hourly_start_ts
+    SQL
+    expect(query.tables).to eq(['schema_aggregate_infos'])
+    expect(query.select_tables).to eq(['schema_aggregate_infos'])
+    expect(query.dml_tables).to eq([])
+    expect(query.ddl_tables).to eq([])
+  end
+
   describe 'parsing INSERT' do
     it 'finds the table inserted into' do
       query = described_class.parse(<<-SQL)
@@ -1474,6 +1493,17 @@ $BODY$
       SQL
       expect(query.warnings).to be_empty
       expect(query.tables).to match_array(['users', 'other_users'])
+    end
+
+    it 'finds tables referenced in the FROM clause' do
+      query = described_class.parse(<<-SQL)
+        UPDATE users SET name = users_new.name FROM users_new WHERE users.id = users_new.id
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to eq(['users', 'users_new'])
+      expect(query.select_tables).to eq(['users_new'])
+      expect(query.dml_tables).to eq(['users'])
+      expect(query.ddl_tables).to eq([])
     end
   end
 
