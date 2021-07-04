@@ -2,12 +2,22 @@
 
 ## Unreleased
 
-* Update to libpg_query 13-2.0.5
+* Update to libpg_query 13-2.0.6
   - Update to Postgres 13.3 patch release
-  - Normalize: Don't touch "GROUP BY 1" type statements, keep original text 
+  - Normalize: Don't touch "GROUP BY 1" and "ORDER BY 1" expressions, keep original text 
   - Fingerprint: Cache list item hashes to fingerprint complex queries faster
   - Deparser: Emit the RangeVar catalogname if present
   - Fix crash in pg_scan function when encountering backslash escapes
+* Support extracting functions from a parsed query ([#147](https://github.com/pganalyze/pg_query/pull/147))
+  - Adds new `functions`, `ddl_functions` and `call_functions` methods
+  - Note that functions are identified by their name only, not their full type definition,
+    since raw query parsetrees don't contain sufficient data to identify the types of
+    arguments when functions are called
+* Relax google-protobuf dependency ([#213](https://github.com/pganalyze/pg_query/pull/213))
+* Update google-protobuf to 3.17.1 ([#212](https://github.com/pganalyze/pg_query/pull/212))
+  - google-protobuf 3.15.x has a bug that causes a seg fault in Ruby under
+    certain conditions (https://github.com/protocolbuffers/protobuf/pull/8639). Use
+    google-protobuf 3.17.1 instead.
 
 
 ## 2.0.3     2021-04-05
