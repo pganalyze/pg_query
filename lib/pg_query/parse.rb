@@ -29,6 +29,7 @@ module PgQuery
       @tables = nil
       @aliases = nil
       @cte_names = nil
+      @functions = nil
     end
 
     def dup_tree
@@ -51,27 +52,48 @@ module PgQuery
       tables_with_details.select { |t| t[:type] == :ddl }.map { |t| t[:name] }.uniq
     end
 
+    # Returns function names, ignoring their argument types. This may be insufficient
+    # if you need to disambiguate two functions with the same name but different argument
+    # types.
+    def functions
+      functions_with_details.map { |f| f[:function] }.uniq
+    end
+
+    def ddl_functions
+      functions_with_details.select { |f| f[:type] == :ddl }.map { |f| f[:function] }.uniq
+    end
+
+    def call_functions
+      functions_with_details.select { |f| f[:type] == :call }.map { |f| f[:function] }.uniq
+    end
+
     def cte_names
-      load_tables_and_aliases! if @cte_names.nil?
+      load_objects! if @cte_names.nil?
       @cte_names
     end
 
     def aliases
-      load_tables_and_aliases! if @aliases.nil?
+      load_objects! if @aliases.nil?
       @aliases
     end
 
     def tables_with_details
-      load_tables_and_aliases! if @tables.nil?
+      load_objects! if @tables.nil?
       @tables
+    end
+
+    def functions_with_details
+      load_objects! if @functions.nil?
+      @functions
     end
 
     protected
 
-    def load_tables_and_aliases! # rubocop:disable Metrics/CyclomaticComplexity
+    def load_objects! # rubocop:disable Metrics/CyclomaticComplexity
       @tables = [] # types: select, dml, ddl
       @cte_names = []
       @aliases = {}
+      @functions = [] # types: call, ddl
 
       statements = @tree.stmts.dup.to_a.map(&:stmt)
       from_clause_items = [] # types: select, dml, ddl
@@ -168,6 +190,10 @@ module PgQuery
               @tables += objects.map { |r| { name: r.join('.'), type: :ddl } }
             when :OBJECT_RULE, :OBJECT_TRIGGER
               @tables += objects.map { |r| { name: r[0..-2].join('.'), type: :ddl } }
+            when :OBJECT_FUNCTION
+              # Only one function can be dropped in a statement
+              obj = statement.drop_stmt.objects[0].object_with_args
+              @functions << { function: obj.objname[0].string.str, type: :ddl }
             end
           when :grant_stmt
             objects = statement.grant_stmt.objects
@@ -184,6 +210,20 @@ module PgQuery
           # The following are other statements that don't fit into query/DML/DDL
           when :explain_stmt
             statements << statement.explain_stmt.query
+          when :create_function_stmt
+            @functions << {
+              function: statement.create_function_stmt.funcname[0].string.str,
+              type: :ddl
+            }
+          when :rename_stmt
+            if statement.rename_stmt.rename_type == :OBJECT_FUNCTION
+              original_name = statement.rename_stmt.object.object_with_args.objname[0].string.str
+              new_name = statement.rename_stmt.newname
+              @functions += [
+                { function: original_name, type: :ddl },
+                { function: new_name, type: :ddl }
+              ]
+            end
           end
         end
 
@@ -206,6 +246,11 @@ module PgQuery
             subselect_items << next_item.res_target.val
           when :sub_link
             statements << next_item.sub_link.subselect
+          when :func_call
+            @functions << {
+              function: next_item.func_call.funcname[0].string.str,
+              type: :call
+            }
           end
         end
 

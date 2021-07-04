@@ -1039,6 +1039,7 @@ $BODY$
   LANGUAGE plpgsql STABLE')
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
+    expect(query.functions).to eq ['thing']
     expect(query.tree.stmts.first).to eq(
       PgQuery::RawStmt.new(
         stmt: PgQuery::Node.new(
@@ -1118,6 +1119,7 @@ $BODY$
 ' LANGUAGE SQL")
     expect(query.warnings).to eq []
     expect(query.tables).to eq []
+    expect(query.functions).to eq ['getfoo']
     expect(query.tree.stmts.first).to eq(
       PgQuery::RawStmt.new(
         stmt: PgQuery::Node.new(
@@ -1195,6 +1197,55 @@ $BODY$
         )
       )
     )
+  end
+
+  it 'correctly finds created functions' do
+    query = described_class.parse(<<-SQL)
+    CREATE OR REPLACE FUNCTION testfunc(x integer) RETURNS integer AS $$
+    BEGIN
+    RETURN x
+    END;
+    $$ LANGUAGE plpgsql STABLE;
+    SQL
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
+    expect(query.functions).to eq ['testfunc']
+    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.call_functions).to eq []
+  end
+
+  it 'correctly finds called functions' do
+    query = described_class.parse(<<-SQL)
+      SELECT testfunc(1);
+    SQL
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
+    expect(query.functions).to eq ['testfunc']
+    expect(query.ddl_functions).to eq []
+    expect(query.call_functions).to eq ['testfunc']
+  end
+
+  it 'correctly finds dropped functions' do
+    query = described_class.parse(<<-SQL)
+      DROP FUNCTION IF EXISTS testfunc(x integer);
+    SQL
+    p query.tree
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
+    expect(query.functions).to eq ['testfunc']
+    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.call_functions).to eq []
+  end
+
+  it 'correctly finds renamed functions' do
+    query = described_class.parse(<<-SQL)
+      ALTER FUNCTION testfunc(integer) RENAME TO testfunc2;
+    SQL
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
+    expect(query.functions).to eq ['testfunc', 'testfunc2']
+    expect(query.ddl_functions).to eq ['testfunc', 'testfunc2']
+    expect(query.call_functions).to eq []
   end
 
   # https://github.com/pganalyze/pg_query/issues/38
