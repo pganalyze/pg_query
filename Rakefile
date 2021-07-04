@@ -21,9 +21,9 @@ task default: %i[spec lint]
 task test: :spec
 task lint: :rubocop
 
-CLEAN << 'tmp/**/*'
-CLEAN << 'ext/pg_query/*.o'
-CLEAN << 'lib/pg_query/pg_query.bundle'
+CLEAN.include 'tmp/**/*'
+CLEAN.include 'ext/pg_query/*.o'
+CLEAN.include 'lib/pg_query/pg_query.bundle'
 
 task :update_source do
   workdir = File.join(__dir__, 'tmp')
