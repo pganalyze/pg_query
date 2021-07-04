@@ -24,6 +24,10 @@
     from the Proto3 definition (instead of the differently formatted Protobuf field names)
 * Rakefile: Fix "rake clean" by using CLEAN.include instead of CLEAN.<<
 * Find tables inside COALESCE/MIN/MAX functions, UPDATE FROM list
+* Extconf: Add library include path using $INCFLAGS, list it first
+  - This ensures any system installed libpg_query gets considered after
+    the bundled libpg_query, avoiding errors where the wrong header files
+    are used.
 
 
 ## 2.0.3     2021-04-05

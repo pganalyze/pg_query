@@ -7,7 +7,9 @@ require 'pathname'
 
 $objs = Dir.glob(File.join(__dir__, '*.c')).map { |f| Pathname.new(f).sub_ext('.o').to_s }
 
-$CFLAGS << " -I#{File.join(__dir__, 'include')} -O3 -Wall -fno-strict-aliasing -fwrapv -fstack-protector -Wno-unused-function -Wno-unused-variable -g"
+$CFLAGS << " -O3 -Wall -fno-strict-aliasing -fwrapv -fstack-protector -Wno-unused-function -Wno-unused-variable -g"
+
+$INCFLAGS = "-I#{File.join(__dir__, 'include')} " + $INCFLAGS
 
 SYMFILE = File.join(__dir__, 'pg_query_ruby.sym')
 if RUBY_PLATFORM =~ /darwin/
