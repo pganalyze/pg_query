@@ -11,6 +11,8 @@ $CFLAGS << " -O3 -Wall -fno-strict-aliasing -fwrapv -fstack-protector -Wno-unuse
 
 $INCFLAGS = "-I#{File.join(__dir__, 'include')} " + $INCFLAGS
 
+have_func('strchrnul')
+
 SYMFILE = File.join(__dir__, 'pg_query_ruby.sym')
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
