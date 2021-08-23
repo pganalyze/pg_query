@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.author      = 'Lukas Fittl'
   s.email       = 'lukas@fittl.com'
   s.license     = 'BSD-3-Clause'
-  s.homepage    = 'http://github.com/pganalyze/pg_query'
+  s.homepage    = 'https://github.com/pganalyze/pg_query'
 
   s.extensions = %w[ext/pg_query/extconf.rb]
 
