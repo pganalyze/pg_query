@@ -108,10 +108,10 @@ module PgQuery
           # The following statement types do not modify tables and are added to from_clause_items
           # (and subsequently @tables)
           when :select_stmt
-            subselect_items.concat(statement.select_stmt.target_list)
+            subselect_items.concat(statement.select_stmt.target_list.to_ary)
             subselect_items << statement.select_stmt.where_clause if statement.select_stmt.where_clause
             subselect_items.concat(statement.select_stmt.sort_clause.collect { |h| h.sort_by.node })
-            subselect_items.concat(statement.select_stmt.group_clause)
+            subselect_items.concat(statement.select_stmt.group_clause.to_ary)
             subselect_items << statement.select_stmt.having_clause if statement.select_stmt.having_clause
 
             case statement.select_stmt.op
@@ -143,7 +143,7 @@ module PgQuery
               value.from_clause.each do |item|
                 from_clause_items << { item: item, type: :select }
               end
-              subselect_items.concat(statement.update_stmt.target_list)
+              subselect_items.concat(statement.update_stmt.target_list.to_ary)
             end
 
             subselect_items << statement.update_stmt.where_clause if statement.node == :update_stmt && statement.update_stmt.where_clause
@@ -247,11 +247,11 @@ module PgQuery
               end
             end
           when :bool_expr
-            subselect_items.concat(next_item.bool_expr.args)
+            subselect_items.concat(next_item.bool_expr.args.to_ary)
           when :coalesce_expr
-            subselect_items.concat(next_item.coalesce_expr.args)
+            subselect_items.concat(next_item.coalesce_expr.args.to_ary)
           when :min_max_expr
-            subselect_items.concat(next_item.min_max_expr.args)
+            subselect_items.concat(next_item.min_max_expr.args.to_ary)
           when :res_target
             subselect_items << next_item.res_target.val
           when :sub_link
