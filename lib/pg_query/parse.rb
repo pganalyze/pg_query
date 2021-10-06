@@ -117,11 +117,7 @@ module PgQuery
             case statement.select_stmt.op
             when :SETOP_NONE
               (statement.select_stmt.from_clause || []).each do |item|
-                if item.node == :range_subselect
-                  statements << item.range_subselect.subquery
-                else
-                  from_clause_items << { item: item, type: :select }
-                end
+                from_clause_items << { item: item, type: :select }
               end
             when :SETOP_UNION
               statements << PgQuery::Node.new(select_stmt: statement.select_stmt.larg) if statement.select_stmt.larg
@@ -236,6 +232,8 @@ module PgQuery
         next_item = subselect_items.shift
         if next_item
           case next_item.node
+          when :list
+            subselect_items += next_item.list.items
           when :a_expr
             %w[lexpr rexpr].each do |side|
               elem = next_item.a_expr.public_send(side)
@@ -257,46 +255,44 @@ module PgQuery
           when :sub_link
             statements << next_item.sub_link.subselect
           when :func_call
+            subselect_items.concat(next_item.func_call.args)
             @functions << {
-              function: next_item.func_call.funcname[0].string.str,
+              function: next_item.func_call.funcname.map { |f| f.string.str }.join('.'),
               type: :call
             }
           end
         end
 
-        break if subselect_items.empty? && statements.empty?
-      end
-
-      loop do
         next_item = from_clause_items.shift
-        break unless next_item && next_item[:item]
+        if next_item && next_item[:item]
+          case next_item[:item].node
+          when :join_expr
+            from_clause_items << { item: next_item[:item].join_expr.larg, type: next_item[:type] }
+            from_clause_items << { item: next_item[:item].join_expr.rarg, type: next_item[:type] }
+          when :row_expr
+            from_clause_items += next_item[:item].row_expr.args.map { |a| { item: a, type: next_item[:type] } }
+          when :range_var
+            rangevar = next_item[:item].range_var
+            next if rangevar.schemaname.empty? && @cte_names.include?(rangevar.relname)
 
-        case next_item[:item].node
-        when :join_expr
-          from_clause_items << { item: next_item[:item].join_expr.larg, type: next_item[:type] }
-          from_clause_items << { item: next_item[:item].join_expr.rarg, type: next_item[:type] }
-        when :row_expr
-          from_clause_items += next_item[:item].row_expr.args.map { |a| { item: a, type: next_item[:type] } }
-        when :range_var
-          rangevar = next_item[:item].range_var
-          next if rangevar.schemaname.empty? && @cte_names.include?(rangevar.relname)
-
-          table = [rangevar.schemaname, rangevar.relname].reject { |s| s.nil? || s.empty? }.join('.')
-          @tables << {
-            name: table,
-            type: next_item[:type],
-            location: rangevar.location,
-            schemaname: (rangevar.schemaname unless rangevar.schemaname.empty?),
-            relname: rangevar.relname,
-            inh: rangevar.inh
-          }
-          @aliases[rangevar.alias.aliasname] = table if rangevar.alias
-        when :range_subselect
-          from_clause_items << { item: next_item[:item].range_subselect.subquery, type: next_item[:type] }
-        when :select_stmt
-          from_clause = next_item[:item].select_stmt.from_clause
-          from_clause_items += from_clause.map { |r| { item: r, type: next_item[:type] } } if from_clause
+            table = [rangevar.schemaname, rangevar.relname].reject { |s| s.nil? || s.empty? }.join('.')
+            @tables << {
+              name: table,
+              type: next_item[:type],
+              location: rangevar.location,
+              schemaname: (rangevar.schemaname unless rangevar.schemaname.empty?),
+              relname: rangevar.relname,
+              inh: rangevar.inh
+            }
+            @aliases[rangevar.alias.aliasname] = table if rangevar.alias
+          when :range_subselect
+            statements << next_item[:item].range_subselect.subquery
+          when :range_function
+            subselect_items += next_item[:item].range_function.functions
+          end
         end
+
+        break if subselect_items.empty? && statements.empty? && from_clause_items.empty?
       end
 
       @tables.uniq!
