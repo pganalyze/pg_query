@@ -1438,6 +1438,30 @@ $BODY$
     expect(query.ddl_tables).to eq([])
   end
 
+  it 'finds functions inside LATERAL clauses' do
+    query = described_class.parse(<<-SQL)
+    SELECT *
+      FROM unnest($1::text[]) AS a(x)
+      LEFT OUTER JOIN LATERAL (
+        SELECT json_build_object($2, "z"."z")
+          FROM (
+            SELECT *
+              FROM (
+                SELECT row_to_json(
+                    (SELECT * FROM (SELECT public.my_function(b) FROM public.c) d)
+                )
+              ) e
+        ) f
+      ) AS g ON (1)
+    SQL
+    expect(query.tables).to eq(['public.c'])
+    expect(query.select_tables).to eq(['public.c'])
+    expect(query.dml_tables).to eq([])
+    expect(query.ddl_tables).to eq([])
+    expect(query.ddl_functions).to eq []
+    expect(query.call_functions).to eq ['unnest', 'json_build_object', 'row_to_json', 'public.my_function']
+  end
+
   describe 'parsing INSERT' do
     it 'finds the table inserted into' do
       query = described_class.parse(<<-SQL)
