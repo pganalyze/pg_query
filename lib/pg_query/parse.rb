@@ -89,6 +89,10 @@ module PgQuery
 
     protected
 
+    # Parses the query and finds table and function references
+    #
+    # Note we use ".to_ary" on arrays from the Protobuf library before
+    # passing them to concat, because of https://bugs.ruby-lang.org/issues/18140
     def load_objects! # rubocop:disable Metrics/CyclomaticComplexity
       @tables = [] # types: select, dml, ddl
       @cte_names = []
@@ -255,7 +259,7 @@ module PgQuery
           when :sub_link
             statements << next_item.sub_link.subselect
           when :func_call
-            subselect_items.concat(next_item.func_call.args)
+            subselect_items.concat(next_item.func_call.args.to_ary)
             @functions << {
               function: next_item.func_call.funcname.map { |f| f.string.str }.join('.'),
               type: :call
