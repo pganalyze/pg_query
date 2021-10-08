@@ -1438,6 +1438,19 @@ $BODY$
     expect(query.ddl_tables).to eq([])
   end
 
+  it 'finds functions in FROM clauses' do
+    query = described_class.parse(<<-SQL)
+    SELECT *
+      FROM my_custom_func()
+    SQL
+    expect(query.tables).to eq([])
+    expect(query.select_tables).to eq([])
+    expect(query.dml_tables).to eq([])
+    expect(query.ddl_tables).to eq([])
+    expect(query.ddl_functions).to eq []
+    expect(query.call_functions).to eq ['my_custom_func']
+  end
+
   it 'finds functions inside LATERAL clauses' do
     query = described_class.parse(<<-SQL)
     SELECT *
