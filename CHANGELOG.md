@@ -4,6 +4,32 @@
 
 * ...
 
+## 2.1.1     2021-10-13
+
+* Update to libpg_query 13-2.1.0 ([#230](https://github.com/pganalyze/pg_query/pull/230))
+  - Normalize: add funcname error object
+  - Normalize: Match GROUP BY against target list and re-use param refs
+  - PL/pgSQL: Setup namespace items for parameters, support RECORD types
+    - This significantly improves parsing for PL/pgSQL functions, to the extent
+      that most functions should now parse successfully
+  - Normalize: Don't modify constants in TypeName typmods/arrayBounds fields
+    - This matches how pg_stat_statement behaves, and avoids causing parsing
+      errors on the normalized statement
+  - Don't fail builds on systems that have strchrnul support (FreeBSD)
+* Fix build on FreeBSD ([#222](https://github.com/pganalyze/pg_query/pull/222))
+* Add workaround for Ruby garbage collection bug ([#227](https://github.com/pganalyze/pg_query/pull/227))
+  - The Ruby interpreter has a bug in `String#concat` where the appended
+    array may be garbage collected prematurely because the compiler
+    optimized out a Ruby stack variable. We now call `to_ary` on the
+    Protobuf object to ensure the array lands on the Ruby stack so the
+    garbage collector sees it.
+  - The real fix in the interpreter is described in
+    https://bugs.ruby-lang.org/issues/18140#note-2, but most current Ruby
+    interpreters won't have this fix for some time.
+* Table/function extraction: Support subselects and LATERAL better ([#229](https://github.com/pganalyze/pg_query/pull/229))
+  - This reworks the parsing logic so we don't ignore certain kinds of
+    subselects.
+
 
 ## 2.1.0     2021-07-04
 
