@@ -1400,8 +1400,8 @@ $BODY$
     expect(query.tables).to eq ['foo', 'bar']
   end
 
-  it 'it correctly finds nested tables in a subselect in a join condition' do
-    query = described_class.parse(<<~SQL)
+  it 'correctly finds nested tables in a subselect in a join condition' do
+    query = described_class.parse(<<-SQL)
       SELECT *
       FROM foo
       INNER JOIN join_a
