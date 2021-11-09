@@ -118,6 +118,20 @@ module PgQuery
             subselect_items.concat(statement.select_stmt.group_clause.to_ary)
             subselect_items << statement.select_stmt.having_clause if statement.select_stmt.having_clause
 
+            if statement.select_stmt.from_clause
+              join_expr_quals = []
+              statement.select_stmt.from_clause.each do |from_clause|
+                next unless from_clause.join_expr
+                curr_join_expr = from_clause.join_expr
+                while curr_join_expr
+                  join_expr_quals << curr_join_expr.quals
+                  curr_join_expr = curr_join_expr.larg.join_expr
+                end
+              end
+
+              subselect_items.concat(join_expr_quals)
+            end
+
             case statement.select_stmt.op
             when :SETOP_NONE
               (statement.select_stmt.from_clause || []).each do |item|
