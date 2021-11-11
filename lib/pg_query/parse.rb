@@ -122,18 +122,6 @@ module PgQuery
             when :SETOP_NONE
               (statement.select_stmt.from_clause || []).each do |item|
                 from_clause_items << { item: item, type: :select }
-
-                join_expr_quals = []
-                statement.select_stmt.from_clause.each do |from_clause|
-                  next unless from_clause.join_expr
-                  curr_join_expr = from_clause.join_expr
-                  while curr_join_expr
-                    join_expr_quals << curr_join_expr.quals
-                    curr_join_expr = curr_join_expr.larg.join_expr
-                  end
-                end
-
-                subselect_items.concat(join_expr_quals)
               end
             when :SETOP_UNION
               statements << PgQuery::Node.new(select_stmt: statement.select_stmt.larg) if statement.select_stmt.larg
@@ -285,6 +273,7 @@ module PgQuery
           when :join_expr
             from_clause_items << { item: next_item[:item].join_expr.larg, type: next_item[:type] }
             from_clause_items << { item: next_item[:item].join_expr.rarg, type: next_item[:type] }
+            subselect_items.concat << next_item[:item].join_expr.quals
           when :row_expr
             from_clause_items += next_item[:item].row_expr.args.map { |a| { item: a, type: next_item[:type] } }
           when :range_var
