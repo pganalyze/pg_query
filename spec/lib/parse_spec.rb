@@ -1438,7 +1438,6 @@ $BODY$
     expect(query.ddl_tables).to eq([])
   end
 
-
   it 'finds tables inside of case statements' do
     query = described_class.parse(<<-SQL)
       SELECT
