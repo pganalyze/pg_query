@@ -264,6 +264,10 @@ module PgQuery
               function: next_item.func_call.funcname.map { |f| f.string.str }.join('.'),
               type: :call
             }
+          when :case_expr
+            subselect_items.concat(next_item.case_expr.args.map { |arg| arg.case_when.expr })
+            subselect_items.concat(next_item.case_expr.args.map { |arg| arg.case_when.result })
+            subselect_items << next_item.case_expr.defresult
           end
         end
 
