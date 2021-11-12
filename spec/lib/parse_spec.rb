@@ -1465,6 +1465,22 @@ $BODY$
     expect(query.ddl_tables).to eq([])
   end
 
+  it 'finds tables inside of case statements' do
+    query = described_class.parse(<<-SQL)
+      SELECT
+        CASE
+          WHEN id IN (SELECT foo_id FROM when_a) THEN (SELECT MAX(id) FROM then_a)
+          WHEN id IN (SELECT foo_id FROM when_b) THEN (SELECT MAX(id) FROM then_b)
+          ELSE (SELECT MAX(id) FROM elsey)
+        END
+      FROM foo
+    SQL
+    expect(query.tables).to match_array(['foo', 'when_a', 'when_b', 'then_a', 'then_b', 'elsey'])
+    expect(query.select_tables).to match_array(['foo', 'when_a', 'when_b', 'then_a', 'then_b', 'elsey'])
+    expect(query.dml_tables).to eq([])
+    expect(query.ddl_tables).to eq([])
+  end
+
   it 'finds functions in FROM clauses' do
     query = described_class.parse(<<-SQL)
     SELECT *
