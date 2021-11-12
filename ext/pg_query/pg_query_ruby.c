@@ -14,7 +14,7 @@ VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input);
 VALUE pg_query_ruby_scan(VALUE self, VALUE input);
 VALUE pg_query_ruby_hash_xxh3_64(VALUE self, VALUE input, VALUE seed);
 
-void Init_pg_query(void)
+__attribute__((visibility ("default"))) void Init_pg_query(void)
 {
 	VALUE cPgQuery;
 
