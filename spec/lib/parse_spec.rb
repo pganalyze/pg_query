@@ -1577,13 +1577,49 @@ $BODY$
 
     it 'finds tables referenced in the FROM clause' do
       query = described_class.parse(<<-SQL)
-        UPDATE users SET name = users_new.name FROM users_new WHERE users.id = users_new.id
+        UPDATE users SET name = users_new.name
+        FROM users_new
+        INNER JOIN join_table ON join_table.user_id = new_users.id
+        WHERE users.id = users_new.id
       SQL
       expect(query.warnings).to be_empty
-      expect(query.tables).to eq(['users', 'users_new'])
-      expect(query.select_tables).to eq(['users_new'])
+      expect(query.tables).to eq(['users', 'users_new', 'join_table'])
+      expect(query.select_tables).to eq(['users_new', 'join_table'])
       expect(query.dml_tables).to eq(['users'])
       expect(query.ddl_tables).to eq([])
+    end
+  end
+
+  describe 'parsing DELETE' do
+    it 'finds the deleted table' do
+      query = described_class.parse(<<-SQL)
+        DELETE FROM users;
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to eq(['users'])
+      expect(query.dml_tables).to eq(['users'])
+    end
+
+    it 'finds the used table' do
+      query = described_class.parse(<<-SQL)
+        DELETE FROM users USING foo
+          WHERE foo_id = foo.id AND foo.action = 'delete';
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to eq(['users', 'foo'])
+      expect(query.dml_tables).to eq(['users'])
+      expect(query.select_tables).to eq(['foo'])
+    end
+
+    it 'finds the table in the where subquery' do
+      query = described_class.parse(<<-SQL)
+        DELETE FROM users
+          WHERE foo_id IN (SELECT id FROM foo WHERE action = 'delete');
+      SQL
+      expect(query.warnings).to be_empty
+      expect(query.tables).to eq(['users', 'foo'])
+      expect(query.dml_tables).to eq(['users'])
+      expect(query.select_tables).to eq(['foo'])
     end
   end
 

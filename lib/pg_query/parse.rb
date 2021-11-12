@@ -149,6 +149,12 @@ module PgQuery
             subselect_items << statement.update_stmt.where_clause if statement.node == :update_stmt && statement.update_stmt.where_clause
             subselect_items << statement.delete_stmt.where_clause if statement.node == :delete_stmt && statement.delete_stmt.where_clause
 
+            if statement.node == :delete_stmt
+              statement.delete_stmt.using_clause.each do |using_clause|
+                from_clause_items << { item: using_clause, type: :select }
+              end
+            end
+
             if value.with_clause
               cte_statements, cte_names = statements_and_cte_names_for_with_clause(value.with_clause)
               @cte_names.concat(cte_names)
