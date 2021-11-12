@@ -1559,8 +1559,8 @@ $BODY$
 
     it 'finds the used table' do
       query = described_class.parse(<<-SQL)
-        delete from users using foo
-          where foo_id = foo.id and foo.action = 'delete';
+        DELETE FROM users USING foo
+          WHERE foo_id = foo.id AND foo.action = 'delete';
       SQL
       expect(query.warnings).to be_empty
       expect(query.tables).to eq(['users', 'foo'])
@@ -1570,8 +1570,8 @@ $BODY$
 
     it 'finds the table in the where subquery' do
       query = described_class.parse(<<-SQL)
-        delete from users
-          where foo_id IN (select id from foo where action = 'delete');
+        DELETE FROM users
+          WHERE foo_id IN (SELECT id FROM foo WHERE action = 'delete');
       SQL
       expect(query.warnings).to be_empty
       expect(query.tables).to eq(['users', 'foo'])
