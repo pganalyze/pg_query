@@ -1550,7 +1550,7 @@ $BODY$
   describe 'parsing DELETE' do
     it 'finds the deleted table' do
       query = described_class.parse(<<-SQL)
-        delete from users;
+        DELETE FROM users;
       SQL
       expect(query.warnings).to be_empty
       expect(query.tables).to eq(['users'])
