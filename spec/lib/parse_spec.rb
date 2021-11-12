@@ -1400,6 +1400,33 @@ $BODY$
     expect(query.tables).to eq ['foo', 'bar']
   end
 
+  it 'correctly finds nested tables in a subselect in a join condition' do
+    query = described_class.parse(<<-SQL)
+      SELECT *
+      FROM foo
+      INNER JOIN join_a
+        ON foo.id = join_a.id AND
+        join_a.id IN (
+          SELECT id
+          FROM sub_a
+          INNER JOIN sub_b
+            ON sub_a.id = sub_b.id
+              AND sub_b.id IN (
+                SELECT id
+                FROM sub_c
+                INNER JOIN sub_d ON sub_c.id IN (SELECT id from sub_e)
+              )
+        )
+      INNER JOIN join_b
+        ON foo.id = join_b.id AND
+        join_b.id IN (
+          SELECT id FROM sub_f
+        )
+    SQL
+    expect(query.warnings).to eq []
+    expect(query.tables).to match_array ['foo', 'join_a', 'join_b', 'sub_a', 'sub_b', 'sub_c', 'sub_d', 'sub_e', 'sub_f']
+  end
+
   it 'does not list CTEs as tables after a union select' do
     query = described_class.parse(<<-SQL)
       with cte_a as (

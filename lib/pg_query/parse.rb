@@ -273,6 +273,7 @@ module PgQuery
           when :join_expr
             from_clause_items << { item: next_item[:item].join_expr.larg, type: next_item[:type] }
             from_clause_items << { item: next_item[:item].join_expr.rarg, type: next_item[:type] }
+            subselect_items.concat << next_item[:item].join_expr.quals
           when :row_expr
             from_clause_items += next_item[:item].row_expr.args.map { |a| { item: a, type: next_item[:type] } }
           when :range_var
