@@ -4,6 +4,18 @@
 
 * ...
 
+
+## 2.1.2     2021-11-12
+
+* Find tables in using clause of delete statement ([#234](https://github.com/pganalyze/pg_query/pull/234))
+* Find tables in case statements ([#235](https://github.com/pganalyze/pg_query/pull/235))
+* Correctly find nested tables in a subselect in a join condition ([#233](https://github.com/pganalyze/pg_query/pull/233))
+* Mark Postgres methods as visibility hidden, to avoid bloating dynamic symbol table ([#232](https://github.com/pganalyze/pg_query/pull/232))
+  - This is required on ELF platforms (i.e. Linux, etc) to avoid including all global
+    symbols in the shared library's symbol table, bloating the size, and causing
+    potential conflicts with other C libraries using the same symbol names.
+
+
 ## 2.1.1     2021-10-13
 
 * Update to libpg_query 13-2.1.0 ([#230](https://github.com/pganalyze/pg_query/pull/230))
