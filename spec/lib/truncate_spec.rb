@@ -21,6 +21,11 @@ describe PgQuery, '#truncate' do
     expect(described_class.parse(query).truncate(32)).to eq 'INSERT INTO x (...) VALUES (?)'
   end
 
+  it 'omits comments' do
+    query = 'SELECT $1 /* application:test */'
+    expect(described_class.parse(query).truncate(100)).to eq 'SELECT $1'
+  end
+
   it 'performs a simple truncation if necessary' do
     query = 'SELECT * FROM t'
     expect(described_class.parse(query).truncate(10)).to eq 'SELECT ...'
