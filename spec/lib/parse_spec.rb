@@ -1427,7 +1427,7 @@ $BODY$
     expect(query.tables).to match_array ['foo', 'join_a', 'join_b', 'sub_a', 'sub_b', 'sub_c', 'sub_d', 'sub_e', 'sub_f']
   end
 
-  it 'does not list CTEs as tables after a union select' do
+  it 'does not list CTEs as tables after a UNION select' do
     query = described_class.parse(<<-SQL)
       with cte_a as (
         select * from table_a
@@ -1439,6 +1439,42 @@ $BODY$
       left join cte_b on
         table_c.id = cte_b.c_id
       union
+      select * from cte_a
+    SQL
+    expect(query.tables).to match_array(['table_a', 'table_b', 'table_c'])
+    expect(query.cte_names).to match_array(['cte_a', 'cte_b'])
+  end
+
+  it 'does not list CTEs as tables after a EXCEPT select' do
+    query = described_class.parse(<<-SQL)
+      with cte_a as (
+        select * from table_a
+      ), cte_b as (
+        select * from table_b
+      )
+
+      select id from table_c
+      left join cte_b on
+        table_c.id = cte_b.c_id
+      except
+      select * from cte_a
+    SQL
+    expect(query.tables).to match_array(['table_a', 'table_b', 'table_c'])
+    expect(query.cte_names).to match_array(['cte_a', 'cte_b'])
+  end
+
+  it 'does not list CTEs as tables after a INTERSECT select' do
+    query = described_class.parse(<<-SQL)
+      with cte_a as (
+        select * from table_a
+      ), cte_b as (
+        select * from table_b
+      )
+
+      select id from table_c
+      left join cte_b on
+        table_c.id = cte_b.c_id
+      intersect
       select * from cte_a
     SQL
     expect(query.tables).to match_array(['table_a', 'table_b', 'table_c'])
@@ -1718,6 +1754,28 @@ $BODY$
       query = described_class.parse(<<-SQL)
         CREATE TABLE foo AS
           SELECT id FROM bar UNION SELECT id from baz;
+      SQL
+
+      expect(query.tables).to eq(['foo', 'bar', 'baz'])
+      expect(query.ddl_tables).to eq(['foo'])
+      expect(query.select_tables).to eq(['bar', 'baz'])
+    end
+
+    it 'finds tables in the subquery with EXCEPT' do
+      query = described_class.parse(<<-SQL)
+        CREATE TABLE foo AS
+          SELECT id FROM bar EXCEPT SELECT id from baz;
+      SQL
+
+      expect(query.tables).to eq(['foo', 'bar', 'baz'])
+      expect(query.ddl_tables).to eq(['foo'])
+      expect(query.select_tables).to eq(['bar', 'baz'])
+    end
+
+    it 'finds tables in the subquery with INTERSECT' do
+      query = described_class.parse(<<-SQL)
+        CREATE TABLE foo AS
+          SELECT id FROM bar INTERSECT SELECT id from baz;
       SQL
 
       expect(query.tables).to eq(['foo', 'bar', 'baz'])

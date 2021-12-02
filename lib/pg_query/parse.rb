@@ -123,7 +123,7 @@ module PgQuery
               (statement.select_stmt.from_clause || []).each do |item|
                 from_clause_items << { item: item, type: :select }
               end
-            when :SETOP_UNION
+            when :SETOP_UNION, :SETOP_EXCEPT, :SETOP_INTERSECT
               statements << PgQuery::Node.new(select_stmt: statement.select_stmt.larg) if statement.select_stmt.larg
               statements << PgQuery::Node.new(select_stmt: statement.select_stmt.rarg) if statement.select_stmt.rarg
             end
