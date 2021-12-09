@@ -26,4 +26,11 @@ describe PgQuery, '#filter_columns' do
   it 'finds COALESCE argument names' do
     expect(filter_columns('SELECT * FROM x WHERE x.y = COALESCE(z.a, z.b)')).to eq [['x', 'y'], ['z', 'a'], ['z', 'b']]
   end
+
+  ['UNION', 'UNION ALL', 'EXCEPT', 'EXCEPT ALL', 'INTERSECT', 'INTERSECT ALL'].each do |combiner|
+    it "finds unqualified names in #{combiner} query" do
+      query = "SELECT * FROM x where y = ? #{combiner} SELECT * FROM x where z = ?"
+      expect(filter_columns(query)).to eq [[nil, 'y'], [nil, 'z']]
+    end
+  end
 end

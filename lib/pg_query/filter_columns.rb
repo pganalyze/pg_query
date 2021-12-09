@@ -42,9 +42,9 @@ module PgQuery
                   statements << item.common_table_expr.ctequery if item.node == :common_table_expr
                 end
               end
-            when :SETOP_UNION
-              statements << statement.select_stmt.larg if statement.select_stmt.larg
-              statements << statement.select_stmt.rarg if statement.select_stmt.rarg
+            when :SETOP_UNION, :SETOP_EXCEPT, :SETOP_INTERSECT
+              statements << PgQuery::Node.new(select_stmt: statement.select_stmt.larg) if statement.select_stmt.larg
+              statements << PgQuery::Node.new(select_stmt: statement.select_stmt.rarg) if statement.select_stmt.rarg
             end
           when :update_stmt
             condition_items << statement.update_stmt.where_clause if statement.update_stmt.where_clause
