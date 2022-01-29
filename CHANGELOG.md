@@ -5,6 +5,15 @@
 * ...
 
 
+## 2.1.3     2022-01-28
+
+* Track tables in EXCEPT and INTERSECT queries ([#239](https://github.com/pganalyze/pg_query/pull/239))
+* Get filter_columns working with UNION/EXCEPT/INTERSECT ([#240](https://github.com/pganalyze/pg_query/pull/240))
+* Update google-protobuf to address CVE scanner complaints
+  - Note that none of the CVEs apply to pg_query, but this avoids unnecessary errors when
+    the google-protobuf dependency is pulled in
+
+
 ## 2.1.2     2021-11-12
 
 * Find tables in using clause of delete statement ([#234](https://github.com/pganalyze/pg_query/pull/234))
