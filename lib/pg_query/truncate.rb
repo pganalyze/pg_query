@@ -32,6 +32,12 @@ module PgQuery
             )
           when :where_clause
             node.where_clause = dummy_column_ref
+          when :values_lists
+            node.values_lists.replace(
+              [
+                PgQuery::Node.new(list: PgQuery::List.new(items: [dummy_column_ref]))
+              ]
+            )
           when :ctequery
             node.ctequery = PgQuery::Node.new(select_stmt: PgQuery::SelectStmt.new(where_clause: dummy_column_ref, op: :SETOP_NONE))
           when :cols
@@ -67,6 +73,9 @@ module PgQuery
 
           length = PgQuery.deparse_expr(v).size
           truncations << PossibleTruncation.new(location, :where_clause, length, false)
+        when :values_lists
+          length = select_values_lists_len(v)
+          truncations << PossibleTruncation.new(location, :values_lists, length, false)
         when :ctequery
           next unless node.is_a?(PgQuery::CommonTableExpr)
           length = PgQuery.deparse_stmt(v[v.node.to_s]).size
@@ -85,5 +94,14 @@ module PgQuery
 
       truncations
     end
+    def select_values_lists_len(values_lists)
+      deparsed_len = PgQuery.deparse_stmt(
+        PgQuery::SelectStmt.new(
+          values_lists: values_lists.to_a, op: :SETOP_NONE
+        )
+      ).size
+      deparsed_len - 7 # 'SELECT '.size
+    end
+
   end
 end

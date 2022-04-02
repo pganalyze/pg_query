@@ -18,7 +18,7 @@ describe PgQuery, '#truncate' do
 
   it 'omits INSERT field list' do
     query = 'INSERT INTO "x" (a, b, c, d, e, f) VALUES (?)'
-    expect(described_class.parse(query).truncate(32)).to eq 'INSERT INTO x (...) VALUES (?)'
+    expect(described_class.parse(query).truncate(32)).to eq 'INSERT INTO x (...) VALUES (...)'
   end
 
   it 'omits comments' do
@@ -43,7 +43,8 @@ describe PgQuery, '#truncate' do
 
   it 'handles ON CONFLICT target list' do
     query = 'INSERT INTO y(a) VALUES(1) ON CONFLICT DO UPDATE SET a = 123456789'
-    expect(described_class.parse(query).truncate(65)).to eq 'INSERT INTO y (a) VALUES (1) ON CONFLICT DO UPDATE SET ... = ...'
+    expect(described_class.parse(query).truncate(66)).to eq 'INSERT INTO y (a) VALUES (...) ON CONFLICT DO UPDATE SET ... = ...'
+  end
   end
 
   it 'handles GRANT access privileges' do
