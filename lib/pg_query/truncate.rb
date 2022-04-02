@@ -64,7 +64,11 @@ module PgQuery
         case k
         when :target_list
           next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::OnConflictClause)
-          length = PgQuery.deparse_stmt(PgQuery::SelectStmt.new(k => v.to_a, op: :SETOP_NONE)).size - 7 # 'SELECT '.size
+          length = if node.is_a?(PgQuery::SelectStmt)
+                     select_target_list_len(v)
+                   else # UpdateStmt / OnConflictClause
+                     update_target_list_len(v)
+                   end
           truncations << PossibleTruncation.new(location, :target_list, length, true)
         when :where_clause
           next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::DeleteStmt) ||
@@ -82,18 +86,23 @@ module PgQuery
           truncations << PossibleTruncation.new(location, :ctequery, length, false)
         when :cols
           next unless node.is_a?(PgQuery::InsertStmt)
-          length = PgQuery.deparse_stmt(
-            PgQuery::InsertStmt.new(
-              relation: PgQuery::RangeVar.new(relname: 'x', inh: true),
-              cols: v.to_a
-            )
-          ).size - 31 # "INSERT INTO x () DEFAULT VALUES".size
+          length = cols_len(v)
           truncations << PossibleTruncation.new(location, :cols, length, true)
         end
       end
 
       truncations
     end
+
+    def select_target_list_len(target_list)
+      deparsed_len = PgQuery.deparse_stmt(
+        PgQuery::SelectStmt.new(
+          target_list: target_list.to_a, op: :SETOP_NONE
+        )
+      ).size
+      deparsed_len - 7 # 'SELECT '.size
+    end
+
     def select_values_lists_len(values_lists)
       deparsed_len = PgQuery.deparse_stmt(
         PgQuery::SelectStmt.new(
@@ -103,5 +112,24 @@ module PgQuery
       deparsed_len - 7 # 'SELECT '.size
     end
 
+    def update_target_list_len(target_list)
+      deparsed_len = PgQuery.deparse_stmt(
+        PgQuery::UpdateStmt.new(
+          target_list: target_list.to_a,
+          relation: PgQuery::RangeVar.new(relname: 'x', inh: true)
+        )
+      ).size
+      deparsed_len - 13 # 'UPDATE x SET '.size
+    end
+
+    def cols_len(cols)
+      deparsed_len = PgQuery.deparse_stmt(
+        PgQuery::InsertStmt.new(
+          relation: PgQuery::RangeVar.new(relname: 'x', inh: true),
+          cols: cols.to_a
+        )
+      ).size
+      deparsed_len - 31 # "INSERT INTO x () DEFAULT VALUES".size
+    end
   end
 end
