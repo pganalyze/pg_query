@@ -486,6 +486,101 @@ describe PgQuery, '.parse' do
     )
   end
 
+  it 'correctly finds expressions and function calls in a CREATE INDEX statment' do
+    query = described_class.parse('CREATE INDEX testidx ON test USING btree (a, (b+c), lower(d))')
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['test']
+    expect(query.ddl_tables).to eq ['test']
+    expect(query.call_functions).to eq ['lower']
+    expect(query.tree.stmts.first).to eq(
+      PgQuery::RawStmt.new(
+        stmt: PgQuery::Node.new(
+          index_stmt: PgQuery::IndexStmt.new(
+            idxname: 'testidx',
+            relation: PgQuery::RangeVar.new(
+              relname: 'test',
+              inh: true,
+              relpersistence: 'p',
+              location: 24
+            ),
+            access_method: 'btree',
+            index_params: [
+              PgQuery::Node.new(
+                index_elem: PgQuery::IndexElem.new(
+                  name: 'a',
+                  ordering: :SORTBY_DEFAULT,
+                  nulls_ordering: :SORTBY_NULLS_DEFAULT
+                )
+              ),
+              PgQuery::Node.new(
+                index_elem: PgQuery::IndexElem.new(
+                  name: '',
+                  ordering: :SORTBY_DEFAULT,
+                  nulls_ordering: :SORTBY_NULLS_DEFAULT,
+                  expr: PgQuery::Node.new(
+                    a_expr: PgQuery::A_Expr.new(
+                      kind: :AEXPR_OP,
+                      name: [
+                        PgQuery::Node.new(string: PgQuery::String.new(str: '+'))
+                      ],
+                      lexpr: PgQuery::Node.new(
+                        column_ref: PgQuery::ColumnRef.new(
+                          fields: [
+                            PgQuery::Node.new(string: PgQuery::String.new(str: 'b'))
+                          ],
+                          location: 46
+                        )
+                      ),
+                      rexpr: PgQuery::Node.new(
+                        column_ref: PgQuery::ColumnRef.new(
+                          fields: [
+                            PgQuery::Node.new(string: PgQuery::String.new(str: 'c'))
+                          ],
+                          location: 48
+                        )
+                      ),
+                      location: 47
+                    )
+                  )
+                )
+              ),
+              PgQuery::Node.new(
+                index_elem: PgQuery::IndexElem.new(
+                  name: '',
+                  ordering: :SORTBY_DEFAULT,
+                  nulls_ordering: :SORTBY_NULLS_DEFAULT,
+                  expr: PgQuery::Node.new(
+                    func_call: PgQuery::FuncCall.new(
+                      funcname: [
+                        PgQuery::Node.new(string: PgQuery::String.new(str: 'lower'))
+                      ],
+                      args: [
+                        PgQuery::Node.new(
+                          column_ref: PgQuery::ColumnRef.new(
+                            fields: [
+                              PgQuery::Node.new(string: PgQuery::String.new(str: 'd'))
+                            ],
+                            location: 58
+                          )
+                        )
+                      ],
+                      agg_order: [],
+                      agg_within_group: false,
+                      agg_star: false,
+                      agg_distinct: false,
+                      func_variadic: false,
+                      location: 52
+                    )
+                  )
+                )
+              )
+            ]
+          )
+        )
+      )
+    )
+  end
+
   it 'parses CREATE SCHEMA' do
     query = described_class.parse('CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe')
     expect(query.warnings).to eq []
