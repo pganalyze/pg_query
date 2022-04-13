@@ -456,35 +456,12 @@ describe PgQuery, '.parse' do
   end
 
   it 'parses CREATE INDEX' do
-    query = described_class.parse('CREATE INDEX testidx ON test USING gist (a)')
+    query = described_class.parse('CREATE INDEX testidx ON test USING btree (a, (lower(b) || upper(c))) WHERE pow(a, 2) > 25')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['test']
     expect(query.ddl_tables).to eq ['test']
-    expect(query.tree.stmts.first).to eq(
-      PgQuery::RawStmt.new(
-        stmt: PgQuery::Node.new(
-          index_stmt: PgQuery::IndexStmt.new(
-            idxname: 'testidx',
-            relation: PgQuery::RangeVar.new(
-              relname: 'test',
-              inh: true,
-              relpersistence: 'p',
-              location: 24
-            ),
-            access_method: 'gist',
-            index_params: [
-              PgQuery::Node.new(
-                index_elem: PgQuery::IndexElem.new(
-                  name: 'a',
-                  ordering: :SORTBY_DEFAULT,
-                  nulls_ordering: :SORTBY_NULLS_DEFAULT
-                )
-              )
-            ]
-          )
-        )
-      )
-    )
+    expect(query.call_functions).to eq ['lower', 'upper', 'pow']
+    expect(query.filter_columns).to eq [[nil, 'a']]
   end
 
   it 'parses CREATE SCHEMA' do

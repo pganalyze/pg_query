@@ -50,6 +50,8 @@ module PgQuery
             condition_items << statement.update_stmt.where_clause if statement.update_stmt.where_clause
           when :delete_stmt
             condition_items << statement.delete_stmt.where_clause if statement.delete_stmt.where_clause
+          when :index_stmt
+            condition_items << statement.index_stmt.where_clause if statement.index_stmt.where_clause
           end
         end
 

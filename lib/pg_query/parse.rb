@@ -186,6 +186,11 @@ module PgQuery
             statements << statement.view_stmt.query
           when :index_stmt
             from_clause_items << { item: PgQuery::Node.new(range_var: statement.index_stmt.relation), type: :ddl }
+            statement.index_stmt.index_params.each do |p|
+              next if p.index_elem.expr.nil?
+              subselect_items << p.index_elem.expr
+            end
+            subselect_items << statement.index_stmt.where_clause if statement.index_stmt.where_clause
           when :create_trig_stmt
             from_clause_items << { item: PgQuery::Node.new(range_var: statement.create_trig_stmt.relation), type: :ddl }
           when :rule_stmt
