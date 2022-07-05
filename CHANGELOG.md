@@ -4,6 +4,11 @@
 
 * ...
 
+## 2.1.4 2022-07-05
+
+* Truncate: Simplify VALUES(...) lists
+* Truncate: Correctly handle UPDATE and ON CONFLICT target lists
+* Support complex queries with deeply nested ASTs ([#238](https://github.com/pganalyze/pg_query/pull/238))
 
 ## 2.1.3     2022-01-28
 
