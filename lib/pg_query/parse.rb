@@ -285,6 +285,8 @@ module PgQuery
             subselect_items.concat(next_item.case_expr.args.map { |arg| arg.case_when.expr })
             subselect_items.concat(next_item.case_expr.args.map { |arg| arg.case_when.result })
             subselect_items << next_item.case_expr.defresult
+          when :type_cast
+            subselect_items << next_item.type_cast.arg
           end
         end
 
