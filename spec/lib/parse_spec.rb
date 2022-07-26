@@ -1495,6 +1495,16 @@ $BODY$
     expect(query.ddl_tables).to eq([])
   end
 
+  it 'finds tables inside of casts' do
+    query = described_class.parse(<<-SQL)
+      SELECT 1
+      FROM   foo
+      WHERE  x = any(cast(array(SELECT a FROM bar) as bigint[]))
+          OR x = any(array(SELECT a FROM baz)::bigint[])
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar', 'baz'])
+  end
+
   it 'finds functions in FROM clauses' do
     query = described_class.parse(<<-SQL)
     SELECT *
