@@ -11,7 +11,13 @@ $CFLAGS << " -fvisibility=hidden -O3 -Wall -fno-strict-aliasing -fwrapv -fstack-
 
 $INCFLAGS = "-I#{File.join(__dir__, 'include')} " + $INCFLAGS
 
-SYMFILE = File.join(__dir__, 'pg_query_ruby.sym')
+SYMFILE =
+  if RUBY_PLATFORM =~ /freebsd/
+    File.join(__dir__, 'pg_query_ruby_freebsd.sym')
+  else
+    File.join(__dir__, 'pg_query_ruby.sym')
+  end
+
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
 else
