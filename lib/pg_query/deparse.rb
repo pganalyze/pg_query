@@ -7,7 +7,13 @@ module PgQuery
 
   # Reconstruct all of the parsed queries into their original form
   def self.deparse(tree)
-    PgQuery.deparse_protobuf(PgQuery::ParseResult.encode(tree)).force_encoding('UTF-8')
+    if PgQuery::ParseResult.method(:encode).arity == 1
+      PgQuery.deparse_protobuf(PgQuery::ParseResult.encode(tree)).force_encoding('UTF-8')
+    elsif PgQuery::ParseResult.method(:encode).arity == -1
+      PgQuery.deparse_protobuf(PgQuery::ParseResult.encode(tree, recursion_limit: 1_000)).force_encoding('UTF-8')
+    else
+      raise ArgumentError, 'Unsupported protobuf Ruby API'
+    end
   end
 
   # Convenience method for deparsing a statement of a specific type
