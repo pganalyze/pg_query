@@ -2154,5 +2154,25 @@ describe PgQuery do
         it { is_expected.to eq oneline_query }
       end
     end
+
+    context 'deep query examples' do
+      context 'deparses really deep queries' do
+        let(:query) { 'SELECT a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(a(b))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'deparses really deep queries (2)' do
+        let(:query) { 'SELECT * FROM t0 JOIN t1 ON 1 JOIN t2 ON 1 JOIN t3 ON 1 JOIN t4 ON 1 JOIN t5 ON 1 JOIN t6 ON 1 JOIN t7 ON 1 JOIN t8 ON 1 JOIN t9 ON 1 JOIN t10 ON 1 JOIN t11 ON 1 JOIN t12 ON 1 JOIN t13 ON 1 JOIN t14 ON 1 JOIN t15 ON 1 JOIN t16 ON 1 JOIN t17 ON 1 JOIN t18 ON 1 JOIN t19 ON 1 JOIN t20 ON 1 JOIN t21 ON 1 JOIN t22 ON 1 JOIN t23 ON 1 JOIN t24 ON 1 JOIN t25 ON 1 JOIN t26 ON 1 JOIN t27 ON 1 JOIN t28 ON 1 JOIN t29 ON 1' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'deparses really deep queries (3)' do
+        let(:query) { 'SELECT * FROM foo ' + (1..100).to_a.map { |i| "JOIN foo_#{i} ON foo.id = foo_#{i}.foo_id" }.join(' ') }
+
+        it { is_expected.to eq query }
+      end
+    end
   end
 end
