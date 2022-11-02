@@ -809,6 +809,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :def, :message, 5, "pg_query.Node", json_name: "def"
       optional :behavior, :enum, 6, "pg_query.DropBehavior", json_name: "behavior"
       optional :missing_ok, :bool, 7, json_name: "missing_ok"
+      optional :recurse, :bool, 8, json_name: "recurse"
     end
     add_message "pg_query.AlterDomainStmt" do
       optional :subtype, :string, 1, json_name: "subtype"
@@ -2766,7 +2767,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :REASSIGN, 579
       value :RECHECK, 580
       value :RECURSIVE, 581
-      value :REF, 582
+      value :REF_P, 582
       value :REFERENCES, 583
       value :REFERENCING, 584
       value :REFRESH, 585

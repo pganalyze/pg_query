@@ -117,6 +117,7 @@ static void dump_return_next(StringInfo out, PLpgSQL_stmt_return_next *stmt);
 static void dump_return_query(StringInfo out, PLpgSQL_stmt_return_query *stmt);
 static void dump_raise(StringInfo out, PLpgSQL_stmt_raise *stmt);
 static void dump_raise_option(StringInfo out, PLpgSQL_raise_option *node);
+static void dump_assert(StringInfo out, PLpgSQL_stmt_assert *stmt);
 static void dump_execsql(StringInfo out, PLpgSQL_stmt_execsql *stmt);
 static void dump_dynexecute(StringInfo out, PLpgSQL_stmt_dynexecute *stmt);
 static void dump_dynfors(StringInfo out, PLpgSQL_stmt_dynfors *stmt);
@@ -126,6 +127,10 @@ static void dump_open(StringInfo out, PLpgSQL_stmt_open *stmt);
 static void dump_fetch(StringInfo out, PLpgSQL_stmt_fetch *stmt);
 static void dump_close(StringInfo out, PLpgSQL_stmt_close *stmt);
 static void dump_perform(StringInfo out, PLpgSQL_stmt_perform *stmt);
+static void dump_call(StringInfo out, PLpgSQL_stmt_call *stmt);
+static void dump_commit(StringInfo out, PLpgSQL_stmt_commit *stmt);
+static void dump_rollback(StringInfo out, PLpgSQL_stmt_rollback *stmt);
+static void dump_set(StringInfo out, PLpgSQL_stmt_set *stmt);
 static void dump_expr(StringInfo out, PLpgSQL_expr *expr);
 static void dump_function(StringInfo out, PLpgSQL_function *func);
 static void dump_exception(StringInfo out, PLpgSQL_exception *node);
@@ -183,6 +188,9 @@ dump_stmt(StringInfo out, PLpgSQL_stmt *node)
 		case PLPGSQL_STMT_RAISE:
 			dump_raise(out, (PLpgSQL_stmt_raise *) node);
 			break;
+		case PLPGSQL_STMT_ASSERT:
+			dump_assert(out, (PLpgSQL_stmt_assert *) node);
+			break;
 		case PLPGSQL_STMT_EXECSQL:
 			dump_execsql(out, (PLpgSQL_stmt_execsql *) node);
 			break;
@@ -206,6 +214,18 @@ dump_stmt(StringInfo out, PLpgSQL_stmt *node)
 			break;
 		case PLPGSQL_STMT_PERFORM:
 			dump_perform(out, (PLpgSQL_stmt_perform *) node);
+			break;
+		case PLPGSQL_STMT_CALL:
+			dump_call(out, (PLpgSQL_stmt_call *) node);
+			break;
+		case PLPGSQL_STMT_COMMIT:
+			dump_commit(out, (PLpgSQL_stmt_commit *) node);
+			break;
+		case PLPGSQL_STMT_ROLLBACK:
+			dump_rollback(out, (PLpgSQL_stmt_rollback *) node);
+			break;
+		case PLPGSQL_STMT_SET:
+			dump_set(out, (PLpgSQL_stmt_set *) node);
 			break;
 		default:
 			elog(ERROR, "unrecognized cmd_type: %d", node->cmd_type);
@@ -445,6 +465,44 @@ dump_perform(StringInfo out, PLpgSQL_stmt_perform *node)
 }
 
 static void
+dump_call(StringInfo out, PLpgSQL_stmt_call *node)
+{
+	WRITE_NODE_TYPE("PLpgSQL_stmt_call");
+
+	WRITE_INT_FIELD(lineno, lineno, lineno);
+	WRITE_EXPR_FIELD(expr);
+	WRITE_BOOL_FIELD(is_call, is_call, is_call);
+	WRITE_VARIABLE_FIELD(target);
+}
+
+static void
+dump_commit(StringInfo out, PLpgSQL_stmt_commit *node)
+{
+	WRITE_NODE_TYPE("PLpgSQL_stmt_commit");
+
+	WRITE_INT_FIELD(lineno, lineno, lineno);
+	WRITE_BOOL_FIELD(chain, chain, chain);
+}
+
+static void
+dump_rollback(StringInfo out, PLpgSQL_stmt_rollback *node)
+{
+	WRITE_NODE_TYPE("PLpgSQL_stmt_rollback");
+
+	WRITE_INT_FIELD(lineno, lineno, lineno);
+	WRITE_BOOL_FIELD(chain, chain, chain);
+}
+
+static void
+dump_set(StringInfo out, PLpgSQL_stmt_set *node)
+{
+	WRITE_NODE_TYPE("PLpgSQL_stmt_set");
+
+	WRITE_INT_FIELD(lineno, lineno, lineno);
+	WRITE_EXPR_FIELD(expr);
+}
+
+static void
 dump_exit(StringInfo out, PLpgSQL_stmt_exit *node)
 {
 	WRITE_NODE_TYPE("PLpgSQL_stmt_exit");
@@ -506,6 +564,16 @@ dump_raise_option(StringInfo out, PLpgSQL_raise_option *node)
 
 	WRITE_ENUM_FIELD(opt_type, opt_type, opt_type);
 	WRITE_EXPR_FIELD(expr);
+}
+
+static void
+dump_assert(StringInfo out, PLpgSQL_stmt_assert *node)
+{
+	WRITE_NODE_TYPE("PLpgSQL_stmt_assert");
+
+	WRITE_INT_FIELD(lineno, lineno, lineno);
+	WRITE_EXPR_FIELD(cond);
+	WRITE_EXPR_FIELD(message);
 }
 
 static void

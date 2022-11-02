@@ -39,6 +39,11 @@ module PgQuery
       subhash = FingerprintSubHash.new
 
       if val.is_a?(Google::Protobuf::RepeatedField)
+        # For lists that have exactly one untyped node, just output the parent field (if needed) and return
+        if val.length == 1 && val[0].is_a?(Node) && val[0].node.nil?
+          hash.update(parent_field_name) if need_to_write_name
+          return
+        end
         fingerprint_list(val, subhash, parent_node_name, parent_field_name)
       elsif val.is_a?(List)
         fingerprint_list(val.items, subhash, parent_node_name, parent_field_name)
@@ -90,12 +95,18 @@ module PgQuery
         when 'location'
           next
         when 'name'
-          next if [PrepareStmt, ExecuteStmt, DeallocateStmt].include?(node.class)
+          next if [PrepareStmt, ExecuteStmt, DeallocateStmt, FunctionParameter].include?(node.class)
           next if node.is_a?(ResTarget) && parent_node_name == 'SelectStmt' && parent_field_name == 'targetList'
-        when 'gid', 'options', 'savepoint_name'
+        when 'gid', 'savepoint_name'
           next if node.is_a?(TransactionStmt)
+        when 'options'
+          next if [TransactionStmt, CreateFunctionStmt].include?(node.class)
         when 'portalname'
           next if [DeclareCursorStmt, FetchStmt, ClosePortalStmt].include?(node.class)
+        when 'conditionname'
+          next if [ListenStmt, UnlistenStmt, NotifyStmt].include?(node.class)
+        when 'args'
+          next if node.is_a?(DoStmt)
         when 'relname'
           next if node.is_a?(RangeVar) && node.relpersistence == 't'
           if node.is_a?(RangeVar)
