@@ -4,6 +4,29 @@
 
 * ...
 
+
+## 2.2.0     2022-11-02
+
+* Update to libpg_query 13-2.2.0 ([#264](https://github.com/pganalyze/pg_query/pull/264))
+  - Fingerprinting version 3.1
+    - Fixes issue with "SELECT DISTINCT" having the same fingerprint as "SELECT"
+      (fingerprints for "SELECT DISTINCT" will change with this revision)
+    - Group additional DDL statements together that otherwise generate a lot of
+      unique fingerprints (ListenStmt, UnlistenStmt, NotifyStmt, CreateFunctionStmt,
+      FunctionParameter and DoStmt)
+  - Deparser improvements
+    - Prefix errors with "deparse", and remove some asserts
+    - Fix potential segfault when passing invalid protobuf (RawStmt without Stmt)
+  - Update to Postgres 13.8 patch release
+  - Backport Xcode 14.1 build fix from upcoming 13.9 release
+  - Normalize additional DDL statements
+  - Add support for analyzing PL/pgSQL code inside DO blocks
+  - Fix memory leak in pg_query_fingerprint error handling
+  - PL/pgSQL parser: Add support for Assert, SET, COMMIT, ROLLBACK and CALL
+  - Add support for parsing more operators that include a `?` character
+* Support deparsing deeply nested queries ([#259](https://github.com/pganalyze/pg_query/pull/259))
+
+
 ## 2.1.4     2022-09-19
 
 * Truncate: Simplify VALUES(...) lists
@@ -12,6 +35,7 @@
 * Find table references inside type casts
 * Find function calls referenced in expression indexes ([#249](https://github.com/pganalyze/pg_query/pull/249))
 * Drop `Init_pg_query` from exported symbol map ([#256](https://github.com/pganalyze/pg_query/pull/256))
+
 
 ## 2.1.3     2022-01-28
 
