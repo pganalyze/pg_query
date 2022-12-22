@@ -20,8 +20,8 @@ module PgQuery
     end
 
     # Make it easier to initialize value nodes
-    def self.from_string(str)
-      PgQuery::Node.new(string: PgQuery::String.new(str: str))
+    def self.from_string(sval)
+      PgQuery::Node.new(string: PgQuery::String.new(sval: sval))
     end
 
     def self.from_integer(ival)

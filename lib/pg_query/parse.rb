@@ -203,9 +203,9 @@ module PgQuery
             objects = statement.drop_stmt.objects.map do |obj|
               case obj.node
               when :list
-                obj.list.items.map { |obj2| obj2.string.str if obj2.node == :string }
+                obj.list.items.map { |obj2| obj2.string.sval if obj2.node == :string }
               when :string
-                obj.string.str
+                obj.string.sval
               end
             end
             case statement.drop_stmt.remove_type
@@ -216,7 +216,7 @@ module PgQuery
             when :OBJECT_FUNCTION
               # Only one function can be dropped in a statement
               obj = statement.drop_stmt.objects[0].object_with_args
-              @functions << { function: obj.objname[0].string.str, type: :ddl }
+              @functions << { function: obj.objname[0].string.sval, type: :ddl }
             end
           when :grant_stmt
             objects = statement.grant_stmt.objects
@@ -235,12 +235,12 @@ module PgQuery
             statements << statement.explain_stmt.query
           when :create_function_stmt
             @functions << {
-              function: statement.create_function_stmt.funcname[0].string.str,
+              function: statement.create_function_stmt.funcname[0].string.sval,
               type: :ddl
             }
           when :rename_stmt
             if statement.rename_stmt.rename_type == :OBJECT_FUNCTION
-              original_name = statement.rename_stmt.object.object_with_args.objname[0].string.str
+              original_name = statement.rename_stmt.object.object_with_args.objname[0].string.sval
               new_name = statement.rename_stmt.newname
               @functions += [
                 { function: original_name, type: :ddl },
@@ -278,7 +278,7 @@ module PgQuery
           when :func_call
             subselect_items.concat(next_item.func_call.args.to_ary)
             @functions << {
-              function: next_item.func_call.funcname.map { |f| f.string.str }.join('.'),
+              function: next_item.func_call.funcname.map { |f| f.string.sval }.join('.'),
               type: :call
             }
           when :case_expr

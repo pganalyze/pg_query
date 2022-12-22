@@ -56,8 +56,8 @@ describe PgQuery, "#fingerprint" do
   end
 
   it "works for multi-statement queries" do
-    expect(fingerprint("SET x=?; SELECT A")).to eq fingerprint("SET x=?; SELECT a")
-    expect(fingerprint("SET x=?; SELECT A")).not_to eq fingerprint("SELECT a")
+    expect(fingerprint("SET x=$1; SELECT A")).to eq fingerprint("SET x=$1; SELECT a")
+    expect(fingerprint("SET x=$1; SELECT A")).not_to eq fingerprint("SELECT a")
   end
 
   it "ignores aliases" do
@@ -81,8 +81,8 @@ describe PgQuery, "#fingerprint" do
 
   it "ignores SELECT target list ordering" do
     expect(fingerprint("SELECT a, b FROM x")).to eq fingerprint("SELECT b, a FROM x")
-    expect(fingerprint("SELECT ?, b FROM x")).to eq fingerprint("SELECT b, ? FROM x")
-    expect(fingerprint("SELECT ?, ?, b FROM x")).to eq fingerprint("SELECT ?, b, ? FROM x")
+    expect(fingerprint("SELECT $1, b FROM x")).to eq fingerprint("SELECT b, $1 FROM x")
+    expect(fingerprint("SELECT $1, $2, b FROM x")).to eq fingerprint("SELECT $1, b, $2 FROM x")
 
     # Test uniqueness
     expect(fingerprint("SELECT a, c FROM x")).not_to eq fingerprint("SELECT b, a FROM x")
@@ -90,22 +90,22 @@ describe PgQuery, "#fingerprint" do
   end
 
   it "ignores INSERT cols ordering" do
-    expect(fingerprint("INSERT INTO test (a, b) VALUES (?, ?)")).to eq fingerprint("INSERT INTO test (b, a) VALUES (?, ?)")
+    expect(fingerprint("INSERT INTO test (a, b) VALUES ($1, $2)")).to eq fingerprint("INSERT INTO test (b, a) VALUES ($1, $2)")
 
     # Test uniqueness
-    expect(fingerprint("INSERT INTO test (a, c) VALUES (?, ?)")).not_to eq fingerprint("INSERT INTO test (b, a) VALUES (?, ?)")
-    expect(fingerprint("INSERT INTO test (b) VALUES (?, ?)")).not_to eq fingerprint("INSERT INTO test (b, a) VALUES (?, ?)")
+    expect(fingerprint("INSERT INTO test (a, c) VALUES ($1, $2)")).not_to eq fingerprint("INSERT INTO test (b, a) VALUES ($1, $2)")
+    expect(fingerprint("INSERT INTO test (b) VALUES ($1, $2)")).not_to eq fingerprint("INSERT INTO test (b, a) VALUES ($1, $2)")
   end
 
   it 'ignores IN list size (simple)' do
-    q1 = 'SELECT * FROM x WHERE y IN (?, ?, ?)'
-    q2 = 'SELECT * FROM x WHERE y IN (?)'
+    q1 = 'SELECT * FROM x WHERE y IN ($1, $2, $3)'
+    q2 = 'SELECT * FROM x WHERE y IN ($1)'
     expect(fingerprint(q1)).to eq fingerprint(q2)
   end
 
   it 'ignores IN list size (complex)' do
-    q1 = 'SELECT * FROM x WHERE y IN ( ?::uuid, ?::uuid, ?::uuid )'
-    q2 = 'SELECT * FROM x WHERE y IN ( ?::uuid )'
+    q1 = 'SELECT * FROM x WHERE y IN ( $1::uuid, $2::uuid, $3::uuid )'
+    q2 = 'SELECT * FROM x WHERE y IN ( $1::uuid )'
     expect(fingerprint(q1)).to eq fingerprint(q2)
   end
 end

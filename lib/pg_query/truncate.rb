@@ -21,7 +21,7 @@ module PgQuery
         next if truncation.length < 3
 
         find_tree_location(tree, truncation.location) do |node, _k|
-          dummy_column_ref = PgQuery::Node.new(column_ref: PgQuery::ColumnRef.new(fields: [PgQuery::Node.new(string: PgQuery::String.new(str: '…'))]))
+          dummy_column_ref = PgQuery::Node.new(column_ref: PgQuery::ColumnRef.new(fields: [PgQuery::Node.new(string: PgQuery::String.new(sval: '…'))]))
           case truncation.node_type
           when :target_list
             res_target_name = '…' if node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::OnConflictClause)

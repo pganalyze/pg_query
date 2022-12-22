@@ -29,7 +29,7 @@ module PgQuery
             location = typeloc
           end
 
-          results << { 'location' => location, 'length' => length, 'typename' => t.names.map { |n| n.string.str } }
+          results << { 'location' => location, 'length' => length, 'typename' => t.names.map { |n| n.string.sval } }
         end
       end
 

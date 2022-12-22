@@ -56,7 +56,7 @@ describe PgQuery do
       end
 
       context 'complex SELECT statement' do
-        let(:query) { 'SELECT memory_total_bytes, memory_swap_total_bytes - memory_swap_free_bytes AS swap, date_part(?, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON snapshot_id = s.id WHERE s.database_id = ? AND s.collected_at >= ? AND s.collected_at <= ? ORDER BY collected_at ASC' }
+        let(:query) { 'SELECT memory_total_bytes, memory_swap_total_bytes - memory_swap_free_bytes AS swap, date_part($1, s.collected_at) AS collected_at FROM snapshots s JOIN system_snapshots ON snapshot_id = s.id WHERE s.database_id = $2 AND s.collected_at >= $3 AND s.collected_at <= $4 ORDER BY collected_at ASC' }
 
         it { is_expected.to eq query }
       end
@@ -356,7 +356,7 @@ describe PgQuery do
       end
 
       context 'simple indirection' do
-        let(:query) { 'SELECT * FROM x WHERE y = z[?]' }
+        let(:query) { 'SELECT * FROM x WHERE y = z[$1]' }
 
         it { is_expected.to eq query }
       end
@@ -380,7 +380,7 @@ describe PgQuery do
       end
 
       context 'complex indirection' do
-        let(:query) { 'SELECT * FROM x WHERE y = z[?][?]' }
+        let(:query) { 'SELECT * FROM x WHERE y = z[$1][$2]' }
 
         it { is_expected.to eq query }
       end
@@ -422,19 +422,19 @@ describe PgQuery do
       end
 
       context 'ALL' do
-        let(:query) { 'SELECT * FROM x WHERE x = ALL(?)' }
+        let(:query) { 'SELECT * FROM x WHERE x = ALL($1)' }
 
         it { is_expected.to eq query }
       end
 
       context 'ANY' do
-        let(:query) { 'SELECT * FROM x WHERE x = ANY(?)' }
+        let(:query) { 'SELECT * FROM x WHERE x = ANY($1)' }
 
         it { is_expected.to eq query }
       end
 
       context 'COALESCE' do
-        let(:query) { 'SELECT * FROM x WHERE x = COALESCE(y, ?)' }
+        let(:query) { 'SELECT * FROM x WHERE x = COALESCE(y, $1)' }
 
         it { is_expected.to eq query }
       end
@@ -589,7 +589,7 @@ describe PgQuery do
       end
 
       context 'regclass' do
-        let(:query) { "SELECT ?::regclass" }
+        let(:query) { "SELECT $1::regclass" }
 
         it { is_expected.to eq query }
       end
@@ -621,17 +621,9 @@ describe PgQuery do
     end
 
     context 'param ref' do
-      context 'normal param refs' do
-        let(:query) { "SELECT $5" }
+      let(:query) { "SELECT $5" }
 
-        it { is_expected.to eq query }
-      end
-
-      context 'query replacement character' do
-        let(:query) { "SELECT ?" }
-
-        it { is_expected.to eq query }
-      end
+      it { is_expected.to eq query }
     end
 
     context 'INSERT' do
@@ -838,7 +830,7 @@ describe PgQuery do
       end
 
       context 'multiple columns' do
-        let(:query) { 'UPDATE foo SET a = ?, b = ?' }
+        let(:query) { 'UPDATE foo SET a = $1, b = $2' }
 
         it { is_expected.to eq oneline_query }
       end
@@ -1062,7 +1054,7 @@ describe PgQuery do
                 did        int DEFAULT nextval(\'distributors_serial\'),
                 stamp      timestamp DEFAULT now() NOT NULL,
                 stamptz    timestamp with time zone,
-                time       time NOT NULL,
+                "time"     time NOT NULL,
                 timetz     time with time zone,
                 CONSTRAINT name_len PRIMARY KEY (name, len)
             );
