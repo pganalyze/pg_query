@@ -8,7 +8,7 @@
  * or call fmgr-callable functions.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/fmgr.h
@@ -276,6 +276,7 @@ extern struct varlena *pg_detoast_datum_packed(struct varlena *datum);
 #define PG_GETARG_POINTER(n) DatumGetPointer(PG_GETARG_DATUM(n))
 #define PG_GETARG_CSTRING(n) DatumGetCString(PG_GETARG_DATUM(n))
 #define PG_GETARG_NAME(n)	 DatumGetName(PG_GETARG_DATUM(n))
+#define PG_GETARG_TRANSACTIONID(n)	DatumGetTransactionId(PG_GETARG_DATUM(n))
 /* these macros hide the pass-by-reference-ness of the datatype: */
 #define PG_GETARG_FLOAT4(n)  DatumGetFloat4(PG_GETARG_DATUM(n))
 #define PG_GETARG_FLOAT8(n)  DatumGetFloat8(PG_GETARG_DATUM(n))
@@ -360,6 +361,7 @@ extern struct varlena *pg_detoast_datum_packed(struct varlena *datum);
 #define PG_RETURN_POINTER(x) return PointerGetDatum(x)
 #define PG_RETURN_CSTRING(x) return CStringGetDatum(x)
 #define PG_RETURN_NAME(x)	 return NameGetDatum(x)
+#define PG_RETURN_TRANSACTIONID(x)	return TransactionIdGetDatum(x)
 /* these macros hide the pass-by-reference-ness of the datatype: */
 #define PG_RETURN_FLOAT4(x)  return Float4GetDatum(x)
 #define PG_RETURN_FLOAT8(x)  return Float8GetDatum(x)
@@ -456,6 +458,7 @@ typedef struct
 	int			indexmaxkeys;	/* INDEX_MAX_KEYS */
 	int			namedatalen;	/* NAMEDATALEN */
 	int			float8byval;	/* FLOAT8PASSBYVAL */
+	char		abi_extra[32];	/* see pg_config_manual.h */
 } Pg_magic_struct;
 
 /* The actual data block contents */
@@ -466,8 +469,12 @@ typedef struct
 	FUNC_MAX_ARGS, \
 	INDEX_MAX_KEYS, \
 	NAMEDATALEN, \
-	FLOAT8PASSBYVAL \
+	FLOAT8PASSBYVAL, \
+	FMGR_ABI_EXTRA, \
 }
+
+StaticAssertDecl(sizeof(FMGR_ABI_EXTRA) <= sizeof(((Pg_magic_struct *) 0)->abi_extra),
+				 "FMGR_ABI_EXTRA too long");
 
 /*
  * Declare the module magic function.  It needs to be a function as the dlsym
@@ -698,7 +705,6 @@ extern bytea *OidSendFunctionCall(Oid functionId, Datum val);
  * Routines in fmgr.c
  */
 extern const Pg_finfo_record *fetch_finfo_record(void *filehandle, const char *funcname);
-extern void clear_external_function_hash(void *filehandle);
 extern Oid	fmgr_internal_function(const char *proname);
 extern Oid	get_fn_expr_rettype(FmgrInfo *flinfo);
 extern Oid	get_fn_expr_argtype(FmgrInfo *flinfo, int argnum);
@@ -714,11 +720,11 @@ extern bool CheckFunctionValidatorAccess(Oid validatorOid, Oid functionOid);
 /*
  * Routines in dfmgr.c
  */
-extern char *Dynamic_library_path;
+extern PGDLLIMPORT char *Dynamic_library_path;
 
-extern PGFunction load_external_function(const char *filename, const char *funcname,
-										 bool signalNotFound, void **filehandle);
-extern PGFunction lookup_external_function(void *filehandle, const char *funcname);
+extern void *load_external_function(const char *filename, const char *funcname,
+									bool signalNotFound, void **filehandle);
+extern void *lookup_external_function(void *filehandle, const char *funcname);
 extern void load_file(const char *filename, bool restricted);
 extern void **find_rendezvous_variable(const char *varName);
 extern Size EstimateLibraryStateSpace(void);

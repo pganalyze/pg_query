@@ -16,7 +16,7 @@
  * and implementing search-path-controlled searches.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -214,6 +214,7 @@ static void RemoveTempRelations(Oid tempNamespaceId);
 static void RemoveTempRelationsCallback(int code, Datum arg);
 static void NamespaceCallback(Datum arg, int cacheid, uint32 hashvalue);
 static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
+						   bool include_out_arguments, int pronargs,
 						   int **argnumbers);
 
 
@@ -356,6 +357,12 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
  * of additional args (which can be retrieved from the function's
  * proargdefaults entry).
  *
+ * If include_out_arguments is true, then OUT-mode arguments are considered to
+ * be included in the argument list.  Their types are included in the returned
+ * arrays, and argnumbers are indexes in proallargtypes not proargtypes.
+ * We also set nominalnargs to be the length of proallargtypes not proargtypes.
+ * Otherwise OUT-mode arguments are ignored.
+ *
  * It is not possible for nvargs and ndargs to both be nonzero in the same
  * list entry, since default insertion allows matches to functions with more
  * than nargs arguments while the variadic transformation requires the same
@@ -366,7 +373,8 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
  * first any positional arguments, then the named arguments, then defaulted
  * arguments (if needed and allowed by expand_defaults).  The argnumbers[]
  * array can be used to map this back to the catalog information.
- * argnumbers[k] is set to the proargtypes index of the k'th call argument.
+ * argnumbers[k] is set to the proargtypes or proallargtypes index of the
+ * k'th call argument.
  *
  * We search a single namespace if the function name is qualified, else
  * all namespaces in the search path.  In the multiple-namespace case,
@@ -390,7 +398,7 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
  * such an entry it should react as though the call were ambiguous.
  *
  * If missing_ok is true, an empty list (NULL) is returned if the name was
- * schema- qualified with a schema that does not exist.  Likewise if no
+ * schema-qualified with a schema that does not exist.  Likewise if no
  * candidate is found for other reasons.
  */
 
@@ -403,6 +411,10 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
  * The call could match if all supplied argument names are accepted by
  * the function, in positions after the last positional argument, and there
  * are defaults for all unsupplied arguments.
+ *
+ * If include_out_arguments is true, we are treating OUT arguments as
+ * included in the argument list.  pronargs is the number of arguments
+ * we're considering (the length of either proargtypes or proallargtypes).
  *
  * The number of positional arguments is nargs - list_length(argnames).
  * Note caller has already done basic checks on argument count.
@@ -428,8 +440,7 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
  *		Given a possibly-qualified operator name and exact input datatypes,
  *		look up the operator.  Returns InvalidOid if not found.
  *
- * Pass oprleft = InvalidOid for a prefix op, oprright = InvalidOid for
- * a postfix op.
+ * Pass oprleft = InvalidOid for a prefix op.
  *
  * If the operator name is not schema-qualified, it is sought in the current
  * namespace search path.  If the name is schema-qualified and the given
@@ -451,8 +462,8 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
  * namespace case, we arrange for entries in earlier namespaces to mask
  * identical entries in later namespaces.
  *
- * The returned items always have two args[] entries --- one or the other
- * will be InvalidOid for a prefix or postfix oprkind.  nargs is 2, too.
+ * The returned items always have two args[] entries --- the first will be
+ * InvalidOid for a prefix oprkind.  nargs is always 2, too.
  */
 #define SPACE_PER_OP MAXALIGN(offsetof(struct _FuncCandidateList, args) + \
 							  2 * sizeof(Oid))
@@ -677,7 +688,7 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
 
 /*
  * QualifiedNameGetCreationNamespace
- *		Given a possibly-qualified name for an object (in List-of-Values
+ *		Given a possibly-qualified name for an object (in List-of-Strings
  *		format), determine what namespace the object should be created in.
  *		Also extract and return the object name (last component of list).
  *
@@ -710,7 +721,7 @@ static bool MatchNamedCall(HeapTuple proctup, int nargs, List *argnames,
  * This is used primarily to form error messages, and so we do not quote
  * the list elements, for the sake of legibility.
  *
- * In most scenarios the list elements should always be Value strings,
+ * In most scenarios the list elements should always be String values,
  * but we also allow A_Star for the convenience of ColumnRef processing.
  */
 char *

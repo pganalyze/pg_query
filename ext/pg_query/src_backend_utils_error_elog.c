@@ -1,5 +1,6 @@
 /*--------------------------------------------------------------------
  * Symbols referenced in this file:
+ * - errstart_cold
  * - errstart
  * - PG_exception_stack
  * - write_stderr
@@ -8,12 +9,16 @@
  * - error_context_stack
  * - errordata_stack_depth
  * - errordata
+ * - should_output_to_server
  * - is_log_level_output
+ * - should_output_to_client
  * - recursion_depth
  * - errmsg_internal
  * - errcode
  * - errmsg
  * - errdetail
+ * - errhidestmt
+ * - errhidecontext
  * - errfinish
  * - pg_re_throw
  * - EmitErrorReport
@@ -81,7 +86,7 @@
  * overflow.)
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -110,6 +115,7 @@
 #include "libpq/pqformat.h"
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
+#include "pgstat.h"
 #include "postmaster/bgworker.h"
 #include "postmaster/postmaster.h"
 #include "postmaster/syslogger.h"
@@ -218,17 +224,93 @@ static const char *err_gettext(const char *str) pg_attribute_format_arg(1);
 static pg_noinline void set_backtrace(ErrorData *edata, int num_skip);
 static void set_errdata_field(MemoryContextData *cxt, char **ptr, const char *str);
 static void write_console(const char *line, int len);
-static void setup_formatted_log_time(void);
-static void setup_formatted_start_time(void);
 static const char *process_log_prefix_padding(const char *p, int *padding);
 static void log_line_prefix(StringInfo buf, ErrorData *edata);
-static void write_csvlog(ErrorData *edata);
 static void send_message_to_server_log(ErrorData *edata);
-static void write_pipe_chunks(char *data, int len, int dest);
 static void send_message_to_frontend(ErrorData *edata);
-static const char *error_severity(int elevel);
 static void append_with_tabs(StringInfo buf, const char *str);
-static bool is_log_level_output(int elevel, int log_min_level);
+
+
+/*
+ * is_log_level_output -- is elevel logically >= log_min_level?
+ *
+ * We use this for tests that should consider LOG to sort out-of-order,
+ * between ERROR and FATAL.  Generally this is the right thing for testing
+ * whether a message should go to the postmaster log, whereas a simple >=
+ * test is correct for testing whether the message should go to the client.
+ */
+static inline bool
+is_log_level_output(int elevel, int log_min_level)
+{
+	if (elevel == LOG || elevel == LOG_SERVER_ONLY)
+	{
+		if (log_min_level == LOG || log_min_level <= ERROR)
+			return true;
+	}
+	else if (elevel == WARNING_CLIENT_ONLY)
+	{
+		/* never sent to log, regardless of log_min_level */
+		return false;
+	}
+	else if (log_min_level == LOG)
+	{
+		/* elevel != LOG */
+		if (elevel >= FATAL)
+			return true;
+	}
+	/* Neither is LOG */
+	else if (elevel >= log_min_level)
+		return true;
+
+	return false;
+}
+
+/*
+ * Policy-setting subroutines.  These are fairly simple, but it seems wise
+ * to have the code in just one place.
+ */
+
+/*
+ * should_output_to_server --- should message of given elevel go to the log?
+ */
+static inline bool
+should_output_to_server(int elevel)
+{
+	return is_log_level_output(elevel, log_min_messages);
+}
+
+/*
+ * should_output_to_client --- should message of given elevel go to the client?
+ */
+static inline bool
+should_output_to_client(int elevel)
+{
+	if (whereToSendOutput == DestRemote && elevel != LOG_SERVER_ONLY)
+	{
+		/*
+		 * client_min_messages is honored only after we complete the
+		 * authentication handshake.  This is required both for security
+		 * reasons and because many clients can't handle NOTICE messages
+		 * during authentication.
+		 */
+		if (ClientAuthInProgress)
+			return (elevel >= ERROR);
+		else
+			return (elevel >= client_min_messages || elevel == INFO);
+	}
+	return false;
+}
+
+
+/*
+ * message_level_is_interesting --- would ereport/elog do anything?
+ *
+ * Returns true if ereport/elog with this elevel will not be a no-op.
+ * This is useful to short-circuit any expensive preparatory work that
+ * might be needed for a logging message.  There is no point in
+ * prepending this to a bare ereport/elog call, however.
+ */
+
 
 
 /*
@@ -263,6 +345,19 @@ err_gettext(const char *str)
 #endif
 }
 
+/*
+ * errstart_cold
+ *		A simple wrapper around errstart, but hinted to be "cold".  Supporting
+ *		compilers are more likely to move code for branches containing this
+ *		function into an area away from the calling function's code.  This can
+ *		result in more commonly executed code being more compact and fitting
+ *		on fewer cache lines.
+ */
+pg_attribute_cold bool
+errstart_cold(int elevel, const char *domain)
+{
+	return errstart(elevel, domain);
+}
 
 /*
  * errstart --- begin an error-reporting cycle
@@ -332,27 +427,8 @@ errstart(int elevel, const char *domain)
 	 * warning or less and not enabled for logging, just return false without
 	 * starting up any error logging machinery.
 	 */
-
-	/* Determine whether message is enabled for server log output */
-	output_to_server = is_log_level_output(elevel, log_min_messages);
-
-	/* Determine whether message is enabled for client output */
-	if (whereToSendOutput == DestRemote && elevel != LOG_SERVER_ONLY)
-	{
-		/*
-		 * client_min_messages is honored only after we complete the
-		 * authentication handshake.  This is required both for security
-		 * reasons and because many clients can't handle NOTICE messages
-		 * during authentication.
-		 */
-		if (ClientAuthInProgress)
-			output_to_client = (elevel >= ERROR);
-		else
-			output_to_client = (elevel >= client_min_messages ||
-								elevel == INFO);
-	}
-
-	/* Skip processing effort if non-error message will not be output */
+	output_to_server = should_output_to_server(elevel);
+	output_to_client = should_output_to_client(elevel);
 	if (elevel < ERROR && !output_to_server && !output_to_client)
 		return false;
 
@@ -416,7 +492,7 @@ errstart(int elevel, const char *domain)
 	/* Select default errcode based on elevel */
 	if (elevel >= ERROR)
 		edata->sqlerrcode = ERRCODE_INTERNAL_ERROR;
-	else if (elevel == WARNING)
+	else if (elevel >= WARNING)
 		edata->sqlerrcode = ERRCODE_WARNING;
 	else
 		edata->sqlerrcode = ERRCODE_SUCCESSFUL_COMPLETION;
@@ -486,6 +562,10 @@ errfinish(const char *filename, int lineno, const char *funcname)
 		slash = strrchr(filename, '/');
 		if (slash)
 			filename = slash + 1;
+		/* Some Windows compilers use backslashes in __FILE__ strings */
+		slash = strrchr(filename, '\\');
+		if (slash)
+			filename = slash + 1;
 	}
 
 	edata->filename = filename;
@@ -546,16 +626,6 @@ errfinish(const char *filename, int lineno, const char *funcname)
 		PG_RE_THROW();
 	}
 
-	/*
-	 * If we are doing FATAL or PANIC, abort any old-style COPY OUT in
-	 * progress, so that we can report the message before dying.  (Without
-	 * this, pq_putmessage will refuse to send the message at all, which is
-	 * what we want for NOTICE messages, but not for fatal exits.) This hack
-	 * is necessary because of poor design of old-style copy protocol.
-	 */
-	if (elevel >= FATAL && whereToSendOutput == DestRemote)
-		pq_endcopyout(true);
-
 	/* Emit the message to the right places */
 	EmitErrorReport();
 
@@ -613,6 +683,13 @@ errfinish(const char *filename, int lineno, const char *funcname)
 		 */
 		fflush(stdout);
 		fflush(stderr);
+
+		/*
+		 * Let the cumulative stats system know. Only mark the session as
+		 * terminated by fatal error if there is no other known cause.
+		 */
+		if (pgStatSessionEndCause == DISCONNECT_NORMAL)
+			pgStatSessionEndCause = DISCONNECT_FATAL;
 
 		/*
 		 * Do normal process-exit cleanup, then return exit code 1 to indicate
@@ -687,8 +764,7 @@ errcode(int sqlerrcode)
  * NOTE: the primary error message string should generally include %m
  * when this is used.
  */
-#ifdef ECONNRESET
-#endif
+
 
 
 /*
@@ -954,6 +1030,13 @@ errhint(const char *fmt,...)
 
 
 /*
+ * errhint_plural --- add a hint error message text to the current error,
+ * with support for pluralization of the message text
+ */
+
+
+
+/*
  * errcontext_msg --- add a context error message text to the current error
  *
  * Unlike other cases, multiple calls are allowed to build up a stack of
@@ -1006,7 +1089,18 @@ set_errcontext_domain(const char *domain)
  *
  * This should be called if the message text already includes the statement.
  */
+int
+errhidestmt(bool hide_stmt)
+{
+	ErrorData  *edata = &errordata[errordata_stack_depth];
 
+	/* we don't bother incrementing recursion_depth */
+	CHECK_STACK_DEPTH();
+
+	edata->hide_stmt = hide_stmt;
+
+	return 0;					/* return value does not matter */
+}
 
 /*
  * errhidecontext --- optionally suppress CONTEXT: field of log entry
@@ -1014,17 +1108,18 @@ set_errcontext_domain(const char *domain)
  * This should only be used for verbose debugging messages where the repeated
  * inclusion of context would bloat the log volume too much.
  */
+int
+errhidecontext(bool hide_ctx)
+{
+	ErrorData  *edata = &errordata[errordata_stack_depth];
 
+	/* we don't bother incrementing recursion_depth */
+	CHECK_STACK_DEPTH();
 
+	edata->hide_ctx = hide_ctx;
 
-/*
- * errfunction --- add reporting function name to the current error
- *
- * This is used when backwards compatibility demands that the function
- * name appear in messages sent to old-protocol clients.  Note that the
- * passed string is expected to be a non-freeable constant string.
- */
-
+	return 0;					/* return value does not matter */
+}
 
 /*
  * errposition --- add cursor position to the current error
@@ -1368,16 +1463,10 @@ pg_re_throw(void)
 
 		/*
 		 * At least in principle, the increase in severity could have changed
-		 * where-to-output decisions, so recalculate.  This should stay in
-		 * sync with errstart(), which see for comments.
+		 * where-to-output decisions, so recalculate.
 		 */
-		if (IsPostmasterEnvironment)
-			edata->output_to_server = is_log_level_output(FATAL,
-														  log_min_messages);
-		else
-			edata->output_to_server = (FATAL >= log_min_messages);
-		if (whereToSendOutput == DestRemote)
-			edata->output_to_client = true;
+		edata->output_to_server = should_output_to_server(FATAL);
+		edata->output_to_client = should_output_to_client(FATAL);
 
 		/*
 		 * We can use errfinish() for the rest, but we don't want it to call
@@ -1481,6 +1570,7 @@ write_eventlog(int level, const char *line, int len)
 			eventlevel = EVENTLOG_INFORMATION_TYPE;
 			break;
 		case WARNING:
+		case WARNING_CLIENT_ONLY:
 			eventlevel = EVENTLOG_WARNING_TYPE;
 			break;
 		case ERROR:
@@ -1543,12 +1633,37 @@ write_eventlog(int level, const char *line, int len)
 #endif
 
 /*
- * setup formatted_log_time, for consistent times between CSV and regular logs
+ * get_formatted_log_time -- compute and get the log timestamp.
+ *
+ * The timestamp is computed if not set yet, so as it is kept consistent
+ * among all the log destinations that require it to be consistent.  Note
+ * that the computed timestamp is returned in a static buffer, not
+ * palloc()'d.
  */
 
 
 /*
- * setup formatted_start_time
+ * reset_formatted_start_time -- reset the start timestamp
+ */
+
+
+/*
+ * get_formatted_start_time -- compute and get the start timestamp.
+ *
+ * The timestamp is computed if not set yet.  Note that the computed
+ * timestamp is returned in a static buffer, not palloc()'d.
+ */
+
+
+/*
+ * check_log_of_query -- check if a query can be logged
+ */
+
+
+/*
+ * get_backend_type_for_log -- backend type for log entries
+ *
+ * Returns a pointer to a static buffer, not palloc()'d.
  */
 
 
@@ -1563,19 +1678,6 @@ write_eventlog(int level, const char *line, int len)
 
 /*
  * Format tag info for log lines; append to the provided buffer.
- */
-
-
-/*
- * append a CSV'd version of a string to a StringInfo
- * We use the PostgreSQL defaults for CSV, i.e. quote = escape = '"'
- * If it's NULL, append nothing.
- */
-
-
-/*
- * Constructs the error message, depending on the Errordata it gets, in a CSV
- * format which is described in doc/src/sgml/config.sgml.
  */
 
 
@@ -1700,35 +1802,6 @@ write_stderr(const char *fmt,...)
 	va_end(ap);
 }
 
-
-/*
- * is_log_level_output -- is elevel logically >= log_min_level?
- *
- * We use this for tests that should consider LOG to sort out-of-order,
- * between ERROR and FATAL.  Generally this is the right thing for testing
- * whether a message should go to the postmaster log, whereas a simple >=
- * test is correct for testing whether the message should go to the client.
- */
-static bool
-is_log_level_output(int elevel, int log_min_level)
-{
-	if (elevel == LOG || elevel == LOG_SERVER_ONLY)
-	{
-		if (log_min_level == LOG || log_min_level <= ERROR)
-			return true;
-	}
-	else if (log_min_level == LOG)
-	{
-		/* elevel != LOG */
-		if (elevel >= FATAL)
-			return true;
-	}
-	/* Neither is LOG */
-	else if (elevel >= log_min_level)
-		return true;
-
-	return false;
-}
 
 /*
  * Adjust the level of a recovery-related message per trace_recovery_messages.

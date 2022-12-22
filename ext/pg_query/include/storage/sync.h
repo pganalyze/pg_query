@@ -3,7 +3,7 @@
  * sync.h
  *	  File synchronization management code.
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/sync.h
@@ -34,7 +34,12 @@ typedef enum SyncRequestType
  */
 typedef enum SyncRequestHandler
 {
-	SYNC_HANDLER_MD = 0			/* md smgr */
+	SYNC_HANDLER_MD = 0,
+	SYNC_HANDLER_CLOG,
+	SYNC_HANDLER_COMMIT_TS,
+	SYNC_HANDLER_MULTIXACT_OFFSET,
+	SYNC_HANDLER_MULTIXACT_MEMBER,
+	SYNC_HANDLER_NONE
 } SyncRequestHandler;
 
 /*
@@ -55,7 +60,6 @@ extern void SyncPreCheckpoint(void);
 extern void SyncPostCheckpoint(void);
 extern void ProcessSyncRequests(void);
 extern void RememberSyncRequest(const FileTag *ftag, SyncRequestType type);
-extern void EnableSyncRequestForwarding(void);
 extern bool RegisterSyncRequest(const FileTag *ftag, SyncRequestType type,
 								bool retryOnError);
 

@@ -1,17 +1,5 @@
 /* src/include/pg_config.h.  Generated from pg_config.h.in by configure.  */
-/* src/include/pg_config.h.in.  Generated from configure.in by autoheader.  */
-
-/* Define to the type of arg 1 of 'accept' */
-#define ACCEPT_TYPE_ARG1 int
-
-/* Define to the type of arg 2 of 'accept' */
-#define ACCEPT_TYPE_ARG2 struct sockaddr *
-
-/* Define to the type of arg 3 of 'accept' */
-#define ACCEPT_TYPE_ARG3 socklen_t
-
-/* Define to the return type of 'accept' */
-#define ACCEPT_TYPE_RETURN int
+/* src/include/pg_config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
@@ -54,6 +42,9 @@
 
 /* Define to the default TCP port number as a string constant. */
 #define DEF_PGPORT_STR "5432"
+
+/* Define to the file name extension of dynamically-loadable modules. */
+#define DLSUFFIX ".so"
 
 /* Define to build with GSSAPI support. (--with-gssapi) */
 /* #undef ENABLE_GSS */
@@ -143,6 +134,14 @@
    don't. */
 #define HAVE_DECL_POSIX_FADVISE 0
 
+/* Define to 1 if you have the declaration of `preadv', and to 0 if you don't.
+   */
+#define HAVE_DECL_PREADV 1
+
+/* Define to 1 if you have the declaration of `pwritev', and to 0 if you
+   don't. */
+#define HAVE_DECL_PWRITEV 1
+
 /* Define to 1 if you have the declaration of `RTLD_GLOBAL', and to 0 if you
    don't. */
 #define HAVE_DECL_RTLD_GLOBAL 1
@@ -150,6 +149,10 @@
 /* Define to 1 if you have the declaration of `RTLD_NOW', and to 0 if you
    don't. */
 #define HAVE_DECL_RTLD_NOW 1
+
+/* Define to 1 if you have the declaration of `sigwait', and to 0 if you
+   don't. */
+#define HAVE_DECL_SIGWAIT 1
 
 /* Define to 1 if you have the declaration of `strlcat', and to 0 if you
    don't. */
@@ -269,11 +272,20 @@
 /* Define to 1 if you have the `history_truncate_file' function. */
 /* #undef HAVE_HISTORY_TRUNCATE_FILE */
 
+/* Define to 1 if you have the `HMAC_CTX_free' function. */
+/* #undef HAVE_HMAC_CTX_FREE */
+
+/* Define to 1 if you have the `HMAC_CTX_new' function. */
+/* #undef HAVE_HMAC_CTX_NEW */
+
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #define HAVE_IFADDRS_H 1
 
 /* Define to 1 if you have the `inet_aton' function. */
 #define HAVE_INET_ATON 1
+
+/* Define to 1 if you have the `inet_pton' function. */
+#define HAVE_INET_PTON 1
 
 /* Define to 1 if the system has the type `int64'. */
 /* #undef HAVE_INT64 */
@@ -317,6 +329,9 @@
 /* Define to 1 if you have the `ldap' library (-lldap). */
 /* #undef HAVE_LIBLDAP */
 
+/* Define to 1 if you have the `lz4' library (-llz4). */
+/* #undef HAVE_LIBLZ4 */
+
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
 
@@ -343,6 +358,9 @@
 
 /* Define to 1 if you have the `z' library (-lz). */
 /* #undef HAVE_LIBZ */
+
+/* Define to 1 if you have the `zstd' library (-lzstd). */
+/* #undef HAVE_LIBZSTD */
 
 /* Define to 1 if you have the `link' function. */
 #define HAVE_LINK 1
@@ -395,6 +413,9 @@
 /* Define to 1 if you have the <poll.h> header file. */
 #define HAVE_POLL_H 1
 
+/* Define to 1 if you have a POSIX-conforming sigwait declaration. */
+#define HAVE_POSIX_DECL_SIGWAIT 1
+
 /* Define to 1 if you have the `posix_fadvise' function. */
 /* #undef HAVE_POSIX_FADVISE */
 
@@ -419,6 +440,9 @@
 /* Define if you have POSIX threads libraries and header files. */
 #define HAVE_PTHREAD 1
 
+/* Define to 1 if you have the `pthread_barrier_wait' function. */
+/* #undef HAVE_PTHREAD_BARRIER_WAIT */
+
 /* Define to 1 if you have the `pthread_is_threaded_np' function. */
 #define HAVE_PTHREAD_IS_THREADED_NP 1
 
@@ -427,9 +451,6 @@
 
 /* Define to 1 if you have the `pwrite' function. */
 #define HAVE_PWRITE 1
-
-/* Define to 1 if you have the `random' function. */
-#define HAVE_RANDOM 1
 
 /* Define to 1 if you have the <readline.h> header file. */
 /* #undef HAVE_READLINE_H */
@@ -443,9 +464,8 @@
 /* Define to 1 if you have the `readlink' function. */
 #define HAVE_READLINK 1
 
-/* Define to 1 if you have the global variable
-   'rl_completion_append_character'. */
-/* #undef HAVE_RL_COMPLETION_APPEND_CHARACTER */
+/* Define to 1 if you have the `readv' function. */
+#define HAVE_READV 1
 
 /* Define to 1 if you have the `rl_completion_matches' function. */
 /* #undef HAVE_RL_COMPLETION_MATCHES */
@@ -468,6 +488,9 @@
 /* Define to 1 if you have the `rl_reset_screen_size' function. */
 /* #undef HAVE_RL_RESET_SCREEN_SIZE */
 
+/* Define to 1 if you have the `rl_variable_bind' function. */
+/* #undef HAVE_RL_VARIABLE_BIND */
+
 /* Define to 1 if you have the <security/pam_appl.h> header file. */
 /* #undef HAVE_SECURITY_PAM_APPL_H */
 
@@ -486,11 +509,11 @@
 /* Define to 1 if you have the `shm_open' function. */
 #define HAVE_SHM_OPEN 1
 
+/* Define to 1 if the system has the type `socklen_t'. */
+#define HAVE_SOCKLEN_T 1
+
 /* Define to 1 if you have spinlocks. */
 #define HAVE_SPINLOCKS 1
-
-/* Define to 1 if you have the `srandom' function. */
-#define HAVE_SRANDOM 1
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #define HAVE_STDBOOL_H 1
@@ -576,6 +599,9 @@
 /* Define to 1 if you have the `symlink' function. */
 #define HAVE_SYMLINK 1
 
+/* Define to 1 if you have the `syncfs' function. */
+/* #undef HAVE_SYNCFS */
+
 /* Define to 1 if you have the `sync_file_range' function. */
 /* #undef HAVE_SYNC_FILE_RANGE */
 
@@ -590,6 +616,9 @@
 
 /* Define to 1 if you have the <sys/ipc.h> header file. */
 #define HAVE_SYS_IPC_H 1
+
+/* Define to 1 if you have the <sys/personality.h> header file. */
+/* #undef HAVE_SYS_PERSONALITY_H */
 
 /* Define to 1 if you have the <sys/prctl.h> header file. */
 /* #undef HAVE_SYS_PRCTL_H */
@@ -612,6 +641,9 @@
 /* Define to 1 if you have the <sys/shm.h> header file. */
 #define HAVE_SYS_SHM_H 1
 
+/* Define to 1 if you have the <sys/signalfd.h> header file. */
+/* #undef HAVE_SYS_SIGNALFD_H */
+
 /* Define to 1 if you have the <sys/sockio.h> header file. */
 #define HAVE_SYS_SOCKIO_H 1
 
@@ -626,6 +658,9 @@
 
 /* Define to 1 if you have the <sys/ucred.h> header file. */
 #define HAVE_SYS_UCRED_H 1
+
+/* Define to 1 if you have the <sys/uio.h> header file. */
+#define HAVE_SYS_UIO_H 1
 
 /* Define to 1 if you have the <sys/un.h> header file. */
 #define HAVE_SYS_UN_H 1
@@ -680,6 +715,9 @@
 
 /* Define to 1 if you have the <winldap.h> header file. */
 /* #undef HAVE_WINLDAP_H */
+
+/* Define to 1 if you have the `writev' function. */
+#define HAVE_WRITEV 1
 
 /* Define to 1 if you have the `X509_get_signature_nid' function. */
 /* #undef HAVE_X509_GET_SIGNATURE_NID */
@@ -753,6 +791,10 @@
 /* Define bytes to use libc memset(). */
 #define MEMSET_LOOP_LIMIT 1024
 
+/* Define to the OpenSSL API version in use. This avoids deprecation warnings
+   from newer OpenSSL versions. */
+/* #undef OPENSSL_API_COMPAT */
+
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT "pgsql-bugs@lists.postgresql.org"
 
@@ -760,7 +802,7 @@
 #define PACKAGE_NAME "PostgreSQL"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PostgreSQL 13.8"
+#define PACKAGE_STRING "PostgreSQL 15.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "postgresql"
@@ -769,7 +811,7 @@
 #define PACKAGE_URL "https://www.postgresql.org/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "13.8"
+#define PACKAGE_VERSION "15.1"
 
 /* Define to the name of a signed 128-bit integer type. */
 #define PG_INT128_TYPE __int128
@@ -782,13 +824,13 @@
 #define PG_KRB_SRVNAM "postgres"
 
 /* PostgreSQL major version as a string */
-#define PG_MAJORVERSION "13"
+#define PG_MAJORVERSION "15"
 
 /* PostgreSQL major version number */
-#define PG_MAJORVERSION_NUM 13
+#define PG_MAJORVERSION_NUM 15
 
 /* PostgreSQL minor version number */
-#define PG_MINORVERSION_NUM 8
+#define PG_MINORVERSION_NUM 1
 
 /* Define to best printf format archetype, usually gnu_printf if available. */
 #define PG_PRINTF_ATTRIBUTE printf
@@ -797,13 +839,13 @@
 #define PG_USE_STDBOOL 1
 
 /* PostgreSQL version as a string */
-#define PG_VERSION "13.8"
+#define PG_VERSION "15.1"
 
 /* PostgreSQL version as a number */
-#define PG_VERSION_NUM 130008
+#define PG_VERSION_NUM 150001
 
 /* A string containing the version number, platform, and C compiler */
-#define PG_VERSION_STR "PostgreSQL 13.8 on arm-apple-darwin21.6.0, compiled by Apple clang version 14.0.0 (clang-1400.0.29.202), 64-bit"
+#define PG_VERSION_STR "PostgreSQL 15.1 on aarch64-apple-darwin21.6.0, compiled by Apple clang version 14.0.0 (clang-1400.0.29.102), 64-bit"
 
 /* Define to 1 to allow profiling output to be saved separately for each
    process. */
@@ -862,9 +904,6 @@
 /* Define to 1 to build with BSD Authentication support. (--with-bsd-auth) */
 /* #undef USE_BSD_AUTH */
 
-/* Define to use /dev/urandom for random number generation */
-#define USE_DEV_URANDOM 1
-
 /* Define to build with ICU support. (--with-icu) */
 /* #undef USE_ICU */
 
@@ -881,14 +920,14 @@
 /* Define to 1 to build with LLVM based JIT support. (--with-llvm) */
 /* #undef USE_LLVM */
 
+/* Define to 1 to build with LZ4 support. (--with-lz4) */
+/* #undef USE_LZ4 */
+
 /* Define to select named POSIX semaphores. */
 /* #undef USE_NAMED_POSIX_SEMAPHORES */
 
-/* Define to build with OpenSSL support. (--with-openssl) */
+/* Define to 1 to build with OpenSSL support. (--with-ssl=openssl) */
 /* #undef USE_OPENSSL */
-
-/* Define to use OpenSSL for random number generation */
-/* #undef USE_OPENSSL_RANDOM */
 
 /* Define to 1 to build with PAM support. (--with-pam) */
 /* #undef USE_PAM */
@@ -914,14 +953,14 @@
 /* Define to select unnamed POSIX semaphores. */
 /* #undef USE_UNNAMED_POSIX_SEMAPHORES */
 
-/* Define to use native Windows API for random number generation */
-/* #undef USE_WIN32_RANDOM */
-
 /* Define to select Win32-style semaphores. */
 /* #undef USE_WIN32_SEMAPHORES */
 
 /* Define to select Win32-style shared memory. */
 /* #undef USE_WIN32_SHARED_MEMORY */
+
+/* Define to 1 to build with ZSTD support. (--with-zstd) */
+/* #undef USE_ZSTD */
 
 /* Define to 1 if `wcstombs_l' requires <xlocale.h>. */
 #define WCSTOMBS_L_IN_XLOCALE 1
@@ -989,7 +1028,10 @@
 #undef HAVE__STATIC_ASSERT
 #undef HAVE_EXECINFO_H
 #undef HAVE_BACKTRACE_SYMBOLS
+#undef HAVE_X86_64_POPCNTQ
 #undef HAVE__GET_CPUID
+#undef USE_ARMV8_CRC32C
+#undef USE_SSE42_CRC32C_WITH_RUNTIME_CHECK
 #ifdef __FreeBSD__
 #define HAVE_STRCHRNUL
 #endif

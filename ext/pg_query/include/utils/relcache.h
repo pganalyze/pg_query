@@ -4,7 +4,7 @@
  *	  Relation descriptor cache definitions.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/relcache.h
@@ -64,6 +64,8 @@ typedef enum IndexAttrBitmapKind
 extern Bitmapset *RelationGetIndexAttrBitmap(Relation relation,
 											 IndexAttrBitmapKind attrKind);
 
+extern Bitmapset *RelationGetIdentityKeyBitmap(Relation relation);
+
 extern void RelationGetExclusionInfo(Relation indexRelation,
 									 Oid **operators,
 									 Oid **procs,
@@ -72,8 +74,9 @@ extern void RelationGetExclusionInfo(Relation indexRelation,
 extern void RelationInitIndexAccessInfo(Relation relation);
 
 /* caller must include pg_publication.h */
-struct PublicationActions;
-extern struct PublicationActions *GetRelationPublicationActions(Relation relation);
+struct PublicationDesc;
+extern void RelationBuildPublicationDesc(Relation relation,
+										 struct PublicationDesc *pubdesc);
 
 extern void RelationInitTableAccessMethod(Relation relation);
 
@@ -142,9 +145,9 @@ extern void RelationCacheInitFilePostInvalidate(void);
 extern void RelationCacheInitFileRemove(void);
 
 /* should be used only by relcache.c and catcache.c */
-extern bool criticalRelcachesBuilt;
+extern PGDLLIMPORT bool criticalRelcachesBuilt;
 
 /* should be used only by relcache.c and postinit.c */
-extern bool criticalSharedRelcachesBuilt;
+extern PGDLLIMPORT bool criticalSharedRelcachesBuilt;
 
 #endif							/* RELCACHE_H */

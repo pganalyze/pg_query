@@ -3,7 +3,7 @@
  * pg_publication.h
  *	  definition of the "publication" system catalog (pg_publication)
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/catalog/pg_publication.h
@@ -32,7 +32,7 @@ CATALOG(pg_publication,6104,PublicationRelationId)
 
 	NameData	pubname;		/* name of the publication */
 
-	Oid			pubowner;		/* publication owner */
+	Oid			pubowner BKI_LOOKUP(pg_authid); /* publication owner */
 
 	/*
 	 * indicates that this is special publication which should encompass all
@@ -63,6 +63,9 @@ CATALOG(pg_publication,6104,PublicationRelationId)
  */
 typedef FormData_pg_publication *Form_pg_publication;
 
+DECLARE_UNIQUE_INDEX_PKEY(pg_publication_oid_index, 6110, PublicationObjectIndexId, on pg_publication using btree(oid oid_ops));
+DECLARE_UNIQUE_INDEX(pg_publication_pubname_index, 6111, PublicationNameIndexId, on pg_publication using btree(pubname name_ops));
+
 typedef struct PublicationActions
 {
 	bool		pubinsert;
@@ -70,6 +73,26 @@ typedef struct PublicationActions
 	bool		pubdelete;
 	bool		pubtruncate;
 } PublicationActions;
+
+typedef struct PublicationDesc
+{
+	PublicationActions pubactions;
+
+	/*
+	 * true if the columns referenced in row filters which are used for UPDATE
+	 * or DELETE are part of the replica identity or the publication actions
+	 * do not include UPDATE or DELETE.
+	 */
+	bool		rf_valid_for_update;
+	bool		rf_valid_for_delete;
+
+	/*
+	 * true if the columns are part of the replica identity or the publication
+	 * actions do not include UPDATE or DELETE.
+	 */
+	bool		cols_valid_for_update;
+	bool		cols_valid_for_delete;
+} PublicationDesc;
 
 typedef struct Publication
 {
@@ -79,6 +102,13 @@ typedef struct Publication
 	bool		pubviaroot;
 	PublicationActions pubactions;
 } Publication;
+
+typedef struct PublicationRelInfo
+{
+	Relation	relation;
+	Node	   *whereClause;
+	List	   *columns;
+} PublicationRelInfo;
 
 extern Publication *GetPublication(Oid pubid);
 extern Publication *GetPublicationByName(const char *pubname, bool missing_ok);
@@ -103,16 +133,29 @@ typedef enum PublicationPartOpt
 extern List *GetPublicationRelations(Oid pubid, PublicationPartOpt pub_partopt);
 extern List *GetAllTablesPublications(void);
 extern List *GetAllTablesPublicationRelations(bool pubviaroot);
-
-extern bool is_publishable_relation(Relation rel);
-extern ObjectAddress publication_add_relation(Oid pubid, Relation targetrel,
-											  bool if_not_exists);
+extern List *GetPublicationSchemas(Oid pubid);
+extern List *GetSchemaPublications(Oid schemaid);
+extern List *GetSchemaPublicationRelations(Oid schemaid,
+										   PublicationPartOpt pub_partopt);
+extern List *GetAllSchemaPublicationRelations(Oid puboid,
+											  PublicationPartOpt pub_partopt);
 extern List *GetPubPartitionOptionRelations(List *result,
 											PublicationPartOpt pub_partopt,
 											Oid relid);
+extern Oid	GetTopMostAncestorInPublication(Oid puboid, List *ancestors,
+											int *ancestor_level);
+
+extern bool is_publishable_relation(Relation rel);
+extern bool is_schema_publication(Oid pubid);
+extern ObjectAddress publication_add_relation(Oid pubid, PublicationRelInfo *pri,
+											  bool if_not_exists);
+extern ObjectAddress publication_add_schema(Oid pubid, Oid schemaid,
+											bool if_not_exists);
+
+extern Bitmapset *pub_collist_to_bitmapset(Bitmapset *columns, Datum pubcols,
+										   MemoryContext mcxt);
 
 extern Oid	get_publication_oid(const char *pubname, bool missing_ok);
 extern char *get_publication_name(Oid pubid, bool missing_ok);
-
 
 #endif							/* PG_PUBLICATION_H */

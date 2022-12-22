@@ -11,7 +11,7 @@
  * Note: This file must be includable in both frontend and backend contexts,
  * to allow stand-alone tools like pg_receivewal to deal with WAL files.
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/xlog_internal.h
@@ -31,7 +31,7 @@
 /*
  * Each page of XLOG file has a header like this:
  */
-#define XLOG_PAGE_MAGIC 0xD106	/* can be used as WAL version indicator */
+#define XLOG_PAGE_MAGIC 0xD110	/* can be used as WAL version indicator */
 
 typedef struct XLogPageHeaderData
 {
@@ -43,11 +43,8 @@ typedef struct XLogPageHeaderData
 	/*
 	 * When there is not enough space on current page for whole record, we
 	 * continue on the next page.  xlp_rem_len is the number of bytes
-	 * remaining from a previous page.
-	 *
-	 * Note that xlp_rem_len includes backup-block data; that is, it tracks
-	 * xl_tot_len not xl_len in the initial header.  Also note that the
-	 * continuation data isn't necessarily aligned.
+	 * remaining from a previous page; it tracks xl_tot_len in the initial
+	 * header.  Note that the continuation data isn't necessarily aligned.
 	 */
 	uint32		xlp_rem_len;	/* total len of remaining data for record */
 } XLogPageHeaderData;
@@ -290,6 +287,9 @@ typedef enum
 	RECOVERY_TARGET_ACTION_SHUTDOWN
 }			RecoveryTargetAction;
 
+struct LogicalDecodingContext;
+struct XLogRecordBuffer;
+
 /*
  * Method table for resource managers.
  *
@@ -304,7 +304,8 @@ typedef enum
  * rm_mask takes as input a page modified by the resource manager and masks
  * out bits that shouldn't be flagged by wal_consistency_checking.
  *
- * RmgrTable[] is indexed by RmgrId values (see rmgrlist.h).
+ * RmgrTable[] is indexed by RmgrId values (see rmgrlist.h). If rm_name is
+ * NULL, the corresponding RmgrTable entry is considered invalid.
  */
 typedef struct RmgrData
 {
@@ -315,9 +316,31 @@ typedef struct RmgrData
 	void		(*rm_startup) (void);
 	void		(*rm_cleanup) (void);
 	void		(*rm_mask) (char *pagedata, BlockNumber blkno);
+	void		(*rm_decode) (struct LogicalDecodingContext *ctx,
+							  struct XLogRecordBuffer *buf);
 } RmgrData;
 
-extern const RmgrData RmgrTable[];
+extern PGDLLIMPORT RmgrData RmgrTable[];
+extern void RmgrStartup(void);
+extern void RmgrCleanup(void);
+extern void RmgrNotFound(RmgrId rmid);
+extern void RegisterCustomRmgr(RmgrId rmid, RmgrData *rmgr);
+
+#ifndef FRONTEND
+static inline bool
+RmgrIdExists(RmgrId rmid)
+{
+	return RmgrTable[rmid].rm_name != NULL;
+}
+
+static inline RmgrData
+GetRmgr(RmgrId rmid)
+{
+	if (unlikely(!RmgrIdExists(rmid)))
+		RmgrNotFound(rmid);
+	return RmgrTable[rmid];
+}
+#endif
 
 /*
  * Exported to support xlog switching from checkpointer
@@ -327,13 +350,17 @@ extern XLogRecPtr RequestXLogSwitch(bool mark_unimportant);
 
 extern void GetOldestRestartPoint(XLogRecPtr *oldrecptr, TimeLineID *oldtli);
 
+extern void XLogRecGetBlockRefInfo(XLogReaderState *record, bool pretty,
+								   bool detailed_format, StringInfo buf,
+								   uint32 *fpi_len);
+
 /*
  * Exported for the functions in timeline.c and xlogarchive.c.  Only valid
  * in the startup process.
  */
-extern bool ArchiveRecoveryRequested;
-extern bool InArchiveRecovery;
-extern bool StandbyMode;
-extern char *recoveryRestoreCommand;
+extern PGDLLIMPORT bool ArchiveRecoveryRequested;
+extern PGDLLIMPORT bool InArchiveRecovery;
+extern PGDLLIMPORT bool StandbyMode;
+extern PGDLLIMPORT char *recoveryRestoreCommand;
 
 #endif							/* XLOG_INTERNAL_H */

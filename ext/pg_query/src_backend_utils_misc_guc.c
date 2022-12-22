@@ -16,7 +16,7 @@
  * See src/backend/utils/misc/README for more information.
  *
  *
- * Copyright (c) 2000-2020, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2022, PostgreSQL Global Development Group
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * IDENTIFICATION
@@ -30,22 +30,33 @@
 #include <float.h>
 #include <math.h>
 #include <limits.h>
-#include <unistd.h>
+#ifdef HAVE_POLL_H
+#include <poll.h>
+#endif
+#ifndef WIN32
+#include <sys/mman.h>
+#endif
 #include <sys/stat.h>
 #ifdef HAVE_SYSLOG
 #include <syslog.h>
 #endif
+#include <unistd.h>
 
 #include "access/commit_ts.h"
 #include "access/gin.h"
 #include "access/rmgr.h"
 #include "access/tableam.h"
+#include "access/toast_compression.h"
 #include "access/transam.h"
 #include "access/twophase.h"
 #include "access/xact.h"
 #include "access/xlog_internal.h"
+#include "access/xlogprefetcher.h"
+#include "access/xlogrecovery.h"
 #include "catalog/namespace.h"
+#include "catalog/objectaccess.h"
 #include "catalog/pg_authid.h"
+#include "catalog/pg_parameter_acl.h"
 #include "catalog/storage.h"
 #include "commands/async.h"
 #include "commands/prepare.h"
@@ -75,6 +86,7 @@
 #include "postmaster/bgworker_internals.h"
 #include "postmaster/bgwriter.h"
 #include "postmaster/postmaster.h"
+#include "postmaster/startup.h"
 #include "postmaster/syslogger.h"
 #include "postmaster/walwriter.h"
 #include "replication/logicallauncher.h"
@@ -94,6 +106,7 @@
 #include "tcop/tcopprot.h"
 #include "tsearch/ts_cache.h"
 #include "utils/acl.h"
+#include "utils/backend_status.h"
 #include "utils/builtins.h"
 #include "utils/bytea.h"
 #include "utils/float.h"
@@ -104,9 +117,11 @@
 #include "utils/plancache.h"
 #include "utils/portal.h"
 #include "utils/ps_status.h"
+#include "utils/queryjumble.h"
 #include "utils/rls.h"
 #include "utils/snapmgr.h"
 #include "utils/tzparser.h"
+#include "utils/inval.h"
 #include "utils/varlena.h"
 #include "utils/xml.h"
 
@@ -145,6 +160,8 @@ extern bool trace_syncscan;
 #ifdef DEBUG_BOUNDED_SORT
 extern bool optimize_bounded_sort;
 #endif
+
+
 
 
 
@@ -209,13 +226,16 @@ static bool check_max_wal_senders(int *newval, void **extra, GucSource source);
 static bool check_autovacuum_work_mem(int *newval, void **extra, GucSource source);
 static bool check_effective_io_concurrency(int *newval, void **extra, GucSource source);
 static bool check_maintenance_io_concurrency(int *newval, void **extra, GucSource source);
-static void assign_pgstat_temp_directory(const char *newval, void *extra);
+static bool check_huge_page_size(int *newval, void **extra, GucSource source);
+static bool check_client_connection_check_interval(int *newval, void **extra, GucSource source);
+static void assign_maintenance_io_concurrency(int newval, void *extra);
 static bool check_application_name(char **newval, void **extra, GucSource source);
 static void assign_application_name(const char *newval, void *extra);
 static bool check_cluster_name(char **newval, void **extra, GucSource source);
 static const char *show_unix_socket_permissions(void);
 static const char *show_log_file_mode(void);
 static const char *show_data_directory_mode(void);
+static const char *show_in_hot_standby(void);
 static bool check_backtrace_functions(char **newval, void **extra, GucSource source);
 static void assign_backtrace_functions(const char *newval, void *extra);
 static bool check_recovery_target_timeline(char **newval, void **extra, GucSource source);
@@ -236,6 +256,11 @@ static bool check_default_with_oids(bool *newval, void **extra, GucSource source
 /* Private functions in guc-file.l that need to be called from guc.c */
 static ConfigVariable *ProcessConfigFileInternal(GucContext context,
 												 bool applySettings, int elevel);
+
+/*
+ * Track whether there were any deferred checks for custom resource managers
+ * specified in wal_consistency_checking.
+ */
 
 
 /*
@@ -291,6 +316,11 @@ StaticAssertDecl(lengthof(track_function_options) == (TRACK_FUNC_ALL + 2),
 
 
 
+StaticAssertDecl(lengthof(stats_fetch_consistency) == (PGSTAT_FETCH_CONSISTENCY_SNAPSHOT + 2),
+				 "array length mismatch");
+
+
+
 StaticAssertDecl(lengthof(xmlbinary_options) == (XMLBINARY_HEX + 2),
 				 "array length mismatch");
 
@@ -302,6 +332,12 @@ StaticAssertDecl(lengthof(xmloption_options) == (XMLOPTION_CONTENT + 2),
 /*
  * Although only "on", "off", and "safe_encoding" are documented, we
  * accept all the likely variants of "on" and "off".
+ */
+
+
+/*
+ * Although only "on", "off", and "auto" are documented, we accept
+ * all the likely variants of "on" and "off".
  */
 
 
@@ -327,11 +363,8 @@ StaticAssertDecl(lengthof(xmloption_options) == (XMLOPTION_CONTENT + 2),
 
 
 
-/*
- * password_encryption used to be a boolean, so accept all the likely
- * variants of "on", too. "off" used to store passwords in plaintext,
- * but we don't support that anymore.
- */
+
+
 
 
 
@@ -339,11 +372,22 @@ StaticAssertDecl(lengthof(xmloption_options) == (XMLOPTION_CONTENT + 2),
 StaticAssertDecl(lengthof(ssl_protocol_versions_info) == (PG_TLS1_3_VERSION + 2),
 				 "array length mismatch");
 
+#ifdef HAVE_SYNCFS
+#endif
+
 #ifndef WIN32
 #endif
 #ifndef EXEC_BACKEND
 #endif
 #ifdef WIN32
+#endif
+
+#ifdef  USE_LZ4
+#endif
+
+#ifdef USE_LZ4
+#endif
+#ifdef USE_ZSTD
 #endif
 
 /*
@@ -434,11 +478,15 @@ __thread char	   *backtrace_symbol_list;
  */
 
 
+
 /*
  * These variables are all dummies that don't do anything, except in some
  * cases provide the value for SHOW to display.  The real state is elsewhere
  * and is kept in sync by assign_hooks.
  */
+
+
+
 
 
 
@@ -610,6 +658,12 @@ typedef struct
 #ifdef USE_PREFETCH
 #else
 #endif
+#ifdef DISCARD_CACHES_ENABLED
+#if defined(CLOBBER_CACHE_RECURSIVELY)
+#else
+#endif
+#else							/* not DISCARD_CACHES_ENABLED */
+#endif							/* not DISCARD_CACHES_ENABLED */
 
 
 
@@ -661,6 +715,8 @@ typedef struct
 
 	/* true to enable GUC_REPORT */
 
+		/* true if any GUC_REPORT reports are needed */
+
 	/* 1 when in main transaction */
 
 
@@ -674,7 +730,8 @@ static void reapply_stacked_values(struct config_generic *variable,
 								   struct config_string *pHolder,
 								   GucStack *stack,
 								   const char *curvalue,
-								   GucContext curscontext, GucSource cursource);
+								   GucContext curscontext, GucSource cursource,
+								   Oid cursrole);
 static void ShowGUCConfigOption(const char *name, DestReceiver *dest);
 static void ShowAllGUCConfig(DestReceiver *dest);
 static char *_ShowOption(struct config_generic *record, bool use_units);
@@ -755,14 +812,33 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
 
 
 /*
+ * Decide whether a proposed custom variable name is allowed.
+ *
+ * It must be two or more identifiers separated by dots, where the rules
+ * for what is an identifier agree with scan.l.  (If you change this rule,
+ * adjust the errdetail in find_option().)
+ */
+
+
+/*
  * Create and add a placeholder variable for a custom variable name.
  */
 
 
 /*
- * Look up option NAME.  If it exists, return a pointer to its record,
- * else return NULL.  If create_placeholders is true, we'll create a
- * placeholder record for a valid-looking custom variable name.
+ * Look up option "name".  If it exists, return a pointer to its record.
+ * Otherwise, if create_placeholders is true and name is a valid-looking
+ * custom variable name, we'll create and return a placeholder record.
+ * Otherwise, if skip_errors is true, then we silently return NULL for
+ * an unrecognized or invalid name.  Otherwise, the error is reported at
+ * error level elevel (and we return NULL if that's less than ERROR).
+ *
+ * Note: internal errors, primarily out-of-memory, draw an elevel-level
+ * report and NULL return regardless of skip_errors.  Hence, callers must
+ * handle a NULL return whenever elevel < ERROR, but they should not need
+ * to emit any additional error message.  (In practice, internal errors
+ * can only happen when create_placeholders is true, so callers passing
+ * false need not think terribly hard about this.)
  */
 
 
@@ -779,10 +855,38 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
 
 
 /*
+ * Convert a GUC name to the form that should be used in pg_parameter_acl.
+ *
+ * We need to canonicalize entries since, for example, case should not be
+ * significant.  In addition, we apply the map_old_guc_names[] mapping so that
+ * any obsolete names will be converted when stored in a new PG version.
+ * Note however that this function does not verify legality of the name.
+ *
+ * The result is a palloc'd string.
+ */
+
+
+/*
+ * Check whether we should allow creation of a pg_parameter_acl entry
+ * for the given name.  (This can be applied either before or after
+ * canonicalizing it.)
+ */
+
+
+
+/*
  * Initialize GUC options during program startup.
  *
  * Note that we cannot read the config file yet, since we have not yet
  * processed command-line switches.
+ */
+
+
+/*
+ * If any custom resource managers were specified in the
+ * wal_consistency_checking GUC, processing was deferred. Now that
+ * shared_preload_libraries have been loaded, process wal_consistency_checking
+ * again.
  */
 
 
@@ -864,7 +968,25 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
 
 
 /*
+ * ReportChangedGUCOptions: report recently-changed GUC_REPORT variables
+ *
+ * This is called just before we wait for a new client query.
+ *
+ * By handling things this way, we ensure that a ParameterStatus message
+ * is sent at most once per variable per query, even if the variable
+ * changed multiple times within the query.  That's quite possible when
+ * using features such as function SET clauses.  Function SET clauses
+ * also tend to cause values to change intraquery but eventually revert
+ * to their prevailing values; ReportGUCOption is responsible for avoiding
+ * redundant reports in such cases.
+ */
+
+
+/*
  * ReportGUCOption: if appropriate, transmit option value to frontend
+ *
+ * We need not transmit the value if it's the same as what we last
+ * transmitted.  However, clear the NEEDS_REPORT flag in any case.
  */
 
 
@@ -981,7 +1103,7 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
 
 
 /*
- * Sets option `name' to given value.
+ * set_config_option: sets option `name' to given value.
  *
  * The value should be a string, which will be parsed and converted to
  * the appropriate data type.  The context and source parameters indicate
@@ -1001,6 +1123,10 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
  * its standard choice of ereport level.  However some callers need to be
  * able to override that choice; they should pass the ereport level to use.
  *
+ * is_reload should be true only when called from read_nondefault_variables()
+ * or RestoreGUCState(), where we are trying to load some other process's
+ * GUC settings into a new process.
+ *
  * Return value:
  *	+1: the value is valid and was successfully applied.
  *	0:	the name or value is invalid (but see below).
@@ -1014,6 +1140,23 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
  * message via ereport() and return 0.
  *
  * See also SetConfigOption for an external interface.
+ */
+
+
+/*
+ * set_config_option_ext: sets option `name' to given value.
+ *
+ * This API adds the ability to explicitly specify which role OID
+ * is considered to be setting the value.  Most external callers can use
+ * set_config_option() and let it determine that based on the GucSource,
+ * but there are a few that are supplying a value that was determined
+ * in some special way and need to override the decision.  Also, when
+ * restoring a previously-assigned value, it's important to supply the
+ * same role OID that set the value originally; so all guc.c callers
+ * that are doing that type of thing need to call this directly.
+ *
+ * Generally, srole should be GetUserId() when the source is a SQL operation,
+ * or BOOTSTRAP_SUPERUSERID if the source is a config file or similar.
  */
 #define newval (newval_union.boolval)
 #undef newval
@@ -1169,6 +1312,9 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
  */
 
 
+/*
+ * Functions for extensions to call to define their custom GUC variables.
+ */
 
 
 
@@ -1179,6 +1325,14 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
 
 
 
+/*
+ * Mark the given GUC prefix as "reserved".
+ *
+ * This deletes any existing placeholders matching the prefix,
+ * and then prevents new ones from being created.
+ * Extensions should call this after they've defined all of their custom
+ * GUCs, to help catch misspelled config-file entries.
+ */
 
 
 
@@ -1214,6 +1368,13 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
  * in which case return NULL.  Return value is palloc'd (but *varname isn't).
  */
 
+
+/*
+ * Return some of the flags associated to the specified GUC in the shape of
+ * a text array, and NULL if it does not exist.  An empty array is returned
+ * if the GUC exists without any meaningful flags to show.
+ */
+#define MAX_GUC_FLAGS	5
 
 /*
  * Return GUC variable value by variable number; optionally return canonical
@@ -1278,6 +1439,7 @@ static void replace_auto_config_value(ConfigVariable **head_p, ConfigVariable **
  *		variable sourceline, integer
  *		variable source, integer
  *		variable scontext, integer
+*		variable srole, OID
  */
 static void
 write_one_nondefault_variable(FILE *fp, struct config_generic *gconf)
@@ -1344,6 +1506,7 @@ write_one_nondefault_variable(FILE *fp, struct config_generic *gconf)
 	fwrite(&gconf->sourceline, 1, sizeof(gconf->sourceline), fp);
 	fwrite(&gconf->source, 1, sizeof(gconf->source), fp);
 	fwrite(&gconf->scontext, 1, sizeof(gconf->scontext), fp);
+	fwrite(&gconf->srole, 1, sizeof(gconf->srole), fp);
 }
 
 void
@@ -1439,12 +1602,7 @@ read_nondefault_variables(void)
 	int			varsourceline;
 	GucSource	varsource;
 	GucContext	varscontext;
-
-	/*
-	 * Assert that PGC_BACKEND/PGC_SU_BACKEND case in set_config_option() will
-	 * do the right thing.
-	 */
-	Assert(IsInitProcessingMode());
+	Oid			varsrole;
 
 	/*
 	 * Open file
@@ -1468,7 +1626,7 @@ read_nondefault_variables(void)
 		if ((varname = read_string_with_null(fp)) == NULL)
 			break;
 
-		if ((record = find_option(varname, true, FATAL)) == NULL)
+		if ((record = find_option(varname, true, false, FATAL)) == NULL)
 			elog(FATAL, "failed to locate variable \"%s\" in exec config params file", varname);
 
 		if ((varvalue = read_string_with_null(fp)) == NULL)
@@ -1481,10 +1639,12 @@ read_nondefault_variables(void)
 			elog(FATAL, "invalid format of exec config params file");
 		if (fread(&varscontext, 1, sizeof(varscontext), fp) != sizeof(varscontext))
 			elog(FATAL, "invalid format of exec config params file");
+		if (fread(&varsrole, 1, sizeof(varsrole), fp) != sizeof(varsrole))
+			elog(FATAL, "invalid format of exec config params file");
 
-		(void) set_config_option(varname, varvalue,
-								 varscontext, varsource,
-								 GUC_ACTION_SET, true, 0, true);
+		(void) set_config_option_ext(varname, varvalue,
+									 varscontext, varsource, varsrole,
+									 GUC_ACTION_SET, true, 0, true);
 		if (varsourcefile[0])
 			set_config_sourcefile(varname, varsourcefile, varsourceline);
 
@@ -1499,26 +1659,13 @@ read_nondefault_variables(void)
 
 /*
  * can_skip_gucvar:
- * When serializing, determine whether to skip this GUC.  When restoring, the
- * negation of this test determines whether to restore the compiled-in default
- * value before processing serialized values.
+ * Decide whether SerializeGUCState can skip sending this GUC variable,
+ * or whether RestoreGUCState can skip resetting this GUC to default.
  *
- * A PGC_S_DEFAULT setting on the serialize side will typically match new
- * postmaster children, but that can be false when got_SIGHUP == true and the
- * pending configuration change modifies this setting.  Nonetheless, we omit
- * PGC_S_DEFAULT settings from serialization and make up for that by restoring
- * defaults before applying serialized values.
- *
- * PGC_POSTMASTER variables always have the same value in every child of a
- * particular postmaster.  Most PGC_INTERNAL variables are compile-time
- * constants; a few, like server_encoding and lc_ctype, are handled specially
- * outside the serialize/restore procedure.  Therefore, SerializeGUCState()
- * never sends these, and RestoreGUCState() never changes them.
- *
- * Role is a special variable in the sense that its current value can be an
- * invalid value and there are multiple ways by which that can happen (like
- * after setting the role, someone drops it).  So we handle it outside of
- * serialize/restore machinery.
+ * It is somewhat magical and fragile that the same test works for both cases.
+ * Realize in particular that we are very likely selecting different sets of
+ * GUCs on the leader and worker sides!  Be sure you've understood the
+ * comments here and in RestoreGUCState thoroughly before changing this.
  */
 
 
@@ -1578,8 +1725,14 @@ read_nondefault_variables(void)
 
 /*
  * RestoreGUCState:
- * Reads the GUC state at the specified address and updates the GUCs with the
- * values read from the GUC state.
+ * Reads the GUC state at the specified address and sets this process's
+ * GUCs to match.
+ *
+ * Note that this provides the worker with only a very shallow view of the
+ * leader's GUC state: we'll know about the currently active values, but not
+ * about stacked or reset values.  That's fine since the worker is just
+ * executing one part of a query, within which the active values won't change
+ * and the stacked values are invisible.
  */
 
 
@@ -1620,7 +1773,7 @@ read_nondefault_variables(void)
 /*
  * Given a GUC array, delete all settings from it that our permission
  * level allows: if superuser, delete them all; if regular user, only
- * those that are PGC_USERSET
+ * those that are PGC_USERSET or we have permission to set
  */
 
 
@@ -1753,6 +1906,14 @@ read_nondefault_variables(void)
 
 #ifndef USE_PREFETCH
 #endif							/* USE_PREFETCH */
+
+#if !(defined(MAP_HUGE_MASK) && defined(MAP_HUGE_SHIFT))
+#endif
+
+
+
+#ifdef USE_PREFETCH
+#endif
 
 
 

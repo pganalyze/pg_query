@@ -4,7 +4,7 @@
  *	  Definition of (and support for) access control list data structures.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/acl.h
@@ -146,9 +146,11 @@ typedef struct ArrayType Acl;
 #define ACL_CREATE_CHR			'C'
 #define ACL_CREATE_TEMP_CHR		'T'
 #define ACL_CONNECT_CHR			'c'
+#define ACL_SET_CHR				's'
+#define ACL_ALTER_SYSTEM_CHR	'A'
 
 /* string holding all privilege code chars, in order by bitmask position */
-#define ACL_ALL_RIGHTS_STR	"arwdDxtXUCTc"
+#define ACL_ALL_RIGHTS_STR	"arwdDxtXUCTcsA"
 
 /*
  * Bitmasks defining "all rights" for each supported object type
@@ -162,6 +164,7 @@ typedef struct ArrayType Acl;
 #define ACL_ALL_RIGHTS_FUNCTION		(ACL_EXECUTE)
 #define ACL_ALL_RIGHTS_LANGUAGE		(ACL_USAGE)
 #define ACL_ALL_RIGHTS_LARGEOBJECT	(ACL_SELECT|ACL_UPDATE)
+#define ACL_ALL_RIGHTS_PARAMETER_ACL (ACL_SET|ACL_ALTER_SYSTEM)
 #define ACL_ALL_RIGHTS_SCHEMA		(ACL_USAGE|ACL_CREATE)
 #define ACL_ALL_RIGHTS_TABLESPACE	(ACL_CREATE)
 #define ACL_ALL_RIGHTS_TYPE			(ACL_USAGE)
@@ -230,14 +233,23 @@ extern void ExecuteGrantStmt(GrantStmt *stmt);
 extern void ExecAlterDefaultPrivilegesStmt(ParseState *pstate, AlterDefaultPrivilegesStmt *stmt);
 
 extern void RemoveRoleFromObjectACL(Oid roleid, Oid classid, Oid objid);
-extern void RemoveDefaultACLById(Oid defaclOid);
 
 extern AclMode pg_attribute_aclmask(Oid table_oid, AttrNumber attnum,
 									Oid roleid, AclMode mask, AclMaskHow how);
+extern AclMode pg_attribute_aclmask_ext(Oid table_oid, AttrNumber attnum,
+										Oid roleid, AclMode mask,
+										AclMaskHow how, bool *is_missing);
 extern AclMode pg_class_aclmask(Oid table_oid, Oid roleid,
 								AclMode mask, AclMaskHow how);
+extern AclMode pg_class_aclmask_ext(Oid table_oid, Oid roleid,
+									AclMode mask, AclMaskHow how,
+									bool *is_missing);
 extern AclMode pg_database_aclmask(Oid db_oid, Oid roleid,
 								   AclMode mask, AclMaskHow how);
+extern AclMode pg_parameter_aclmask(const char *name, Oid roleid,
+									AclMode mask, AclMaskHow how);
+extern AclMode pg_parameter_acl_aclmask(Oid acl_oid, Oid roleid,
+										AclMode mask, AclMaskHow how);
 extern AclMode pg_proc_aclmask(Oid proc_oid, Oid roleid,
 							   AclMode mask, AclMaskHow how);
 extern AclMode pg_language_aclmask(Oid lang_oid, Oid roleid,
@@ -257,10 +269,19 @@ extern AclMode pg_type_aclmask(Oid type_oid, Oid roleid,
 
 extern AclResult pg_attribute_aclcheck(Oid table_oid, AttrNumber attnum,
 									   Oid roleid, AclMode mode);
+extern AclResult pg_attribute_aclcheck_ext(Oid table_oid, AttrNumber attnum,
+										   Oid roleid, AclMode mode,
+										   bool *is_missing);
 extern AclResult pg_attribute_aclcheck_all(Oid table_oid, Oid roleid,
 										   AclMode mode, AclMaskHow how);
 extern AclResult pg_class_aclcheck(Oid table_oid, Oid roleid, AclMode mode);
+extern AclResult pg_class_aclcheck_ext(Oid table_oid, Oid roleid,
+									   AclMode mode, bool *is_missing);
 extern AclResult pg_database_aclcheck(Oid db_oid, Oid roleid, AclMode mode);
+extern AclResult pg_parameter_aclcheck(const char *name, Oid roleid,
+									   AclMode mode);
+extern AclResult pg_parameter_acl_aclcheck(Oid acl_oid, Oid roleid,
+										   AclMode mode);
 extern AclResult pg_proc_aclcheck(Oid proc_oid, Oid roleid, AclMode mode);
 extern AclResult pg_language_aclcheck(Oid lang_oid, Oid roleid, AclMode mode);
 extern AclResult pg_largeobject_aclcheck_snapshot(Oid lang_oid, Oid roleid,

@@ -96,7 +96,6 @@ static void dump_row(StringInfo out, PLpgSQL_row *stmt);
 static void dump_var(StringInfo out, PLpgSQL_var *stmt);
 static void dump_variable(StringInfo out, PLpgSQL_variable *stmt);
 static void dump_record_field(StringInfo out, PLpgSQL_recfield *node);
-static void dump_array_elem(StringInfo out, PLpgSQL_arrayelem *node);
 static void dump_stmt(StringInfo out, PLpgSQL_stmt *stmt);
 static void dump_block(StringInfo out, PLpgSQL_stmt_block *block);
 static void dump_exception_block(StringInfo out, PLpgSQL_exception_block *node);
@@ -130,7 +129,6 @@ static void dump_perform(StringInfo out, PLpgSQL_stmt_perform *stmt);
 static void dump_call(StringInfo out, PLpgSQL_stmt_call *stmt);
 static void dump_commit(StringInfo out, PLpgSQL_stmt_commit *stmt);
 static void dump_rollback(StringInfo out, PLpgSQL_stmt_rollback *stmt);
-static void dump_set(StringInfo out, PLpgSQL_stmt_set *stmt);
 static void dump_expr(StringInfo out, PLpgSQL_expr *expr);
 static void dump_function(StringInfo out, PLpgSQL_function *func);
 static void dump_exception(StringInfo out, PLpgSQL_exception *node);
@@ -223,9 +221,6 @@ dump_stmt(StringInfo out, PLpgSQL_stmt *node)
 			break;
 		case PLPGSQL_STMT_ROLLBACK:
 			dump_rollback(out, (PLpgSQL_stmt_rollback *) node);
-			break;
-		case PLPGSQL_STMT_SET:
-			dump_set(out, (PLpgSQL_stmt_set *) node);
 			break;
 		default:
 			elog(ERROR, "unrecognized cmd_type: %d", node->cmd_type);
@@ -494,15 +489,6 @@ dump_rollback(StringInfo out, PLpgSQL_stmt_rollback *node)
 }
 
 static void
-dump_set(StringInfo out, PLpgSQL_stmt_set *node)
-{
-	WRITE_NODE_TYPE("PLpgSQL_stmt_set");
-
-	WRITE_INT_FIELD(lineno, lineno, lineno);
-	WRITE_EXPR_FIELD(expr);
-}
-
-static void
 dump_exit(StringInfo out, PLpgSQL_stmt_exit *node)
 {
 	WRITE_NODE_TYPE("PLpgSQL_stmt_exit");
@@ -673,9 +659,6 @@ dump_function(StringInfo out, PLpgSQL_function *node)
 			case PLPGSQL_DTYPE_RECFIELD:
 				dump_record_field(out, (PLpgSQL_recfield *) d);
 				break;
-			case PLPGSQL_DTYPE_ARRAYELEM:
-				dump_array_elem(out, (PLpgSQL_arrayelem *) d);
-				break;
 			default:
 				elog(WARNING, "could not dump unrecognized dtype: %d",
 					 (int) d->dtype);
@@ -778,14 +761,6 @@ dump_record_field(StringInfo out, PLpgSQL_recfield *node) {
 
 	WRITE_STRING_FIELD(fieldname, fieldname, fieldname);
 	WRITE_INT_FIELD(recparentno, recparentno, recparentno);
-}
-
-static void
-dump_array_elem(StringInfo out, PLpgSQL_arrayelem *node) {
-	WRITE_NODE_TYPE("PLpgSQL_arrayelem");
-
-	WRITE_EXPR_FIELD(subscript);
-	WRITE_INT_FIELD(arrayparentno, arrayparentno, arrayparentno);
 }
 
 char *

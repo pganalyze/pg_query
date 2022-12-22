@@ -18,246 +18,257 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
         optional :alias, :message, 1, "pg_query.Alias", json_name: "Alias"
         optional :range_var, :message, 2, "pg_query.RangeVar", json_name: "RangeVar"
         optional :table_func, :message, 3, "pg_query.TableFunc", json_name: "TableFunc"
-        optional :expr, :message, 4, "pg_query.Expr", json_name: "Expr"
-        optional :var, :message, 5, "pg_query.Var", json_name: "Var"
-        optional :param, :message, 6, "pg_query.Param", json_name: "Param"
-        optional :aggref, :message, 7, "pg_query.Aggref", json_name: "Aggref"
-        optional :grouping_func, :message, 8, "pg_query.GroupingFunc", json_name: "GroupingFunc"
-        optional :window_func, :message, 9, "pg_query.WindowFunc", json_name: "WindowFunc"
-        optional :subscripting_ref, :message, 10, "pg_query.SubscriptingRef", json_name: "SubscriptingRef"
-        optional :func_expr, :message, 11, "pg_query.FuncExpr", json_name: "FuncExpr"
-        optional :named_arg_expr, :message, 12, "pg_query.NamedArgExpr", json_name: "NamedArgExpr"
-        optional :op_expr, :message, 13, "pg_query.OpExpr", json_name: "OpExpr"
-        optional :distinct_expr, :message, 14, "pg_query.DistinctExpr", json_name: "DistinctExpr"
-        optional :null_if_expr, :message, 15, "pg_query.NullIfExpr", json_name: "NullIfExpr"
-        optional :scalar_array_op_expr, :message, 16, "pg_query.ScalarArrayOpExpr", json_name: "ScalarArrayOpExpr"
-        optional :bool_expr, :message, 17, "pg_query.BoolExpr", json_name: "BoolExpr"
-        optional :sub_link, :message, 18, "pg_query.SubLink", json_name: "SubLink"
-        optional :sub_plan, :message, 19, "pg_query.SubPlan", json_name: "SubPlan"
-        optional :alternative_sub_plan, :message, 20, "pg_query.AlternativeSubPlan", json_name: "AlternativeSubPlan"
-        optional :field_select, :message, 21, "pg_query.FieldSelect", json_name: "FieldSelect"
-        optional :field_store, :message, 22, "pg_query.FieldStore", json_name: "FieldStore"
-        optional :relabel_type, :message, 23, "pg_query.RelabelType", json_name: "RelabelType"
-        optional :coerce_via_io, :message, 24, "pg_query.CoerceViaIO", json_name: "CoerceViaIO"
-        optional :array_coerce_expr, :message, 25, "pg_query.ArrayCoerceExpr", json_name: "ArrayCoerceExpr"
-        optional :convert_rowtype_expr, :message, 26, "pg_query.ConvertRowtypeExpr", json_name: "ConvertRowtypeExpr"
-        optional :collate_expr, :message, 27, "pg_query.CollateExpr", json_name: "CollateExpr"
-        optional :case_expr, :message, 28, "pg_query.CaseExpr", json_name: "CaseExpr"
-        optional :case_when, :message, 29, "pg_query.CaseWhen", json_name: "CaseWhen"
-        optional :case_test_expr, :message, 30, "pg_query.CaseTestExpr", json_name: "CaseTestExpr"
-        optional :array_expr, :message, 31, "pg_query.ArrayExpr", json_name: "ArrayExpr"
-        optional :row_expr, :message, 32, "pg_query.RowExpr", json_name: "RowExpr"
-        optional :row_compare_expr, :message, 33, "pg_query.RowCompareExpr", json_name: "RowCompareExpr"
-        optional :coalesce_expr, :message, 34, "pg_query.CoalesceExpr", json_name: "CoalesceExpr"
-        optional :min_max_expr, :message, 35, "pg_query.MinMaxExpr", json_name: "MinMaxExpr"
-        optional :sqlvalue_function, :message, 36, "pg_query.SQLValueFunction", json_name: "SQLValueFunction"
-        optional :xml_expr, :message, 37, "pg_query.XmlExpr", json_name: "XmlExpr"
-        optional :null_test, :message, 38, "pg_query.NullTest", json_name: "NullTest"
-        optional :boolean_test, :message, 39, "pg_query.BooleanTest", json_name: "BooleanTest"
-        optional :coerce_to_domain, :message, 40, "pg_query.CoerceToDomain", json_name: "CoerceToDomain"
-        optional :coerce_to_domain_value, :message, 41, "pg_query.CoerceToDomainValue", json_name: "CoerceToDomainValue"
-        optional :set_to_default, :message, 42, "pg_query.SetToDefault", json_name: "SetToDefault"
-        optional :current_of_expr, :message, 43, "pg_query.CurrentOfExpr", json_name: "CurrentOfExpr"
-        optional :next_value_expr, :message, 44, "pg_query.NextValueExpr", json_name: "NextValueExpr"
-        optional :inference_elem, :message, 45, "pg_query.InferenceElem", json_name: "InferenceElem"
-        optional :target_entry, :message, 46, "pg_query.TargetEntry", json_name: "TargetEntry"
-        optional :range_tbl_ref, :message, 47, "pg_query.RangeTblRef", json_name: "RangeTblRef"
-        optional :join_expr, :message, 48, "pg_query.JoinExpr", json_name: "JoinExpr"
-        optional :from_expr, :message, 49, "pg_query.FromExpr", json_name: "FromExpr"
-        optional :on_conflict_expr, :message, 50, "pg_query.OnConflictExpr", json_name: "OnConflictExpr"
-        optional :into_clause, :message, 51, "pg_query.IntoClause", json_name: "IntoClause"
+        optional :var, :message, 4, "pg_query.Var", json_name: "Var"
+        optional :param, :message, 5, "pg_query.Param", json_name: "Param"
+        optional :aggref, :message, 6, "pg_query.Aggref", json_name: "Aggref"
+        optional :grouping_func, :message, 7, "pg_query.GroupingFunc", json_name: "GroupingFunc"
+        optional :window_func, :message, 8, "pg_query.WindowFunc", json_name: "WindowFunc"
+        optional :subscripting_ref, :message, 9, "pg_query.SubscriptingRef", json_name: "SubscriptingRef"
+        optional :func_expr, :message, 10, "pg_query.FuncExpr", json_name: "FuncExpr"
+        optional :named_arg_expr, :message, 11, "pg_query.NamedArgExpr", json_name: "NamedArgExpr"
+        optional :op_expr, :message, 12, "pg_query.OpExpr", json_name: "OpExpr"
+        optional :distinct_expr, :message, 13, "pg_query.DistinctExpr", json_name: "DistinctExpr"
+        optional :null_if_expr, :message, 14, "pg_query.NullIfExpr", json_name: "NullIfExpr"
+        optional :scalar_array_op_expr, :message, 15, "pg_query.ScalarArrayOpExpr", json_name: "ScalarArrayOpExpr"
+        optional :bool_expr, :message, 16, "pg_query.BoolExpr", json_name: "BoolExpr"
+        optional :sub_link, :message, 17, "pg_query.SubLink", json_name: "SubLink"
+        optional :sub_plan, :message, 18, "pg_query.SubPlan", json_name: "SubPlan"
+        optional :alternative_sub_plan, :message, 19, "pg_query.AlternativeSubPlan", json_name: "AlternativeSubPlan"
+        optional :field_select, :message, 20, "pg_query.FieldSelect", json_name: "FieldSelect"
+        optional :field_store, :message, 21, "pg_query.FieldStore", json_name: "FieldStore"
+        optional :relabel_type, :message, 22, "pg_query.RelabelType", json_name: "RelabelType"
+        optional :coerce_via_io, :message, 23, "pg_query.CoerceViaIO", json_name: "CoerceViaIO"
+        optional :array_coerce_expr, :message, 24, "pg_query.ArrayCoerceExpr", json_name: "ArrayCoerceExpr"
+        optional :convert_rowtype_expr, :message, 25, "pg_query.ConvertRowtypeExpr", json_name: "ConvertRowtypeExpr"
+        optional :collate_expr, :message, 26, "pg_query.CollateExpr", json_name: "CollateExpr"
+        optional :case_expr, :message, 27, "pg_query.CaseExpr", json_name: "CaseExpr"
+        optional :case_when, :message, 28, "pg_query.CaseWhen", json_name: "CaseWhen"
+        optional :case_test_expr, :message, 29, "pg_query.CaseTestExpr", json_name: "CaseTestExpr"
+        optional :array_expr, :message, 30, "pg_query.ArrayExpr", json_name: "ArrayExpr"
+        optional :row_expr, :message, 31, "pg_query.RowExpr", json_name: "RowExpr"
+        optional :row_compare_expr, :message, 32, "pg_query.RowCompareExpr", json_name: "RowCompareExpr"
+        optional :coalesce_expr, :message, 33, "pg_query.CoalesceExpr", json_name: "CoalesceExpr"
+        optional :min_max_expr, :message, 34, "pg_query.MinMaxExpr", json_name: "MinMaxExpr"
+        optional :sqlvalue_function, :message, 35, "pg_query.SQLValueFunction", json_name: "SQLValueFunction"
+        optional :xml_expr, :message, 36, "pg_query.XmlExpr", json_name: "XmlExpr"
+        optional :null_test, :message, 37, "pg_query.NullTest", json_name: "NullTest"
+        optional :boolean_test, :message, 38, "pg_query.BooleanTest", json_name: "BooleanTest"
+        optional :coerce_to_domain, :message, 39, "pg_query.CoerceToDomain", json_name: "CoerceToDomain"
+        optional :coerce_to_domain_value, :message, 40, "pg_query.CoerceToDomainValue", json_name: "CoerceToDomainValue"
+        optional :set_to_default, :message, 41, "pg_query.SetToDefault", json_name: "SetToDefault"
+        optional :current_of_expr, :message, 42, "pg_query.CurrentOfExpr", json_name: "CurrentOfExpr"
+        optional :next_value_expr, :message, 43, "pg_query.NextValueExpr", json_name: "NextValueExpr"
+        optional :inference_elem, :message, 44, "pg_query.InferenceElem", json_name: "InferenceElem"
+        optional :target_entry, :message, 45, "pg_query.TargetEntry", json_name: "TargetEntry"
+        optional :range_tbl_ref, :message, 46, "pg_query.RangeTblRef", json_name: "RangeTblRef"
+        optional :join_expr, :message, 47, "pg_query.JoinExpr", json_name: "JoinExpr"
+        optional :from_expr, :message, 48, "pg_query.FromExpr", json_name: "FromExpr"
+        optional :on_conflict_expr, :message, 49, "pg_query.OnConflictExpr", json_name: "OnConflictExpr"
+        optional :into_clause, :message, 50, "pg_query.IntoClause", json_name: "IntoClause"
+        optional :merge_action, :message, 51, "pg_query.MergeAction", json_name: "MergeAction"
         optional :raw_stmt, :message, 52, "pg_query.RawStmt", json_name: "RawStmt"
         optional :query, :message, 53, "pg_query.Query", json_name: "Query"
         optional :insert_stmt, :message, 54, "pg_query.InsertStmt", json_name: "InsertStmt"
         optional :delete_stmt, :message, 55, "pg_query.DeleteStmt", json_name: "DeleteStmt"
         optional :update_stmt, :message, 56, "pg_query.UpdateStmt", json_name: "UpdateStmt"
-        optional :select_stmt, :message, 57, "pg_query.SelectStmt", json_name: "SelectStmt"
-        optional :alter_table_stmt, :message, 58, "pg_query.AlterTableStmt", json_name: "AlterTableStmt"
-        optional :alter_table_cmd, :message, 59, "pg_query.AlterTableCmd", json_name: "AlterTableCmd"
-        optional :alter_domain_stmt, :message, 60, "pg_query.AlterDomainStmt", json_name: "AlterDomainStmt"
-        optional :set_operation_stmt, :message, 61, "pg_query.SetOperationStmt", json_name: "SetOperationStmt"
-        optional :grant_stmt, :message, 62, "pg_query.GrantStmt", json_name: "GrantStmt"
-        optional :grant_role_stmt, :message, 63, "pg_query.GrantRoleStmt", json_name: "GrantRoleStmt"
-        optional :alter_default_privileges_stmt, :message, 64, "pg_query.AlterDefaultPrivilegesStmt", json_name: "AlterDefaultPrivilegesStmt"
-        optional :close_portal_stmt, :message, 65, "pg_query.ClosePortalStmt", json_name: "ClosePortalStmt"
-        optional :cluster_stmt, :message, 66, "pg_query.ClusterStmt", json_name: "ClusterStmt"
-        optional :copy_stmt, :message, 67, "pg_query.CopyStmt", json_name: "CopyStmt"
-        optional :create_stmt, :message, 68, "pg_query.CreateStmt", json_name: "CreateStmt"
-        optional :define_stmt, :message, 69, "pg_query.DefineStmt", json_name: "DefineStmt"
-        optional :drop_stmt, :message, 70, "pg_query.DropStmt", json_name: "DropStmt"
-        optional :truncate_stmt, :message, 71, "pg_query.TruncateStmt", json_name: "TruncateStmt"
-        optional :comment_stmt, :message, 72, "pg_query.CommentStmt", json_name: "CommentStmt"
-        optional :fetch_stmt, :message, 73, "pg_query.FetchStmt", json_name: "FetchStmt"
-        optional :index_stmt, :message, 74, "pg_query.IndexStmt", json_name: "IndexStmt"
-        optional :create_function_stmt, :message, 75, "pg_query.CreateFunctionStmt", json_name: "CreateFunctionStmt"
-        optional :alter_function_stmt, :message, 76, "pg_query.AlterFunctionStmt", json_name: "AlterFunctionStmt"
-        optional :do_stmt, :message, 77, "pg_query.DoStmt", json_name: "DoStmt"
-        optional :rename_stmt, :message, 78, "pg_query.RenameStmt", json_name: "RenameStmt"
-        optional :rule_stmt, :message, 79, "pg_query.RuleStmt", json_name: "RuleStmt"
-        optional :notify_stmt, :message, 80, "pg_query.NotifyStmt", json_name: "NotifyStmt"
-        optional :listen_stmt, :message, 81, "pg_query.ListenStmt", json_name: "ListenStmt"
-        optional :unlisten_stmt, :message, 82, "pg_query.UnlistenStmt", json_name: "UnlistenStmt"
-        optional :transaction_stmt, :message, 83, "pg_query.TransactionStmt", json_name: "TransactionStmt"
-        optional :view_stmt, :message, 84, "pg_query.ViewStmt", json_name: "ViewStmt"
-        optional :load_stmt, :message, 85, "pg_query.LoadStmt", json_name: "LoadStmt"
-        optional :create_domain_stmt, :message, 86, "pg_query.CreateDomainStmt", json_name: "CreateDomainStmt"
-        optional :createdb_stmt, :message, 87, "pg_query.CreatedbStmt", json_name: "CreatedbStmt"
-        optional :dropdb_stmt, :message, 88, "pg_query.DropdbStmt", json_name: "DropdbStmt"
-        optional :vacuum_stmt, :message, 89, "pg_query.VacuumStmt", json_name: "VacuumStmt"
-        optional :explain_stmt, :message, 90, "pg_query.ExplainStmt", json_name: "ExplainStmt"
-        optional :create_table_as_stmt, :message, 91, "pg_query.CreateTableAsStmt", json_name: "CreateTableAsStmt"
-        optional :create_seq_stmt, :message, 92, "pg_query.CreateSeqStmt", json_name: "CreateSeqStmt"
-        optional :alter_seq_stmt, :message, 93, "pg_query.AlterSeqStmt", json_name: "AlterSeqStmt"
-        optional :variable_set_stmt, :message, 94, "pg_query.VariableSetStmt", json_name: "VariableSetStmt"
-        optional :variable_show_stmt, :message, 95, "pg_query.VariableShowStmt", json_name: "VariableShowStmt"
-        optional :discard_stmt, :message, 96, "pg_query.DiscardStmt", json_name: "DiscardStmt"
-        optional :create_trig_stmt, :message, 97, "pg_query.CreateTrigStmt", json_name: "CreateTrigStmt"
-        optional :create_plang_stmt, :message, 98, "pg_query.CreatePLangStmt", json_name: "CreatePLangStmt"
-        optional :create_role_stmt, :message, 99, "pg_query.CreateRoleStmt", json_name: "CreateRoleStmt"
-        optional :alter_role_stmt, :message, 100, "pg_query.AlterRoleStmt", json_name: "AlterRoleStmt"
-        optional :drop_role_stmt, :message, 101, "pg_query.DropRoleStmt", json_name: "DropRoleStmt"
-        optional :lock_stmt, :message, 102, "pg_query.LockStmt", json_name: "LockStmt"
-        optional :constraints_set_stmt, :message, 103, "pg_query.ConstraintsSetStmt", json_name: "ConstraintsSetStmt"
-        optional :reindex_stmt, :message, 104, "pg_query.ReindexStmt", json_name: "ReindexStmt"
-        optional :check_point_stmt, :message, 105, "pg_query.CheckPointStmt", json_name: "CheckPointStmt"
-        optional :create_schema_stmt, :message, 106, "pg_query.CreateSchemaStmt", json_name: "CreateSchemaStmt"
-        optional :alter_database_stmt, :message, 107, "pg_query.AlterDatabaseStmt", json_name: "AlterDatabaseStmt"
-        optional :alter_database_set_stmt, :message, 108, "pg_query.AlterDatabaseSetStmt", json_name: "AlterDatabaseSetStmt"
-        optional :alter_role_set_stmt, :message, 109, "pg_query.AlterRoleSetStmt", json_name: "AlterRoleSetStmt"
-        optional :create_conversion_stmt, :message, 110, "pg_query.CreateConversionStmt", json_name: "CreateConversionStmt"
-        optional :create_cast_stmt, :message, 111, "pg_query.CreateCastStmt", json_name: "CreateCastStmt"
-        optional :create_op_class_stmt, :message, 112, "pg_query.CreateOpClassStmt", json_name: "CreateOpClassStmt"
-        optional :create_op_family_stmt, :message, 113, "pg_query.CreateOpFamilyStmt", json_name: "CreateOpFamilyStmt"
-        optional :alter_op_family_stmt, :message, 114, "pg_query.AlterOpFamilyStmt", json_name: "AlterOpFamilyStmt"
-        optional :prepare_stmt, :message, 115, "pg_query.PrepareStmt", json_name: "PrepareStmt"
-        optional :execute_stmt, :message, 116, "pg_query.ExecuteStmt", json_name: "ExecuteStmt"
-        optional :deallocate_stmt, :message, 117, "pg_query.DeallocateStmt", json_name: "DeallocateStmt"
-        optional :declare_cursor_stmt, :message, 118, "pg_query.DeclareCursorStmt", json_name: "DeclareCursorStmt"
-        optional :create_table_space_stmt, :message, 119, "pg_query.CreateTableSpaceStmt", json_name: "CreateTableSpaceStmt"
-        optional :drop_table_space_stmt, :message, 120, "pg_query.DropTableSpaceStmt", json_name: "DropTableSpaceStmt"
-        optional :alter_object_depends_stmt, :message, 121, "pg_query.AlterObjectDependsStmt", json_name: "AlterObjectDependsStmt"
-        optional :alter_object_schema_stmt, :message, 122, "pg_query.AlterObjectSchemaStmt", json_name: "AlterObjectSchemaStmt"
-        optional :alter_owner_stmt, :message, 123, "pg_query.AlterOwnerStmt", json_name: "AlterOwnerStmt"
-        optional :alter_operator_stmt, :message, 124, "pg_query.AlterOperatorStmt", json_name: "AlterOperatorStmt"
-        optional :alter_type_stmt, :message, 125, "pg_query.AlterTypeStmt", json_name: "AlterTypeStmt"
-        optional :drop_owned_stmt, :message, 126, "pg_query.DropOwnedStmt", json_name: "DropOwnedStmt"
-        optional :reassign_owned_stmt, :message, 127, "pg_query.ReassignOwnedStmt", json_name: "ReassignOwnedStmt"
-        optional :composite_type_stmt, :message, 128, "pg_query.CompositeTypeStmt", json_name: "CompositeTypeStmt"
-        optional :create_enum_stmt, :message, 129, "pg_query.CreateEnumStmt", json_name: "CreateEnumStmt"
-        optional :create_range_stmt, :message, 130, "pg_query.CreateRangeStmt", json_name: "CreateRangeStmt"
-        optional :alter_enum_stmt, :message, 131, "pg_query.AlterEnumStmt", json_name: "AlterEnumStmt"
-        optional :alter_tsdictionary_stmt, :message, 132, "pg_query.AlterTSDictionaryStmt", json_name: "AlterTSDictionaryStmt"
-        optional :alter_tsconfiguration_stmt, :message, 133, "pg_query.AlterTSConfigurationStmt", json_name: "AlterTSConfigurationStmt"
-        optional :create_fdw_stmt, :message, 134, "pg_query.CreateFdwStmt", json_name: "CreateFdwStmt"
-        optional :alter_fdw_stmt, :message, 135, "pg_query.AlterFdwStmt", json_name: "AlterFdwStmt"
-        optional :create_foreign_server_stmt, :message, 136, "pg_query.CreateForeignServerStmt", json_name: "CreateForeignServerStmt"
-        optional :alter_foreign_server_stmt, :message, 137, "pg_query.AlterForeignServerStmt", json_name: "AlterForeignServerStmt"
-        optional :create_user_mapping_stmt, :message, 138, "pg_query.CreateUserMappingStmt", json_name: "CreateUserMappingStmt"
-        optional :alter_user_mapping_stmt, :message, 139, "pg_query.AlterUserMappingStmt", json_name: "AlterUserMappingStmt"
-        optional :drop_user_mapping_stmt, :message, 140, "pg_query.DropUserMappingStmt", json_name: "DropUserMappingStmt"
-        optional :alter_table_space_options_stmt, :message, 141, "pg_query.AlterTableSpaceOptionsStmt", json_name: "AlterTableSpaceOptionsStmt"
-        optional :alter_table_move_all_stmt, :message, 142, "pg_query.AlterTableMoveAllStmt", json_name: "AlterTableMoveAllStmt"
-        optional :sec_label_stmt, :message, 143, "pg_query.SecLabelStmt", json_name: "SecLabelStmt"
-        optional :create_foreign_table_stmt, :message, 144, "pg_query.CreateForeignTableStmt", json_name: "CreateForeignTableStmt"
-        optional :import_foreign_schema_stmt, :message, 145, "pg_query.ImportForeignSchemaStmt", json_name: "ImportForeignSchemaStmt"
-        optional :create_extension_stmt, :message, 146, "pg_query.CreateExtensionStmt", json_name: "CreateExtensionStmt"
-        optional :alter_extension_stmt, :message, 147, "pg_query.AlterExtensionStmt", json_name: "AlterExtensionStmt"
-        optional :alter_extension_contents_stmt, :message, 148, "pg_query.AlterExtensionContentsStmt", json_name: "AlterExtensionContentsStmt"
-        optional :create_event_trig_stmt, :message, 149, "pg_query.CreateEventTrigStmt", json_name: "CreateEventTrigStmt"
-        optional :alter_event_trig_stmt, :message, 150, "pg_query.AlterEventTrigStmt", json_name: "AlterEventTrigStmt"
-        optional :refresh_mat_view_stmt, :message, 151, "pg_query.RefreshMatViewStmt", json_name: "RefreshMatViewStmt"
-        optional :replica_identity_stmt, :message, 152, "pg_query.ReplicaIdentityStmt", json_name: "ReplicaIdentityStmt"
-        optional :alter_system_stmt, :message, 153, "pg_query.AlterSystemStmt", json_name: "AlterSystemStmt"
-        optional :create_policy_stmt, :message, 154, "pg_query.CreatePolicyStmt", json_name: "CreatePolicyStmt"
-        optional :alter_policy_stmt, :message, 155, "pg_query.AlterPolicyStmt", json_name: "AlterPolicyStmt"
-        optional :create_transform_stmt, :message, 156, "pg_query.CreateTransformStmt", json_name: "CreateTransformStmt"
-        optional :create_am_stmt, :message, 157, "pg_query.CreateAmStmt", json_name: "CreateAmStmt"
-        optional :create_publication_stmt, :message, 158, "pg_query.CreatePublicationStmt", json_name: "CreatePublicationStmt"
-        optional :alter_publication_stmt, :message, 159, "pg_query.AlterPublicationStmt", json_name: "AlterPublicationStmt"
-        optional :create_subscription_stmt, :message, 160, "pg_query.CreateSubscriptionStmt", json_name: "CreateSubscriptionStmt"
-        optional :alter_subscription_stmt, :message, 161, "pg_query.AlterSubscriptionStmt", json_name: "AlterSubscriptionStmt"
-        optional :drop_subscription_stmt, :message, 162, "pg_query.DropSubscriptionStmt", json_name: "DropSubscriptionStmt"
-        optional :create_stats_stmt, :message, 163, "pg_query.CreateStatsStmt", json_name: "CreateStatsStmt"
-        optional :alter_collation_stmt, :message, 164, "pg_query.AlterCollationStmt", json_name: "AlterCollationStmt"
-        optional :call_stmt, :message, 165, "pg_query.CallStmt", json_name: "CallStmt"
-        optional :alter_stats_stmt, :message, 166, "pg_query.AlterStatsStmt", json_name: "AlterStatsStmt"
-        optional :a_expr, :message, 167, "pg_query.A_Expr", json_name: "A_Expr"
-        optional :column_ref, :message, 168, "pg_query.ColumnRef", json_name: "ColumnRef"
-        optional :param_ref, :message, 169, "pg_query.ParamRef", json_name: "ParamRef"
-        optional :a_const, :message, 170, "pg_query.A_Const", json_name: "A_Const"
-        optional :func_call, :message, 171, "pg_query.FuncCall", json_name: "FuncCall"
-        optional :a_star, :message, 172, "pg_query.A_Star", json_name: "A_Star"
-        optional :a_indices, :message, 173, "pg_query.A_Indices", json_name: "A_Indices"
-        optional :a_indirection, :message, 174, "pg_query.A_Indirection", json_name: "A_Indirection"
-        optional :a_array_expr, :message, 175, "pg_query.A_ArrayExpr", json_name: "A_ArrayExpr"
-        optional :res_target, :message, 176, "pg_query.ResTarget", json_name: "ResTarget"
-        optional :multi_assign_ref, :message, 177, "pg_query.MultiAssignRef", json_name: "MultiAssignRef"
-        optional :type_cast, :message, 178, "pg_query.TypeCast", json_name: "TypeCast"
-        optional :collate_clause, :message, 179, "pg_query.CollateClause", json_name: "CollateClause"
-        optional :sort_by, :message, 180, "pg_query.SortBy", json_name: "SortBy"
-        optional :window_def, :message, 181, "pg_query.WindowDef", json_name: "WindowDef"
-        optional :range_subselect, :message, 182, "pg_query.RangeSubselect", json_name: "RangeSubselect"
-        optional :range_function, :message, 183, "pg_query.RangeFunction", json_name: "RangeFunction"
-        optional :range_table_sample, :message, 184, "pg_query.RangeTableSample", json_name: "RangeTableSample"
-        optional :range_table_func, :message, 185, "pg_query.RangeTableFunc", json_name: "RangeTableFunc"
-        optional :range_table_func_col, :message, 186, "pg_query.RangeTableFuncCol", json_name: "RangeTableFuncCol"
-        optional :type_name, :message, 187, "pg_query.TypeName", json_name: "TypeName"
-        optional :column_def, :message, 188, "pg_query.ColumnDef", json_name: "ColumnDef"
-        optional :index_elem, :message, 189, "pg_query.IndexElem", json_name: "IndexElem"
-        optional :constraint, :message, 190, "pg_query.Constraint", json_name: "Constraint"
-        optional :def_elem, :message, 191, "pg_query.DefElem", json_name: "DefElem"
-        optional :range_tbl_entry, :message, 192, "pg_query.RangeTblEntry", json_name: "RangeTblEntry"
-        optional :range_tbl_function, :message, 193, "pg_query.RangeTblFunction", json_name: "RangeTblFunction"
-        optional :table_sample_clause, :message, 194, "pg_query.TableSampleClause", json_name: "TableSampleClause"
-        optional :with_check_option, :message, 195, "pg_query.WithCheckOption", json_name: "WithCheckOption"
-        optional :sort_group_clause, :message, 196, "pg_query.SortGroupClause", json_name: "SortGroupClause"
-        optional :grouping_set, :message, 197, "pg_query.GroupingSet", json_name: "GroupingSet"
-        optional :window_clause, :message, 198, "pg_query.WindowClause", json_name: "WindowClause"
-        optional :object_with_args, :message, 199, "pg_query.ObjectWithArgs", json_name: "ObjectWithArgs"
-        optional :access_priv, :message, 200, "pg_query.AccessPriv", json_name: "AccessPriv"
-        optional :create_op_class_item, :message, 201, "pg_query.CreateOpClassItem", json_name: "CreateOpClassItem"
-        optional :table_like_clause, :message, 202, "pg_query.TableLikeClause", json_name: "TableLikeClause"
-        optional :function_parameter, :message, 203, "pg_query.FunctionParameter", json_name: "FunctionParameter"
-        optional :locking_clause, :message, 204, "pg_query.LockingClause", json_name: "LockingClause"
-        optional :row_mark_clause, :message, 205, "pg_query.RowMarkClause", json_name: "RowMarkClause"
-        optional :xml_serialize, :message, 206, "pg_query.XmlSerialize", json_name: "XmlSerialize"
-        optional :with_clause, :message, 207, "pg_query.WithClause", json_name: "WithClause"
-        optional :infer_clause, :message, 208, "pg_query.InferClause", json_name: "InferClause"
-        optional :on_conflict_clause, :message, 209, "pg_query.OnConflictClause", json_name: "OnConflictClause"
-        optional :common_table_expr, :message, 210, "pg_query.CommonTableExpr", json_name: "CommonTableExpr"
-        optional :role_spec, :message, 211, "pg_query.RoleSpec", json_name: "RoleSpec"
-        optional :trigger_transition, :message, 212, "pg_query.TriggerTransition", json_name: "TriggerTransition"
-        optional :partition_elem, :message, 213, "pg_query.PartitionElem", json_name: "PartitionElem"
-        optional :partition_spec, :message, 214, "pg_query.PartitionSpec", json_name: "PartitionSpec"
-        optional :partition_bound_spec, :message, 215, "pg_query.PartitionBoundSpec", json_name: "PartitionBoundSpec"
-        optional :partition_range_datum, :message, 216, "pg_query.PartitionRangeDatum", json_name: "PartitionRangeDatum"
-        optional :partition_cmd, :message, 217, "pg_query.PartitionCmd", json_name: "PartitionCmd"
-        optional :vacuum_relation, :message, 218, "pg_query.VacuumRelation", json_name: "VacuumRelation"
-        optional :inline_code_block, :message, 219, "pg_query.InlineCodeBlock", json_name: "InlineCodeBlock"
-        optional :call_context, :message, 220, "pg_query.CallContext", json_name: "CallContext"
-        optional :integer, :message, 221, "pg_query.Integer", json_name: "Integer"
-        optional :float, :message, 222, "pg_query.Float", json_name: "Float"
-        optional :string, :message, 223, "pg_query.String", json_name: "String"
-        optional :bit_string, :message, 224, "pg_query.BitString", json_name: "BitString"
-        optional :null, :message, 225, "pg_query.Null", json_name: "Null"
-        optional :list, :message, 226, "pg_query.List", json_name: "List"
-        optional :int_list, :message, 227, "pg_query.IntList", json_name: "IntList"
-        optional :oid_list, :message, 228, "pg_query.OidList", json_name: "OidList"
+        optional :merge_stmt, :message, 57, "pg_query.MergeStmt", json_name: "MergeStmt"
+        optional :select_stmt, :message, 58, "pg_query.SelectStmt", json_name: "SelectStmt"
+        optional :return_stmt, :message, 59, "pg_query.ReturnStmt", json_name: "ReturnStmt"
+        optional :plassign_stmt, :message, 60, "pg_query.PLAssignStmt", json_name: "PLAssignStmt"
+        optional :alter_table_stmt, :message, 61, "pg_query.AlterTableStmt", json_name: "AlterTableStmt"
+        optional :alter_table_cmd, :message, 62, "pg_query.AlterTableCmd", json_name: "AlterTableCmd"
+        optional :alter_domain_stmt, :message, 63, "pg_query.AlterDomainStmt", json_name: "AlterDomainStmt"
+        optional :set_operation_stmt, :message, 64, "pg_query.SetOperationStmt", json_name: "SetOperationStmt"
+        optional :grant_stmt, :message, 65, "pg_query.GrantStmt", json_name: "GrantStmt"
+        optional :grant_role_stmt, :message, 66, "pg_query.GrantRoleStmt", json_name: "GrantRoleStmt"
+        optional :alter_default_privileges_stmt, :message, 67, "pg_query.AlterDefaultPrivilegesStmt", json_name: "AlterDefaultPrivilegesStmt"
+        optional :close_portal_stmt, :message, 68, "pg_query.ClosePortalStmt", json_name: "ClosePortalStmt"
+        optional :cluster_stmt, :message, 69, "pg_query.ClusterStmt", json_name: "ClusterStmt"
+        optional :copy_stmt, :message, 70, "pg_query.CopyStmt", json_name: "CopyStmt"
+        optional :create_stmt, :message, 71, "pg_query.CreateStmt", json_name: "CreateStmt"
+        optional :define_stmt, :message, 72, "pg_query.DefineStmt", json_name: "DefineStmt"
+        optional :drop_stmt, :message, 73, "pg_query.DropStmt", json_name: "DropStmt"
+        optional :truncate_stmt, :message, 74, "pg_query.TruncateStmt", json_name: "TruncateStmt"
+        optional :comment_stmt, :message, 75, "pg_query.CommentStmt", json_name: "CommentStmt"
+        optional :fetch_stmt, :message, 76, "pg_query.FetchStmt", json_name: "FetchStmt"
+        optional :index_stmt, :message, 77, "pg_query.IndexStmt", json_name: "IndexStmt"
+        optional :create_function_stmt, :message, 78, "pg_query.CreateFunctionStmt", json_name: "CreateFunctionStmt"
+        optional :alter_function_stmt, :message, 79, "pg_query.AlterFunctionStmt", json_name: "AlterFunctionStmt"
+        optional :do_stmt, :message, 80, "pg_query.DoStmt", json_name: "DoStmt"
+        optional :rename_stmt, :message, 81, "pg_query.RenameStmt", json_name: "RenameStmt"
+        optional :rule_stmt, :message, 82, "pg_query.RuleStmt", json_name: "RuleStmt"
+        optional :notify_stmt, :message, 83, "pg_query.NotifyStmt", json_name: "NotifyStmt"
+        optional :listen_stmt, :message, 84, "pg_query.ListenStmt", json_name: "ListenStmt"
+        optional :unlisten_stmt, :message, 85, "pg_query.UnlistenStmt", json_name: "UnlistenStmt"
+        optional :transaction_stmt, :message, 86, "pg_query.TransactionStmt", json_name: "TransactionStmt"
+        optional :view_stmt, :message, 87, "pg_query.ViewStmt", json_name: "ViewStmt"
+        optional :load_stmt, :message, 88, "pg_query.LoadStmt", json_name: "LoadStmt"
+        optional :create_domain_stmt, :message, 89, "pg_query.CreateDomainStmt", json_name: "CreateDomainStmt"
+        optional :createdb_stmt, :message, 90, "pg_query.CreatedbStmt", json_name: "CreatedbStmt"
+        optional :dropdb_stmt, :message, 91, "pg_query.DropdbStmt", json_name: "DropdbStmt"
+        optional :vacuum_stmt, :message, 92, "pg_query.VacuumStmt", json_name: "VacuumStmt"
+        optional :explain_stmt, :message, 93, "pg_query.ExplainStmt", json_name: "ExplainStmt"
+        optional :create_table_as_stmt, :message, 94, "pg_query.CreateTableAsStmt", json_name: "CreateTableAsStmt"
+        optional :create_seq_stmt, :message, 95, "pg_query.CreateSeqStmt", json_name: "CreateSeqStmt"
+        optional :alter_seq_stmt, :message, 96, "pg_query.AlterSeqStmt", json_name: "AlterSeqStmt"
+        optional :variable_set_stmt, :message, 97, "pg_query.VariableSetStmt", json_name: "VariableSetStmt"
+        optional :variable_show_stmt, :message, 98, "pg_query.VariableShowStmt", json_name: "VariableShowStmt"
+        optional :discard_stmt, :message, 99, "pg_query.DiscardStmt", json_name: "DiscardStmt"
+        optional :create_trig_stmt, :message, 100, "pg_query.CreateTrigStmt", json_name: "CreateTrigStmt"
+        optional :create_plang_stmt, :message, 101, "pg_query.CreatePLangStmt", json_name: "CreatePLangStmt"
+        optional :create_role_stmt, :message, 102, "pg_query.CreateRoleStmt", json_name: "CreateRoleStmt"
+        optional :alter_role_stmt, :message, 103, "pg_query.AlterRoleStmt", json_name: "AlterRoleStmt"
+        optional :drop_role_stmt, :message, 104, "pg_query.DropRoleStmt", json_name: "DropRoleStmt"
+        optional :lock_stmt, :message, 105, "pg_query.LockStmt", json_name: "LockStmt"
+        optional :constraints_set_stmt, :message, 106, "pg_query.ConstraintsSetStmt", json_name: "ConstraintsSetStmt"
+        optional :reindex_stmt, :message, 107, "pg_query.ReindexStmt", json_name: "ReindexStmt"
+        optional :check_point_stmt, :message, 108, "pg_query.CheckPointStmt", json_name: "CheckPointStmt"
+        optional :create_schema_stmt, :message, 109, "pg_query.CreateSchemaStmt", json_name: "CreateSchemaStmt"
+        optional :alter_database_stmt, :message, 110, "pg_query.AlterDatabaseStmt", json_name: "AlterDatabaseStmt"
+        optional :alter_database_refresh_coll_stmt, :message, 111, "pg_query.AlterDatabaseRefreshCollStmt", json_name: "AlterDatabaseRefreshCollStmt"
+        optional :alter_database_set_stmt, :message, 112, "pg_query.AlterDatabaseSetStmt", json_name: "AlterDatabaseSetStmt"
+        optional :alter_role_set_stmt, :message, 113, "pg_query.AlterRoleSetStmt", json_name: "AlterRoleSetStmt"
+        optional :create_conversion_stmt, :message, 114, "pg_query.CreateConversionStmt", json_name: "CreateConversionStmt"
+        optional :create_cast_stmt, :message, 115, "pg_query.CreateCastStmt", json_name: "CreateCastStmt"
+        optional :create_op_class_stmt, :message, 116, "pg_query.CreateOpClassStmt", json_name: "CreateOpClassStmt"
+        optional :create_op_family_stmt, :message, 117, "pg_query.CreateOpFamilyStmt", json_name: "CreateOpFamilyStmt"
+        optional :alter_op_family_stmt, :message, 118, "pg_query.AlterOpFamilyStmt", json_name: "AlterOpFamilyStmt"
+        optional :prepare_stmt, :message, 119, "pg_query.PrepareStmt", json_name: "PrepareStmt"
+        optional :execute_stmt, :message, 120, "pg_query.ExecuteStmt", json_name: "ExecuteStmt"
+        optional :deallocate_stmt, :message, 121, "pg_query.DeallocateStmt", json_name: "DeallocateStmt"
+        optional :declare_cursor_stmt, :message, 122, "pg_query.DeclareCursorStmt", json_name: "DeclareCursorStmt"
+        optional :create_table_space_stmt, :message, 123, "pg_query.CreateTableSpaceStmt", json_name: "CreateTableSpaceStmt"
+        optional :drop_table_space_stmt, :message, 124, "pg_query.DropTableSpaceStmt", json_name: "DropTableSpaceStmt"
+        optional :alter_object_depends_stmt, :message, 125, "pg_query.AlterObjectDependsStmt", json_name: "AlterObjectDependsStmt"
+        optional :alter_object_schema_stmt, :message, 126, "pg_query.AlterObjectSchemaStmt", json_name: "AlterObjectSchemaStmt"
+        optional :alter_owner_stmt, :message, 127, "pg_query.AlterOwnerStmt", json_name: "AlterOwnerStmt"
+        optional :alter_operator_stmt, :message, 128, "pg_query.AlterOperatorStmt", json_name: "AlterOperatorStmt"
+        optional :alter_type_stmt, :message, 129, "pg_query.AlterTypeStmt", json_name: "AlterTypeStmt"
+        optional :drop_owned_stmt, :message, 130, "pg_query.DropOwnedStmt", json_name: "DropOwnedStmt"
+        optional :reassign_owned_stmt, :message, 131, "pg_query.ReassignOwnedStmt", json_name: "ReassignOwnedStmt"
+        optional :composite_type_stmt, :message, 132, "pg_query.CompositeTypeStmt", json_name: "CompositeTypeStmt"
+        optional :create_enum_stmt, :message, 133, "pg_query.CreateEnumStmt", json_name: "CreateEnumStmt"
+        optional :create_range_stmt, :message, 134, "pg_query.CreateRangeStmt", json_name: "CreateRangeStmt"
+        optional :alter_enum_stmt, :message, 135, "pg_query.AlterEnumStmt", json_name: "AlterEnumStmt"
+        optional :alter_tsdictionary_stmt, :message, 136, "pg_query.AlterTSDictionaryStmt", json_name: "AlterTSDictionaryStmt"
+        optional :alter_tsconfiguration_stmt, :message, 137, "pg_query.AlterTSConfigurationStmt", json_name: "AlterTSConfigurationStmt"
+        optional :create_fdw_stmt, :message, 138, "pg_query.CreateFdwStmt", json_name: "CreateFdwStmt"
+        optional :alter_fdw_stmt, :message, 139, "pg_query.AlterFdwStmt", json_name: "AlterFdwStmt"
+        optional :create_foreign_server_stmt, :message, 140, "pg_query.CreateForeignServerStmt", json_name: "CreateForeignServerStmt"
+        optional :alter_foreign_server_stmt, :message, 141, "pg_query.AlterForeignServerStmt", json_name: "AlterForeignServerStmt"
+        optional :create_user_mapping_stmt, :message, 142, "pg_query.CreateUserMappingStmt", json_name: "CreateUserMappingStmt"
+        optional :alter_user_mapping_stmt, :message, 143, "pg_query.AlterUserMappingStmt", json_name: "AlterUserMappingStmt"
+        optional :drop_user_mapping_stmt, :message, 144, "pg_query.DropUserMappingStmt", json_name: "DropUserMappingStmt"
+        optional :alter_table_space_options_stmt, :message, 145, "pg_query.AlterTableSpaceOptionsStmt", json_name: "AlterTableSpaceOptionsStmt"
+        optional :alter_table_move_all_stmt, :message, 146, "pg_query.AlterTableMoveAllStmt", json_name: "AlterTableMoveAllStmt"
+        optional :sec_label_stmt, :message, 147, "pg_query.SecLabelStmt", json_name: "SecLabelStmt"
+        optional :create_foreign_table_stmt, :message, 148, "pg_query.CreateForeignTableStmt", json_name: "CreateForeignTableStmt"
+        optional :import_foreign_schema_stmt, :message, 149, "pg_query.ImportForeignSchemaStmt", json_name: "ImportForeignSchemaStmt"
+        optional :create_extension_stmt, :message, 150, "pg_query.CreateExtensionStmt", json_name: "CreateExtensionStmt"
+        optional :alter_extension_stmt, :message, 151, "pg_query.AlterExtensionStmt", json_name: "AlterExtensionStmt"
+        optional :alter_extension_contents_stmt, :message, 152, "pg_query.AlterExtensionContentsStmt", json_name: "AlterExtensionContentsStmt"
+        optional :create_event_trig_stmt, :message, 153, "pg_query.CreateEventTrigStmt", json_name: "CreateEventTrigStmt"
+        optional :alter_event_trig_stmt, :message, 154, "pg_query.AlterEventTrigStmt", json_name: "AlterEventTrigStmt"
+        optional :refresh_mat_view_stmt, :message, 155, "pg_query.RefreshMatViewStmt", json_name: "RefreshMatViewStmt"
+        optional :replica_identity_stmt, :message, 156, "pg_query.ReplicaIdentityStmt", json_name: "ReplicaIdentityStmt"
+        optional :alter_system_stmt, :message, 157, "pg_query.AlterSystemStmt", json_name: "AlterSystemStmt"
+        optional :create_policy_stmt, :message, 158, "pg_query.CreatePolicyStmt", json_name: "CreatePolicyStmt"
+        optional :alter_policy_stmt, :message, 159, "pg_query.AlterPolicyStmt", json_name: "AlterPolicyStmt"
+        optional :create_transform_stmt, :message, 160, "pg_query.CreateTransformStmt", json_name: "CreateTransformStmt"
+        optional :create_am_stmt, :message, 161, "pg_query.CreateAmStmt", json_name: "CreateAmStmt"
+        optional :create_publication_stmt, :message, 162, "pg_query.CreatePublicationStmt", json_name: "CreatePublicationStmt"
+        optional :alter_publication_stmt, :message, 163, "pg_query.AlterPublicationStmt", json_name: "AlterPublicationStmt"
+        optional :create_subscription_stmt, :message, 164, "pg_query.CreateSubscriptionStmt", json_name: "CreateSubscriptionStmt"
+        optional :alter_subscription_stmt, :message, 165, "pg_query.AlterSubscriptionStmt", json_name: "AlterSubscriptionStmt"
+        optional :drop_subscription_stmt, :message, 166, "pg_query.DropSubscriptionStmt", json_name: "DropSubscriptionStmt"
+        optional :create_stats_stmt, :message, 167, "pg_query.CreateStatsStmt", json_name: "CreateStatsStmt"
+        optional :alter_collation_stmt, :message, 168, "pg_query.AlterCollationStmt", json_name: "AlterCollationStmt"
+        optional :call_stmt, :message, 169, "pg_query.CallStmt", json_name: "CallStmt"
+        optional :alter_stats_stmt, :message, 170, "pg_query.AlterStatsStmt", json_name: "AlterStatsStmt"
+        optional :a_expr, :message, 171, "pg_query.A_Expr", json_name: "A_Expr"
+        optional :column_ref, :message, 172, "pg_query.ColumnRef", json_name: "ColumnRef"
+        optional :param_ref, :message, 173, "pg_query.ParamRef", json_name: "ParamRef"
+        optional :func_call, :message, 174, "pg_query.FuncCall", json_name: "FuncCall"
+        optional :a_star, :message, 175, "pg_query.A_Star", json_name: "A_Star"
+        optional :a_indices, :message, 176, "pg_query.A_Indices", json_name: "A_Indices"
+        optional :a_indirection, :message, 177, "pg_query.A_Indirection", json_name: "A_Indirection"
+        optional :a_array_expr, :message, 178, "pg_query.A_ArrayExpr", json_name: "A_ArrayExpr"
+        optional :res_target, :message, 179, "pg_query.ResTarget", json_name: "ResTarget"
+        optional :multi_assign_ref, :message, 180, "pg_query.MultiAssignRef", json_name: "MultiAssignRef"
+        optional :type_cast, :message, 181, "pg_query.TypeCast", json_name: "TypeCast"
+        optional :collate_clause, :message, 182, "pg_query.CollateClause", json_name: "CollateClause"
+        optional :sort_by, :message, 183, "pg_query.SortBy", json_name: "SortBy"
+        optional :window_def, :message, 184, "pg_query.WindowDef", json_name: "WindowDef"
+        optional :range_subselect, :message, 185, "pg_query.RangeSubselect", json_name: "RangeSubselect"
+        optional :range_function, :message, 186, "pg_query.RangeFunction", json_name: "RangeFunction"
+        optional :range_table_sample, :message, 187, "pg_query.RangeTableSample", json_name: "RangeTableSample"
+        optional :range_table_func, :message, 188, "pg_query.RangeTableFunc", json_name: "RangeTableFunc"
+        optional :range_table_func_col, :message, 189, "pg_query.RangeTableFuncCol", json_name: "RangeTableFuncCol"
+        optional :type_name, :message, 190, "pg_query.TypeName", json_name: "TypeName"
+        optional :column_def, :message, 191, "pg_query.ColumnDef", json_name: "ColumnDef"
+        optional :index_elem, :message, 192, "pg_query.IndexElem", json_name: "IndexElem"
+        optional :stats_elem, :message, 193, "pg_query.StatsElem", json_name: "StatsElem"
+        optional :constraint, :message, 194, "pg_query.Constraint", json_name: "Constraint"
+        optional :def_elem, :message, 195, "pg_query.DefElem", json_name: "DefElem"
+        optional :range_tbl_entry, :message, 196, "pg_query.RangeTblEntry", json_name: "RangeTblEntry"
+        optional :range_tbl_function, :message, 197, "pg_query.RangeTblFunction", json_name: "RangeTblFunction"
+        optional :table_sample_clause, :message, 198, "pg_query.TableSampleClause", json_name: "TableSampleClause"
+        optional :with_check_option, :message, 199, "pg_query.WithCheckOption", json_name: "WithCheckOption"
+        optional :sort_group_clause, :message, 200, "pg_query.SortGroupClause", json_name: "SortGroupClause"
+        optional :grouping_set, :message, 201, "pg_query.GroupingSet", json_name: "GroupingSet"
+        optional :window_clause, :message, 202, "pg_query.WindowClause", json_name: "WindowClause"
+        optional :object_with_args, :message, 203, "pg_query.ObjectWithArgs", json_name: "ObjectWithArgs"
+        optional :access_priv, :message, 204, "pg_query.AccessPriv", json_name: "AccessPriv"
+        optional :create_op_class_item, :message, 205, "pg_query.CreateOpClassItem", json_name: "CreateOpClassItem"
+        optional :table_like_clause, :message, 206, "pg_query.TableLikeClause", json_name: "TableLikeClause"
+        optional :function_parameter, :message, 207, "pg_query.FunctionParameter", json_name: "FunctionParameter"
+        optional :locking_clause, :message, 208, "pg_query.LockingClause", json_name: "LockingClause"
+        optional :row_mark_clause, :message, 209, "pg_query.RowMarkClause", json_name: "RowMarkClause"
+        optional :xml_serialize, :message, 210, "pg_query.XmlSerialize", json_name: "XmlSerialize"
+        optional :with_clause, :message, 211, "pg_query.WithClause", json_name: "WithClause"
+        optional :infer_clause, :message, 212, "pg_query.InferClause", json_name: "InferClause"
+        optional :on_conflict_clause, :message, 213, "pg_query.OnConflictClause", json_name: "OnConflictClause"
+        optional :ctesearch_clause, :message, 214, "pg_query.CTESearchClause", json_name: "CTESearchClause"
+        optional :ctecycle_clause, :message, 215, "pg_query.CTECycleClause", json_name: "CTECycleClause"
+        optional :common_table_expr, :message, 216, "pg_query.CommonTableExpr", json_name: "CommonTableExpr"
+        optional :merge_when_clause, :message, 217, "pg_query.MergeWhenClause", json_name: "MergeWhenClause"
+        optional :role_spec, :message, 218, "pg_query.RoleSpec", json_name: "RoleSpec"
+        optional :trigger_transition, :message, 219, "pg_query.TriggerTransition", json_name: "TriggerTransition"
+        optional :partition_elem, :message, 220, "pg_query.PartitionElem", json_name: "PartitionElem"
+        optional :partition_spec, :message, 221, "pg_query.PartitionSpec", json_name: "PartitionSpec"
+        optional :partition_bound_spec, :message, 222, "pg_query.PartitionBoundSpec", json_name: "PartitionBoundSpec"
+        optional :partition_range_datum, :message, 223, "pg_query.PartitionRangeDatum", json_name: "PartitionRangeDatum"
+        optional :partition_cmd, :message, 224, "pg_query.PartitionCmd", json_name: "PartitionCmd"
+        optional :vacuum_relation, :message, 225, "pg_query.VacuumRelation", json_name: "VacuumRelation"
+        optional :publication_obj_spec, :message, 226, "pg_query.PublicationObjSpec", json_name: "PublicationObjSpec"
+        optional :publication_table, :message, 227, "pg_query.PublicationTable", json_name: "PublicationTable"
+        optional :inline_code_block, :message, 228, "pg_query.InlineCodeBlock", json_name: "InlineCodeBlock"
+        optional :call_context, :message, 229, "pg_query.CallContext", json_name: "CallContext"
+        optional :integer, :message, 230, "pg_query.Integer", json_name: "Integer"
+        optional :float, :message, 231, "pg_query.Float", json_name: "Float"
+        optional :boolean, :message, 232, "pg_query.Boolean", json_name: "Boolean"
+        optional :string, :message, 233, "pg_query.String", json_name: "String"
+        optional :bit_string, :message, 234, "pg_query.BitString", json_name: "BitString"
+        optional :list, :message, 235, "pg_query.List", json_name: "List"
+        optional :int_list, :message, 236, "pg_query.IntList", json_name: "IntList"
+        optional :oid_list, :message, 237, "pg_query.OidList", json_name: "OidList"
+        optional :a_const, :message, 238, "pg_query.A_Const", json_name: "A_Const"
       end
     end
     add_message "pg_query.Integer" do
       optional :ival, :int32, 1
     end
     add_message "pg_query.Float" do
-      optional :str, :string, 1
+      optional :fval, :string, 1
+    end
+    add_message "pg_query.Boolean" do
+      optional :boolval, :bool, 1
     end
     add_message "pg_query.String" do
-      optional :str, :string, 1
+      optional :sval, :string, 1
     end
     add_message "pg_query.BitString" do
-      optional :str, :string, 1
-    end
-    add_message "pg_query.Null" do
+      optional :bsval, :string, 1
     end
     add_message "pg_query.List" do
       repeated :items, :message, 1, "pg_query.Node"
@@ -267,6 +278,17 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     end
     add_message "pg_query.IntList" do
       repeated :items, :message, 1, "pg_query.Node"
+    end
+    add_message "pg_query.A_Const" do
+      optional :isnull, :bool, 10
+      optional :location, :int32, 11
+      oneof :val do
+        optional :ival, :message, 1, "pg_query.Integer"
+        optional :fval, :message, 2, "pg_query.Float"
+        optional :boolval, :message, 3, "pg_query.Boolean"
+        optional :sval, :message, 4, "pg_query.String"
+        optional :bsval, :message, 5, "pg_query.BitString"
+      end
     end
     add_message "pg_query.Alias" do
       optional :aliasname, :string, 1, json_name: "aliasname"
@@ -296,11 +318,9 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :ordinalitycol, :int32, 12, json_name: "ordinalitycol"
       optional :location, :int32, 13, json_name: "location"
     end
-    add_message "pg_query.Expr" do
-    end
     add_message "pg_query.Var" do
       optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
-      optional :varno, :uint32, 2, json_name: "varno"
+      optional :varno, :int32, 2, json_name: "varno"
       optional :varattno, :int32, 3, json_name: "varattno"
       optional :vartype, :uint32, 4, json_name: "vartype"
       optional :vartypmod, :int32, 5, json_name: "vartypmod"
@@ -337,7 +357,9 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :aggkind, :string, 15, json_name: "aggkind"
       optional :agglevelsup, :uint32, 16, json_name: "agglevelsup"
       optional :aggsplit, :enum, 17, "pg_query.AggSplit", json_name: "aggsplit"
-      optional :location, :int32, 18, json_name: "location"
+      optional :aggno, :int32, 18, json_name: "aggno"
+      optional :aggtransno, :int32, 19, json_name: "aggtransno"
+      optional :location, :int32, 20, json_name: "location"
     end
     add_message "pg_query.GroupingFunc" do
       optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
@@ -364,12 +386,13 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
       optional :refcontainertype, :uint32, 2, json_name: "refcontainertype"
       optional :refelemtype, :uint32, 3, json_name: "refelemtype"
-      optional :reftypmod, :int32, 4, json_name: "reftypmod"
-      optional :refcollid, :uint32, 5, json_name: "refcollid"
-      repeated :refupperindexpr, :message, 6, "pg_query.Node", json_name: "refupperindexpr"
-      repeated :reflowerindexpr, :message, 7, "pg_query.Node", json_name: "reflowerindexpr"
-      optional :refexpr, :message, 8, "pg_query.Node", json_name: "refexpr"
-      optional :refassgnexpr, :message, 9, "pg_query.Node", json_name: "refassgnexpr"
+      optional :refrestype, :uint32, 4, json_name: "refrestype"
+      optional :reftypmod, :int32, 5, json_name: "reftypmod"
+      optional :refcollid, :uint32, 6, json_name: "refcollid"
+      repeated :refupperindexpr, :message, 7, "pg_query.Node", json_name: "refupperindexpr"
+      repeated :reflowerindexpr, :message, 8, "pg_query.Node", json_name: "reflowerindexpr"
+      optional :refexpr, :message, 9, "pg_query.Node", json_name: "refexpr"
+      optional :refassgnexpr, :message, 10, "pg_query.Node", json_name: "refassgnexpr"
     end
     add_message "pg_query.FuncExpr" do
       optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
@@ -427,10 +450,12 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
       optional :opno, :uint32, 2, json_name: "opno"
       optional :opfuncid, :uint32, 3, json_name: "opfuncid"
-      optional :use_or, :bool, 4, json_name: "useOr"
-      optional :inputcollid, :uint32, 5, json_name: "inputcollid"
-      repeated :args, :message, 6, "pg_query.Node", json_name: "args"
-      optional :location, :int32, 7, json_name: "location"
+      optional :hashfuncid, :uint32, 4, json_name: "hashfuncid"
+      optional :negfuncid, :uint32, 5, json_name: "negfuncid"
+      optional :use_or, :bool, 6, json_name: "useOr"
+      optional :inputcollid, :uint32, 7, json_name: "inputcollid"
+      repeated :args, :message, 8, "pg_query.Node", json_name: "args"
+      optional :location, :int32, 9, json_name: "location"
     end
     add_message "pg_query.BoolExpr" do
       optional :xpr, :message, 1, "pg_query.Node", json_name: "xpr"
@@ -679,9 +704,10 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :larg, :message, 3, "pg_query.Node", json_name: "larg"
       optional :rarg, :message, 4, "pg_query.Node", json_name: "rarg"
       repeated :using_clause, :message, 5, "pg_query.Node", json_name: "usingClause"
-      optional :quals, :message, 6, "pg_query.Node", json_name: "quals"
-      optional :alias, :message, 7, "pg_query.Alias", json_name: "alias"
-      optional :rtindex, :int32, 8, json_name: "rtindex"
+      optional :join_using_alias, :message, 6, "pg_query.Alias", json_name: "join_using_alias"
+      optional :quals, :message, 7, "pg_query.Node", json_name: "quals"
+      optional :alias, :message, 8, "pg_query.Alias", json_name: "alias"
+      optional :rtindex, :int32, 9, json_name: "rtindex"
     end
     add_message "pg_query.FromExpr" do
       repeated :fromlist, :message, 1, "pg_query.Node", json_name: "fromlist"
@@ -707,6 +733,14 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :view_query, :message, 7, "pg_query.Node", json_name: "viewQuery"
       optional :skip_data, :bool, 8, json_name: "skipData"
     end
+    add_message "pg_query.MergeAction" do
+      optional :matched, :bool, 1, json_name: "matched"
+      optional :command_type, :enum, 2, "pg_query.CmdType", json_name: "commandType"
+      optional :override, :enum, 3, "pg_query.OverridingKind", json_name: "override"
+      optional :qual, :message, 4, "pg_query.Node", json_name: "qual"
+      repeated :target_list, :message, 5, "pg_query.Node", json_name: "targetList"
+      repeated :update_colnos, :message, 6, "pg_query.Node", json_name: "updateColnos"
+    end
     add_message "pg_query.RawStmt" do
       optional :stmt, :message, 1, "pg_query.Node", json_name: "stmt"
       optional :stmt_location, :int32, 2, json_name: "stmt_location"
@@ -727,28 +761,32 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :has_modifying_cte, :bool, 12, json_name: "hasModifyingCTE"
       optional :has_for_update, :bool, 13, json_name: "hasForUpdate"
       optional :has_row_security, :bool, 14, json_name: "hasRowSecurity"
-      repeated :cte_list, :message, 15, "pg_query.Node", json_name: "cteList"
-      repeated :rtable, :message, 16, "pg_query.Node", json_name: "rtable"
-      optional :jointree, :message, 17, "pg_query.FromExpr", json_name: "jointree"
-      repeated :target_list, :message, 18, "pg_query.Node", json_name: "targetList"
-      optional :override, :enum, 19, "pg_query.OverridingKind", json_name: "override"
-      optional :on_conflict, :message, 20, "pg_query.OnConflictExpr", json_name: "onConflict"
-      repeated :returning_list, :message, 21, "pg_query.Node", json_name: "returningList"
-      repeated :group_clause, :message, 22, "pg_query.Node", json_name: "groupClause"
-      repeated :grouping_sets, :message, 23, "pg_query.Node", json_name: "groupingSets"
-      optional :having_qual, :message, 24, "pg_query.Node", json_name: "havingQual"
-      repeated :window_clause, :message, 25, "pg_query.Node", json_name: "windowClause"
-      repeated :distinct_clause, :message, 26, "pg_query.Node", json_name: "distinctClause"
-      repeated :sort_clause, :message, 27, "pg_query.Node", json_name: "sortClause"
-      optional :limit_offset, :message, 28, "pg_query.Node", json_name: "limitOffset"
-      optional :limit_count, :message, 29, "pg_query.Node", json_name: "limitCount"
-      optional :limit_option, :enum, 30, "pg_query.LimitOption", json_name: "limitOption"
-      repeated :row_marks, :message, 31, "pg_query.Node", json_name: "rowMarks"
-      optional :set_operations, :message, 32, "pg_query.Node", json_name: "setOperations"
-      repeated :constraint_deps, :message, 33, "pg_query.Node", json_name: "constraintDeps"
-      repeated :with_check_options, :message, 34, "pg_query.Node", json_name: "withCheckOptions"
-      optional :stmt_location, :int32, 35, json_name: "stmt_location"
-      optional :stmt_len, :int32, 36, json_name: "stmt_len"
+      optional :is_return, :bool, 15, json_name: "isReturn"
+      repeated :cte_list, :message, 16, "pg_query.Node", json_name: "cteList"
+      repeated :rtable, :message, 17, "pg_query.Node", json_name: "rtable"
+      optional :jointree, :message, 18, "pg_query.FromExpr", json_name: "jointree"
+      repeated :merge_action_list, :message, 19, "pg_query.Node", json_name: "mergeActionList"
+      optional :merge_use_outer_join, :bool, 20, json_name: "mergeUseOuterJoin"
+      repeated :target_list, :message, 21, "pg_query.Node", json_name: "targetList"
+      optional :override, :enum, 22, "pg_query.OverridingKind", json_name: "override"
+      optional :on_conflict, :message, 23, "pg_query.OnConflictExpr", json_name: "onConflict"
+      repeated :returning_list, :message, 24, "pg_query.Node", json_name: "returningList"
+      repeated :group_clause, :message, 25, "pg_query.Node", json_name: "groupClause"
+      optional :group_distinct, :bool, 26, json_name: "groupDistinct"
+      repeated :grouping_sets, :message, 27, "pg_query.Node", json_name: "groupingSets"
+      optional :having_qual, :message, 28, "pg_query.Node", json_name: "havingQual"
+      repeated :window_clause, :message, 29, "pg_query.Node", json_name: "windowClause"
+      repeated :distinct_clause, :message, 30, "pg_query.Node", json_name: "distinctClause"
+      repeated :sort_clause, :message, 31, "pg_query.Node", json_name: "sortClause"
+      optional :limit_offset, :message, 32, "pg_query.Node", json_name: "limitOffset"
+      optional :limit_count, :message, 33, "pg_query.Node", json_name: "limitCount"
+      optional :limit_option, :enum, 34, "pg_query.LimitOption", json_name: "limitOption"
+      repeated :row_marks, :message, 35, "pg_query.Node", json_name: "rowMarks"
+      optional :set_operations, :message, 36, "pg_query.Node", json_name: "setOperations"
+      repeated :constraint_deps, :message, 37, "pg_query.Node", json_name: "constraintDeps"
+      repeated :with_check_options, :message, 38, "pg_query.Node", json_name: "withCheckOptions"
+      optional :stmt_location, :int32, 39, json_name: "stmt_location"
+      optional :stmt_len, :int32, 40, json_name: "stmt_len"
     end
     add_message "pg_query.InsertStmt" do
       optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
@@ -774,6 +812,13 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :returning_list, :message, 5, "pg_query.Node", json_name: "returningList"
       optional :with_clause, :message, 6, "pg_query.WithClause", json_name: "withClause"
     end
+    add_message "pg_query.MergeStmt" do
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      optional :source_relation, :message, 2, "pg_query.Node", json_name: "sourceRelation"
+      optional :join_condition, :message, 3, "pg_query.Node", json_name: "joinCondition"
+      repeated :merge_when_clauses, :message, 4, "pg_query.Node", json_name: "mergeWhenClauses"
+      optional :with_clause, :message, 5, "pg_query.WithClause", json_name: "withClause"
+    end
     add_message "pg_query.SelectStmt" do
       repeated :distinct_clause, :message, 1, "pg_query.Node", json_name: "distinctClause"
       optional :into_clause, :message, 2, "pg_query.IntoClause", json_name: "intoClause"
@@ -781,24 +826,35 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :from_clause, :message, 4, "pg_query.Node", json_name: "fromClause"
       optional :where_clause, :message, 5, "pg_query.Node", json_name: "whereClause"
       repeated :group_clause, :message, 6, "pg_query.Node", json_name: "groupClause"
-      optional :having_clause, :message, 7, "pg_query.Node", json_name: "havingClause"
-      repeated :window_clause, :message, 8, "pg_query.Node", json_name: "windowClause"
-      repeated :values_lists, :message, 9, "pg_query.Node", json_name: "valuesLists"
-      repeated :sort_clause, :message, 10, "pg_query.Node", json_name: "sortClause"
-      optional :limit_offset, :message, 11, "pg_query.Node", json_name: "limitOffset"
-      optional :limit_count, :message, 12, "pg_query.Node", json_name: "limitCount"
-      optional :limit_option, :enum, 13, "pg_query.LimitOption", json_name: "limitOption"
-      repeated :locking_clause, :message, 14, "pg_query.Node", json_name: "lockingClause"
-      optional :with_clause, :message, 15, "pg_query.WithClause", json_name: "withClause"
-      optional :op, :enum, 16, "pg_query.SetOperation", json_name: "op"
-      optional :all, :bool, 17, json_name: "all"
-      optional :larg, :message, 18, "pg_query.SelectStmt", json_name: "larg"
-      optional :rarg, :message, 19, "pg_query.SelectStmt", json_name: "rarg"
+      optional :group_distinct, :bool, 7, json_name: "groupDistinct"
+      optional :having_clause, :message, 8, "pg_query.Node", json_name: "havingClause"
+      repeated :window_clause, :message, 9, "pg_query.Node", json_name: "windowClause"
+      repeated :values_lists, :message, 10, "pg_query.Node", json_name: "valuesLists"
+      repeated :sort_clause, :message, 11, "pg_query.Node", json_name: "sortClause"
+      optional :limit_offset, :message, 12, "pg_query.Node", json_name: "limitOffset"
+      optional :limit_count, :message, 13, "pg_query.Node", json_name: "limitCount"
+      optional :limit_option, :enum, 14, "pg_query.LimitOption", json_name: "limitOption"
+      repeated :locking_clause, :message, 15, "pg_query.Node", json_name: "lockingClause"
+      optional :with_clause, :message, 16, "pg_query.WithClause", json_name: "withClause"
+      optional :op, :enum, 17, "pg_query.SetOperation", json_name: "op"
+      optional :all, :bool, 18, json_name: "all"
+      optional :larg, :message, 19, "pg_query.SelectStmt", json_name: "larg"
+      optional :rarg, :message, 20, "pg_query.SelectStmt", json_name: "rarg"
+    end
+    add_message "pg_query.ReturnStmt" do
+      optional :returnval, :message, 1, "pg_query.Node", json_name: "returnval"
+    end
+    add_message "pg_query.PLAssignStmt" do
+      optional :name, :string, 1, json_name: "name"
+      repeated :indirection, :message, 2, "pg_query.Node", json_name: "indirection"
+      optional :nnames, :int32, 3, json_name: "nnames"
+      optional :val, :message, 4, "pg_query.SelectStmt", json_name: "val"
+      optional :location, :int32, 5, json_name: "location"
     end
     add_message "pg_query.AlterTableStmt" do
       optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
       repeated :cmds, :message, 2, "pg_query.Node", json_name: "cmds"
-      optional :relkind, :enum, 3, "pg_query.ObjectType", json_name: "relkind"
+      optional :objtype, :enum, 3, "pg_query.ObjectType", json_name: "objtype"
       optional :missing_ok, :bool, 4, json_name: "missing_ok"
     end
     add_message "pg_query.AlterTableCmd" do
@@ -837,7 +893,8 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :privileges, :message, 5, "pg_query.Node", json_name: "privileges"
       repeated :grantees, :message, 6, "pg_query.Node", json_name: "grantees"
       optional :grant_option, :bool, 7, json_name: "grant_option"
-      optional :behavior, :enum, 8, "pg_query.DropBehavior", json_name: "behavior"
+      optional :grantor, :message, 8, "pg_query.RoleSpec", json_name: "grantor"
+      optional :behavior, :enum, 9, "pg_query.DropBehavior", json_name: "behavior"
     end
     add_message "pg_query.GrantRoleStmt" do
       repeated :granted_roles, :message, 1, "pg_query.Node", json_name: "granted_roles"
@@ -857,7 +914,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "pg_query.ClusterStmt" do
       optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
       optional :indexname, :string, 2, json_name: "indexname"
-      optional :options, :int32, 3, json_name: "options"
+      repeated :params, :message, 3, "pg_query.Node", json_name: "params"
     end
     add_message "pg_query.CopyStmt" do
       optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
@@ -931,14 +988,15 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :old_create_subid, :uint32, 13, json_name: "oldCreateSubid"
       optional :old_first_relfilenode_subid, :uint32, 14, json_name: "oldFirstRelfilenodeSubid"
       optional :unique, :bool, 15, json_name: "unique"
-      optional :primary, :bool, 16, json_name: "primary"
-      optional :isconstraint, :bool, 17, json_name: "isconstraint"
-      optional :deferrable, :bool, 18, json_name: "deferrable"
-      optional :initdeferred, :bool, 19, json_name: "initdeferred"
-      optional :transformed, :bool, 20, json_name: "transformed"
-      optional :concurrent, :bool, 21, json_name: "concurrent"
-      optional :if_not_exists, :bool, 22, json_name: "if_not_exists"
-      optional :reset_default_tblspc, :bool, 23, json_name: "reset_default_tblspc"
+      optional :nulls_not_distinct, :bool, 16, json_name: "nulls_not_distinct"
+      optional :primary, :bool, 17, json_name: "primary"
+      optional :isconstraint, :bool, 18, json_name: "isconstraint"
+      optional :deferrable, :bool, 19, json_name: "deferrable"
+      optional :initdeferred, :bool, 20, json_name: "initdeferred"
+      optional :transformed, :bool, 21, json_name: "transformed"
+      optional :concurrent, :bool, 22, json_name: "concurrent"
+      optional :if_not_exists, :bool, 23, json_name: "if_not_exists"
+      optional :reset_default_tblspc, :bool, 24, json_name: "reset_default_tblspc"
     end
     add_message "pg_query.CreateFunctionStmt" do
       optional :is_procedure, :bool, 1, json_name: "is_procedure"
@@ -947,6 +1005,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :parameters, :message, 4, "pg_query.Node", json_name: "parameters"
       optional :return_type, :message, 5, "pg_query.TypeName", json_name: "returnType"
       repeated :options, :message, 6, "pg_query.Node", json_name: "options"
+      optional :sql_body, :message, 7, "pg_query.Node", json_name: "sql_body"
     end
     add_message "pg_query.AlterFunctionStmt" do
       optional :objtype, :enum, 1, "pg_query.ObjectType", json_name: "objtype"
@@ -1030,7 +1089,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "pg_query.CreateTableAsStmt" do
       optional :query, :message, 1, "pg_query.Node", json_name: "query"
       optional :into, :message, 2, "pg_query.IntoClause", json_name: "into"
-      optional :relkind, :enum, 3, "pg_query.ObjectType", json_name: "relkind"
+      optional :objtype, :enum, 3, "pg_query.ObjectType", json_name: "objtype"
       optional :is_select_into, :bool, 4, json_name: "is_select_into"
       optional :if_not_exists, :bool, 5, json_name: "if_not_exists"
     end
@@ -1060,20 +1119,21 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :target, :enum, 1, "pg_query.DiscardMode", json_name: "target"
     end
     add_message "pg_query.CreateTrigStmt" do
-      optional :trigname, :string, 1, json_name: "trigname"
-      optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
-      repeated :funcname, :message, 3, "pg_query.Node", json_name: "funcname"
-      repeated :args, :message, 4, "pg_query.Node", json_name: "args"
-      optional :row, :bool, 5, json_name: "row"
-      optional :timing, :int32, 6, json_name: "timing"
-      optional :events, :int32, 7, json_name: "events"
-      repeated :columns, :message, 8, "pg_query.Node", json_name: "columns"
-      optional :when_clause, :message, 9, "pg_query.Node", json_name: "whenClause"
-      optional :isconstraint, :bool, 10, json_name: "isconstraint"
-      repeated :transition_rels, :message, 11, "pg_query.Node", json_name: "transitionRels"
-      optional :deferrable, :bool, 12, json_name: "deferrable"
-      optional :initdeferred, :bool, 13, json_name: "initdeferred"
-      optional :constrrel, :message, 14, "pg_query.RangeVar", json_name: "constrrel"
+      optional :replace, :bool, 1, json_name: "replace"
+      optional :isconstraint, :bool, 2, json_name: "isconstraint"
+      optional :trigname, :string, 3, json_name: "trigname"
+      optional :relation, :message, 4, "pg_query.RangeVar", json_name: "relation"
+      repeated :funcname, :message, 5, "pg_query.Node", json_name: "funcname"
+      repeated :args, :message, 6, "pg_query.Node", json_name: "args"
+      optional :row, :bool, 7, json_name: "row"
+      optional :timing, :int32, 8, json_name: "timing"
+      optional :events, :int32, 9, json_name: "events"
+      repeated :columns, :message, 10, "pg_query.Node", json_name: "columns"
+      optional :when_clause, :message, 11, "pg_query.Node", json_name: "whenClause"
+      repeated :transition_rels, :message, 12, "pg_query.Node", json_name: "transitionRels"
+      optional :deferrable, :bool, 13, json_name: "deferrable"
+      optional :initdeferred, :bool, 14, json_name: "initdeferred"
+      optional :constrrel, :message, 15, "pg_query.RangeVar", json_name: "constrrel"
     end
     add_message "pg_query.CreatePLangStmt" do
       optional :replace, :bool, 1, json_name: "replace"
@@ -1110,8 +1170,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :kind, :enum, 1, "pg_query.ReindexObjectType", json_name: "kind"
       optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
       optional :name, :string, 3, json_name: "name"
-      optional :options, :int32, 4, json_name: "options"
-      optional :concurrent, :bool, 5, json_name: "concurrent"
+      repeated :params, :message, 4, "pg_query.Node", json_name: "params"
     end
     add_message "pg_query.CheckPointStmt" do
     end
@@ -1124,6 +1183,9 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "pg_query.AlterDatabaseStmt" do
       optional :dbname, :string, 1, json_name: "dbname"
       repeated :options, :message, 2, "pg_query.Node", json_name: "options"
+    end
+    add_message "pg_query.AlterDatabaseRefreshCollStmt" do
+      optional :dbname, :string, 1, json_name: "dbname"
     end
     add_message "pg_query.AlterDatabaseSetStmt" do
       optional :dbname, :string, 1, json_name: "dbname"
@@ -1197,7 +1259,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :object_type, :enum, 1, "pg_query.ObjectType", json_name: "objectType"
       optional :relation, :message, 2, "pg_query.RangeVar", json_name: "relation"
       optional :object, :message, 3, "pg_query.Node", json_name: "object"
-      optional :extname, :message, 4, "pg_query.Node", json_name: "extname"
+      optional :extname, :message, 4, "pg_query.String", json_name: "extname"
       optional :remove, :bool, 5, json_name: "remove"
     end
     add_message "pg_query.AlterObjectSchemaStmt" do
@@ -1401,15 +1463,15 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "pg_query.CreatePublicationStmt" do
       optional :pubname, :string, 1, json_name: "pubname"
       repeated :options, :message, 2, "pg_query.Node", json_name: "options"
-      repeated :tables, :message, 3, "pg_query.Node", json_name: "tables"
+      repeated :pubobjects, :message, 3, "pg_query.Node", json_name: "pubobjects"
       optional :for_all_tables, :bool, 4, json_name: "for_all_tables"
     end
     add_message "pg_query.AlterPublicationStmt" do
       optional :pubname, :string, 1, json_name: "pubname"
       repeated :options, :message, 2, "pg_query.Node", json_name: "options"
-      repeated :tables, :message, 3, "pg_query.Node", json_name: "tables"
+      repeated :pubobjects, :message, 3, "pg_query.Node", json_name: "pubobjects"
       optional :for_all_tables, :bool, 4, json_name: "for_all_tables"
-      optional :table_action, :enum, 5, "pg_query.DefElemAction", json_name: "tableAction"
+      optional :action, :enum, 5, "pg_query.AlterPublicationAction", json_name: "action"
     end
     add_message "pg_query.CreateSubscriptionStmt" do
       optional :subname, :string, 1, json_name: "subname"
@@ -1435,7 +1497,8 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :exprs, :message, 3, "pg_query.Node", json_name: "exprs"
       repeated :relations, :message, 4, "pg_query.Node", json_name: "relations"
       optional :stxcomment, :string, 5, json_name: "stxcomment"
-      optional :if_not_exists, :bool, 6, json_name: "if_not_exists"
+      optional :transformed, :bool, 6, json_name: "transformed"
+      optional :if_not_exists, :bool, 7, json_name: "if_not_exists"
     end
     add_message "pg_query.AlterCollationStmt" do
       repeated :collname, :message, 1, "pg_query.Node", json_name: "collname"
@@ -1443,6 +1506,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "pg_query.CallStmt" do
       optional :funccall, :message, 1, "pg_query.FuncCall", json_name: "funccall"
       optional :funcexpr, :message, 2, "pg_query.FuncExpr", json_name: "funcexpr"
+      repeated :outargs, :message, 3, "pg_query.Node", json_name: "outargs"
     end
     add_message "pg_query.AlterStatsStmt" do
       repeated :defnames, :message, 1, "pg_query.Node", json_name: "defnames"
@@ -1464,21 +1528,18 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :number, :int32, 1, json_name: "number"
       optional :location, :int32, 2, json_name: "location"
     end
-    add_message "pg_query.A_Const" do
-      optional :val, :message, 1, "pg_query.Node", json_name: "val"
-      optional :location, :int32, 2, json_name: "location"
-    end
     add_message "pg_query.FuncCall" do
       repeated :funcname, :message, 1, "pg_query.Node", json_name: "funcname"
       repeated :args, :message, 2, "pg_query.Node", json_name: "args"
       repeated :agg_order, :message, 3, "pg_query.Node", json_name: "agg_order"
       optional :agg_filter, :message, 4, "pg_query.Node", json_name: "agg_filter"
-      optional :agg_within_group, :bool, 5, json_name: "agg_within_group"
-      optional :agg_star, :bool, 6, json_name: "agg_star"
-      optional :agg_distinct, :bool, 7, json_name: "agg_distinct"
-      optional :func_variadic, :bool, 8, json_name: "func_variadic"
-      optional :over, :message, 9, "pg_query.WindowDef", json_name: "over"
-      optional :location, :int32, 10, json_name: "location"
+      optional :over, :message, 5, "pg_query.WindowDef", json_name: "over"
+      optional :agg_within_group, :bool, 6, json_name: "agg_within_group"
+      optional :agg_star, :bool, 7, json_name: "agg_star"
+      optional :agg_distinct, :bool, 8, json_name: "agg_distinct"
+      optional :func_variadic, :bool, 9, json_name: "func_variadic"
+      optional :funcformat, :enum, 10, "pg_query.CoercionForm", json_name: "funcformat"
+      optional :location, :int32, 11, json_name: "location"
     end
     add_message "pg_query.A_Star" do
     end
@@ -1584,21 +1645,22 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "pg_query.ColumnDef" do
       optional :colname, :string, 1, json_name: "colname"
       optional :type_name, :message, 2, "pg_query.TypeName", json_name: "typeName"
-      optional :inhcount, :int32, 3, json_name: "inhcount"
-      optional :is_local, :bool, 4, json_name: "is_local"
-      optional :is_not_null, :bool, 5, json_name: "is_not_null"
-      optional :is_from_type, :bool, 6, json_name: "is_from_type"
-      optional :storage, :string, 7, json_name: "storage"
-      optional :raw_default, :message, 8, "pg_query.Node", json_name: "raw_default"
-      optional :cooked_default, :message, 9, "pg_query.Node", json_name: "cooked_default"
-      optional :identity, :string, 10, json_name: "identity"
-      optional :identity_sequence, :message, 11, "pg_query.RangeVar", json_name: "identitySequence"
-      optional :generated, :string, 12, json_name: "generated"
-      optional :coll_clause, :message, 13, "pg_query.CollateClause", json_name: "collClause"
-      optional :coll_oid, :uint32, 14, json_name: "collOid"
-      repeated :constraints, :message, 15, "pg_query.Node", json_name: "constraints"
-      repeated :fdwoptions, :message, 16, "pg_query.Node", json_name: "fdwoptions"
-      optional :location, :int32, 17, json_name: "location"
+      optional :compression, :string, 3, json_name: "compression"
+      optional :inhcount, :int32, 4, json_name: "inhcount"
+      optional :is_local, :bool, 5, json_name: "is_local"
+      optional :is_not_null, :bool, 6, json_name: "is_not_null"
+      optional :is_from_type, :bool, 7, json_name: "is_from_type"
+      optional :storage, :string, 8, json_name: "storage"
+      optional :raw_default, :message, 9, "pg_query.Node", json_name: "raw_default"
+      optional :cooked_default, :message, 10, "pg_query.Node", json_name: "cooked_default"
+      optional :identity, :string, 11, json_name: "identity"
+      optional :identity_sequence, :message, 12, "pg_query.RangeVar", json_name: "identitySequence"
+      optional :generated, :string, 13, json_name: "generated"
+      optional :coll_clause, :message, 14, "pg_query.CollateClause", json_name: "collClause"
+      optional :coll_oid, :uint32, 15, json_name: "collOid"
+      repeated :constraints, :message, 16, "pg_query.Node", json_name: "constraints"
+      repeated :fdwoptions, :message, 17, "pg_query.Node", json_name: "fdwoptions"
+      optional :location, :int32, 18, json_name: "location"
     end
     add_message "pg_query.IndexElem" do
       optional :name, :string, 1, json_name: "name"
@@ -1610,6 +1672,10 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :ordering, :enum, 7, "pg_query.SortByDir", json_name: "ordering"
       optional :nulls_ordering, :enum, 8, "pg_query.SortByNulls", json_name: "nulls_ordering"
     end
+    add_message "pg_query.StatsElem" do
+      optional :name, :string, 1, json_name: "name"
+      optional :expr, :message, 2, "pg_query.Node", json_name: "expr"
+    end
     add_message "pg_query.Constraint" do
       optional :contype, :enum, 1, "pg_query.ConstrType", json_name: "contype"
       optional :conname, :string, 2, json_name: "conname"
@@ -1620,25 +1686,27 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :raw_expr, :message, 7, "pg_query.Node", json_name: "raw_expr"
       optional :cooked_expr, :string, 8, json_name: "cooked_expr"
       optional :generated_when, :string, 9, json_name: "generated_when"
-      repeated :keys, :message, 10, "pg_query.Node", json_name: "keys"
-      repeated :including, :message, 11, "pg_query.Node", json_name: "including"
-      repeated :exclusions, :message, 12, "pg_query.Node", json_name: "exclusions"
-      repeated :options, :message, 13, "pg_query.Node", json_name: "options"
-      optional :indexname, :string, 14, json_name: "indexname"
-      optional :indexspace, :string, 15, json_name: "indexspace"
-      optional :reset_default_tblspc, :bool, 16, json_name: "reset_default_tblspc"
-      optional :access_method, :string, 17, json_name: "access_method"
-      optional :where_clause, :message, 18, "pg_query.Node", json_name: "where_clause"
-      optional :pktable, :message, 19, "pg_query.RangeVar", json_name: "pktable"
-      repeated :fk_attrs, :message, 20, "pg_query.Node", json_name: "fk_attrs"
-      repeated :pk_attrs, :message, 21, "pg_query.Node", json_name: "pk_attrs"
-      optional :fk_matchtype, :string, 22, json_name: "fk_matchtype"
-      optional :fk_upd_action, :string, 23, json_name: "fk_upd_action"
-      optional :fk_del_action, :string, 24, json_name: "fk_del_action"
-      repeated :old_conpfeqop, :message, 25, "pg_query.Node", json_name: "old_conpfeqop"
-      optional :old_pktable_oid, :uint32, 26, json_name: "old_pktable_oid"
-      optional :skip_validation, :bool, 27, json_name: "skip_validation"
-      optional :initially_valid, :bool, 28, json_name: "initially_valid"
+      optional :nulls_not_distinct, :bool, 10, json_name: "nulls_not_distinct"
+      repeated :keys, :message, 11, "pg_query.Node", json_name: "keys"
+      repeated :including, :message, 12, "pg_query.Node", json_name: "including"
+      repeated :exclusions, :message, 13, "pg_query.Node", json_name: "exclusions"
+      repeated :options, :message, 14, "pg_query.Node", json_name: "options"
+      optional :indexname, :string, 15, json_name: "indexname"
+      optional :indexspace, :string, 16, json_name: "indexspace"
+      optional :reset_default_tblspc, :bool, 17, json_name: "reset_default_tblspc"
+      optional :access_method, :string, 18, json_name: "access_method"
+      optional :where_clause, :message, 19, "pg_query.Node", json_name: "where_clause"
+      optional :pktable, :message, 20, "pg_query.RangeVar", json_name: "pktable"
+      repeated :fk_attrs, :message, 21, "pg_query.Node", json_name: "fk_attrs"
+      repeated :pk_attrs, :message, 22, "pg_query.Node", json_name: "pk_attrs"
+      optional :fk_matchtype, :string, 23, json_name: "fk_matchtype"
+      optional :fk_upd_action, :string, 24, json_name: "fk_upd_action"
+      optional :fk_del_action, :string, 25, json_name: "fk_del_action"
+      repeated :fk_del_set_cols, :message, 26, "pg_query.Node", json_name: "fk_del_set_cols"
+      repeated :old_conpfeqop, :message, 27, "pg_query.Node", json_name: "old_conpfeqop"
+      optional :old_pktable_oid, :uint32, 28, json_name: "old_pktable_oid"
+      optional :skip_validation, :bool, 29, json_name: "skip_validation"
+      optional :initially_valid, :bool, 30, json_name: "initially_valid"
     end
     add_message "pg_query.DefElem" do
       optional :defnamespace, :string, 1, json_name: "defnamespace"
@@ -1660,30 +1728,31 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       repeated :joinaliasvars, :message, 10, "pg_query.Node", json_name: "joinaliasvars"
       repeated :joinleftcols, :message, 11, "pg_query.Node", json_name: "joinleftcols"
       repeated :joinrightcols, :message, 12, "pg_query.Node", json_name: "joinrightcols"
-      repeated :functions, :message, 13, "pg_query.Node", json_name: "functions"
-      optional :funcordinality, :bool, 14, json_name: "funcordinality"
-      optional :tablefunc, :message, 15, "pg_query.TableFunc", json_name: "tablefunc"
-      repeated :values_lists, :message, 16, "pg_query.Node", json_name: "values_lists"
-      optional :ctename, :string, 17, json_name: "ctename"
-      optional :ctelevelsup, :uint32, 18, json_name: "ctelevelsup"
-      optional :self_reference, :bool, 19, json_name: "self_reference"
-      repeated :coltypes, :message, 20, "pg_query.Node", json_name: "coltypes"
-      repeated :coltypmods, :message, 21, "pg_query.Node", json_name: "coltypmods"
-      repeated :colcollations, :message, 22, "pg_query.Node", json_name: "colcollations"
-      optional :enrname, :string, 23, json_name: "enrname"
-      optional :enrtuples, :double, 24, json_name: "enrtuples"
-      optional :alias, :message, 25, "pg_query.Alias", json_name: "alias"
-      optional :eref, :message, 26, "pg_query.Alias", json_name: "eref"
-      optional :lateral, :bool, 27, json_name: "lateral"
-      optional :inh, :bool, 28, json_name: "inh"
-      optional :in_from_cl, :bool, 29, json_name: "inFromCl"
-      optional :required_perms, :uint32, 30, json_name: "requiredPerms"
-      optional :check_as_user, :uint32, 31, json_name: "checkAsUser"
-      repeated :selected_cols, :uint64, 32, json_name: "selectedCols"
-      repeated :inserted_cols, :uint64, 33, json_name: "insertedCols"
-      repeated :updated_cols, :uint64, 34, json_name: "updatedCols"
-      repeated :extra_updated_cols, :uint64, 35, json_name: "extraUpdatedCols"
-      repeated :security_quals, :message, 36, "pg_query.Node", json_name: "securityQuals"
+      optional :join_using_alias, :message, 13, "pg_query.Alias", json_name: "join_using_alias"
+      repeated :functions, :message, 14, "pg_query.Node", json_name: "functions"
+      optional :funcordinality, :bool, 15, json_name: "funcordinality"
+      optional :tablefunc, :message, 16, "pg_query.TableFunc", json_name: "tablefunc"
+      repeated :values_lists, :message, 17, "pg_query.Node", json_name: "values_lists"
+      optional :ctename, :string, 18, json_name: "ctename"
+      optional :ctelevelsup, :uint32, 19, json_name: "ctelevelsup"
+      optional :self_reference, :bool, 20, json_name: "self_reference"
+      repeated :coltypes, :message, 21, "pg_query.Node", json_name: "coltypes"
+      repeated :coltypmods, :message, 22, "pg_query.Node", json_name: "coltypmods"
+      repeated :colcollations, :message, 23, "pg_query.Node", json_name: "colcollations"
+      optional :enrname, :string, 24, json_name: "enrname"
+      optional :enrtuples, :double, 25, json_name: "enrtuples"
+      optional :alias, :message, 26, "pg_query.Alias", json_name: "alias"
+      optional :eref, :message, 27, "pg_query.Alias", json_name: "eref"
+      optional :lateral, :bool, 28, json_name: "lateral"
+      optional :inh, :bool, 29, json_name: "inh"
+      optional :in_from_cl, :bool, 30, json_name: "inFromCl"
+      optional :required_perms, :uint32, 31, json_name: "requiredPerms"
+      optional :check_as_user, :uint32, 32, json_name: "checkAsUser"
+      repeated :selected_cols, :uint64, 33, json_name: "selectedCols"
+      repeated :inserted_cols, :uint64, 34, json_name: "insertedCols"
+      repeated :updated_cols, :uint64, 35, json_name: "updatedCols"
+      repeated :extra_updated_cols, :uint64, 36, json_name: "extraUpdatedCols"
+      repeated :security_quals, :message, 37, "pg_query.Node", json_name: "securityQuals"
     end
     add_message "pg_query.RangeTblFunction" do
       optional :funcexpr, :message, 1, "pg_query.Node", json_name: "funcexpr"
@@ -1726,18 +1795,20 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :frame_options, :int32, 5, json_name: "frameOptions"
       optional :start_offset, :message, 6, "pg_query.Node", json_name: "startOffset"
       optional :end_offset, :message, 7, "pg_query.Node", json_name: "endOffset"
-      optional :start_in_range_func, :uint32, 8, json_name: "startInRangeFunc"
-      optional :end_in_range_func, :uint32, 9, json_name: "endInRangeFunc"
-      optional :in_range_coll, :uint32, 10, json_name: "inRangeColl"
-      optional :in_range_asc, :bool, 11, json_name: "inRangeAsc"
-      optional :in_range_nulls_first, :bool, 12, json_name: "inRangeNullsFirst"
-      optional :winref, :uint32, 13, json_name: "winref"
-      optional :copied_order, :bool, 14, json_name: "copiedOrder"
+      repeated :run_condition, :message, 8, "pg_query.Node", json_name: "runCondition"
+      optional :start_in_range_func, :uint32, 9, json_name: "startInRangeFunc"
+      optional :end_in_range_func, :uint32, 10, json_name: "endInRangeFunc"
+      optional :in_range_coll, :uint32, 11, json_name: "inRangeColl"
+      optional :in_range_asc, :bool, 12, json_name: "inRangeAsc"
+      optional :in_range_nulls_first, :bool, 13, json_name: "inRangeNullsFirst"
+      optional :winref, :uint32, 14, json_name: "winref"
+      optional :copied_order, :bool, 15, json_name: "copiedOrder"
     end
     add_message "pg_query.ObjectWithArgs" do
       repeated :objname, :message, 1, "pg_query.Node", json_name: "objname"
       repeated :objargs, :message, 2, "pg_query.Node", json_name: "objargs"
-      optional :args_unspecified, :bool, 3, json_name: "args_unspecified"
+      repeated :objfuncargs, :message, 3, "pg_query.Node", json_name: "objfuncargs"
+      optional :args_unspecified, :bool, 4, json_name: "args_unspecified"
     end
     add_message "pg_query.AccessPriv" do
       optional :priv_name, :string, 1, json_name: "priv_name"
@@ -1797,18 +1868,46 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :where_clause, :message, 4, "pg_query.Node", json_name: "whereClause"
       optional :location, :int32, 5, json_name: "location"
     end
+    add_message "pg_query.CTESearchClause" do
+      repeated :search_col_list, :message, 1, "pg_query.Node", json_name: "search_col_list"
+      optional :search_breadth_first, :bool, 2, json_name: "search_breadth_first"
+      optional :search_seq_column, :string, 3, json_name: "search_seq_column"
+      optional :location, :int32, 4, json_name: "location"
+    end
+    add_message "pg_query.CTECycleClause" do
+      repeated :cycle_col_list, :message, 1, "pg_query.Node", json_name: "cycle_col_list"
+      optional :cycle_mark_column, :string, 2, json_name: "cycle_mark_column"
+      optional :cycle_mark_value, :message, 3, "pg_query.Node", json_name: "cycle_mark_value"
+      optional :cycle_mark_default, :message, 4, "pg_query.Node", json_name: "cycle_mark_default"
+      optional :cycle_path_column, :string, 5, json_name: "cycle_path_column"
+      optional :location, :int32, 6, json_name: "location"
+      optional :cycle_mark_type, :uint32, 7, json_name: "cycle_mark_type"
+      optional :cycle_mark_typmod, :int32, 8, json_name: "cycle_mark_typmod"
+      optional :cycle_mark_collation, :uint32, 9, json_name: "cycle_mark_collation"
+      optional :cycle_mark_neop, :uint32, 10, json_name: "cycle_mark_neop"
+    end
     add_message "pg_query.CommonTableExpr" do
       optional :ctename, :string, 1, json_name: "ctename"
       repeated :aliascolnames, :message, 2, "pg_query.Node", json_name: "aliascolnames"
       optional :ctematerialized, :enum, 3, "pg_query.CTEMaterialize", json_name: "ctematerialized"
       optional :ctequery, :message, 4, "pg_query.Node", json_name: "ctequery"
-      optional :location, :int32, 5, json_name: "location"
-      optional :cterecursive, :bool, 6, json_name: "cterecursive"
-      optional :cterefcount, :int32, 7, json_name: "cterefcount"
-      repeated :ctecolnames, :message, 8, "pg_query.Node", json_name: "ctecolnames"
-      repeated :ctecoltypes, :message, 9, "pg_query.Node", json_name: "ctecoltypes"
-      repeated :ctecoltypmods, :message, 10, "pg_query.Node", json_name: "ctecoltypmods"
-      repeated :ctecolcollations, :message, 11, "pg_query.Node", json_name: "ctecolcollations"
+      optional :search_clause, :message, 5, "pg_query.CTESearchClause", json_name: "search_clause"
+      optional :cycle_clause, :message, 6, "pg_query.CTECycleClause", json_name: "cycle_clause"
+      optional :location, :int32, 7, json_name: "location"
+      optional :cterecursive, :bool, 8, json_name: "cterecursive"
+      optional :cterefcount, :int32, 9, json_name: "cterefcount"
+      repeated :ctecolnames, :message, 10, "pg_query.Node", json_name: "ctecolnames"
+      repeated :ctecoltypes, :message, 11, "pg_query.Node", json_name: "ctecoltypes"
+      repeated :ctecoltypmods, :message, 12, "pg_query.Node", json_name: "ctecoltypmods"
+      repeated :ctecolcollations, :message, 13, "pg_query.Node", json_name: "ctecolcollations"
+    end
+    add_message "pg_query.MergeWhenClause" do
+      optional :matched, :bool, 1, json_name: "matched"
+      optional :command_type, :enum, 2, "pg_query.CmdType", json_name: "commandType"
+      optional :override, :enum, 3, "pg_query.OverridingKind", json_name: "override"
+      optional :condition, :message, 4, "pg_query.Node", json_name: "condition"
+      repeated :target_list, :message, 5, "pg_query.Node", json_name: "targetList"
+      repeated :values, :message, 6, "pg_query.Node", json_name: "values"
     end
     add_message "pg_query.RoleSpec" do
       optional :roletype, :enum, 1, "pg_query.RoleSpecType", json_name: "roletype"
@@ -1850,11 +1949,23 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     add_message "pg_query.PartitionCmd" do
       optional :name, :message, 1, "pg_query.RangeVar", json_name: "name"
       optional :bound, :message, 2, "pg_query.PartitionBoundSpec", json_name: "bound"
+      optional :concurrent, :bool, 3, json_name: "concurrent"
     end
     add_message "pg_query.VacuumRelation" do
       optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
       optional :oid, :uint32, 2, json_name: "oid"
       repeated :va_cols, :message, 3, "pg_query.Node", json_name: "va_cols"
+    end
+    add_message "pg_query.PublicationObjSpec" do
+      optional :pubobjtype, :enum, 1, "pg_query.PublicationObjSpecType", json_name: "pubobjtype"
+      optional :name, :string, 2, json_name: "name"
+      optional :pubtable, :message, 3, "pg_query.PublicationTable", json_name: "pubtable"
+      optional :location, :int32, 4, json_name: "location"
+    end
+    add_message "pg_query.PublicationTable" do
+      optional :relation, :message, 1, "pg_query.RangeVar", json_name: "relation"
+      optional :where_clause, :message, 2, "pg_query.Node", json_name: "whereClause"
+      repeated :columns, :message, 3, "pg_query.Node", json_name: "columns"
     end
     add_message "pg_query.InlineCodeBlock" do
       optional :source_text, :string, 1, json_name: "source_text"
@@ -1898,6 +2009,12 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :SORTBY_NULLS_FIRST, 2
       value :SORTBY_NULLS_LAST, 3
     end
+    add_enum "pg_query.SetQuantifier" do
+      value :SET_QUANTIFIER_UNDEFINED, 0
+      value :SET_QUANTIFIER_DEFAULT, 1
+      value :SET_QUANTIFIER_ALL, 2
+      value :SET_QUANTIFIER_DISTINCT, 3
+    end
     add_enum "pg_query.A_Expr_Kind" do
       value :A_EXPR_KIND_UNDEFINED, 0
       value :AEXPR_OP, 1
@@ -1906,35 +2023,35 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :AEXPR_DISTINCT, 4
       value :AEXPR_NOT_DISTINCT, 5
       value :AEXPR_NULLIF, 6
-      value :AEXPR_OF, 7
-      value :AEXPR_IN, 8
-      value :AEXPR_LIKE, 9
-      value :AEXPR_ILIKE, 10
-      value :AEXPR_SIMILAR, 11
-      value :AEXPR_BETWEEN, 12
-      value :AEXPR_NOT_BETWEEN, 13
-      value :AEXPR_BETWEEN_SYM, 14
-      value :AEXPR_NOT_BETWEEN_SYM, 15
-      value :AEXPR_PAREN, 16
+      value :AEXPR_IN, 7
+      value :AEXPR_LIKE, 8
+      value :AEXPR_ILIKE, 9
+      value :AEXPR_SIMILAR, 10
+      value :AEXPR_BETWEEN, 11
+      value :AEXPR_NOT_BETWEEN, 12
+      value :AEXPR_BETWEEN_SYM, 13
+      value :AEXPR_NOT_BETWEEN_SYM, 14
     end
     add_enum "pg_query.RoleSpecType" do
       value :ROLE_SPEC_TYPE_UNDEFINED, 0
       value :ROLESPEC_CSTRING, 1
-      value :ROLESPEC_CURRENT_USER, 2
-      value :ROLESPEC_SESSION_USER, 3
-      value :ROLESPEC_PUBLIC, 4
+      value :ROLESPEC_CURRENT_ROLE, 2
+      value :ROLESPEC_CURRENT_USER, 3
+      value :ROLESPEC_SESSION_USER, 4
+      value :ROLESPEC_PUBLIC, 5
     end
     add_enum "pg_query.TableLikeOption" do
       value :TABLE_LIKE_OPTION_UNDEFINED, 0
       value :CREATE_TABLE_LIKE_COMMENTS, 1
-      value :CREATE_TABLE_LIKE_CONSTRAINTS, 2
-      value :CREATE_TABLE_LIKE_DEFAULTS, 3
-      value :CREATE_TABLE_LIKE_GENERATED, 4
-      value :CREATE_TABLE_LIKE_IDENTITY, 5
-      value :CREATE_TABLE_LIKE_INDEXES, 6
-      value :CREATE_TABLE_LIKE_STATISTICS, 7
-      value :CREATE_TABLE_LIKE_STORAGE, 8
-      value :CREATE_TABLE_LIKE_ALL, 9
+      value :CREATE_TABLE_LIKE_COMPRESSION, 2
+      value :CREATE_TABLE_LIKE_CONSTRAINTS, 3
+      value :CREATE_TABLE_LIKE_DEFAULTS, 4
+      value :CREATE_TABLE_LIKE_GENERATED, 5
+      value :CREATE_TABLE_LIKE_IDENTITY, 6
+      value :CREATE_TABLE_LIKE_INDEXES, 7
+      value :CREATE_TABLE_LIKE_STATISTICS, 8
+      value :CREATE_TABLE_LIKE_STORAGE, 9
+      value :CREATE_TABLE_LIKE_ALL, 10
     end
     add_enum "pg_query.DefElemAction" do
       value :DEF_ELEM_ACTION_UNDEFINED, 0
@@ -1967,6 +2084,8 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :WCO_RLS_INSERT_CHECK, 2
       value :WCO_RLS_UPDATE_CHECK, 3
       value :WCO_RLS_CONFLICT_CHECK, 4
+      value :WCO_RLS_MERGE_UPDATE_CHECK, 5
+      value :WCO_RLS_MERGE_DELETE_CHECK, 6
     end
     add_enum "pg_query.GroupingSetKind" do
       value :GROUPING_SET_KIND_UNDEFINED, 0
@@ -2018,29 +2137,31 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :OBJECT_OPCLASS, 25
       value :OBJECT_OPERATOR, 26
       value :OBJECT_OPFAMILY, 27
-      value :OBJECT_POLICY, 28
-      value :OBJECT_PROCEDURE, 29
-      value :OBJECT_PUBLICATION, 30
-      value :OBJECT_PUBLICATION_REL, 31
-      value :OBJECT_ROLE, 32
-      value :OBJECT_ROUTINE, 33
-      value :OBJECT_RULE, 34
-      value :OBJECT_SCHEMA, 35
-      value :OBJECT_SEQUENCE, 36
-      value :OBJECT_SUBSCRIPTION, 37
-      value :OBJECT_STATISTIC_EXT, 38
-      value :OBJECT_TABCONSTRAINT, 39
-      value :OBJECT_TABLE, 40
-      value :OBJECT_TABLESPACE, 41
-      value :OBJECT_TRANSFORM, 42
-      value :OBJECT_TRIGGER, 43
-      value :OBJECT_TSCONFIGURATION, 44
-      value :OBJECT_TSDICTIONARY, 45
-      value :OBJECT_TSPARSER, 46
-      value :OBJECT_TSTEMPLATE, 47
-      value :OBJECT_TYPE, 48
-      value :OBJECT_USER_MAPPING, 49
-      value :OBJECT_VIEW, 50
+      value :OBJECT_PARAMETER_ACL, 28
+      value :OBJECT_POLICY, 29
+      value :OBJECT_PROCEDURE, 30
+      value :OBJECT_PUBLICATION, 31
+      value :OBJECT_PUBLICATION_NAMESPACE, 32
+      value :OBJECT_PUBLICATION_REL, 33
+      value :OBJECT_ROLE, 34
+      value :OBJECT_ROUTINE, 35
+      value :OBJECT_RULE, 36
+      value :OBJECT_SCHEMA, 37
+      value :OBJECT_SEQUENCE, 38
+      value :OBJECT_SUBSCRIPTION, 39
+      value :OBJECT_STATISTIC_EXT, 40
+      value :OBJECT_TABCONSTRAINT, 41
+      value :OBJECT_TABLE, 42
+      value :OBJECT_TABLESPACE, 43
+      value :OBJECT_TRANSFORM, 44
+      value :OBJECT_TRIGGER, 45
+      value :OBJECT_TSCONFIGURATION, 46
+      value :OBJECT_TSDICTIONARY, 47
+      value :OBJECT_TSPARSER, 48
+      value :OBJECT_TSTEMPLATE, 49
+      value :OBJECT_TYPE, 50
+      value :OBJECT_USER_MAPPING, 51
+      value :OBJECT_VIEW, 52
     end
     add_enum "pg_query.DropBehavior" do
       value :DROP_BEHAVIOR_UNDEFINED, 0
@@ -2062,60 +2183,64 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :AT_SetOptions, 11
       value :AT_ResetOptions, 12
       value :AT_SetStorage, 13
-      value :AT_DropColumn, 14
-      value :AT_DropColumnRecurse, 15
-      value :AT_AddIndex, 16
-      value :AT_ReAddIndex, 17
-      value :AT_AddConstraint, 18
-      value :AT_AddConstraintRecurse, 19
-      value :AT_ReAddConstraint, 20
-      value :AT_ReAddDomainConstraint, 21
-      value :AT_AlterConstraint, 22
-      value :AT_ValidateConstraint, 23
-      value :AT_ValidateConstraintRecurse, 24
-      value :AT_AddIndexConstraint, 25
-      value :AT_DropConstraint, 26
-      value :AT_DropConstraintRecurse, 27
-      value :AT_ReAddComment, 28
-      value :AT_AlterColumnType, 29
-      value :AT_AlterColumnGenericOptions, 30
-      value :AT_ChangeOwner, 31
-      value :AT_ClusterOn, 32
-      value :AT_DropCluster, 33
-      value :AT_SetLogged, 34
-      value :AT_SetUnLogged, 35
-      value :AT_DropOids, 36
-      value :AT_SetTableSpace, 37
-      value :AT_SetRelOptions, 38
-      value :AT_ResetRelOptions, 39
-      value :AT_ReplaceRelOptions, 40
-      value :AT_EnableTrig, 41
-      value :AT_EnableAlwaysTrig, 42
-      value :AT_EnableReplicaTrig, 43
-      value :AT_DisableTrig, 44
-      value :AT_EnableTrigAll, 45
-      value :AT_DisableTrigAll, 46
-      value :AT_EnableTrigUser, 47
-      value :AT_DisableTrigUser, 48
-      value :AT_EnableRule, 49
-      value :AT_EnableAlwaysRule, 50
-      value :AT_EnableReplicaRule, 51
-      value :AT_DisableRule, 52
-      value :AT_AddInherit, 53
-      value :AT_DropInherit, 54
-      value :AT_AddOf, 55
-      value :AT_DropOf, 56
-      value :AT_ReplicaIdentity, 57
-      value :AT_EnableRowSecurity, 58
-      value :AT_DisableRowSecurity, 59
-      value :AT_ForceRowSecurity, 60
-      value :AT_NoForceRowSecurity, 61
-      value :AT_GenericOptions, 62
-      value :AT_AttachPartition, 63
-      value :AT_DetachPartition, 64
-      value :AT_AddIdentity, 65
-      value :AT_SetIdentity, 66
-      value :AT_DropIdentity, 67
+      value :AT_SetCompression, 14
+      value :AT_DropColumn, 15
+      value :AT_DropColumnRecurse, 16
+      value :AT_AddIndex, 17
+      value :AT_ReAddIndex, 18
+      value :AT_AddConstraint, 19
+      value :AT_AddConstraintRecurse, 20
+      value :AT_ReAddConstraint, 21
+      value :AT_ReAddDomainConstraint, 22
+      value :AT_AlterConstraint, 23
+      value :AT_ValidateConstraint, 24
+      value :AT_ValidateConstraintRecurse, 25
+      value :AT_AddIndexConstraint, 26
+      value :AT_DropConstraint, 27
+      value :AT_DropConstraintRecurse, 28
+      value :AT_ReAddComment, 29
+      value :AT_AlterColumnType, 30
+      value :AT_AlterColumnGenericOptions, 31
+      value :AT_ChangeOwner, 32
+      value :AT_ClusterOn, 33
+      value :AT_DropCluster, 34
+      value :AT_SetLogged, 35
+      value :AT_SetUnLogged, 36
+      value :AT_DropOids, 37
+      value :AT_SetAccessMethod, 38
+      value :AT_SetTableSpace, 39
+      value :AT_SetRelOptions, 40
+      value :AT_ResetRelOptions, 41
+      value :AT_ReplaceRelOptions, 42
+      value :AT_EnableTrig, 43
+      value :AT_EnableAlwaysTrig, 44
+      value :AT_EnableReplicaTrig, 45
+      value :AT_DisableTrig, 46
+      value :AT_EnableTrigAll, 47
+      value :AT_DisableTrigAll, 48
+      value :AT_EnableTrigUser, 49
+      value :AT_DisableTrigUser, 50
+      value :AT_EnableRule, 51
+      value :AT_EnableAlwaysRule, 52
+      value :AT_EnableReplicaRule, 53
+      value :AT_DisableRule, 54
+      value :AT_AddInherit, 55
+      value :AT_DropInherit, 56
+      value :AT_AddOf, 57
+      value :AT_DropOf, 58
+      value :AT_ReplicaIdentity, 59
+      value :AT_EnableRowSecurity, 60
+      value :AT_DisableRowSecurity, 61
+      value :AT_ForceRowSecurity, 62
+      value :AT_NoForceRowSecurity, 63
+      value :AT_GenericOptions, 64
+      value :AT_AttachPartition, 65
+      value :AT_DetachPartition, 66
+      value :AT_DetachPartitionFinalize, 67
+      value :AT_AddIdentity, 68
+      value :AT_SetIdentity, 69
+      value :AT_DropIdentity, 70
+      value :AT_ReAddStatistics, 71
     end
     add_enum "pg_query.GrantTargetType" do
       value :GRANT_TARGET_TYPE_UNDEFINED, 0
@@ -2175,6 +2300,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :FUNC_PARAM_INOUT, 3
       value :FUNC_PARAM_VARIADIC, 4
       value :FUNC_PARAM_TABLE, 5
+      value :FUNC_PARAM_DEFAULT, 6
     end
     add_enum "pg_query.TransactionStmtKind" do
       value :TRANSACTION_STMT_KIND_UNDEFINED, 0
@@ -2194,11 +2320,6 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :NO_CHECK_OPTION, 1
       value :LOCAL_CHECK_OPTION, 2
       value :CASCADED_CHECK_OPTION, 3
-    end
-    add_enum "pg_query.ClusterOption" do
-      value :CLUSTER_OPTION_UNDEFINED, 0
-      value :CLUOPT_RECHECK, 1
-      value :CLUOPT_VERBOSE, 2
     end
     add_enum "pg_query.DiscardMode" do
       value :DISCARD_MODE_UNDEFINED, 0
@@ -2223,13 +2344,29 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :ALTER_TSCONFIG_REPLACE_DICT_FOR_TOKEN, 4
       value :ALTER_TSCONFIG_DROP_MAPPING, 5
     end
+    add_enum "pg_query.PublicationObjSpecType" do
+      value :PUBLICATION_OBJ_SPEC_TYPE_UNDEFINED, 0
+      value :PUBLICATIONOBJ_TABLE, 1
+      value :PUBLICATIONOBJ_TABLES_IN_SCHEMA, 2
+      value :PUBLICATIONOBJ_TABLES_IN_CUR_SCHEMA, 3
+      value :PUBLICATIONOBJ_CONTINUATION, 4
+    end
+    add_enum "pg_query.AlterPublicationAction" do
+      value :ALTER_PUBLICATION_ACTION_UNDEFINED, 0
+      value :AP_AddObjects, 1
+      value :AP_DropObjects, 2
+      value :AP_SetObjects, 3
+    end
     add_enum "pg_query.AlterSubscriptionType" do
       value :ALTER_SUBSCRIPTION_TYPE_UNDEFINED, 0
       value :ALTER_SUBSCRIPTION_OPTIONS, 1
       value :ALTER_SUBSCRIPTION_CONNECTION, 2
-      value :ALTER_SUBSCRIPTION_PUBLICATION, 3
-      value :ALTER_SUBSCRIPTION_REFRESH, 4
-      value :ALTER_SUBSCRIPTION_ENABLED, 5
+      value :ALTER_SUBSCRIPTION_SET_PUBLICATION, 3
+      value :ALTER_SUBSCRIPTION_ADD_PUBLICATION, 4
+      value :ALTER_SUBSCRIPTION_DROP_PUBLICATION, 5
+      value :ALTER_SUBSCRIPTION_REFRESH, 6
+      value :ALTER_SUBSCRIPTION_ENABLED, 7
+      value :ALTER_SUBSCRIPTION_SKIP, 8
     end
     add_enum "pg_query.OnCommitAction" do
       value :ON_COMMIT_ACTION_UNDEFINED, 0
@@ -2249,13 +2386,15 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :COERCION_CONTEXT_UNDEFINED, 0
       value :COERCION_IMPLICIT, 1
       value :COERCION_ASSIGNMENT, 2
-      value :COERCION_EXPLICIT, 3
+      value :COERCION_PLPGSQL, 3
+      value :COERCION_EXPLICIT, 4
     end
     add_enum "pg_query.CoercionForm" do
       value :COERCION_FORM_UNDEFINED, 0
       value :COERCE_EXPLICIT_CALL, 1
       value :COERCE_EXPLICIT_CAST, 2
       value :COERCE_IMPLICIT_CAST, 3
+      value :COERCE_SQL_SYNTAX, 4
     end
     add_enum "pg_query.BoolExprType" do
       value :BOOL_EXPR_TYPE_UNDEFINED, 0
@@ -2343,8 +2482,9 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :CMD_UPDATE, 3
       value :CMD_INSERT, 4
       value :CMD_DELETE, 5
-      value :CMD_UTILITY, 6
-      value :CMD_NOTHING, 7
+      value :CMD_MERGE, 6
+      value :CMD_UTILITY, 7
+      value :CMD_NOTHING, 8
     end
     add_enum "pg_query.JoinType" do
       value :JOIN_TYPE_UNDEFINED, 0
@@ -2481,442 +2621,456 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       value :ARRAY, 293
       value :AS, 294
       value :ASC, 295
-      value :ASSERTION, 296
-      value :ASSIGNMENT, 297
-      value :ASYMMETRIC, 298
-      value :AT, 299
-      value :ATTACH, 300
-      value :ATTRIBUTE, 301
-      value :AUTHORIZATION, 302
-      value :BACKWARD, 303
-      value :BEFORE, 304
-      value :BEGIN_P, 305
-      value :BETWEEN, 306
-      value :BIGINT, 307
-      value :BINARY, 308
-      value :BIT, 309
-      value :BOOLEAN_P, 310
-      value :BOTH, 311
-      value :BY, 312
-      value :CACHE, 313
-      value :CALL, 314
-      value :CALLED, 315
-      value :CASCADE, 316
-      value :CASCADED, 317
-      value :CASE, 318
-      value :CAST, 319
-      value :CATALOG_P, 320
-      value :CHAIN, 321
-      value :CHAR_P, 322
-      value :CHARACTER, 323
-      value :CHARACTERISTICS, 324
-      value :CHECK, 325
-      value :CHECKPOINT, 326
-      value :CLASS, 327
-      value :CLOSE, 328
-      value :CLUSTER, 329
-      value :COALESCE, 330
-      value :COLLATE, 331
-      value :COLLATION, 332
-      value :COLUMN, 333
-      value :COLUMNS, 334
-      value :COMMENT, 335
-      value :COMMENTS, 336
-      value :COMMIT, 337
-      value :COMMITTED, 338
-      value :CONCURRENTLY, 339
-      value :CONFIGURATION, 340
-      value :CONFLICT, 341
-      value :CONNECTION, 342
-      value :CONSTRAINT, 343
-      value :CONSTRAINTS, 344
-      value :CONTENT_P, 345
-      value :CONTINUE_P, 346
-      value :CONVERSION_P, 347
-      value :COPY, 348
-      value :COST, 349
-      value :CREATE, 350
-      value :CROSS, 351
-      value :CSV, 352
-      value :CUBE, 353
-      value :CURRENT_P, 354
-      value :CURRENT_CATALOG, 355
-      value :CURRENT_DATE, 356
-      value :CURRENT_ROLE, 357
-      value :CURRENT_SCHEMA, 358
-      value :CURRENT_TIME, 359
-      value :CURRENT_TIMESTAMP, 360
-      value :CURRENT_USER, 361
-      value :CURSOR, 362
-      value :CYCLE, 363
-      value :DATA_P, 364
-      value :DATABASE, 365
-      value :DAY_P, 366
-      value :DEALLOCATE, 367
-      value :DEC, 368
-      value :DECIMAL_P, 369
-      value :DECLARE, 370
-      value :DEFAULT, 371
-      value :DEFAULTS, 372
-      value :DEFERRABLE, 373
-      value :DEFERRED, 374
-      value :DEFINER, 375
-      value :DELETE_P, 376
-      value :DELIMITER, 377
-      value :DELIMITERS, 378
-      value :DEPENDS, 379
-      value :DESC, 380
-      value :DETACH, 381
-      value :DICTIONARY, 382
-      value :DISABLE_P, 383
-      value :DISCARD, 384
-      value :DISTINCT, 385
-      value :DO, 386
-      value :DOCUMENT_P, 387
-      value :DOMAIN_P, 388
-      value :DOUBLE_P, 389
-      value :DROP, 390
-      value :EACH, 391
-      value :ELSE, 392
-      value :ENABLE_P, 393
-      value :ENCODING, 394
-      value :ENCRYPTED, 395
-      value :END_P, 396
-      value :ENUM_P, 397
-      value :ESCAPE, 398
-      value :EVENT, 399
-      value :EXCEPT, 400
-      value :EXCLUDE, 401
-      value :EXCLUDING, 402
-      value :EXCLUSIVE, 403
-      value :EXECUTE, 404
-      value :EXISTS, 405
-      value :EXPLAIN, 406
-      value :EXPRESSION, 407
-      value :EXTENSION, 408
-      value :EXTERNAL, 409
-      value :EXTRACT, 410
-      value :FALSE_P, 411
-      value :FAMILY, 412
-      value :FETCH, 413
-      value :FILTER, 414
-      value :FIRST_P, 415
-      value :FLOAT_P, 416
-      value :FOLLOWING, 417
-      value :FOR, 418
-      value :FORCE, 419
-      value :FOREIGN, 420
-      value :FORWARD, 421
-      value :FREEZE, 422
-      value :FROM, 423
-      value :FULL, 424
-      value :FUNCTION, 425
-      value :FUNCTIONS, 426
-      value :GENERATED, 427
-      value :GLOBAL, 428
-      value :GRANT, 429
-      value :GRANTED, 430
-      value :GREATEST, 431
-      value :GROUP_P, 432
-      value :GROUPING, 433
-      value :GROUPS, 434
-      value :HANDLER, 435
-      value :HAVING, 436
-      value :HEADER_P, 437
-      value :HOLD, 438
-      value :HOUR_P, 439
-      value :IDENTITY_P, 440
-      value :IF_P, 441
-      value :ILIKE, 442
-      value :IMMEDIATE, 443
-      value :IMMUTABLE, 444
-      value :IMPLICIT_P, 445
-      value :IMPORT_P, 446
-      value :IN_P, 447
-      value :INCLUDE, 448
-      value :INCLUDING, 449
-      value :INCREMENT, 450
-      value :INDEX, 451
-      value :INDEXES, 452
-      value :INHERIT, 453
-      value :INHERITS, 454
-      value :INITIALLY, 455
-      value :INLINE_P, 456
-      value :INNER_P, 457
-      value :INOUT, 458
-      value :INPUT_P, 459
-      value :INSENSITIVE, 460
-      value :INSERT, 461
-      value :INSTEAD, 462
-      value :INT_P, 463
-      value :INTEGER, 464
-      value :INTERSECT, 465
-      value :INTERVAL, 466
-      value :INTO, 467
-      value :INVOKER, 468
-      value :IS, 469
-      value :ISNULL, 470
-      value :ISOLATION, 471
-      value :JOIN, 472
-      value :KEY, 473
-      value :LABEL, 474
-      value :LANGUAGE, 475
-      value :LARGE_P, 476
-      value :LAST_P, 477
-      value :LATERAL_P, 478
-      value :LEADING, 479
-      value :LEAKPROOF, 480
-      value :LEAST, 481
-      value :LEFT, 482
-      value :LEVEL, 483
-      value :LIKE, 484
-      value :LIMIT, 485
-      value :LISTEN, 486
-      value :LOAD, 487
-      value :LOCAL, 488
-      value :LOCALTIME, 489
-      value :LOCALTIMESTAMP, 490
-      value :LOCATION, 491
-      value :LOCK_P, 492
-      value :LOCKED, 493
-      value :LOGGED, 494
-      value :MAPPING, 495
-      value :MATCH, 496
-      value :MATERIALIZED, 497
-      value :MAXVALUE, 498
-      value :METHOD, 499
-      value :MINUTE_P, 500
-      value :MINVALUE, 501
-      value :MODE, 502
-      value :MONTH_P, 503
-      value :MOVE, 504
-      value :NAME_P, 505
-      value :NAMES, 506
-      value :NATIONAL, 507
-      value :NATURAL, 508
-      value :NCHAR, 509
-      value :NEW, 510
-      value :NEXT, 511
-      value :NFC, 512
-      value :NFD, 513
-      value :NFKC, 514
-      value :NFKD, 515
-      value :NO, 516
-      value :NONE, 517
-      value :NORMALIZE, 518
-      value :NORMALIZED, 519
-      value :NOT, 520
-      value :NOTHING, 521
-      value :NOTIFY, 522
-      value :NOTNULL, 523
-      value :NOWAIT, 524
-      value :NULL_P, 525
-      value :NULLIF, 526
-      value :NULLS_P, 527
-      value :NUMERIC, 528
-      value :OBJECT_P, 529
-      value :OF, 530
-      value :OFF, 531
-      value :OFFSET, 532
-      value :OIDS, 533
-      value :OLD, 534
-      value :ON, 535
-      value :ONLY, 536
-      value :OPERATOR, 537
-      value :OPTION, 538
-      value :OPTIONS, 539
-      value :OR, 540
-      value :ORDER, 541
-      value :ORDINALITY, 542
-      value :OTHERS, 543
-      value :OUT_P, 544
-      value :OUTER_P, 545
-      value :OVER, 546
-      value :OVERLAPS, 547
-      value :OVERLAY, 548
-      value :OVERRIDING, 549
-      value :OWNED, 550
-      value :OWNER, 551
-      value :PARALLEL, 552
-      value :PARSER, 553
-      value :PARTIAL, 554
-      value :PARTITION, 555
-      value :PASSING, 556
-      value :PASSWORD, 557
-      value :PLACING, 558
-      value :PLANS, 559
-      value :POLICY, 560
-      value :POSITION, 561
-      value :PRECEDING, 562
-      value :PRECISION, 563
-      value :PRESERVE, 564
-      value :PREPARE, 565
-      value :PREPARED, 566
-      value :PRIMARY, 567
-      value :PRIOR, 568
-      value :PRIVILEGES, 569
-      value :PROCEDURAL, 570
-      value :PROCEDURE, 571
-      value :PROCEDURES, 572
-      value :PROGRAM, 573
-      value :PUBLICATION, 574
-      value :QUOTE, 575
-      value :RANGE, 576
-      value :READ, 577
-      value :REAL, 578
-      value :REASSIGN, 579
-      value :RECHECK, 580
-      value :RECURSIVE, 581
-      value :REF_P, 582
-      value :REFERENCES, 583
-      value :REFERENCING, 584
-      value :REFRESH, 585
-      value :REINDEX, 586
-      value :RELATIVE_P, 587
-      value :RELEASE, 588
-      value :RENAME, 589
-      value :REPEATABLE, 590
-      value :REPLACE, 591
-      value :REPLICA, 592
-      value :RESET, 593
-      value :RESTART, 594
-      value :RESTRICT, 595
-      value :RETURNING, 596
-      value :RETURNS, 597
-      value :REVOKE, 598
-      value :RIGHT, 599
-      value :ROLE, 600
-      value :ROLLBACK, 601
-      value :ROLLUP, 602
-      value :ROUTINE, 603
-      value :ROUTINES, 604
-      value :ROW, 605
-      value :ROWS, 606
-      value :RULE, 607
-      value :SAVEPOINT, 608
-      value :SCHEMA, 609
-      value :SCHEMAS, 610
-      value :SCROLL, 611
-      value :SEARCH, 612
-      value :SECOND_P, 613
-      value :SECURITY, 614
-      value :SELECT, 615
-      value :SEQUENCE, 616
-      value :SEQUENCES, 617
-      value :SERIALIZABLE, 618
-      value :SERVER, 619
-      value :SESSION, 620
-      value :SESSION_USER, 621
-      value :SET, 622
-      value :SETS, 623
-      value :SETOF, 624
-      value :SHARE, 625
-      value :SHOW, 626
-      value :SIMILAR, 627
-      value :SIMPLE, 628
-      value :SKIP, 629
-      value :SMALLINT, 630
-      value :SNAPSHOT, 631
-      value :SOME, 632
-      value :SQL_P, 633
-      value :STABLE, 634
-      value :STANDALONE_P, 635
-      value :START, 636
-      value :STATEMENT, 637
-      value :STATISTICS, 638
-      value :STDIN, 639
-      value :STDOUT, 640
-      value :STORAGE, 641
-      value :STORED, 642
-      value :STRICT_P, 643
-      value :STRIP_P, 644
-      value :SUBSCRIPTION, 645
-      value :SUBSTRING, 646
-      value :SUPPORT, 647
-      value :SYMMETRIC, 648
-      value :SYSID, 649
-      value :SYSTEM_P, 650
-      value :TABLE, 651
-      value :TABLES, 652
-      value :TABLESAMPLE, 653
-      value :TABLESPACE, 654
-      value :TEMP, 655
-      value :TEMPLATE, 656
-      value :TEMPORARY, 657
-      value :TEXT_P, 658
-      value :THEN, 659
-      value :TIES, 660
-      value :TIME, 661
-      value :TIMESTAMP, 662
-      value :TO, 663
-      value :TRAILING, 664
-      value :TRANSACTION, 665
-      value :TRANSFORM, 666
-      value :TREAT, 667
-      value :TRIGGER, 668
-      value :TRIM, 669
-      value :TRUE_P, 670
-      value :TRUNCATE, 671
-      value :TRUSTED, 672
-      value :TYPE_P, 673
-      value :TYPES_P, 674
-      value :UESCAPE, 675
-      value :UNBOUNDED, 676
-      value :UNCOMMITTED, 677
-      value :UNENCRYPTED, 678
-      value :UNION, 679
-      value :UNIQUE, 680
-      value :UNKNOWN, 681
-      value :UNLISTEN, 682
-      value :UNLOGGED, 683
-      value :UNTIL, 684
-      value :UPDATE, 685
-      value :USER, 686
-      value :USING, 687
-      value :VACUUM, 688
-      value :VALID, 689
-      value :VALIDATE, 690
-      value :VALIDATOR, 691
-      value :VALUE_P, 692
-      value :VALUES, 693
-      value :VARCHAR, 694
-      value :VARIADIC, 695
-      value :VARYING, 696
-      value :VERBOSE, 697
-      value :VERSION_P, 698
-      value :VIEW, 699
-      value :VIEWS, 700
-      value :VOLATILE, 701
-      value :WHEN, 702
-      value :WHERE, 703
-      value :WHITESPACE_P, 704
-      value :WINDOW, 705
-      value :WITH, 706
-      value :WITHIN, 707
-      value :WITHOUT, 708
-      value :WORK, 709
-      value :WRAPPER, 710
-      value :WRITE, 711
-      value :XML_P, 712
-      value :XMLATTRIBUTES, 713
-      value :XMLCONCAT, 714
-      value :XMLELEMENT, 715
-      value :XMLEXISTS, 716
-      value :XMLFOREST, 717
-      value :XMLNAMESPACES, 718
-      value :XMLPARSE, 719
-      value :XMLPI, 720
-      value :XMLROOT, 721
-      value :XMLSERIALIZE, 722
-      value :XMLTABLE, 723
-      value :YEAR_P, 724
-      value :YES_P, 725
-      value :ZONE, 726
-      value :NOT_LA, 727
-      value :NULLS_LA, 728
-      value :WITH_LA, 729
-      value :POSTFIXOP, 730
-      value :UMINUS, 731
+      value :ASENSITIVE, 296
+      value :ASSERTION, 297
+      value :ASSIGNMENT, 298
+      value :ASYMMETRIC, 299
+      value :ATOMIC, 300
+      value :AT, 301
+      value :ATTACH, 302
+      value :ATTRIBUTE, 303
+      value :AUTHORIZATION, 304
+      value :BACKWARD, 305
+      value :BEFORE, 306
+      value :BEGIN_P, 307
+      value :BETWEEN, 308
+      value :BIGINT, 309
+      value :BINARY, 310
+      value :BIT, 311
+      value :BOOLEAN_P, 312
+      value :BOTH, 313
+      value :BREADTH, 314
+      value :BY, 315
+      value :CACHE, 316
+      value :CALL, 317
+      value :CALLED, 318
+      value :CASCADE, 319
+      value :CASCADED, 320
+      value :CASE, 321
+      value :CAST, 322
+      value :CATALOG_P, 323
+      value :CHAIN, 324
+      value :CHAR_P, 325
+      value :CHARACTER, 326
+      value :CHARACTERISTICS, 327
+      value :CHECK, 328
+      value :CHECKPOINT, 329
+      value :CLASS, 330
+      value :CLOSE, 331
+      value :CLUSTER, 332
+      value :COALESCE, 333
+      value :COLLATE, 334
+      value :COLLATION, 335
+      value :COLUMN, 336
+      value :COLUMNS, 337
+      value :COMMENT, 338
+      value :COMMENTS, 339
+      value :COMMIT, 340
+      value :COMMITTED, 341
+      value :COMPRESSION, 342
+      value :CONCURRENTLY, 343
+      value :CONFIGURATION, 344
+      value :CONFLICT, 345
+      value :CONNECTION, 346
+      value :CONSTRAINT, 347
+      value :CONSTRAINTS, 348
+      value :CONTENT_P, 349
+      value :CONTINUE_P, 350
+      value :CONVERSION_P, 351
+      value :COPY, 352
+      value :COST, 353
+      value :CREATE, 354
+      value :CROSS, 355
+      value :CSV, 356
+      value :CUBE, 357
+      value :CURRENT_P, 358
+      value :CURRENT_CATALOG, 359
+      value :CURRENT_DATE, 360
+      value :CURRENT_ROLE, 361
+      value :CURRENT_SCHEMA, 362
+      value :CURRENT_TIME, 363
+      value :CURRENT_TIMESTAMP, 364
+      value :CURRENT_USER, 365
+      value :CURSOR, 366
+      value :CYCLE, 367
+      value :DATA_P, 368
+      value :DATABASE, 369
+      value :DAY_P, 370
+      value :DEALLOCATE, 371
+      value :DEC, 372
+      value :DECIMAL_P, 373
+      value :DECLARE, 374
+      value :DEFAULT, 375
+      value :DEFAULTS, 376
+      value :DEFERRABLE, 377
+      value :DEFERRED, 378
+      value :DEFINER, 379
+      value :DELETE_P, 380
+      value :DELIMITER, 381
+      value :DELIMITERS, 382
+      value :DEPENDS, 383
+      value :DEPTH, 384
+      value :DESC, 385
+      value :DETACH, 386
+      value :DICTIONARY, 387
+      value :DISABLE_P, 388
+      value :DISCARD, 389
+      value :DISTINCT, 390
+      value :DO, 391
+      value :DOCUMENT_P, 392
+      value :DOMAIN_P, 393
+      value :DOUBLE_P, 394
+      value :DROP, 395
+      value :EACH, 396
+      value :ELSE, 397
+      value :ENABLE_P, 398
+      value :ENCODING, 399
+      value :ENCRYPTED, 400
+      value :END_P, 401
+      value :ENUM_P, 402
+      value :ESCAPE, 403
+      value :EVENT, 404
+      value :EXCEPT, 405
+      value :EXCLUDE, 406
+      value :EXCLUDING, 407
+      value :EXCLUSIVE, 408
+      value :EXECUTE, 409
+      value :EXISTS, 410
+      value :EXPLAIN, 411
+      value :EXPRESSION, 412
+      value :EXTENSION, 413
+      value :EXTERNAL, 414
+      value :EXTRACT, 415
+      value :FALSE_P, 416
+      value :FAMILY, 417
+      value :FETCH, 418
+      value :FILTER, 419
+      value :FINALIZE, 420
+      value :FIRST_P, 421
+      value :FLOAT_P, 422
+      value :FOLLOWING, 423
+      value :FOR, 424
+      value :FORCE, 425
+      value :FOREIGN, 426
+      value :FORWARD, 427
+      value :FREEZE, 428
+      value :FROM, 429
+      value :FULL, 430
+      value :FUNCTION, 431
+      value :FUNCTIONS, 432
+      value :GENERATED, 433
+      value :GLOBAL, 434
+      value :GRANT, 435
+      value :GRANTED, 436
+      value :GREATEST, 437
+      value :GROUP_P, 438
+      value :GROUPING, 439
+      value :GROUPS, 440
+      value :HANDLER, 441
+      value :HAVING, 442
+      value :HEADER_P, 443
+      value :HOLD, 444
+      value :HOUR_P, 445
+      value :IDENTITY_P, 446
+      value :IF_P, 447
+      value :ILIKE, 448
+      value :IMMEDIATE, 449
+      value :IMMUTABLE, 450
+      value :IMPLICIT_P, 451
+      value :IMPORT_P, 452
+      value :IN_P, 453
+      value :INCLUDE, 454
+      value :INCLUDING, 455
+      value :INCREMENT, 456
+      value :INDEX, 457
+      value :INDEXES, 458
+      value :INHERIT, 459
+      value :INHERITS, 460
+      value :INITIALLY, 461
+      value :INLINE_P, 462
+      value :INNER_P, 463
+      value :INOUT, 464
+      value :INPUT_P, 465
+      value :INSENSITIVE, 466
+      value :INSERT, 467
+      value :INSTEAD, 468
+      value :INT_P, 469
+      value :INTEGER, 470
+      value :INTERSECT, 471
+      value :INTERVAL, 472
+      value :INTO, 473
+      value :INVOKER, 474
+      value :IS, 475
+      value :ISNULL, 476
+      value :ISOLATION, 477
+      value :JOIN, 478
+      value :KEY, 479
+      value :LABEL, 480
+      value :LANGUAGE, 481
+      value :LARGE_P, 482
+      value :LAST_P, 483
+      value :LATERAL_P, 484
+      value :LEADING, 485
+      value :LEAKPROOF, 486
+      value :LEAST, 487
+      value :LEFT, 488
+      value :LEVEL, 489
+      value :LIKE, 490
+      value :LIMIT, 491
+      value :LISTEN, 492
+      value :LOAD, 493
+      value :LOCAL, 494
+      value :LOCALTIME, 495
+      value :LOCALTIMESTAMP, 496
+      value :LOCATION, 497
+      value :LOCK_P, 498
+      value :LOCKED, 499
+      value :LOGGED, 500
+      value :MAPPING, 501
+      value :MATCH, 502
+      value :MATCHED, 503
+      value :MATERIALIZED, 504
+      value :MAXVALUE, 505
+      value :MERGE, 506
+      value :METHOD, 507
+      value :MINUTE_P, 508
+      value :MINVALUE, 509
+      value :MODE, 510
+      value :MONTH_P, 511
+      value :MOVE, 512
+      value :NAME_P, 513
+      value :NAMES, 514
+      value :NATIONAL, 515
+      value :NATURAL, 516
+      value :NCHAR, 517
+      value :NEW, 518
+      value :NEXT, 519
+      value :NFC, 520
+      value :NFD, 521
+      value :NFKC, 522
+      value :NFKD, 523
+      value :NO, 524
+      value :NONE, 525
+      value :NORMALIZE, 526
+      value :NORMALIZED, 527
+      value :NOT, 528
+      value :NOTHING, 529
+      value :NOTIFY, 530
+      value :NOTNULL, 531
+      value :NOWAIT, 532
+      value :NULL_P, 533
+      value :NULLIF, 534
+      value :NULLS_P, 535
+      value :NUMERIC, 536
+      value :OBJECT_P, 537
+      value :OF, 538
+      value :OFF, 539
+      value :OFFSET, 540
+      value :OIDS, 541
+      value :OLD, 542
+      value :ON, 543
+      value :ONLY, 544
+      value :OPERATOR, 545
+      value :OPTION, 546
+      value :OPTIONS, 547
+      value :OR, 548
+      value :ORDER, 549
+      value :ORDINALITY, 550
+      value :OTHERS, 551
+      value :OUT_P, 552
+      value :OUTER_P, 553
+      value :OVER, 554
+      value :OVERLAPS, 555
+      value :OVERLAY, 556
+      value :OVERRIDING, 557
+      value :OWNED, 558
+      value :OWNER, 559
+      value :PARALLEL, 560
+      value :PARAMETER, 561
+      value :PARSER, 562
+      value :PARTIAL, 563
+      value :PARTITION, 564
+      value :PASSING, 565
+      value :PASSWORD, 566
+      value :PLACING, 567
+      value :PLANS, 568
+      value :POLICY, 569
+      value :POSITION, 570
+      value :PRECEDING, 571
+      value :PRECISION, 572
+      value :PRESERVE, 573
+      value :PREPARE, 574
+      value :PREPARED, 575
+      value :PRIMARY, 576
+      value :PRIOR, 577
+      value :PRIVILEGES, 578
+      value :PROCEDURAL, 579
+      value :PROCEDURE, 580
+      value :PROCEDURES, 581
+      value :PROGRAM, 582
+      value :PUBLICATION, 583
+      value :QUOTE, 584
+      value :RANGE, 585
+      value :READ, 586
+      value :REAL, 587
+      value :REASSIGN, 588
+      value :RECHECK, 589
+      value :RECURSIVE, 590
+      value :REF_P, 591
+      value :REFERENCES, 592
+      value :REFERENCING, 593
+      value :REFRESH, 594
+      value :REINDEX, 595
+      value :RELATIVE_P, 596
+      value :RELEASE, 597
+      value :RENAME, 598
+      value :REPEATABLE, 599
+      value :REPLACE, 600
+      value :REPLICA, 601
+      value :RESET, 602
+      value :RESTART, 603
+      value :RESTRICT, 604
+      value :RETURN, 605
+      value :RETURNING, 606
+      value :RETURNS, 607
+      value :REVOKE, 608
+      value :RIGHT, 609
+      value :ROLE, 610
+      value :ROLLBACK, 611
+      value :ROLLUP, 612
+      value :ROUTINE, 613
+      value :ROUTINES, 614
+      value :ROW, 615
+      value :ROWS, 616
+      value :RULE, 617
+      value :SAVEPOINT, 618
+      value :SCHEMA, 619
+      value :SCHEMAS, 620
+      value :SCROLL, 621
+      value :SEARCH, 622
+      value :SECOND_P, 623
+      value :SECURITY, 624
+      value :SELECT, 625
+      value :SEQUENCE, 626
+      value :SEQUENCES, 627
+      value :SERIALIZABLE, 628
+      value :SERVER, 629
+      value :SESSION, 630
+      value :SESSION_USER, 631
+      value :SET, 632
+      value :SETS, 633
+      value :SETOF, 634
+      value :SHARE, 635
+      value :SHOW, 636
+      value :SIMILAR, 637
+      value :SIMPLE, 638
+      value :SKIP, 639
+      value :SMALLINT, 640
+      value :SNAPSHOT, 641
+      value :SOME, 642
+      value :SQL_P, 643
+      value :STABLE, 644
+      value :STANDALONE_P, 645
+      value :START, 646
+      value :STATEMENT, 647
+      value :STATISTICS, 648
+      value :STDIN, 649
+      value :STDOUT, 650
+      value :STORAGE, 651
+      value :STORED, 652
+      value :STRICT_P, 653
+      value :STRIP_P, 654
+      value :SUBSCRIPTION, 655
+      value :SUBSTRING, 656
+      value :SUPPORT, 657
+      value :SYMMETRIC, 658
+      value :SYSID, 659
+      value :SYSTEM_P, 660
+      value :TABLE, 661
+      value :TABLES, 662
+      value :TABLESAMPLE, 663
+      value :TABLESPACE, 664
+      value :TEMP, 665
+      value :TEMPLATE, 666
+      value :TEMPORARY, 667
+      value :TEXT_P, 668
+      value :THEN, 669
+      value :TIES, 670
+      value :TIME, 671
+      value :TIMESTAMP, 672
+      value :TO, 673
+      value :TRAILING, 674
+      value :TRANSACTION, 675
+      value :TRANSFORM, 676
+      value :TREAT, 677
+      value :TRIGGER, 678
+      value :TRIM, 679
+      value :TRUE_P, 680
+      value :TRUNCATE, 681
+      value :TRUSTED, 682
+      value :TYPE_P, 683
+      value :TYPES_P, 684
+      value :UESCAPE, 685
+      value :UNBOUNDED, 686
+      value :UNCOMMITTED, 687
+      value :UNENCRYPTED, 688
+      value :UNION, 689
+      value :UNIQUE, 690
+      value :UNKNOWN, 691
+      value :UNLISTEN, 692
+      value :UNLOGGED, 693
+      value :UNTIL, 694
+      value :UPDATE, 695
+      value :USER, 696
+      value :USING, 697
+      value :VACUUM, 698
+      value :VALID, 699
+      value :VALIDATE, 700
+      value :VALIDATOR, 701
+      value :VALUE_P, 702
+      value :VALUES, 703
+      value :VARCHAR, 704
+      value :VARIADIC, 705
+      value :VARYING, 706
+      value :VERBOSE, 707
+      value :VERSION_P, 708
+      value :VIEW, 709
+      value :VIEWS, 710
+      value :VOLATILE, 711
+      value :WHEN, 712
+      value :WHERE, 713
+      value :WHITESPACE_P, 714
+      value :WINDOW, 715
+      value :WITH, 716
+      value :WITHIN, 717
+      value :WITHOUT, 718
+      value :WORK, 719
+      value :WRAPPER, 720
+      value :WRITE, 721
+      value :XML_P, 722
+      value :XMLATTRIBUTES, 723
+      value :XMLCONCAT, 724
+      value :XMLELEMENT, 725
+      value :XMLEXISTS, 726
+      value :XMLFOREST, 727
+      value :XMLNAMESPACES, 728
+      value :XMLPARSE, 729
+      value :XMLPI, 730
+      value :XMLROOT, 731
+      value :XMLSERIALIZE, 732
+      value :XMLTABLE, 733
+      value :YEAR_P, 734
+      value :YES_P, 735
+      value :ZONE, 736
+      value :NOT_LA, 737
+      value :NULLS_LA, 738
+      value :WITH_LA, 739
+      value :MODE_TYPE_NAME, 740
+      value :MODE_PLPGSQL_EXPR, 741
+      value :MODE_PLPGSQL_ASSIGN1, 742
+      value :MODE_PLPGSQL_ASSIGN2, 743
+      value :MODE_PLPGSQL_ASSIGN3, 744
+      value :UMINUS, 745
     end
   end
 end
@@ -2927,16 +3081,16 @@ module PgQuery
   Node = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Node").msgclass
   Integer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Integer").msgclass
   Float = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Float").msgclass
+  Boolean = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Boolean").msgclass
   String = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.String").msgclass
   BitString = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.BitString").msgclass
-  Null = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Null").msgclass
   List = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.List").msgclass
   OidList = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.OidList").msgclass
   IntList = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.IntList").msgclass
+  A_Const = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.A_Const").msgclass
   Alias = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Alias").msgclass
   RangeVar = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.RangeVar").msgclass
   TableFunc = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.TableFunc").msgclass
-  Expr = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Expr").msgclass
   Var = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Var").msgclass
   Param = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Param").msgclass
   Aggref = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Aggref").msgclass
@@ -2984,12 +3138,16 @@ module PgQuery
   FromExpr = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.FromExpr").msgclass
   OnConflictExpr = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.OnConflictExpr").msgclass
   IntoClause = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.IntoClause").msgclass
+  MergeAction = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.MergeAction").msgclass
   RawStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.RawStmt").msgclass
   Query = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Query").msgclass
   InsertStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.InsertStmt").msgclass
   DeleteStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.DeleteStmt").msgclass
   UpdateStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.UpdateStmt").msgclass
+  MergeStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.MergeStmt").msgclass
   SelectStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.SelectStmt").msgclass
+  ReturnStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ReturnStmt").msgclass
+  PLAssignStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.PLAssignStmt").msgclass
   AlterTableStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterTableStmt").msgclass
   AlterTableCmd = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterTableCmd").msgclass
   AlterDomainStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterDomainStmt").msgclass
@@ -3040,6 +3198,7 @@ module PgQuery
   CheckPointStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.CheckPointStmt").msgclass
   CreateSchemaStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.CreateSchemaStmt").msgclass
   AlterDatabaseStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterDatabaseStmt").msgclass
+  AlterDatabaseRefreshCollStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterDatabaseRefreshCollStmt").msgclass
   AlterDatabaseSetStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterDatabaseSetStmt").msgclass
   AlterRoleSetStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterRoleSetStmt").msgclass
   CreateConversionStmt = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.CreateConversionStmt").msgclass
@@ -3102,7 +3261,6 @@ module PgQuery
   A_Expr = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.A_Expr").msgclass
   ColumnRef = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ColumnRef").msgclass
   ParamRef = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ParamRef").msgclass
-  A_Const = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.A_Const").msgclass
   FuncCall = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.FuncCall").msgclass
   A_Star = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.A_Star").msgclass
   A_Indices = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.A_Indices").msgclass
@@ -3122,6 +3280,7 @@ module PgQuery
   TypeName = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.TypeName").msgclass
   ColumnDef = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ColumnDef").msgclass
   IndexElem = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.IndexElem").msgclass
+  StatsElem = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.StatsElem").msgclass
   Constraint = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.Constraint").msgclass
   DefElem = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.DefElem").msgclass
   RangeTblEntry = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.RangeTblEntry").msgclass
@@ -3142,7 +3301,10 @@ module PgQuery
   WithClause = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.WithClause").msgclass
   InferClause = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.InferClause").msgclass
   OnConflictClause = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.OnConflictClause").msgclass
+  CTESearchClause = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.CTESearchClause").msgclass
+  CTECycleClause = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.CTECycleClause").msgclass
   CommonTableExpr = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.CommonTableExpr").msgclass
+  MergeWhenClause = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.MergeWhenClause").msgclass
   RoleSpec = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.RoleSpec").msgclass
   TriggerTransition = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.TriggerTransition").msgclass
   PartitionElem = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.PartitionElem").msgclass
@@ -3151,6 +3313,8 @@ module PgQuery
   PartitionRangeDatum = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.PartitionRangeDatum").msgclass
   PartitionCmd = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.PartitionCmd").msgclass
   VacuumRelation = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.VacuumRelation").msgclass
+  PublicationObjSpec = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.PublicationObjSpec").msgclass
+  PublicationTable = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.PublicationTable").msgclass
   InlineCodeBlock = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.InlineCodeBlock").msgclass
   CallContext = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.CallContext").msgclass
   ScanToken = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ScanToken").msgclass
@@ -3158,6 +3322,7 @@ module PgQuery
   QuerySource = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.QuerySource").enummodule
   SortByDir = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.SortByDir").enummodule
   SortByNulls = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.SortByNulls").enummodule
+  SetQuantifier = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.SetQuantifier").enummodule
   A_Expr_Kind = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.A_Expr_Kind").enummodule
   RoleSpecType = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.RoleSpecType").enummodule
   TableLikeOption = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.TableLikeOption").enummodule
@@ -3180,10 +3345,11 @@ module PgQuery
   FunctionParameterMode = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.FunctionParameterMode").enummodule
   TransactionStmtKind = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.TransactionStmtKind").enummodule
   ViewCheckOption = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ViewCheckOption").enummodule
-  ClusterOption = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ClusterOption").enummodule
   DiscardMode = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.DiscardMode").enummodule
   ReindexObjectType = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ReindexObjectType").enummodule
   AlterTSConfigType = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterTSConfigType").enummodule
+  PublicationObjSpecType = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.PublicationObjSpecType").enummodule
+  AlterPublicationAction = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterPublicationAction").enummodule
   AlterSubscriptionType = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.AlterSubscriptionType").enummodule
   OnCommitAction = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.OnCommitAction").enummodule
   ParamKind = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("pg_query.ParamKind").enummodule

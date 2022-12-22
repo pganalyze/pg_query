@@ -3,7 +3,7 @@
  * trigger.h
  *	  Declarations for trigger handling.
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/commands/trigger.h
@@ -13,6 +13,7 @@
 #ifndef TRIGGER_H
 #define TRIGGER_H
 
+#include "access/tableam.h"
 #include "catalog/objectaddress.h"
 #include "nodes/execnodes.h"
 #include "nodes/parsenodes.h"
@@ -44,9 +45,9 @@ typedef struct TriggerData
 
 /*
  * The state for capturing old and new tuples into transition tables for a
- * single ModifyTable node (or other operation source, e.g. copy.c).
+ * single ModifyTable node (or other operation source, e.g. copyfrom.c).
  *
- * This is per-caller to avoid conflicts in setting tcs_map or
+ * This is per-caller to avoid conflicts in setting
  * tcs_original_insert_tuple.  Note, however, that the pointed-to
  * private data may be shared across multiple callers.
  */
@@ -66,19 +67,11 @@ typedef struct TransitionCaptureState
 	bool		tcs_insert_new_table;
 
 	/*
-	 * For UPDATE and DELETE, AfterTriggerSaveEvent may need to convert the
-	 * new and old tuples from a child table's format to the format of the
-	 * relation named in a query so that it is compatible with the transition
-	 * tuplestores.  The caller must store the conversion map here if so.
-	 */
-	TupleConversionMap *tcs_map;
-
-	/*
 	 * For INSERT and COPY, it would be wasteful to convert tuples from child
 	 * format to parent format after they have already been converted in the
 	 * opposite direction during routing.  In that case we bypass conversion
-	 * and allow the inserting code (copy.c and nodeModifyTable.c) to provide
-	 * a slot containing the original tuple directly.
+	 * and allow the inserting code (copyfrom.c and nodeModifyTable.c) to
+	 * provide a slot containing the original tuple directly.
 	 */
 	TupleTableSlot *tcs_original_insert_tuple;
 
@@ -168,6 +161,10 @@ extern ObjectAddress CreateTriggerFiringOn(CreateTrigStmt *stmt, const char *que
 										   Node *whenClause, bool isInternal, bool in_partition,
 										   char trigger_fires_when);
 
+extern void TriggerSetParentTrigger(Relation trigRel,
+									Oid childTrigId,
+									Oid parentTrigId,
+									Oid childTableId);
 extern void RemoveTriggerById(Oid trigOid);
 extern Oid	get_trigger_oid(Oid relid, const char *name, bool missing_ok);
 
@@ -221,7 +218,8 @@ extern void ExecARDeleteTriggers(EState *estate,
 								 ResultRelInfo *relinfo,
 								 ItemPointer tupleid,
 								 HeapTuple fdw_trigtuple,
-								 TransitionCaptureState *transition_capture);
+								 TransitionCaptureState *transition_capture,
+								 bool is_crosspart_update);
 extern bool ExecIRDeleteTriggers(EState *estate,
 								 ResultRelInfo *relinfo,
 								 HeapTuple trigtuple);
@@ -235,14 +233,18 @@ extern bool ExecBRUpdateTriggers(EState *estate,
 								 ResultRelInfo *relinfo,
 								 ItemPointer tupleid,
 								 HeapTuple fdw_trigtuple,
-								 TupleTableSlot *slot);
+								 TupleTableSlot *slot,
+								 TM_FailureData *tmfdp);
 extern void ExecARUpdateTriggers(EState *estate,
 								 ResultRelInfo *relinfo,
+								 ResultRelInfo *src_partinfo,
+								 ResultRelInfo *dst_partinfo,
 								 ItemPointer tupleid,
 								 HeapTuple fdw_trigtuple,
 								 TupleTableSlot *slot,
 								 List *recheckIndexes,
-								 TransitionCaptureState *transition_capture);
+								 TransitionCaptureState *transition_capture,
+								 bool is_crosspart_update);
 extern bool ExecIRUpdateTriggers(EState *estate,
 								 ResultRelInfo *relinfo,
 								 HeapTuple trigtuple,

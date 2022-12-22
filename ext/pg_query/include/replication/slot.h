@@ -2,7 +2,7 @@
  * slot.h
  *	   Replication slot management.
  *
- * Copyright (c) 2012-2020, PostgreSQL Global Development Group
+ * Copyright (c) 2012-2022, PostgreSQL Global Development Group
  *
  *-------------------------------------------------------------------------
  */
@@ -15,6 +15,7 @@
 #include "storage/lwlock.h"
 #include "storage/shmem.h"
 #include "storage/spin.h"
+#include "replication/walreceiver.h"
 
 /*
  * Behaviour of replication slots, upon release or crash.
@@ -35,14 +36,6 @@ typedef enum ReplicationSlotPersistency
 	RS_EPHEMERAL,
 	RS_TEMPORARY
 } ReplicationSlotPersistency;
-
-/* For ReplicationSlotAcquire, q.v. */
-typedef enum SlotAcquireBehavior
-{
-	SAB_Error,
-	SAB_Block,
-	SAB_Inquire
-} SlotAcquireBehavior;
 
 /*
  * On-Disk data of a replication slot, preserved across restarts.
@@ -89,6 +82,17 @@ typedef struct ReplicationSlotPersistentData
 	 * start_lsn that's further in the past than this value.
 	 */
 	XLogRecPtr	confirmed_flush;
+
+	/*
+	 * LSN at which we enabled two_phase commit for this slot or LSN at which
+	 * we found a consistent point at the time of slot creation.
+	 */
+	XLogRecPtr	two_phase_at;
+
+	/*
+	 * Allow decoding of prepared transactions?
+	 */
+	bool		two_phase;
 
 	/* plugin name */
 	NameData	plugin;
@@ -191,17 +195,18 @@ extern void ReplicationSlotsShmemInit(void);
 
 /* management of individual slots */
 extern void ReplicationSlotCreate(const char *name, bool db_specific,
-								  ReplicationSlotPersistency p);
+								  ReplicationSlotPersistency p, bool two_phase);
 extern void ReplicationSlotPersist(void);
 extern void ReplicationSlotDrop(const char *name, bool nowait);
 
-extern int	ReplicationSlotAcquire(const char *name, SlotAcquireBehavior behavior);
+extern void ReplicationSlotAcquire(const char *name, bool nowait);
 extern void ReplicationSlotRelease(void);
 extern void ReplicationSlotCleanup(void);
 extern void ReplicationSlotSave(void);
 extern void ReplicationSlotMarkDirty(void);
 
 /* misc stuff */
+extern void ReplicationSlotInitialize(void);
 extern bool ReplicationSlotValidateName(const char *name, int elevel);
 extern void ReplicationSlotReserveWal(void);
 extern void ReplicationSlotsComputeRequiredXmin(bool already_locked);
@@ -210,10 +215,16 @@ extern XLogRecPtr ReplicationSlotsComputeLogicalRestartLSN(void);
 extern bool ReplicationSlotsCountDBSlots(Oid dboid, int *nslots, int *nactive);
 extern void ReplicationSlotsDropDBSlots(Oid dboid);
 extern bool InvalidateObsoleteReplicationSlots(XLogSegNo oldestSegno);
+extern ReplicationSlot *SearchNamedReplicationSlot(const char *name, bool need_lock);
+extern int	ReplicationSlotIndex(ReplicationSlot *slot);
+extern bool ReplicationSlotName(int index, Name name);
+extern void ReplicationSlotNameForTablesync(Oid suboid, Oid relid, char *syncslotname, int szslot);
+extern void ReplicationSlotDropAtPubNode(WalReceiverConn *wrconn, char *slotname, bool missing_ok);
 
 extern void StartupReplicationSlots(void);
 extern void CheckPointReplicationSlots(void);
 
 extern void CheckSlotRequirements(void);
+extern void CheckSlotPermissions(void);
 
 #endif							/* SLOT_H */

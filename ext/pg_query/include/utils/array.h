@@ -51,7 +51,7 @@
  * arrays holding the elements.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/array.h
@@ -68,6 +68,11 @@
 struct ExprState;
 struct ExprContext;
 
+
+/*
+ * Maximum number of array subscripts (arbitrary limit)
+ */
+#define MAXDIM 6
 
 /*
  * Arrays are varlena objects, so must meet the varlena convention that
@@ -334,7 +339,7 @@ typedef struct ArrayIteratorData *ArrayIterator;
 /*
  * GUC parameter
  */
-extern bool Array_nulls;
+extern PGDLLIMPORT bool Array_nulls;
 
 /*
  * prototypes for functions defined in arrayfuncs.c
