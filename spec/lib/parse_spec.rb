@@ -1176,49 +1176,49 @@ $BODY$
 
   it 'correctly finds created functions' do
     query = described_class.parse(<<-SQL)
-    CREATE OR REPLACE FUNCTION testfunc(x integer) RETURNS integer AS $$
-    BEGIN
-    RETURN x
-    END;
-    $$ LANGUAGE plpgsql STABLE;
+      CREATE OR REPLACE FUNCTION foo.testfunc(x integer) RETURNS integer AS $$
+      BEGIN
+      RETURN x
+      END;
+      $$ LANGUAGE plpgsql STABLE;
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc']
-    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.functions).to eq ['foo.testfunc']
+    expect(query.ddl_functions).to eq ['foo.testfunc']
     expect(query.call_functions).to eq []
   end
 
   it 'correctly finds called functions' do
     query = described_class.parse(<<-SQL)
-      SELECT testfunc(1);
+      SELECT foo.testfunc(1);
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc']
+    expect(query.functions).to eq ['foo.testfunc']
     expect(query.ddl_functions).to eq []
-    expect(query.call_functions).to eq ['testfunc']
+    expect(query.call_functions).to eq ['foo.testfunc']
   end
 
   it 'correctly finds dropped functions' do
     query = described_class.parse(<<-SQL)
-      DROP FUNCTION IF EXISTS testfunc(x integer);
+      DROP FUNCTION IF EXISTS foo.testfunc(x integer);
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc']
-    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.functions).to eq ['foo.testfunc']
+    expect(query.ddl_functions).to eq ['foo.testfunc']
     expect(query.call_functions).to eq []
   end
 
   it 'correctly finds renamed functions' do
     query = described_class.parse(<<-SQL)
-      ALTER FUNCTION testfunc(integer) RENAME TO testfunc2;
+      ALTER FUNCTION foo.testfunc(integer) RENAME TO testfunc2;
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc', 'testfunc2']
-    expect(query.ddl_functions).to eq ['testfunc', 'testfunc2']
+    expect(query.functions).to eq ['foo.testfunc', 'testfunc2']
+    expect(query.ddl_functions).to eq ['foo.testfunc', 'testfunc2']
     expect(query.call_functions).to eq []
   end
 
