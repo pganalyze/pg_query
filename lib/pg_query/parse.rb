@@ -216,7 +216,7 @@ module PgQuery
             when :OBJECT_FUNCTION
               # Only one function can be dropped in a statement
               obj = statement.drop_stmt.objects[0].object_with_args
-              @functions << { function: obj.objname[0].string.str, type: :ddl }
+              @functions << { function: obj.objname.map { |f| f.string.str }.join('.'), type: :ddl }
             end
           when :grant_stmt
             objects = statement.grant_stmt.objects
@@ -235,12 +235,12 @@ module PgQuery
             statements << statement.explain_stmt.query
           when :create_function_stmt
             @functions << {
-              function: statement.create_function_stmt.funcname[0].string.str,
+              function: statement.create_function_stmt.funcname.map { |f| f.string.str }.join('.'),
               type: :ddl
             }
           when :rename_stmt
             if statement.rename_stmt.rename_type == :OBJECT_FUNCTION
-              original_name = statement.rename_stmt.object.object_with_args.objname[0].string.str
+              original_name = statement.rename_stmt.object.object_with_args.objname.map { |f| f.string.str }.join('.')
               new_name = statement.rename_stmt.newname
               @functions += [
                 { function: original_name, type: :ddl },
