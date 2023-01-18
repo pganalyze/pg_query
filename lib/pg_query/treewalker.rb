@@ -1,5 +1,11 @@
 module PgQuery
   class ParserResult
+    def walk!
+      treewalker!(@tree) do |parent_node, parent_field, node, location|
+        yield(parent_node, parent_field, node, location)
+      end
+    end
+
     private
 
     def treewalker!(tree) # rubocop:disable Metrics/CyclomaticComplexity
