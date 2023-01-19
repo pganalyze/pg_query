@@ -247,6 +247,8 @@ module PgQuery
                 { function: new_name, type: :ddl }
               ]
             end
+          when :prepare_stmt
+            statements << statement.prepare_stmt.query
           end
         end
 

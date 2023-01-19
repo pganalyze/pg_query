@@ -1771,4 +1771,15 @@ $BODY$
       expect(query.select_tables).to eq(['bar', 'baz'])
     end
   end
+
+  describe 'parsing PREPARE' do
+    it 'finds tables in the subquery' do
+      query = described_class.parse(<<-SQL)
+      PREPARE qux AS SELECT bar from foo
+      SQL
+      expect(query.tables).to eq(['foo'])
+      expect(query.ddl_tables).to eq([])
+      expect(query.select_tables).to eq(['foo'])
+    end
+  end
 end
