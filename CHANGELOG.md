@@ -4,6 +4,11 @@
 
 * ...
 
+## 2.2.1     2022-01-20
+
+* Detect tables used in the query of a PREPARE statement ([#273](https://github.com/pganalyze/pg_query/pull/273))
+* Expose recursive walk functionality via walk! ([#268](https://github.com/pganalyze/pg_query/pull/268))
+* Retain schema in name when parsing out functions ([#272](https://github.com/pganalyze/pg_query/pull/272))
 
 ## 2.2.0     2022-11-02
 
