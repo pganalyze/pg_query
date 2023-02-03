@@ -1791,7 +1791,7 @@ $BODY$
     SQL
     expect(query.tables).to eq(['foo'])
     expect(query.ddl_tables).to eq(['foo'])
-    expect(query.tables_with_details).to eq([
+    expect(query.tables_with_details).to eq [
       {
         inh: true,
         location: 24,
@@ -1801,6 +1801,6 @@ $BODY$
         schemaname: nil,
         type: :ddl
       }
-    ])
+    ]
   end
 end
