@@ -312,7 +312,8 @@ module PgQuery
               location: rangevar.location,
               schemaname: (rangevar.schemaname unless rangevar.schemaname.empty?),
               relname: rangevar.relname,
-              inh: rangevar.inh
+              inh: rangevar.inh,
+              relpersistence: rangevar.relpersistence
             }
             @aliases[rangevar.alias.aliasname] = table if rangevar.alias
           when :range_subselect

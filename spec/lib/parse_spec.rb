@@ -809,7 +809,8 @@ describe PgQuery, '.parse' do
         name: "bigtable",
         relname: "bigtable",
         schemaname: nil,
-        type: :ddl
+        type: :ddl,
+        relpersistence: "p"
       },
       {
         inh: true,
@@ -817,7 +818,8 @@ describe PgQuery, '.parse' do
         name: "fattable",
         relname: "fattable",
         schemaname: nil,
-        type: :ddl
+        type: :ddl,
+        relpersistence: "p"
       }
     ]
     expect(query.tree.stmts.first).to eq(
@@ -1781,5 +1783,24 @@ $BODY$
       expect(query.ddl_tables).to eq([])
       expect(query.select_tables).to eq(['foo'])
     end
+  end
+
+  it 'parses CREATE TEMP TABLE' do
+    query = described_class.parse(<<-SQL)
+      CREATE TEMP TABLE foo AS SELECT 1;
+    SQL
+    expect(query.tables).to eq(['foo'])
+    expect(query.ddl_tables).to eq(['foo'])
+    expect(query.tables_with_details).to eq([
+      {
+        inh: true,
+        location: 24,
+        name: "foo",
+        relname: "foo",
+        relpersistence: "t",
+        schemaname: nil,
+        type: :ddl
+      }
+    ])
   end
 end
