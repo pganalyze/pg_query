@@ -799,7 +799,8 @@ describe PgQuery, '.parse' do
         name: "bigtable",
         relname: "bigtable",
         schemaname: nil,
-        type: :ddl
+        type: :ddl,
+        relpersistence: "p"
       },
       {
         inh: true,
@@ -807,7 +808,8 @@ describe PgQuery, '.parse' do
         name: "fattable",
         relname: "fattable",
         schemaname: nil,
-        type: :ddl
+        type: :ddl,
+        relpersistence: "p"
       }
     ]
     expect(query.tree.stmts.first).to eq(
@@ -1167,49 +1169,49 @@ $BODY$
 
   it 'correctly finds created functions' do
     query = described_class.parse(<<-SQL)
-    CREATE OR REPLACE FUNCTION testfunc(x integer) RETURNS integer AS $$
-    BEGIN
-    RETURN x
-    END;
-    $$ LANGUAGE plpgsql STABLE;
+      CREATE OR REPLACE FUNCTION foo.testfunc(x integer) RETURNS integer AS $$
+      BEGIN
+      RETURN x
+      END;
+      $$ LANGUAGE plpgsql STABLE;
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc']
-    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.functions).to eq ['foo.testfunc']
+    expect(query.ddl_functions).to eq ['foo.testfunc']
     expect(query.call_functions).to eq []
   end
 
   it 'correctly finds called functions' do
     query = described_class.parse(<<-SQL)
-      SELECT testfunc(1);
+      SELECT foo.testfunc(1);
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc']
+    expect(query.functions).to eq ['foo.testfunc']
     expect(query.ddl_functions).to eq []
-    expect(query.call_functions).to eq ['testfunc']
+    expect(query.call_functions).to eq ['foo.testfunc']
   end
 
   it 'correctly finds dropped functions' do
     query = described_class.parse(<<-SQL)
-      DROP FUNCTION IF EXISTS testfunc(x integer);
+      DROP FUNCTION IF EXISTS foo.testfunc(x integer);
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc']
-    expect(query.ddl_functions).to eq ['testfunc']
+    expect(query.functions).to eq ['foo.testfunc']
+    expect(query.ddl_functions).to eq ['foo.testfunc']
     expect(query.call_functions).to eq []
   end
 
   it 'correctly finds renamed functions' do
     query = described_class.parse(<<-SQL)
-      ALTER FUNCTION testfunc(integer) RENAME TO testfunc2;
+      ALTER FUNCTION foo.testfunc(integer) RENAME TO testfunc2;
     SQL
     expect(query.tables).to eq []
     expect(query.warnings).to eq []
-    expect(query.functions).to eq ['testfunc', 'testfunc2']
-    expect(query.ddl_functions).to eq ['testfunc', 'testfunc2']
+    expect(query.functions).to eq ['foo.testfunc', 'testfunc2']
+    expect(query.ddl_functions).to eq ['foo.testfunc', 'testfunc2']
     expect(query.call_functions).to eq []
   end
 
@@ -1761,5 +1763,35 @@ $BODY$
       expect(query.ddl_tables).to eq(['foo'])
       expect(query.select_tables).to eq(['bar', 'baz'])
     end
+  end
+
+  describe 'parsing PREPARE' do
+    it 'finds tables in the subquery' do
+      query = described_class.parse(<<-SQL)
+      PREPARE qux AS SELECT bar from foo
+      SQL
+      expect(query.tables).to eq(['foo'])
+      expect(query.ddl_tables).to eq([])
+      expect(query.select_tables).to eq(['foo'])
+    end
+  end
+
+  it 'parses CREATE TEMP TABLE' do
+    query = described_class.parse(<<-SQL)
+      CREATE TEMP TABLE foo AS SELECT 1;
+    SQL
+    expect(query.tables).to eq(['foo'])
+    expect(query.ddl_tables).to eq(['foo'])
+    expect(query.tables_with_details).to eq [
+      {
+        inh: true,
+        location: 24,
+        name: "foo",
+        relname: "foo",
+        relpersistence: "t",
+        schemaname: nil,
+        type: :ddl
+      }
+    ]
   end
 end

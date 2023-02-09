@@ -72,6 +72,8 @@ PgQuery.parse("SELECT 1")
 
 ### Modifying a parsed query and turning it into SQL again
 
+This is a simple example for `deparse`, for more complex modification, use `walk!`.
+
 ```ruby
 parsed_query = PgQuery.parse("SELECT * FROM users")
 
@@ -144,6 +146,36 @@ PgQuery.scan('SELECT 1 --comment')
 <PgQuery::ScanToken: start: 9, end: 18, token: :SQL_COMMENT, keyword_kind: :NO_KEYWORD>]>,
  []]
 ```
+
+### Walking the parse tree
+
+For generalized use, PgQuery provides `walk!` as a means to recursively work with the parsed query.
+
+This can be used to create a bespoke pretty printer:
+
+```ruby
+parsed_query = PgQuery.parse "SELECT * FROM tbl"
+parsed_query.walk! { |node, k, v, location| puts k }
+```
+
+More usefully, this can be used to rewrite a query. For example:
+
+```ruby
+parsed_query.walk! do |node, k, v, location| puts k
+  next unless k.eql?(:range_var) || k.eql?(:relation)
+  next if v.relname.nil?
+  v.relname = "X_" + v.relname
+end
+
+parsed_query.deparse
+```
+
+There are some caveats, and limitations, in this example.
+
+First, some of the tree nodes are frozen. You can replace them, but you cannot modify in place.
+
+Second, table rewriting is a bit more nuanced than this example. While this will rewrite the table names, it will
+not correctly handle all CTEs, or rewrite columns with explicit table names.
 
 ## Differences from Upstream PostgreSQL
 
