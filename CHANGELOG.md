@@ -4,7 +4,7 @@
 
 * ...
 
-## 4.0.0     2022-02-08
+## 4.2.0     2022-02-08
 
 * Update to libpg_query 15-4.2.0
   - Update to PostgreSQL 15.1
