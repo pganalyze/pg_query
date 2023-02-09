@@ -2,6 +2,7 @@
 #define PG_QUERY_H
 
 #include <stdint.h>
+#include <sys/types.h>
 
 typedef struct {
 	char* message; // exception message
@@ -13,7 +14,7 @@ typedef struct {
 } PgQueryError;
 
 typedef struct {
-  unsigned int len;
+  size_t len;
   char* data;
 } PgQueryProtobuf;
 
@@ -106,9 +107,9 @@ void pg_query_free_fingerprint_result(PgQueryFingerprintResult result);
 void pg_query_exit(void);
 
 // Postgres version information
-#define PG_VERSION "13.8"
-#define PG_MAJORVERSION "13"
-#define PG_VERSION_NUM 130008
+#define PG_MAJORVERSION "15"
+#define PG_VERSION "15.1"
+#define PG_VERSION_NUM 150001
 
 // Deprecated APIs below
 

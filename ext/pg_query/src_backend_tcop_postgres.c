@@ -1,7 +1,7 @@
 /*--------------------------------------------------------------------
  * Symbols referenced in this file:
- * - whereToSendOutput
  * - debug_query_string
+ * - whereToSendOutput
  * - ProcessInterrupts
  * - check_stack_depth
  * - stack_is_too_deep
@@ -16,7 +16,7 @@
  * postgres.c
  *	  POSTGRES C Backend Interface
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -55,6 +55,7 @@
 #include "catalog/pg_type.h"
 #include "commands/async.h"
 #include "commands/prepare.h"
+#include "common/pg_prng.h"
 #include "jit/jit.h"
 #include "libpq/libpq.h"
 #include "libpq/pqformat.h"
@@ -79,6 +80,7 @@
 #include "rewrite/rewriteHandler.h"
 #include "storage/bufmgr.h"
 #include "storage/ipc.h"
+#include "storage/pmsignal.h"
 #include "storage/proc.h"
 #include "storage/procsignal.h"
 #include "storage/sinval.h"
@@ -116,7 +118,21 @@ __thread int			max_stack_depth = 100;
 /* wait N seconds to allow attach from a debugger */
 
 
+/* Time between checks that the client is still connected. */
 
+
+/* ----------------
+ *		private typedefs etc
+ * ----------------
+ */
+
+/* type of argument for bind_param_error_callback */
+typedef struct BindParamCbData
+{
+	const char *portalName;
+	int			paramno;		/* zero-based param number, or -1 initially */
+	const char *paramval;		/* textual input string, if available */
+} BindParamCbData;
 
 /* ----------------
  *		private variables
@@ -129,18 +145,16 @@ static __thread long max_stack_depth_bytes = 100 * 1024L;
 
 /*
  * Stack base pointer -- initialized by PostmasterMain and inherited by
- * subprocesses. This is not static because old versions of PL/Java modify
- * it directly. Newer versions use set_stack_base(), but we want to stay
- * binary-compatible for the time being.
+ * subprocesses (but see also InitPostmasterChild).
  */
-__thread char	   *stack_base_ptr = NULL;
+static __thread char *stack_base_ptr = NULL;
 
 
 /*
  * On IA64 we also have to remember the register stack base.
  */
 #if defined(__ia64__) || defined(__ia64)
-char	   *register_stack_base_ptr = NULL;
+static char *register_stack_base_ptr = NULL;
 #endif
 
 /*
@@ -193,12 +207,12 @@ static int	interactive_getc(void);
 static int	SocketBackend(StringInfo inBuf);
 static int	ReadCommand(StringInfo inBuf);
 static void forbidden_in_wal_sender(char firstchar);
-static List *pg_rewrite_query(Query *query);
 static bool check_log_statement(List *stmt_list);
 static int	errdetail_execute(List *raw_parsetree_list);
 static int	errdetail_params(ParamListInfo params);
 static int	errdetail_abort(void);
 static int	errdetail_recovery_conflict(void);
+static void bind_param_error_callback(void *arg);
 static void start_xact_command(void);
 static void finish_xact_command(void);
 static bool IsTransactionExitStmt(Node *parsetree);
@@ -304,9 +318,17 @@ static void disable_statement_timeout(void);
 
 
 /*
- * Do parse analysis and rewriting.  This is the same as pg_analyze_and_rewrite
- * except that external-parameter resolution is determined by parser callback
- * hooks instead of a fixed list of parameter datatypes.
+ * Do parse analysis and rewriting.  This is the same as
+ * pg_analyze_and_rewrite_fixedparams except that it's okay to deduce
+ * information about $n symbol datatypes from context.
+ */
+
+
+/*
+ * Do parse analysis and rewriting.  This is the same as
+ * pg_analyze_and_rewrite_fixedparams except that, instead of a fixed list of
+ * parameter datatypes, a parser callback is supplied that can do
+ * external-parameter resolution and possibly other things.
  */
 
 
@@ -434,6 +456,13 @@ static void disable_statement_timeout(void);
 
 
 /*
+ * bind_param_error_callback
+ *
+ * Error context callback used while parsing parameters in a Bind message
+ */
+
+
+/*
  * exec_describe_statement_message
  *
  * Process a "Describe" message for a prepared statement
@@ -485,8 +514,8 @@ static void disable_statement_timeout(void);
 /*
  * quickdie() occurs when signaled SIGQUIT by the postmaster.
  *
- * Some backend has bought the farm,
- * so we need to stop what we're doing and exit.
+ * Either some backend has bought the farm, or we've been told to shut down
+ * "immediately"; so we need to stop what we're doing and exit.
  */
 
 
@@ -694,7 +723,7 @@ stack_is_too_deep(void)
 
 /* ----------------------------------------------------------------
  * process_postgres_switches
- *	   Parse command line arguments for PostgresMain
+ *	   Parse command line arguments for backends
  *
  * This is called twice, once for the "secure" options coming from the
  * postmaster or command line, and once for the "insecure" options coming
@@ -717,20 +746,30 @@ stack_is_too_deep(void)
 #endif
 
 
+/*
+ * PostgresSingleUserMain
+ *     Entry point for single user mode. argc/argv are the command line
+ *     arguments to be used.
+ *
+ * Performs single user specific setup then calls PostgresMain() to actually
+ * process queries. Single user mode specific setup should go here, rather
+ * than PostgresMain() or InitPostgres() when reasonably possible.
+ */
+
+
+
 /* ----------------------------------------------------------------
  * PostgresMain
- *	   postgres main loop -- all backends, interactive or otherwise start here
+ *	   postgres main loop -- all backends, interactive or otherwise loop here
  *
- * argc/argv are the command line arguments to be used.  (When being forked
- * by the postmaster, these are not the original argv array of the process.)
- * dbname is the name of the database to connect to, or NULL if the database
- * name should be extracted from the command line arguments or defaulted.
- * username is the PostgreSQL user name to be used for the session.
+ * dbname is the name of the database to connect to, username is the
+ * PostgreSQL user name to be used for the session.
+ *
+ * NB: Single user mode specific setup should go to PostgresSingleUserMain()
+ * if reasonably possible.
  * ----------------------------------------------------------------
  */
-#ifdef EXEC_BACKEND
-#else
-#endif
+
 
 /*
  * Throw an error if we're a WAL sender process.

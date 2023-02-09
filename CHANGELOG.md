@@ -4,6 +4,11 @@
 
 * ...
 
+## 4.2.0     2022-02-08
+
+* Update to libpg_query 15-4.2.0
+  - Update to PostgreSQL 15.1
+
 ## 2.2.1     2022-01-20
 
 * Detect tables used in the query of a PREPARE statement ([#273](https://github.com/pganalyze/pg_query/pull/273))

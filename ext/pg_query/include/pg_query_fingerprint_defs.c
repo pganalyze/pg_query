@@ -1,7 +1,6 @@
 static void _fingerprintAlias(FingerprintContext *ctx, const Alias *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintRangeVar(FingerprintContext *ctx, const RangeVar *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintTableFunc(FingerprintContext *ctx, const TableFunc *node, const void *parent, const char *field_name, unsigned int depth);
-static void _fingerprintExpr(FingerprintContext *ctx, const Expr *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintVar(FingerprintContext *ctx, const Var *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintConst(FingerprintContext *ctx, const Const *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintParam(FingerprintContext *ctx, const Param *node, const void *parent, const char *field_name, unsigned int depth);
@@ -48,12 +47,16 @@ static void _fingerprintJoinExpr(FingerprintContext *ctx, const JoinExpr *node, 
 static void _fingerprintFromExpr(FingerprintContext *ctx, const FromExpr *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintOnConflictExpr(FingerprintContext *ctx, const OnConflictExpr *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintIntoClause(FingerprintContext *ctx, const IntoClause *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintMergeAction(FingerprintContext *ctx, const MergeAction *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintRawStmt(FingerprintContext *ctx, const RawStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintQuery(FingerprintContext *ctx, const Query *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintInsertStmt(FingerprintContext *ctx, const InsertStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintDeleteStmt(FingerprintContext *ctx, const DeleteStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintUpdateStmt(FingerprintContext *ctx, const UpdateStmt *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintMergeStmt(FingerprintContext *ctx, const MergeStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintSelectStmt(FingerprintContext *ctx, const SelectStmt *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintReturnStmt(FingerprintContext *ctx, const ReturnStmt *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintPLAssignStmt(FingerprintContext *ctx, const PLAssignStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintAlterTableStmt(FingerprintContext *ctx, const AlterTableStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintAlterTableCmd(FingerprintContext *ctx, const AlterTableCmd *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintAlterDomainStmt(FingerprintContext *ctx, const AlterDomainStmt *node, const void *parent, const char *field_name, unsigned int depth);
@@ -104,6 +107,7 @@ static void _fingerprintReindexStmt(FingerprintContext *ctx, const ReindexStmt *
 static void _fingerprintCheckPointStmt(FingerprintContext *ctx, const CheckPointStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintCreateSchemaStmt(FingerprintContext *ctx, const CreateSchemaStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintAlterDatabaseStmt(FingerprintContext *ctx, const AlterDatabaseStmt *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintAlterDatabaseRefreshCollStmt(FingerprintContext *ctx, const AlterDatabaseRefreshCollStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintAlterDatabaseSetStmt(FingerprintContext *ctx, const AlterDatabaseSetStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintAlterRoleSetStmt(FingerprintContext *ctx, const AlterRoleSetStmt *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintCreateConversionStmt(FingerprintContext *ctx, const CreateConversionStmt *node, const void *parent, const char *field_name, unsigned int depth);
@@ -166,7 +170,6 @@ static void _fingerprintAlterStatsStmt(FingerprintContext *ctx, const AlterStats
 static void _fingerprintA_Expr(FingerprintContext *ctx, const A_Expr *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintColumnRef(FingerprintContext *ctx, const ColumnRef *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintParamRef(FingerprintContext *ctx, const ParamRef *node, const void *parent, const char *field_name, unsigned int depth);
-static void _fingerprintA_Const(FingerprintContext *ctx, const A_Const *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintFuncCall(FingerprintContext *ctx, const FuncCall *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintA_Star(FingerprintContext *ctx, const A_Star *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintA_Indices(FingerprintContext *ctx, const A_Indices *node, const void *parent, const char *field_name, unsigned int depth);
@@ -186,6 +189,7 @@ static void _fingerprintRangeTableFuncCol(FingerprintContext *ctx, const RangeTa
 static void _fingerprintTypeName(FingerprintContext *ctx, const TypeName *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintColumnDef(FingerprintContext *ctx, const ColumnDef *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintIndexElem(FingerprintContext *ctx, const IndexElem *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintStatsElem(FingerprintContext *ctx, const StatsElem *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintConstraint(FingerprintContext *ctx, const Constraint *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintDefElem(FingerprintContext *ctx, const DefElem *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintRangeTblEntry(FingerprintContext *ctx, const RangeTblEntry *node, const void *parent, const char *field_name, unsigned int depth);
@@ -206,7 +210,10 @@ static void _fingerprintXmlSerialize(FingerprintContext *ctx, const XmlSerialize
 static void _fingerprintWithClause(FingerprintContext *ctx, const WithClause *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintInferClause(FingerprintContext *ctx, const InferClause *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintOnConflictClause(FingerprintContext *ctx, const OnConflictClause *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintCTESearchClause(FingerprintContext *ctx, const CTESearchClause *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintCTECycleClause(FingerprintContext *ctx, const CTECycleClause *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintCommonTableExpr(FingerprintContext *ctx, const CommonTableExpr *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintMergeWhenClause(FingerprintContext *ctx, const MergeWhenClause *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintRoleSpec(FingerprintContext *ctx, const RoleSpec *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintTriggerTransition(FingerprintContext *ctx, const TriggerTransition *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintPartitionElem(FingerprintContext *ctx, const PartitionElem *node, const void *parent, const char *field_name, unsigned int depth);
@@ -215,6 +222,8 @@ static void _fingerprintPartitionBoundSpec(FingerprintContext *ctx, const Partit
 static void _fingerprintPartitionRangeDatum(FingerprintContext *ctx, const PartitionRangeDatum *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintPartitionCmd(FingerprintContext *ctx, const PartitionCmd *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintVacuumRelation(FingerprintContext *ctx, const VacuumRelation *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintPublicationObjSpec(FingerprintContext *ctx, const PublicationObjSpec *node, const void *parent, const char *field_name, unsigned int depth);
+static void _fingerprintPublicationTable(FingerprintContext *ctx, const PublicationTable *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintInlineCodeBlock(FingerprintContext *ctx, const InlineCodeBlock *node, const void *parent, const char *field_name, unsigned int depth);
 static void _fingerprintCallContext(FingerprintContext *ctx, const CallContext *node, const void *parent, const char *field_name, unsigned int depth);
 
@@ -482,11 +491,6 @@ _fingerprintTableFunc(FingerprintContext *ctx, const TableFunc *node, const void
 }
 
 static void
-_fingerprintExpr(FingerprintContext *ctx, const Expr *node, const void *parent, const char *field_name, unsigned int depth)
-{
-}
-
-static void
 _fingerprintVar(FingerprintContext *ctx, const Var *node, const void *parent, const char *field_name, unsigned int depth)
 {
   // Intentionally ignoring node->location for fingerprinting
@@ -729,6 +733,13 @@ _fingerprintAggref(FingerprintContext *ctx, const Aggref *node, const void *pare
     _fingerprintString(ctx, buffer);
   }
 
+  if (node->aggno != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->aggno);
+    _fingerprintString(ctx, "aggno");
+    _fingerprintString(ctx, buffer);
+  }
+
   if (node->aggorder != NULL && node->aggorder->length > 0) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -753,6 +764,13 @@ _fingerprintAggref(FingerprintContext *ctx, const Aggref *node, const void *pare
   if (node->aggstar) {
     _fingerprintString(ctx, "aggstar");
     _fingerprintString(ctx, "true");
+  }
+
+  if (node->aggtransno != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->aggtransno);
+    _fingerprintString(ctx, "aggtransno");
+    _fingerprintString(ctx, buffer);
   }
 
   if (node->aggtranstype != 0) {
@@ -1022,6 +1040,13 @@ _fingerprintSubscriptingRef(FingerprintContext *ctx, const SubscriptingRef *node
     }
     XXH3_freeState(prev);
   }
+  if (node->refrestype != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->refrestype);
+    _fingerprintString(ctx, "refrestype");
+    _fingerprintString(ctx, buffer);
+  }
+
   if (node->reftypmod != 0) {
     char buffer[50];
     sprintf(buffer, "%d", node->reftypmod);
@@ -1231,6 +1256,13 @@ _fingerprintScalarArrayOpExpr(FingerprintContext *ctx, const ScalarArrayOpExpr *
     }
     XXH3_freeState(prev);
   }
+  if (node->hashfuncid != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->hashfuncid);
+    _fingerprintString(ctx, "hashfuncid");
+    _fingerprintString(ctx, buffer);
+  }
+
   if (node->inputcollid != 0) {
     char buffer[50];
     sprintf(buffer, "%d", node->inputcollid);
@@ -1239,6 +1271,13 @@ _fingerprintScalarArrayOpExpr(FingerprintContext *ctx, const ScalarArrayOpExpr *
   }
 
   // Intentionally ignoring node->location for fingerprinting
+
+  if (node->negfuncid != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->negfuncid);
+    _fingerprintString(ctx, "negfuncid");
+    _fingerprintString(ctx, buffer);
+  }
 
   if (node->opfuncid != 0) {
     char buffer[50];
@@ -2717,6 +2756,23 @@ _fingerprintJoinExpr(FingerprintContext *ctx, const JoinExpr *node, const void *
     _fingerprintString(ctx, "true");
   }
 
+  if (node->join_using_alias != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "join_using_alias");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintAlias(ctx, node->join_using_alias, node, "join_using_alias", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
   if (true) {
     _fingerprintString(ctx, "jointype");
     _fingerprintString(ctx, _enumToStringJoinType(node->jointype));
@@ -3034,6 +3090,75 @@ _fingerprintIntoClause(FingerprintContext *ctx, const IntoClause *node, const vo
 }
 
 static void
+_fingerprintMergeAction(FingerprintContext *ctx, const MergeAction *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (true) {
+    _fingerprintString(ctx, "commandType");
+    _fingerprintString(ctx, _enumToStringCmdType(node->commandType));
+  }
+
+  if (node->matched) {
+    _fingerprintString(ctx, "matched");
+    _fingerprintString(ctx, "true");
+  }
+
+  if (true) {
+    _fingerprintString(ctx, "override");
+    _fingerprintString(ctx, _enumToStringOverridingKind(node->override));
+  }
+
+  if (node->qual != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "qual");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->qual, node, "qual", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->targetList != NULL && node->targetList->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "targetList");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->targetList, node, "targetList", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->targetList) == 1 && linitial(node->targetList) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->updateColnos != NULL && node->updateColnos->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "updateColnos");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->updateColnos, node, "updateColnos", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->updateColnos) == 1 && linitial(node->updateColnos) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+}
+
+static void
 _fingerprintRawStmt(FingerprintContext *ctx, const RawStmt *node, const void *parent, const char *field_name, unsigned int depth)
 {
   if (node->stmt != NULL) {
@@ -3136,6 +3261,11 @@ _fingerprintQuery(FingerprintContext *ctx, const Query *node, const void *parent
     }
     XXH3_freeState(prev);
   }
+  if (node->groupDistinct) {
+    _fingerprintString(ctx, "groupDistinct");
+    _fingerprintString(ctx, "true");
+  }
+
   if (node->groupingSets != NULL && node->groupingSets->length > 0) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -3214,6 +3344,11 @@ _fingerprintQuery(FingerprintContext *ctx, const Query *node, const void *parent
     XXH3_freeState(prev);
   }
 
+  if (node->isReturn) {
+    _fingerprintString(ctx, "isReturn");
+    _fingerprintString(ctx, "true");
+  }
+
   if (node->jointree != NULL) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -3268,6 +3403,27 @@ _fingerprintQuery(FingerprintContext *ctx, const Query *node, const void *parent
   if (true) {
     _fingerprintString(ctx, "limitOption");
     _fingerprintString(ctx, _enumToStringLimitOption(node->limitOption));
+  }
+
+  if (node->mergeActionList != NULL && node->mergeActionList->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "mergeActionList");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->mergeActionList, node, "mergeActionList", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->mergeActionList) == 1 && linitial(node->mergeActionList) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->mergeUseOuterJoin) {
+    _fingerprintString(ctx, "mergeUseOuterJoin");
+    _fingerprintString(ctx, "true");
   }
 
   if (node->onConflict != NULL) {
@@ -3776,6 +3932,95 @@ _fingerprintUpdateStmt(FingerprintContext *ctx, const UpdateStmt *node, const vo
 }
 
 static void
+_fingerprintMergeStmt(FingerprintContext *ctx, const MergeStmt *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (node->joinCondition != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "joinCondition");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->joinCondition, node, "joinCondition", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->mergeWhenClauses != NULL && node->mergeWhenClauses->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "mergeWhenClauses");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->mergeWhenClauses, node, "mergeWhenClauses", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->mergeWhenClauses) == 1 && linitial(node->mergeWhenClauses) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->relation != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "relation");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintRangeVar(ctx, node->relation, node, "relation", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->sourceRelation != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "sourceRelation");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->sourceRelation, node, "sourceRelation", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->withClause != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "withClause");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintWithClause(ctx, node->withClause, node, "withClause", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+}
+
+static void
 _fingerprintSelectStmt(FingerprintContext *ctx, const SelectStmt *node, const void *parent, const char *field_name, unsigned int depth)
 {
   if (node->all) {
@@ -3831,6 +4076,11 @@ _fingerprintSelectStmt(FingerprintContext *ctx, const SelectStmt *node, const vo
     }
     XXH3_freeState(prev);
   }
+  if (node->groupDistinct) {
+    _fingerprintString(ctx, "groupDistinct");
+    _fingerprintString(ctx, "true");
+  }
+
   if (node->havingClause != NULL) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -4060,6 +4310,80 @@ _fingerprintSelectStmt(FingerprintContext *ctx, const SelectStmt *node, const vo
 }
 
 static void
+_fingerprintReturnStmt(FingerprintContext *ctx, const ReturnStmt *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (node->returnval != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "returnval");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->returnval, node, "returnval", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+}
+
+static void
+_fingerprintPLAssignStmt(FingerprintContext *ctx, const PLAssignStmt *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (node->indirection != NULL && node->indirection->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "indirection");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->indirection, node, "indirection", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->indirection) == 1 && linitial(node->indirection) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  // Intentionally ignoring node->location for fingerprinting
+
+  if (node->name != NULL) {
+    _fingerprintString(ctx, "name");
+    _fingerprintString(ctx, node->name);
+  }
+
+  if (node->nnames != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->nnames);
+    _fingerprintString(ctx, "nnames");
+    _fingerprintString(ctx, buffer);
+  }
+
+  if (node->val != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "val");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintSelectStmt(ctx, node->val, node, "val", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+}
+
+static void
 _fingerprintAlterTableStmt(FingerprintContext *ctx, const AlterTableStmt *node, const void *parent, const char *field_name, unsigned int depth)
 {
   if (node->cmds != NULL && node->cmds->length > 0) {
@@ -4083,6 +4407,11 @@ _fingerprintAlterTableStmt(FingerprintContext *ctx, const AlterTableStmt *node, 
     _fingerprintString(ctx, "true");
   }
 
+  if (true) {
+    _fingerprintString(ctx, "objtype");
+    _fingerprintString(ctx, _enumToStringObjectType(node->objtype));
+  }
+
   if (node->relation != NULL) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -4098,11 +4427,6 @@ _fingerprintAlterTableStmt(FingerprintContext *ctx, const AlterTableStmt *node, 
         dlist_delete(dlist_tail_node(&ctx->tokens));
     }
     XXH3_freeState(prev);
-  }
-
-  if (true) {
-    _fingerprintString(ctx, "relkind");
-    _fingerprintString(ctx, _enumToStringObjectType(node->relkind));
   }
 
 }
@@ -4379,6 +4703,23 @@ _fingerprintGrantStmt(FingerprintContext *ctx, const GrantStmt *node, const void
     }
     XXH3_freeState(prev);
   }
+  if (node->grantor != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "grantor");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintRoleSpec(ctx, node->grantor, node, "grantor", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
   if (node->is_grant) {
     _fingerprintString(ctx, "is_grant");
     _fingerprintString(ctx, "true");
@@ -4550,13 +4891,22 @@ _fingerprintClusterStmt(FingerprintContext *ctx, const ClusterStmt *node, const 
     _fingerprintString(ctx, node->indexname);
   }
 
-  if (node->options != 0) {
-    char buffer[50];
-    sprintf(buffer, "%d", node->options);
-    _fingerprintString(ctx, "options");
-    _fingerprintString(ctx, buffer);
-  }
+  if (node->params != NULL && node->params->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
 
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "params");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->params, node, "params", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->params) == 1 && linitial(node->params) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
   if (node->relation != NULL) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -5135,6 +5485,11 @@ _fingerprintIndexStmt(FingerprintContext *ctx, const IndexStmt *node, const void
     _fingerprintString(ctx, "true");
   }
 
+  if (node->nulls_not_distinct) {
+    _fingerprintString(ctx, "nulls_not_distinct");
+    _fingerprintString(ctx, "true");
+  }
+
   if (node->oldCreateSubid != 0) {
     char buffer[50];
     sprintf(buffer, "%d", node->oldCreateSubid);
@@ -5289,6 +5644,23 @@ _fingerprintCreateFunctionStmt(FingerprintContext *ctx, const CreateFunctionStmt
 
     hash = XXH3_64bits_digest(ctx->xxh_state);
     _fingerprintTypeName(ctx, node->returnType, node, "returnType", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->sql_body != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "sql_body");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->sql_body, node, "sql_body", depth + 1);
     if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
       XXH3_copyState(ctx->xxh_state, prev);
       if (ctx->write_tokens)
@@ -5869,6 +6241,11 @@ _fingerprintCreateTableAsStmt(FingerprintContext *ctx, const CreateTableAsStmt *
     _fingerprintString(ctx, "true");
   }
 
+  if (true) {
+    _fingerprintString(ctx, "objtype");
+    _fingerprintString(ctx, _enumToStringObjectType(node->objtype));
+  }
+
   if (node->query != NULL) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -5884,11 +6261,6 @@ _fingerprintCreateTableAsStmt(FingerprintContext *ctx, const CreateTableAsStmt *
         dlist_delete(dlist_tail_node(&ctx->tokens));
     }
     XXH3_freeState(prev);
-  }
-
-  if (true) {
-    _fingerprintString(ctx, "relkind");
-    _fingerprintString(ctx, _enumToStringObjectType(node->relkind));
   }
 
 }
@@ -6157,6 +6529,11 @@ _fingerprintCreateTrigStmt(FingerprintContext *ctx, const CreateTrigStmt *node, 
         dlist_delete(dlist_tail_node(&ctx->tokens));
     }
     XXH3_freeState(prev);
+  }
+
+  if (node->replace) {
+    _fingerprintString(ctx, "replace");
+    _fingerprintString(ctx, "true");
   }
 
   if (node->row) {
@@ -6443,11 +6820,6 @@ _fingerprintConstraintsSetStmt(FingerprintContext *ctx, const ConstraintsSetStmt
 static void
 _fingerprintReindexStmt(FingerprintContext *ctx, const ReindexStmt *node, const void *parent, const char *field_name, unsigned int depth)
 {
-  if (node->concurrent) {
-    _fingerprintString(ctx, "concurrent");
-    _fingerprintString(ctx, "true");
-  }
-
   if (true) {
     _fingerprintString(ctx, "kind");
     _fingerprintString(ctx, _enumToStringReindexObjectType(node->kind));
@@ -6458,13 +6830,22 @@ _fingerprintReindexStmt(FingerprintContext *ctx, const ReindexStmt *node, const 
     _fingerprintString(ctx, node->name);
   }
 
-  if (node->options != 0) {
-    char buffer[50];
-    sprintf(buffer, "%d", node->options);
-    _fingerprintString(ctx, "options");
-    _fingerprintString(ctx, buffer);
-  }
+  if (node->params != NULL && node->params->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
 
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "params");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->params, node, "params", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->params) == 1 && linitial(node->params) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
   if (node->relation != NULL) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -6561,6 +6942,16 @@ _fingerprintAlterDatabaseStmt(FingerprintContext *ctx, const AlterDatabaseStmt *
     }
     XXH3_freeState(prev);
   }
+}
+
+static void
+_fingerprintAlterDatabaseRefreshCollStmt(FingerprintContext *ctx, const AlterDatabaseRefreshCollStmt *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (node->dbname != NULL) {
+    _fingerprintString(ctx, "dbname");
+    _fingerprintString(ctx, node->dbname);
+  }
+
 }
 
 static void
@@ -7069,21 +7460,9 @@ _fingerprintDropTableSpaceStmt(FingerprintContext *ctx, const DropTableSpaceStmt
 static void
 _fingerprintAlterObjectDependsStmt(FingerprintContext *ctx, const AlterObjectDependsStmt *node, const void *parent, const char *field_name, unsigned int depth)
 {
-  if (node->extname != NULL) {
-    XXH3_state_t* prev = XXH3_createState();
-    XXH64_hash_t hash;
-
-    XXH3_copyState(prev, ctx->xxh_state);
+  if (strlen(node->extname->sval) > 0) {
     _fingerprintString(ctx, "extname");
-
-    hash = XXH3_64bits_digest(ctx->xxh_state);
-    _fingerprintNode(ctx, node->extname, node, "extname", depth + 1);
-    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
-      XXH3_copyState(ctx->xxh_state, prev);
-      if (ctx->write_tokens)
-        dlist_delete(dlist_tail_node(&ctx->tokens));
-    }
-    XXH3_freeState(prev);
+    _fingerprintString(ctx, node->extname->sval);
   }
 
   if (node->object != NULL) {
@@ -8657,16 +9036,16 @@ _fingerprintCreatePublicationStmt(FingerprintContext *ctx, const CreatePublicati
     _fingerprintString(ctx, node->pubname);
   }
 
-  if (node->tables != NULL && node->tables->length > 0) {
+  if (node->pubobjects != NULL && node->pubobjects->length > 0) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
 
     XXH3_copyState(prev, ctx->xxh_state);
-    _fingerprintString(ctx, "tables");
+    _fingerprintString(ctx, "pubobjects");
 
     hash = XXH3_64bits_digest(ctx->xxh_state);
-    _fingerprintNode(ctx, node->tables, node, "tables", depth + 1);
-    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->tables) == 1 && linitial(node->tables) == NIL)) {
+    _fingerprintNode(ctx, node->pubobjects, node, "pubobjects", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->pubobjects) == 1 && linitial(node->pubobjects) == NIL)) {
       XXH3_copyState(ctx->xxh_state, prev);
       if (ctx->write_tokens)
         dlist_delete(dlist_tail_node(&ctx->tokens));
@@ -8678,6 +9057,11 @@ _fingerprintCreatePublicationStmt(FingerprintContext *ctx, const CreatePublicati
 static void
 _fingerprintAlterPublicationStmt(FingerprintContext *ctx, const AlterPublicationStmt *node, const void *parent, const char *field_name, unsigned int depth)
 {
+  if (true) {
+    _fingerprintString(ctx, "action");
+    _fingerprintString(ctx, _enumToStringAlterPublicationAction(node->action));
+  }
+
   if (node->for_all_tables) {
     _fingerprintString(ctx, "for_all_tables");
     _fingerprintString(ctx, "true");
@@ -8704,21 +9088,16 @@ _fingerprintAlterPublicationStmt(FingerprintContext *ctx, const AlterPublication
     _fingerprintString(ctx, node->pubname);
   }
 
-  if (true) {
-    _fingerprintString(ctx, "tableAction");
-    _fingerprintString(ctx, _enumToStringDefElemAction(node->tableAction));
-  }
-
-  if (node->tables != NULL && node->tables->length > 0) {
+  if (node->pubobjects != NULL && node->pubobjects->length > 0) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
 
     XXH3_copyState(prev, ctx->xxh_state);
-    _fingerprintString(ctx, "tables");
+    _fingerprintString(ctx, "pubobjects");
 
     hash = XXH3_64bits_digest(ctx->xxh_state);
-    _fingerprintNode(ctx, node->tables, node, "tables", depth + 1);
-    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->tables) == 1 && linitial(node->tables) == NIL)) {
+    _fingerprintNode(ctx, node->pubobjects, node, "pubobjects", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->pubobjects) == 1 && linitial(node->pubobjects) == NIL)) {
       XXH3_copyState(ctx->xxh_state, prev);
       if (ctx->write_tokens)
         dlist_delete(dlist_tail_node(&ctx->tokens));
@@ -8923,6 +9302,11 @@ _fingerprintCreateStatsStmt(FingerprintContext *ctx, const CreateStatsStmt *node
     _fingerprintString(ctx, node->stxcomment);
   }
 
+  if (node->transformed) {
+    _fingerprintString(ctx, "transformed");
+    _fingerprintString(ctx, "true");
+  }
+
 }
 
 static void
@@ -8983,6 +9367,22 @@ _fingerprintCallStmt(FingerprintContext *ctx, const CallStmt *node, const void *
     XXH3_freeState(prev);
   }
 
+  if (node->outargs != NULL && node->outargs->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "outargs");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->outargs, node, "outargs", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->outargs) == 1 && linitial(node->outargs) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
 }
 
 static void
@@ -9113,12 +9513,6 @@ _fingerprintParamRef(FingerprintContext *ctx, const ParamRef *node, const void *
 }
 
 static void
-_fingerprintA_Const(FingerprintContext *ctx, const A_Const *node, const void *parent, const char *field_name, unsigned int depth)
-{
-  // Intentionally ignoring all fields for fingerprinting
-}
-
-static void
 _fingerprintFuncCall(FingerprintContext *ctx, const FuncCall *node, const void *parent, const char *field_name, unsigned int depth)
 {
   if (node->agg_distinct) {
@@ -9188,6 +9582,11 @@ _fingerprintFuncCall(FingerprintContext *ctx, const FuncCall *node, const void *
   if (node->func_variadic) {
     _fingerprintString(ctx, "func_variadic");
     _fingerprintString(ctx, "true");
+  }
+
+  if (true) {
+    _fingerprintString(ctx, "funcformat");
+    _fingerprintString(ctx, _enumToStringCoercionForm(node->funcformat));
   }
 
   if (node->funcname != NULL && node->funcname->length > 0) {
@@ -10104,6 +10503,11 @@ _fingerprintColumnDef(FingerprintContext *ctx, const ColumnDef *node, const void
     _fingerprintString(ctx, node->colname);
   }
 
+  if (node->compression != NULL) {
+    _fingerprintString(ctx, "compression");
+    _fingerprintString(ctx, node->compression);
+  }
+
   if (node->constraints != NULL && node->constraints->length > 0) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -10339,6 +10743,33 @@ _fingerprintIndexElem(FingerprintContext *ctx, const IndexElem *node, const void
 }
 
 static void
+_fingerprintStatsElem(FingerprintContext *ctx, const StatsElem *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (node->expr != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "expr");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->expr, node, "expr", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->name != NULL) {
+    _fingerprintString(ctx, "name");
+    _fingerprintString(ctx, node->name);
+  }
+
+}
+
+static void
 _fingerprintConstraint(FingerprintContext *ctx, const Constraint *node, const void *parent, const char *field_name, unsigned int depth)
 {
   if (node->access_method != NULL) {
@@ -10404,6 +10835,22 @@ _fingerprintConstraint(FingerprintContext *ctx, const Constraint *node, const vo
     _fingerprintString(ctx, buffer);
   }
 
+  if (node->fk_del_set_cols != NULL && node->fk_del_set_cols->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "fk_del_set_cols");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->fk_del_set_cols, node, "fk_del_set_cols", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->fk_del_set_cols) == 1 && linitial(node->fk_del_set_cols) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
   if (node->fk_matchtype != 0) {
     char buffer[2] = {node->fk_matchtype, '\0'};
     _fingerprintString(ctx, "fk_matchtype");
@@ -10480,6 +10927,11 @@ _fingerprintConstraint(FingerprintContext *ctx, const Constraint *node, const vo
     XXH3_freeState(prev);
   }
   // Intentionally ignoring node->location for fingerprinting
+
+  if (node->nulls_not_distinct) {
+    _fingerprintString(ctx, "nulls_not_distinct");
+    _fingerprintString(ctx, "true");
+  }
 
   if (node->old_conpfeqop != NULL && node->old_conpfeqop->length > 0) {
     XXH3_state_t* prev = XXH3_createState();
@@ -10813,6 +11265,23 @@ _fingerprintRangeTblEntry(FingerprintContext *ctx, const RangeTblEntry *node, co
     }
 
     bms_free(bms);
+  }
+
+  if (node->join_using_alias != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "join_using_alias");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintAlias(ctx, node->join_using_alias, node, "join_using_alias", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
   }
 
   if (node->joinaliasvars != NULL && node->joinaliasvars->length > 0) {
@@ -11394,6 +11863,22 @@ _fingerprintWindowClause(FingerprintContext *ctx, const WindowClause *node, cons
     _fingerprintString(ctx, node->refname);
   }
 
+  if (node->runCondition != NULL && node->runCondition->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "runCondition");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->runCondition, node, "runCondition", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->runCondition) == 1 && linitial(node->runCondition) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
   if (node->startInRangeFunc != 0) {
     char buffer[50];
     sprintf(buffer, "%d", node->startInRangeFunc);
@@ -11445,6 +11930,22 @@ _fingerprintObjectWithArgs(FingerprintContext *ctx, const ObjectWithArgs *node, 
     hash = XXH3_64bits_digest(ctx->xxh_state);
     _fingerprintNode(ctx, node->objargs, node, "objargs", depth + 1);
     if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->objargs) == 1 && linitial(node->objargs) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->objfuncargs != NULL && node->objfuncargs->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "objfuncargs");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->objfuncargs, node, "objfuncargs", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->objfuncargs) == 1 && linitial(node->objfuncargs) == NIL)) {
       XXH3_copyState(ctx->xxh_state, prev);
       if (ctx->write_tokens)
         dlist_delete(dlist_tail_node(&ctx->tokens));
@@ -11902,6 +12403,134 @@ _fingerprintOnConflictClause(FingerprintContext *ctx, const OnConflictClause *no
 }
 
 static void
+_fingerprintCTESearchClause(FingerprintContext *ctx, const CTESearchClause *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  // Intentionally ignoring node->location for fingerprinting
+
+  if (node->search_breadth_first) {
+    _fingerprintString(ctx, "search_breadth_first");
+    _fingerprintString(ctx, "true");
+  }
+
+  if (node->search_col_list != NULL && node->search_col_list->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "search_col_list");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->search_col_list, node, "search_col_list", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->search_col_list) == 1 && linitial(node->search_col_list) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->search_seq_column != NULL) {
+    _fingerprintString(ctx, "search_seq_column");
+    _fingerprintString(ctx, node->search_seq_column);
+  }
+
+}
+
+static void
+_fingerprintCTECycleClause(FingerprintContext *ctx, const CTECycleClause *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (node->cycle_col_list != NULL && node->cycle_col_list->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "cycle_col_list");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->cycle_col_list, node, "cycle_col_list", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->cycle_col_list) == 1 && linitial(node->cycle_col_list) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->cycle_mark_collation != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->cycle_mark_collation);
+    _fingerprintString(ctx, "cycle_mark_collation");
+    _fingerprintString(ctx, buffer);
+  }
+
+  if (node->cycle_mark_column != NULL) {
+    _fingerprintString(ctx, "cycle_mark_column");
+    _fingerprintString(ctx, node->cycle_mark_column);
+  }
+
+  if (node->cycle_mark_default != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "cycle_mark_default");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->cycle_mark_default, node, "cycle_mark_default", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->cycle_mark_neop != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->cycle_mark_neop);
+    _fingerprintString(ctx, "cycle_mark_neop");
+    _fingerprintString(ctx, buffer);
+  }
+
+  if (node->cycle_mark_type != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->cycle_mark_type);
+    _fingerprintString(ctx, "cycle_mark_type");
+    _fingerprintString(ctx, buffer);
+  }
+
+  if (node->cycle_mark_typmod != 0) {
+    char buffer[50];
+    sprintf(buffer, "%d", node->cycle_mark_typmod);
+    _fingerprintString(ctx, "cycle_mark_typmod");
+    _fingerprintString(ctx, buffer);
+  }
+
+  if (node->cycle_mark_value != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "cycle_mark_value");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->cycle_mark_value, node, "cycle_mark_value", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->cycle_path_column != NULL) {
+    _fingerprintString(ctx, "cycle_path_column");
+    _fingerprintString(ctx, node->cycle_path_column);
+  }
+
+  // Intentionally ignoring node->location for fingerprinting
+
+}
+
+static void
 _fingerprintCommonTableExpr(FingerprintContext *ctx, const CommonTableExpr *node, const void *parent, const char *field_name, unsigned int depth)
 {
   if (node->aliascolnames != NULL && node->aliascolnames->length > 0) {
@@ -12023,8 +12652,111 @@ _fingerprintCommonTableExpr(FingerprintContext *ctx, const CommonTableExpr *node
     _fingerprintString(ctx, buffer);
   }
 
+  if (node->cycle_clause != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "cycle_clause");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintCTECycleClause(ctx, node->cycle_clause, node, "cycle_clause", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
   // Intentionally ignoring node->location for fingerprinting
 
+  if (node->search_clause != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "search_clause");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintCTESearchClause(ctx, node->search_clause, node, "search_clause", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+}
+
+static void
+_fingerprintMergeWhenClause(FingerprintContext *ctx, const MergeWhenClause *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (true) {
+    _fingerprintString(ctx, "commandType");
+    _fingerprintString(ctx, _enumToStringCmdType(node->commandType));
+  }
+
+  if (node->condition != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "condition");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->condition, node, "condition", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->matched) {
+    _fingerprintString(ctx, "matched");
+    _fingerprintString(ctx, "true");
+  }
+
+  if (true) {
+    _fingerprintString(ctx, "override");
+    _fingerprintString(ctx, _enumToStringOverridingKind(node->override));
+  }
+
+  if (node->targetList != NULL && node->targetList->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "targetList");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->targetList, node, "targetList", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->targetList) == 1 && linitial(node->targetList) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->values != NULL && node->values->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "values");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->values, node, "values", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->values) == 1 && linitial(node->values) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
 }
 
 static void
@@ -12282,6 +13014,11 @@ _fingerprintPartitionCmd(FingerprintContext *ctx, const PartitionCmd *node, cons
     XXH3_freeState(prev);
   }
 
+  if (node->concurrent) {
+    _fingerprintString(ctx, "concurrent");
+    _fingerprintString(ctx, "true");
+  }
+
   if (node->name != NULL) {
     XXH3_state_t* prev = XXH3_createState();
     XXH64_hash_t hash;
@@ -12344,6 +13081,95 @@ _fingerprintVacuumRelation(FingerprintContext *ctx, const VacuumRelation *node, 
     }
     XXH3_freeState(prev);
   }
+}
+
+static void
+_fingerprintPublicationObjSpec(FingerprintContext *ctx, const PublicationObjSpec *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  // Intentionally ignoring node->location for fingerprinting
+
+  if (node->name != NULL) {
+    _fingerprintString(ctx, "name");
+    _fingerprintString(ctx, node->name);
+  }
+
+  if (true) {
+    _fingerprintString(ctx, "pubobjtype");
+    _fingerprintString(ctx, _enumToStringPublicationObjSpecType(node->pubobjtype));
+  }
+
+  if (node->pubtable != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "pubtable");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintPublicationTable(ctx, node->pubtable, node, "pubtable", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+}
+
+static void
+_fingerprintPublicationTable(FingerprintContext *ctx, const PublicationTable *node, const void *parent, const char *field_name, unsigned int depth)
+{
+  if (node->columns != NULL && node->columns->length > 0) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "columns");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->columns, node, "columns", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state) && !(list_length(node->columns) == 1 && linitial(node->columns) == NIL)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+  if (node->relation != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "relation");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintRangeVar(ctx, node->relation, node, "relation", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
+  if (node->whereClause != NULL) {
+    XXH3_state_t* prev = XXH3_createState();
+    XXH64_hash_t hash;
+
+    XXH3_copyState(prev, ctx->xxh_state);
+    _fingerprintString(ctx, "whereClause");
+
+    hash = XXH3_64bits_digest(ctx->xxh_state);
+    _fingerprintNode(ctx, node->whereClause, node, "whereClause", depth + 1);
+    if (hash == XXH3_64bits_digest(ctx->xxh_state)) {
+      XXH3_copyState(ctx->xxh_state, prev);
+      if (ctx->write_tokens)
+        dlist_delete(dlist_tail_node(&ctx->tokens));
+    }
+    XXH3_freeState(prev);
+  }
+
 }
 
 static void

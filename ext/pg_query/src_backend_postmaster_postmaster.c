@@ -38,7 +38,7 @@
  *	  clients.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -101,21 +101,22 @@
 
 #include "access/transam.h"
 #include "access/xlog.h"
-#include "bootstrap/bootstrap.h"
+#include "access/xlogrecovery.h"
 #include "catalog/pg_control.h"
 #include "common/file_perm.h"
 #include "common/ip.h"
+#include "common/pg_prng.h"
 #include "common/string.h"
 #include "lib/ilist.h"
 #include "libpq/auth.h"
 #include "libpq/libpq.h"
 #include "libpq/pqformat.h"
 #include "libpq/pqsignal.h"
-#include "miscadmin.h"
 #include "pg_getopt.h"
 #include "pgstat.h"
 #include "port/pg_bswap.h"
 #include "postmaster/autovacuum.h"
+#include "postmaster/auxprocess.h"
 #include "postmaster/bgworker_internals.h"
 #include "postmaster/fork_process.h"
 #include "postmaster/interrupt.h"
@@ -135,6 +136,7 @@
 #include "utils/memutils.h"
 #include "utils/pidfile.h"
 #include "utils/ps_status.h"
+#include "utils/queryjumble.h"
 #include "utils/timeout.h"
 #include "utils/timestamp.h"
 #include "utils/varlena.h"
@@ -161,28 +163,32 @@
  * authorization phase).  This is used mainly to keep track of how many
  * children we have and send them appropriate signals when necessary.
  *
- * "Special" children such as the startup, bgwriter and autovacuum launcher
- * tasks are not in this list.  Autovacuum worker and walsender are in it.
+ * As shown in the above set of backend types, this list includes not only
+ * "normal" client sessions, but also autovacuum workers, walsenders, and
+ * background workers.  (Note that at the time of launch, walsenders are
+ * labeled BACKEND_TYPE_NORMAL; we relabel them to BACKEND_TYPE_WALSND
+ * upon noticing they've changed their PMChildFlags entry.  Hence that check
+ * must be done before any operation that needs to distinguish walsenders
+ * from normal backends.)
+ *
  * Also, "dead_end" children are in it: these are children launched just for
  * the purpose of sending a friendly rejection message to a would-be client.
  * We must track them because they are attached to shared memory, but we know
  * they will never become live backends.  dead_end children are not assigned a
- * PMChildSlot.
+ * PMChildSlot.  dead_end children have bkend_type NORMAL.
  *
- * Background workers are in this list, too.
+ * "Special" children such as the startup, bgwriter and autovacuum launcher
+ * tasks are not in this list.  They are tracked via StartupPID and other
+ * pid_t variables below.  (Thus, there can't be more than one of any given
+ * "special" child process type.  We use BackendList entries for any child
+ * process there can be more than one of.)
  */
 typedef struct bkend
 {
 	pid_t		pid;			/* process id of backend */
 	int32		cancel_key;		/* cancel key for cancels for this backend */
 	int			child_slot;		/* PMChildSlot for this backend, if any */
-
-	/*
-	 * Flavor of backend or auxiliary process.  Note that BACKEND_TYPE_WALSND
-	 * backends initially announce themselves as BACKEND_TYPE_NORMAL, so if
-	 * bkend_type is normal, you should check for a recent transition.
-	 */
-	int			bkend_type;
+	int			bkend_type;		/* child process flavor, see above */
 	bool		dead_end;		/* is it going to send an error and quit? */
 	bool		bgworker_notify;	/* gets bgworker start/stop notifications */
 	dlist_node	elem;			/* list link in BackendList */
@@ -223,11 +229,6 @@ static Backend *ShmemBackendArray;
 
 
 /*
- * Set by the -o option
- */
-
-
-/*
  * These globals control the behavior of the postmaster in case some
  * backend dumps core.  Normally, it kills all peers of the dead backend
  * and reinitializes shared memory.  By specifying -s or -n, we can have
@@ -251,8 +252,8 @@ static Backend *ShmemBackendArray;
 
 
 
-/* PIDs of special child processes; 0 when not running */
 
+/* PIDs of special child processes; 0 when not running */
 
 
 
@@ -349,13 +350,6 @@ typedef enum
  * connsAllowed is a sub-state indicator showing the active restriction.
  * It is of no interest unless pmState is PM_RUN or PM_HOT_STANDBY.
  */
-typedef enum
-{
-	ALLOW_ALL_CONNS,			/* normal not-shutting-down state */
-	ALLOW_SUPERUSER_CONNS,		/* only superusers can connect */
-	ALLOW_NO_CONNS				/* no new connections allowed, period */
-} ConnsAllowedState;
-
 
 
 /* Start time of SIGKILL timeout during immediate shutdown or child crash */
@@ -452,9 +446,10 @@ static void InitPostmasterDeathWatchHandle(void);
  * even during recovery.
  */
 #define PgArchStartupAllowed()	\
-	((XLogArchivingActive() && pmState == PM_RUN) ||	\
-	 (XLogArchivingAlways() &&	\
-	  (pmState == PM_RECOVERY || pmState == PM_HOT_STANDBY)))
+	(((XLogArchivingActive() && pmState == PM_RUN) ||			\
+	  (XLogArchivingAlways() &&									  \
+	   (pmState == PM_RECOVERY || pmState == PM_HOT_STANDBY))) && \
+	 PgArchCanRestart())
 
 #ifdef EXEC_BACKEND
 
@@ -521,13 +516,13 @@ typedef struct
 	PGPROC	   *AuxiliaryProcs;
 	PGPROC	   *PreparedXactProcs;
 	PMSignalData *PMSignalState;
-	InheritableSocket pgStatSock;
 	pid_t		PostmasterPid;
 	TimestampTz PgStartTime;
 	TimestampTz PgReloadTime;
 	pg_time_t	first_syslogger_file_time;
 	bool		redirection_done;
 	bool		IsBinaryUpgrade;
+	bool		query_id_enabled;
 	int			max_safe_fds;
 	int			MaxBackends;
 #ifdef WIN32
@@ -540,7 +535,6 @@ typedef struct
 #endif
 	char		my_exec_path[MAXPGPATH];
 	char		pkglib_path[MAXPGPATH];
-	char		ExtraOptions[MAXPGPATH];
 } BackendParameters;
 
 static void read_backend_variables(char *id, Port *port);
@@ -558,6 +552,7 @@ static void ShmemBackendArrayRemove(Backend *bn);
 #endif							/* EXEC_BACKEND */
 
 #define StartupDataBase()		StartChildProcess(StartupProcess)
+#define StartArchiver()			StartChildProcess(ArchiverProcess)
 #define StartBackgroundWriter() StartChildProcess(BgWriterProcess)
 #define StartCheckpointer()		StartChildProcess(CheckpointerProcess)
 #define StartWalWriter()		StartChildProcess(WalWriterProcess)
@@ -582,6 +577,10 @@ HANDLE		PostmasterHandle;
 /*
  * Postmaster main entry point
  */
+#ifdef WIN32
+#endif
+#ifdef SIGURG
+#endif
 #ifdef SIGTTIN
 #endif
 #ifdef SIGTTOU
@@ -764,7 +763,8 @@ HANDLE		PostmasterHandle;
  *
  * Called early in the postmaster and every backend.
  */
-
+#ifndef WIN32
+#endif
 
 
 /*
@@ -838,7 +838,7 @@ HANDLE		PostmasterHandle;
 
 /*
  * HandleChildCrash -- cleanup after failed backend, bgwriter, checkpointer,
- * walwriter, autovacuum, or background worker.
+ * walwriter, autovacuum, archiver or background worker.
  *
  * The objectives here are to clean up our local state about the child
  * process, and to signal all other remaining children to quickdie.
@@ -926,6 +926,8 @@ HANDLE		PostmasterHandle;
  * returns: nothing.  Will not return at all if there's any failure.
  *
  * Note: this code does not depend on having any access to shared memory.
+ * Indeed, our approach to SIGTERM/timeout handling *requires* that
+ * shared memory not have been touched yet; see comments within.
  * In the EXEC_BACKEND case, we are physically attached to shared memory
  * but have not yet set up most of our local pointers to shmem structures.
  */
@@ -936,8 +938,7 @@ HANDLE		PostmasterHandle;
  * BackendRun -- set up the backend's argument list and invoke PostgresMain()
  *
  * returns:
- *		Shouldn't return at all.
- *		If PostgresMain() fails, return status.
+ *		Doesn't return at all.
  */
 
 
@@ -1127,16 +1128,18 @@ retry:
 									NULL);
 	if (paramHandle == INVALID_HANDLE_VALUE)
 	{
-		elog(LOG, "could not create backend parameter file mapping: error code %lu",
-			 GetLastError());
+		ereport(LOG,
+				(errmsg("could not create backend parameter file mapping: error code %lu",
+						GetLastError())));
 		return -1;
 	}
 
 	param = MapViewOfFile(paramHandle, FILE_MAP_WRITE, 0, 0, sizeof(BackendParameters));
 	if (!param)
 	{
-		elog(LOG, "could not map backend parameter memory: error code %lu",
-			 GetLastError());
+		ereport(LOG,
+				(errmsg("could not map backend parameter memory: error code %lu",
+						GetLastError())));
 		CloseHandle(paramHandle);
 		return -1;
 	}
@@ -1161,7 +1164,8 @@ retry:
 	}
 	if (cmdLine[sizeof(cmdLine) - 2] != '\0')
 	{
-		elog(LOG, "subprocess command line too long");
+		ereport(LOG,
+				(errmsg("subprocess command line too long")));
 		UnmapViewOfFile(param);
 		CloseHandle(paramHandle);
 		return -1;
@@ -1178,8 +1182,9 @@ retry:
 	if (!CreateProcess(NULL, cmdLine, NULL, NULL, TRUE, CREATE_SUSPENDED,
 					   NULL, NULL, &si, &pi))
 	{
-		elog(LOG, "CreateProcess call failed: %m (error code %lu)",
-			 GetLastError());
+		ereport(LOG,
+				(errmsg("CreateProcess() call failed: %m (error code %lu)",
+						GetLastError())));
 		UnmapViewOfFile(param);
 		CloseHandle(paramHandle);
 		return -1;
@@ -1204,11 +1209,13 @@ retry:
 
 	/* Drop the parameter shared memory that is now inherited to the backend */
 	if (!UnmapViewOfFile(param))
-		elog(LOG, "could not unmap view of backend parameter file: error code %lu",
-			 GetLastError());
+		ereport(LOG,
+				(errmsg("could not unmap view of backend parameter file: error code %lu",
+						GetLastError())));
 	if (!CloseHandle(paramHandle))
-		elog(LOG, "could not close handle to backend parameter file: error code %lu",
-			 GetLastError());
+		ereport(LOG,
+				(errmsg("could not close handle to backend parameter file: error code %lu",
+						GetLastError())));
 
 	/*
 	 * Reserve the memory region used by our main shared memory segment before
@@ -1314,9 +1321,6 @@ SubPostmasterMain(int argc, char *argv[])
 	IsPostmasterEnvironment = true;
 	whereToSendOutput = DestNone;
 
-	/* Setup as postmaster child */
-	InitPostmasterChild();
-
 	/* Setup essential subsystems (to ensure elog() behaves sanely) */
 	InitializeGUCOptions();
 
@@ -1331,6 +1335,9 @@ SubPostmasterMain(int argc, char *argv[])
 	/* Close the postmaster's sockets (as soon as we know them) */
 	ClosePostmasterPorts(strcmp(argv[1], "--forklog") == 0);
 
+	/* Setup as postmaster child */
+	InitPostmasterChild();
+
 	/*
 	 * If appropriate, physically re-attach to shared memory segment. We want
 	 * to do this before going any further to ensure that we can attach at the
@@ -1340,7 +1347,7 @@ SubPostmasterMain(int argc, char *argv[])
 	 * If testing EXEC_BACKEND on Linux, you should run this as root before
 	 * starting the postmaster:
 	 *
-	 * echo 0 >/proc/sys/kernel/randomize_va_space
+	 * sysctl -w kernel.randomize_va_space=0
 	 *
 	 * This prevents using randomized stack and code addresses that cause the
 	 * child process's memory map to be different from the parent's, making it
@@ -1350,7 +1357,7 @@ SubPostmasterMain(int argc, char *argv[])
 	if (strcmp(argv[1], "--forkbackend") == 0 ||
 		strcmp(argv[1], "--forkavlauncher") == 0 ||
 		strcmp(argv[1], "--forkavworker") == 0 ||
-		strcmp(argv[1], "--forkboot") == 0 ||
+		strcmp(argv[1], "--forkaux") == 0 ||
 		strncmp(argv[1], "--forkbgworker=", 15) == 0)
 		PGSharedMemoryReAttach();
 	else
@@ -1361,19 +1368,6 @@ SubPostmasterMain(int argc, char *argv[])
 		AutovacuumLauncherIAm();
 	if (strcmp(argv[1], "--forkavworker") == 0)
 		AutovacuumWorkerIAm();
-
-	/*
-	 * Start our win32 signal implementation. This has to be done after we
-	 * read the backend variables, because we need to pick up the signal pipe
-	 * from the parent process.
-	 */
-#ifdef WIN32
-	pgwin32_signal_initialize();
-#endif
-
-	/* In EXEC_BACKEND case we will not have inherited these settings */
-	pqinitmask();
-	PG_SETMASK(&BlockSig);
 
 	/* Read in remaining GUC variables */
 	read_nondefault_variables();
@@ -1451,8 +1445,12 @@ SubPostmasterMain(int argc, char *argv[])
 		/* And run the backend */
 		BackendRun(&port);		/* does not return */
 	}
-	if (strcmp(argv[1], "--forkboot") == 0)
+	if (strcmp(argv[1], "--forkaux") == 0)
 	{
+		AuxProcType auxtype;
+
+		Assert(argc == 4);
+
 		/* Restore basic shared memory pointers */
 		InitShmemAccess(UsedShmemSegAddr);
 
@@ -1462,7 +1460,8 @@ SubPostmasterMain(int argc, char *argv[])
 		/* Attach process to shared data structures */
 		CreateSharedMemoryAndSemaphores();
 
-		AuxiliaryProcessMain(argc - 2, argv + 2);	/* does not return */
+		auxtype = atoi(argv[3]);
+		AuxiliaryProcessMain(auxtype);	/* does not return */
 	}
 	if (strcmp(argv[1], "--forkavlauncher") == 0)
 	{
@@ -1512,18 +1511,6 @@ SubPostmasterMain(int argc, char *argv[])
 
 		StartBackgroundWorker();
 	}
-	if (strcmp(argv[1], "--forkarch") == 0)
-	{
-		/* Do not want to attach to shared memory */
-
-		PgArchiverMain(argc, argv); /* does not return */
-	}
-	if (strcmp(argv[1], "--forkcol") == 0)
-	{
-		/* Do not want to attach to shared memory */
-
-		PgstatCollectorMain(argc, argv);	/* does not return */
-	}
 	if (strcmp(argv[1], "--forklog") == 0)
 	{
 		/* Do not want to attach to shared memory */
@@ -1558,18 +1545,16 @@ SubPostmasterMain(int argc, char *argv[])
 
 /*
  * SIGTERM while processing startup packet.
- * Clean up and exit(1).
  *
- * Running proc_exit() from a signal handler is pretty unsafe, since we
- * can't know what code we've interrupted.  But the alternative of using
- * _exit(2) is also unpalatable, since it'd mean that a "fast shutdown"
- * would cause a database crash cycle (forcing WAL replay at restart)
- * if any sessions are in authentication.  So we live with it for now.
+ * Running proc_exit() from a signal handler would be quite unsafe.
+ * However, since we have not yet touched shared memory, we can just
+ * pull the plug and exit without running any atexit handlers.
  *
- * One might be tempted to try to send a message indicating why we are
- * disconnecting.  However, that would make this even more unsafe.  Also,
- * it seems undesirable to provide clues about the database's state to
- * a client that has not yet completed authentication.
+ * One might be tempted to try to send a message, or log one, indicating
+ * why we are disconnecting.  However, that would be quite unsafe in itself.
+ * Also, it seems undesirable to provide clues about the database's state
+ * to a client that has not yet completed authentication, or even sent us
+ * a startup packet.
  */
 
 
@@ -1586,11 +1571,7 @@ SubPostmasterMain(int argc, char *argv[])
 
 /*
  * Timeout while processing startup packet.
- * As for process_startup_packet_die(), we clean up and exit(1).
- *
- * This is theoretically just as hazardous as in process_startup_packet_die(),
- * although in practice we're almost certainly waiting for client input,
- * which greatly reduces the risk.
+ * As for process_startup_packet_die(), we exit via _exit(1).
  */
 
 
@@ -1616,8 +1597,6 @@ SubPostmasterMain(int argc, char *argv[])
  * Return value of StartChildProcess is subprocess' PID, or 0 if failed
  * to start subprocess.
  */
-#ifdef EXEC_BACKEND
-#endif
 #ifdef EXEC_BACKEND
 #else							/* !EXEC_BACKEND */
 #endif							/* EXEC_BACKEND */
@@ -1769,7 +1748,6 @@ extern slock_t *ShmemLock;
 extern slock_t *ProcStructLock;
 extern PGPROC *AuxiliaryProcs;
 extern PMSignalData *PMSignalState;
-extern pgsocket pgStatSock;
 extern pg_time_t first_syslogger_file_time;
 
 #ifndef WIN32
@@ -1825,8 +1803,6 @@ save_backend_variables(BackendParameters *param, Port *port,
 	param->AuxiliaryProcs = AuxiliaryProcs;
 	param->PreparedXactProcs = PreparedXactProcs;
 	param->PMSignalState = PMSignalState;
-	if (!write_inheritable_socket(&param->pgStatSock, pgStatSock, childPid))
-		return false;
 
 	param->PostmasterPid = PostmasterPid;
 	param->PgStartTime = PgStartTime;
@@ -1835,6 +1811,7 @@ save_backend_variables(BackendParameters *param, Port *port,
 
 	param->redirection_done = redirection_done;
 	param->IsBinaryUpgrade = IsBinaryUpgrade;
+	param->query_id_enabled = query_id_enabled;
 	param->max_safe_fds = max_safe_fds;
 
 	param->MaxBackends = MaxBackends;
@@ -1855,8 +1832,6 @@ save_backend_variables(BackendParameters *param, Port *port,
 	strlcpy(param->my_exec_path, my_exec_path, MAXPGPATH);
 
 	strlcpy(param->pkglib_path, pkglib_path, MAXPGPATH);
-
-	strlcpy(param->ExtraOptions, ExtraOptions, MAXPGPATH);
 
 	return true;
 }
@@ -2061,7 +2036,6 @@ restore_backend_variables(BackendParameters *param, Port *port)
 	AuxiliaryProcs = param->AuxiliaryProcs;
 	PreparedXactProcs = param->PreparedXactProcs;
 	PMSignalState = param->PMSignalState;
-	read_inheritable_socket(&pgStatSock, &param->pgStatSock);
 
 	PostmasterPid = param->PostmasterPid;
 	PgStartTime = param->PgStartTime;
@@ -2070,6 +2044,7 @@ restore_backend_variables(BackendParameters *param, Port *port)
 
 	redirection_done = param->redirection_done;
 	IsBinaryUpgrade = param->IsBinaryUpgrade;
+	query_id_enabled = param->query_id_enabled;
 	max_safe_fds = param->max_safe_fds;
 
 	MaxBackends = param->MaxBackends;
@@ -2088,8 +2063,6 @@ restore_backend_variables(BackendParameters *param, Port *port)
 
 	strlcpy(pkglib_path, param->pkglib_path, MAXPGPATH);
 
-	strlcpy(ExtraOptions, param->ExtraOptions, MAXPGPATH);
-
 	/*
 	 * We need to restore fd.c's counts of externally-opened FDs; to avoid
 	 * confusion, be sure to do this after restoring max_safe_fds.  (Note:
@@ -2101,8 +2074,6 @@ restore_backend_variables(BackendParameters *param, Port *port)
 	if (postmaster_alive_fds[1] >= 0)
 		ReserveExternalFD();
 #endif
-	if (pgStatSock != PGINVALID_SOCKET)
-		ReserveExternalFD();
 }
 
 

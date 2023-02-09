@@ -36,7 +36,7 @@
  * to look like NO SCROLL cursors.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/portal.h
@@ -130,6 +130,7 @@ typedef struct PortalData
 	 */
 	SubTransactionId createSubid;	/* the creating subxact */
 	SubTransactionId activeSubid;	/* the last subxact with activity */
+	int			createLevel;	/* creating subxact's nesting level */
 
 	/* The query or queries the portal will execute */
 	const char *sourceText;		/* text of query (as of 8.4, never NULL) */
@@ -159,6 +160,14 @@ typedef struct PortalData
 	TupleDesc	tupDesc;		/* descriptor for result tuples */
 	/* and these are the format codes to use for the columns: */
 	int16	   *formats;		/* a format code for each column */
+
+	/*
+	 * Outermost ActiveSnapshot for execution of the portal's queries.  For
+	 * all but a few utility commands, we require such a snapshot to exist.
+	 * This ensures that TOAST references in query results can be detoasted,
+	 * and helps to reduce thrashing of the process's exposed xmin.
+	 */
+	Snapshot	portalSnapshot; /* active snapshot, or NULL if none */
 
 	/*
 	 * Where we store tuples for a held cursor or a PORTAL_ONE_RETURNING or
@@ -194,17 +203,6 @@ typedef struct PortalData
 	/* Presentation data, primarily used by the pg_cursors system view */
 	TimestampTz creation_time;	/* time at which this portal was defined */
 	bool		visible;		/* include this portal in pg_cursors? */
-
-	/* Stuff added at the end to avoid ABI break in stable branches: */
-
-	/*
-	 * Outermost ActiveSnapshot for execution of the portal's queries.  For
-	 * all but a few utility commands, we require such a snapshot to exist.
-	 * This ensures that TOAST references in query results can be detoasted,
-	 * and helps to reduce thrashing of the process's exposed xmin.
-	 */
-	Snapshot	portalSnapshot; /* active snapshot, or NULL if none */
-	int			createLevel;	/* creating subxact's nesting level */
 }			PortalData;
 
 /*

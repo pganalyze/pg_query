@@ -13,11 +13,7 @@ describe PgQuery, '.parse' do
                 res_target: PgQuery::ResTarget.new(
                   val: PgQuery::Node.new(
                     a_const: PgQuery::A_Const.new(
-                      val: PgQuery::Node.new(
-                        integer: PgQuery::Integer.new(
-                          ival: 1
-                        )
-                      ),
+                      ival: PgQuery::Integer.new(ival: 1),
                       location: 7
                     )
                   ),
@@ -46,10 +42,8 @@ describe PgQuery, '.parse' do
                     "val" => {
                       "A_Const" => {
                         "location" => 7,
-                        "val" => {
-                          "Integer" => {
-                            "ival" => 1
-                          }
+                        "ival" => {
+                          "ival" => 1
                         }
                       }
                     }
@@ -66,7 +60,7 @@ describe PgQuery, '.parse' do
   it "handles errors" do
     expect { described_class.parse("SELECT 'ERR") }.to(raise_error do |error|
       expect(error).to be_a(PgQuery::ParseError)
-      expect(error.message).to eq "unterminated quoted string at or near \"'ERR\" (scan.l:1232)"
+      expect(error.message.gsub(/\ \(scan.l:\d+\)$/, '')).to eq "unterminated quoted string at or near \"'ERR\""
       expect(error.location).to eq 8 # 8th character in query string
     end)
   end
@@ -117,25 +111,25 @@ describe PgQuery, '.parse' do
   it "parses floats with leading dot" do
     q = described_class.parse("SELECT .1")
     expr = q.tree.stmts[0].stmt.select_stmt.target_list[0].res_target.val
-    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(val: PgQuery::Node.new(float: PgQuery::Float.new(str: '.1')), location: 7)))
+    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(fval: PgQuery::Float.new(fval: '.1'), location: 7)))
   end
 
   it "parses floats with trailing dot" do
     q = described_class.parse("SELECT 1.")
     expr = q.tree.stmts[0].stmt.select_stmt.target_list[0].res_target.val
-    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(val: PgQuery::Node.new(float: PgQuery::Float.new(str: '1.')), location: 7)))
+    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(fval: PgQuery::Float.new(fval: '1.'), location: 7)))
   end
 
   it 'parses bit strings (binary notation)' do
     q = described_class.parse("SELECT B'0101'")
     expr = q.tree.stmts[0].stmt.select_stmt.target_list[0].res_target.val
-    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(val: PgQuery::Node.new(bit_string: PgQuery::BitString.new(str: 'b0101')), location: 7)))
+    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(bsval: PgQuery::BitString.new(bsval: 'b0101'), location: 7)))
   end
 
   it 'parses bit strings (hex notation)' do
     q = described_class.parse("SELECT X'EFFF'")
     expr = q.tree.stmts[0].stmt.select_stmt.target_list[0].res_target.val
-    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(val: PgQuery::Node.new(bit_string: PgQuery::BitString.new(str: 'xEFFF')), location: 7)))
+    expect(expr).to eq(PgQuery::Node.new(a_const: PgQuery::A_Const.new(bsval: PgQuery::BitString.new(bsval: 'xEFFF'), location: 7)))
   end
 
   it "parses ALTER TABLE" do
@@ -156,14 +150,14 @@ describe PgQuery, '.parse' do
                     constraint: PgQuery::Constraint.new(
                       contype: :CONSTR_PRIMARY,
                       location: 21,
-                      keys: [PgQuery::Node.new(string: PgQuery::String.new(str: 'gid'))]
+                      keys: [PgQuery::Node.from_string('gid')]
                     )
                   ),
                   behavior: :DROP_RESTRICT
                 )
               )
             ],
-            relkind: :OBJECT_TABLE
+            objtype: :OBJECT_TABLE
           )
         )
       )
@@ -183,9 +177,7 @@ describe PgQuery, '.parse' do
             args: [
               PgQuery::Node.new(
                 a_const: PgQuery::A_Const.new(
-                  val: PgQuery::Node.new(
-                    integer: PgQuery::Integer.new(ival: 0)
-                  ),
+                  ival: PgQuery::Integer.new(ival: 0),
                   location: 22
                 )
               )
@@ -226,7 +218,7 @@ describe PgQuery, '.parse' do
               location: 5
             ),
             attlist: [
-              PgQuery::Node.new(string: PgQuery::String.new(str: 'id'))
+              PgQuery::Node.from_string('id')
             ]
           )
         )
@@ -246,8 +238,8 @@ describe PgQuery, '.parse' do
             objects: [
               PgQuery::Node.new(list: PgQuery::List.new(
                 items: [
-                  PgQuery::Node.new(string: PgQuery::String.new(str: 'abc')),
-                  PgQuery::Node.new(string: PgQuery::String.new(str: 'test123'))
+                  PgQuery::Node.from_string('abc'),
+                  PgQuery::Node.from_string('test123')
                 ]
               ))
             ],
@@ -353,9 +345,7 @@ describe PgQuery, '.parse' do
                     res_target: PgQuery::ResTarget.new(
                       val: PgQuery::Node.new(
                         a_const: PgQuery::A_Const.new(
-                          val: PgQuery::Node.new(
-                            integer: PgQuery::Integer.new(ival: 1)
-                          ),
+                          ival: PgQuery::Integer.new(ival: 1),
                           location: 33
                         )
                       ),
@@ -376,7 +366,7 @@ describe PgQuery, '.parse' do
               ),
               on_commit: :ONCOMMIT_NOOP
             ),
-            relkind: :OBJECT_TABLE
+            objtype: :OBJECT_TABLE
           )
         )
       )
@@ -430,7 +420,7 @@ describe PgQuery, '.parse' do
                   colname: 'a',
                   type_name: PgQuery::TypeName.new(
                     names: [
-                      PgQuery::Node.new(string: PgQuery::String.new(str: 'int4'))
+                      PgQuery::Node.from_string('int4')
                     ],
                     typemod: -1,
                     location: 21
@@ -450,7 +440,7 @@ describe PgQuery, '.parse' do
   it 'fails to parse CREATE TABLE WITH OIDS' do
     expect { described_class.parse("CREATE TABLE test (a int4) WITH OIDS") }.to(raise_error do |error|
       expect(error).to be_a(PgQuery::ParseError)
-      expect(error.message).to eq "syntax error at or near \"OIDS\" (scan.l:1232)"
+      expect(error.message.gsub(/\ \(scan.l:\d+\)$/, '')).to eq "syntax error at or near \"OIDS\""
       expect(error.location).to eq 33 # 33rd character in query string
     end)
   end
@@ -599,7 +589,7 @@ describe PgQuery, '.parse' do
               location: 72
             ),
             funcname: [
-              PgQuery::Node.new(string: PgQuery::String.new(str: 'check_account_update'))
+              PgQuery::Node.from_string('check_account_update')
             ],
             row: true,
             timing: PgQuery::TRIGGER_TYPE_BEFORE,
@@ -619,7 +609,7 @@ describe PgQuery, '.parse' do
         stmt: PgQuery::Node.new(
           drop_stmt: PgQuery::DropStmt.new(
             objects: [
-              PgQuery::Node.new(string: PgQuery::String.new(str: 'myschema'))
+              PgQuery::Node.from_string('myschema')
             ],
             remove_type: :OBJECT_SCHEMA,
             behavior: :DROP_RESTRICT
@@ -641,14 +631,14 @@ describe PgQuery, '.parse' do
               PgQuery::Node.new(
                 list: PgQuery::List.new(
                   items: [
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'myview'))
+                    PgQuery::Node.from_string('myview')
                   ]
                 )
               ),
               PgQuery::Node.new(
                 list: PgQuery::List.new(
                   items: [
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'myview2'))
+                    PgQuery::Node.from_string('myview2')
                   ]
                 )
               )
@@ -673,7 +663,7 @@ describe PgQuery, '.parse' do
               PgQuery::Node.new(
                 list: PgQuery::List.new(
                   items: [
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'myindex'))
+                    PgQuery::Node.from_string('myindex')
                   ]
                 )
               )
@@ -699,8 +689,8 @@ describe PgQuery, '.parse' do
               PgQuery::Node.new(
                 list: PgQuery::List.new(
                   items: [
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'mytable')),
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'myrule'))
+                    PgQuery::Node.from_string('mytable'),
+                    PgQuery::Node.from_string('myrule')
                   ]
                 )
               )
@@ -725,8 +715,8 @@ describe PgQuery, '.parse' do
               PgQuery::Node.new(
                 list: PgQuery::List.new(
                   items: [
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'mytable')),
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'mytrigger'))
+                    PgQuery::Node.from_string('mytable'),
+                    PgQuery::Node.from_string('mytrigger')
                   ]
                 )
               )
@@ -853,7 +843,7 @@ describe PgQuery, '.parse' do
   end
 
   it 'parses WITH' do
-    query = described_class.parse('WITH a AS (SELECT * FROM x WHERE x.y = ? AND x.z = 1) SELECT * FROM a')
+    query = described_class.parse('WITH a AS (SELECT * FROM x WHERE x.y = $1 AND x.z = 1) SELECT * FROM a')
     expect(query.warnings).to eq []
     expect(query.tables).to eq ['x']
     expect(query.cte_names).to eq ['a']
@@ -871,10 +861,10 @@ describe PgQuery, '.parse' do
                           a_star: PgQuery::A_Star.new
                         )
                       ],
-                      location: 61
+                      location: 62
                     )
                   ),
-                  location: 61
+                  location: 62
                 )
               )
             ],
@@ -884,7 +874,7 @@ describe PgQuery, '.parse' do
                   relname: 'a',
                   inh: true,
                   relpersistence: 'p',
-                  location: 68
+                  location: 69
                 )
               )
             ],
@@ -935,20 +925,21 @@ describe PgQuery, '.parse' do
                                 a_expr: PgQuery::A_Expr.new(
                                   kind: :AEXPR_OP,
                                   name: [
-                                    PgQuery::Node.new(string: PgQuery::String.new(str: '='))
+                                    PgQuery::Node.from_string('=')
                                   ],
                                   lexpr: PgQuery::Node.new(
                                     column_ref: PgQuery::ColumnRef.new(
                                       fields: [
-                                        PgQuery::Node.new(string: PgQuery::String.new(str: 'x')),
-                                        PgQuery::Node.new(string: PgQuery::String.new(str: 'y'))
+                                        PgQuery::Node.from_string('x'),
+                                        PgQuery::Node.from_string('y')
                                       ],
                                       location: 33
                                     )
                                   ),
                                   rexpr: PgQuery::Node.new(
                                     param_ref: PgQuery::ParamRef.new(
-                                      location: 39
+                                      location: 39,
+                                      number: 1
                                     )
                                   ),
                                   location: 37
@@ -958,28 +949,28 @@ describe PgQuery, '.parse' do
                                 a_expr: PgQuery::A_Expr.new(
                                   kind: :AEXPR_OP,
                                   name: [
-                                    PgQuery::Node.new(string: PgQuery::String.new(str: '='))
+                                    PgQuery::Node.from_string('=')
                                   ],
                                   lexpr: PgQuery::Node.new(
                                     column_ref: PgQuery::ColumnRef.new(
                                       fields: [
-                                        PgQuery::Node.new(string: PgQuery::String.new(str: 'x')),
-                                        PgQuery::Node.new(string: PgQuery::String.new(str: 'z'))
+                                        PgQuery::Node.from_string('x'),
+                                        PgQuery::Node.from_string('z')
                                       ],
-                                      location: 45
+                                      location: 46
                                     )
                                   ),
                                   rexpr: PgQuery::Node.new(
                                     a_const: PgQuery::A_Const.new(
-                                      val: PgQuery::Node.new(integer: PgQuery::Integer.new(ival: 1)),
-                                      location: 51
+                                      ival: PgQuery::Integer.new(ival: 1),
+                                      location: 52
                                     )
                                   ),
-                                  location: 49
+                                  location: 50
                                 )
                               )
                             ],
-                            location: 41
+                            location: 42
                           )
                         )
                       )
@@ -1023,25 +1014,25 @@ $BODY$
           create_function_stmt: PgQuery::CreateFunctionStmt.new(
             replace: true,
             funcname: [
-              PgQuery::Node.new(string: PgQuery::String.new(str: 'thing'))
+              PgQuery::Node.new(string: PgQuery::String.new(sval: 'thing'))
             ],
             parameters: [
               PgQuery::Node.new(function_parameter: PgQuery::FunctionParameter.new(
                 name: 'parameter_thing',
                 arg_type: PgQuery::TypeName.new(
                   names: [
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'text'))
+                    PgQuery::Node.from_string('text')
                   ],
                   typemod: -1,
                   location: 49
                 ),
-                mode: :FUNC_PARAM_IN
+                mode: :FUNC_PARAM_DEFAULT
               ))
             ],
             return_type: PgQuery::TypeName.new(
               names: [
-                PgQuery::Node.new(string: PgQuery::String.new(str: 'pg_catalog')),
-                PgQuery::Node.new(string: PgQuery::String.new(str: 'int8'))
+                PgQuery::Node.from_string('pg_catalog'),
+                PgQuery::Node.from_string('int8')
               ],
               typemod: -1,
               location: 65
@@ -1054,7 +1045,7 @@ $BODY$
                     list: PgQuery::List.new(
                       items: [
                         PgQuery::Node.new(
-                          string: PgQuery::String.new(str: "\nDECLARE\n        local_thing_id BIGINT := 0;\nBEGIN\n        SELECT thing_id INTO local_thing_id FROM thing_map\n        WHERE\n                thing_map_field = parameter_thing\n        ORDER BY 1 LIMIT 1;\n\n        IF NOT FOUND THEN\n                local_thing_id = 0;\n        END IF;\n        RETURN local_thing_id;\nEND;\n")
+                          string: PgQuery::String.new(sval: "\nDECLARE\n        local_thing_id BIGINT := 0;\nBEGIN\n        SELECT thing_id INTO local_thing_id FROM thing_map\n        WHERE\n                thing_map_field = parameter_thing\n        ORDER BY 1 LIMIT 1;\n\n        IF NOT FOUND THEN\n                local_thing_id = 0;\n        END IF;\n        RETURN local_thing_id;\nEND;\n")
                         )
                       ]
                     )
@@ -1067,7 +1058,7 @@ $BODY$
                 def_elem: PgQuery::DefElem.new(
                   defname: 'language',
                   arg: PgQuery::Node.new(
-                    string: PgQuery::String.new(str: 'plpgsql')
+                    string: PgQuery::String.new(sval: 'plpgsql')
                   ),
                   defaction: :DEFELEM_UNSPEC,
                   location: 407
@@ -1077,7 +1068,7 @@ $BODY$
                 def_elem: PgQuery::DefElem.new(
                   defname: 'volatility',
                   arg: PgQuery::Node.new(
-                    string: PgQuery::String.new(str: 'stable')
+                    string: PgQuery::String.new(sval: 'stable')
                   ),
                   defaction: :DEFELEM_UNSPEC,
                   location: 424
@@ -1102,20 +1093,20 @@ $BODY$
         stmt: PgQuery::Node.new(
           create_function_stmt: PgQuery::CreateFunctionStmt.new(
             funcname: [
-              PgQuery::Node.new(string: PgQuery::String.new(str: 'getfoo'))
+              PgQuery::Node.from_string('getfoo')
             ],
             parameters: [
               PgQuery::Node.new(
                 function_parameter: PgQuery::FunctionParameter.new(
                   arg_type: PgQuery::TypeName.new(
                     names: [
-                      PgQuery::Node.new(string: PgQuery::String.new(str: 'pg_catalog')),
-                      PgQuery::Node.new(string: PgQuery::String.new(str: 'int4'))
+                      PgQuery::Node.from_string('pg_catalog'),
+                      PgQuery::Node.from_string('int4')
                     ],
                     typemod: -1,
                     location: 23
                   ),
-                  mode: :FUNC_PARAM_IN
+                  mode: :FUNC_PARAM_DEFAULT
                 )
               ),
               PgQuery::Node.new(
@@ -1123,8 +1114,8 @@ $BODY$
                   name: 'f1',
                   arg_type: PgQuery::TypeName.new(
                     names: [
-                      PgQuery::Node.new(string: PgQuery::String.new(str: 'pg_catalog')),
-                      PgQuery::Node.new(string: PgQuery::String.new(str: 'int4'))
+                      PgQuery::Node.from_string('pg_catalog'),
+                      PgQuery::Node.from_string('int4')
                     ],
                     typemod: -1,
                     location: 46
@@ -1135,8 +1126,8 @@ $BODY$
             ],
             return_type: PgQuery::TypeName.new(
               names: [
-                PgQuery::Node.new(string: PgQuery::String.new(str: 'pg_catalog')),
-                PgQuery::Node.new(string: PgQuery::String.new(str: 'int4'))
+                PgQuery::Node.from_string('pg_catalog'),
+                PgQuery::Node.from_string('int4')
               ],
               setof: true,
               typemod: -1,
@@ -1150,7 +1141,7 @@ $BODY$
                     list: PgQuery::List.new(
                       items: [
                         PgQuery::Node.new(
-                          string: PgQuery::String.new(str: "\n    SELECT * FROM foo WHERE fooid = $1;\n")
+                          string: PgQuery::String.new(sval: "\n    SELECT * FROM foo WHERE fooid = $1;\n")
                         )
                       ]
                     )
@@ -1163,7 +1154,7 @@ $BODY$
                 def_elem: PgQuery::DefElem.new(
                   defname: 'language',
                   arg: PgQuery::Node.new(
-                    string: PgQuery::String.new(str: 'sql')
+                    string: PgQuery::String.new(sval: 'sql')
                   ),
                   defaction: :DEFELEM_UNSPEC,
                   location: 98
@@ -1661,8 +1652,8 @@ $BODY$
               PgQuery::Node.new(
                 type_name: PgQuery::TypeName.new(
                   names: [
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'repack')),
-                    PgQuery::Node.new(string: PgQuery::String.new(str: 'pk_something'))
+                    PgQuery::Node.from_string('repack'),
+                    PgQuery::Node.from_string('pk_something')
                   ],
                   typemod: -1,
                   location: 20
@@ -1694,7 +1685,7 @@ $BODY$
                       val: PgQuery::Node.new(
                         column_ref: PgQuery::ColumnRef.new(
                           fields: [
-                            PgQuery::Node.new(string: PgQuery::String.new(str: 'test'))
+                            PgQuery::Node.from_string('test')
                           ],
                           location: 13
                         )
@@ -1718,7 +1709,7 @@ $BODY$
             options: [
               PgQuery::Node.new(def_elem: PgQuery::DefElem.new(
                 defname: 'format',
-                arg: PgQuery::Node.new(string: PgQuery::String.new(str: 'csv')),
+                arg: PgQuery::Node.from_string('csv'),
                 defaction: :DEFELEM_UNSPEC,
                 location: 44
               ))

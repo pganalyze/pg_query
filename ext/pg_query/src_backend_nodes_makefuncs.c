@@ -3,6 +3,7 @@
  * - makeDefElem
  * - makeTypeNameFromNameList
  * - makeDefElemExtended
+ * - makeRangeVar
  * - makeVacuumRelation
  * - makeAlias
  * - makeSimpleA_Expr
@@ -10,7 +11,6 @@
  * - makeTypeName
  * - makeFuncCall
  * - makeA_Expr
- * - makeRangeVar
  * - makeBoolExpr
  *--------------------------------------------------------------------
  */
@@ -21,7 +21,7 @@
  *	  creator functions for various nodes. The functions here are for the
  *	  most frequently created nodes.
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -309,7 +309,7 @@ makeDefElemExtended(char *nameSpace, char *name, Node *arg,
  * supply.  Any non-default parameters have to be inserted by the caller.
  */
 FuncCall *
-makeFuncCall(List *name, List *args, int location)
+makeFuncCall(List *name, List *args, CoercionForm funcformat, int location)
 {
 	FuncCall   *n = makeNode(FuncCall);
 
@@ -317,11 +317,12 @@ makeFuncCall(List *name, List *args, int location)
 	n->args = args;
 	n->agg_order = NIL;
 	n->agg_filter = NULL;
+	n->over = NULL;
 	n->agg_within_group = false;
 	n->agg_star = false;
 	n->agg_distinct = false;
 	n->func_variadic = false;
-	n->over = NULL;
+	n->funcformat = funcformat;
 	n->location = location;
 	return n;
 }

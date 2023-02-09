@@ -60,7 +60,7 @@ module PgQuery
     end
 
     def ignored_node_type?(node)
-      [A_Const, Alias, ParamRef, SetToDefault, IntList, OidList, Null].include?(node.class) ||
+      [A_Const, Alias, ParamRef, SetToDefault, IntList, OidList].include?(node.class) ||
         node.is_a?(TypeCast) && (node.arg.node == :a_const || node.arg.node == :param_ref)
     end
 
@@ -122,6 +122,10 @@ module PgQuery
             fingerprint_value(:AEXPR_OP, hash, postgres_node_name, postgres_field_name, true)
             next
           end
+        # libpg_query still outputs `str` parts when print a string node. Here we override that to
+        # the expected field name of `sval`.
+        when 'sval', 'fval', 'bsval'
+          postgres_field_name = 'str' if node.is_a?(String) || node.is_a?(BitString) || node.is_a?(Float)
         end
 
         fingerprint_value(val, hash, postgres_node_name, postgres_field_name, true)

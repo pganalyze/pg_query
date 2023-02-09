@@ -4,7 +4,7 @@
  *	  POSTGRES relation descriptor (a/k/a relcache entry) definitions.
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/rel.h
@@ -24,6 +24,7 @@
 #include "rewrite/prs2lock.h"
 #include "storage/block.h"
 #include "storage/relfilenode.h"
+#include "storage/smgr.h"
 #include "utils/relcache.h"
 #include "utils/reltrigger.h"
 
@@ -53,8 +54,7 @@ typedef LockInfoData *LockInfo;
 typedef struct RelationData
 {
 	RelFileNode rd_node;		/* relation physical identifier */
-	/* use "struct" here to avoid needing to include smgr.h: */
-	struct SMgrRelationData *rd_smgr;	/* cached file handle, or NULL */
+	SMgrRelation rd_smgr;		/* cached file handle, or NULL */
 	int			rd_refcnt;		/* reference count */
 	BackendId	rd_backend;		/* owning backend id, if temporary relation */
 	bool		rd_islocaltemp; /* rel is a temp rel of this session */
@@ -128,6 +128,19 @@ typedef struct RelationData
 	PartitionDesc rd_partdesc;	/* partition descriptor, or NULL */
 	MemoryContext rd_pdcxt;		/* private context for rd_partdesc, if any */
 
+	/* Same as above, for partdescs that omit detached partitions */
+	PartitionDesc rd_partdesc_nodetached;	/* partdesc w/o detached parts */
+	MemoryContext rd_pddcxt;	/* for rd_partdesc_nodetached, if any */
+
+	/*
+	 * pg_inherits.xmin of the partition that was excluded in
+	 * rd_partdesc_nodetached.  This informs a future user of that partdesc:
+	 * if this value is not in progress for the active snapshot, then the
+	 * partdesc can be used, otherwise they have to build a new one.  (This
+	 * matches what find_inheritance_children_extended would do).
+	 */
+	TransactionId rd_partdesc_nodetached_xmin;
+
 	/* data managed by RelationGetPartitionQual: */
 	List	   *rd_partcheck;	/* partition CHECK quals */
 	bool		rd_partcheckvalid;	/* true if list has been computed */
@@ -147,7 +160,7 @@ typedef struct RelationData
 	Bitmapset  *rd_pkattr;		/* cols included in primary key */
 	Bitmapset  *rd_idattr;		/* included in replica identity index */
 
-	PublicationActions *rd_pubactions;	/* publication actions */
+	PublicationDesc *rd_pubdesc;	/* publication descriptor, or NULL */
 
 	/*
 	 * rd_options is set whenever rd_rel is loaded into the relcache entry.
@@ -232,6 +245,7 @@ typedef struct RelationData
 	 */
 	Oid			rd_toastoid;	/* Real TOAST table's OID, or InvalidOid */
 
+	bool		pgstat_enabled; /* should relation stats be counted */
 	/* use "struct" here to avoid needing to include pgstat.h: */
 	struct PgStat_TableStatus *pgstat_info; /* statistics collection area */
 } RelationData;
@@ -294,6 +308,14 @@ typedef struct AutoVacOpts
 	float8		analyze_scale_factor;
 } AutoVacOpts;
 
+/* StdRdOptions->vacuum_index_cleanup values */
+typedef enum StdRdOptIndexCleanup
+{
+	STDRD_OPTION_VACUUM_INDEX_CLEANUP_AUTO = 0,
+	STDRD_OPTION_VACUUM_INDEX_CLEANUP_OFF,
+	STDRD_OPTION_VACUUM_INDEX_CLEANUP_ON
+} StdRdOptIndexCleanup;
+
 typedef struct StdRdOptions
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
@@ -302,7 +324,7 @@ typedef struct StdRdOptions
 	AutoVacOpts autovacuum;		/* autovacuum-related options */
 	bool		user_catalog_table; /* use as an additional catalog relation */
 	int			parallel_workers;	/* max number of parallel workers */
-	bool		vacuum_index_cleanup;	/* enables index vacuuming and cleanup */
+	StdRdOptIndexCleanup vacuum_index_cleanup;	/* controls index vacuuming */
 	bool		vacuum_truncate;	/* enables vacuum to truncate a relation */
 } StdRdOptions;
 
@@ -375,6 +397,7 @@ typedef struct ViewOptions
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	bool		security_barrier;
+	bool		security_invoker;
 	ViewOptCheckOption check_option;
 } ViewOptions;
 
@@ -387,6 +410,16 @@ typedef struct ViewOptions
 	(AssertMacro(relation->rd_rel->relkind == RELKIND_VIEW),				\
 	 (relation)->rd_options ?												\
 	  ((ViewOptions *) (relation)->rd_options)->security_barrier : false)
+
+/*
+ * RelationHasSecurityInvoker
+ *		Returns true if the relation has the security_invoker property set.
+ *		Note multiple eval of argument!
+ */
+#define RelationHasSecurityInvoker(relation)								\
+	(AssertMacro(relation->rd_rel->relkind == RELKIND_VIEW),				\
+	 (relation)->rd_options ?												\
+	  ((ViewOptions *) (relation)->rd_options)->security_invoker : false)
 
 /*
  * RelationHasCheckOption
@@ -506,14 +539,25 @@ typedef struct ViewOptions
 	 ((relation)->rd_rel->relfilenode == InvalidOid))
 
 /*
- * RelationOpenSmgr
- *		Open the relation at the smgr level, if not already done.
+ * RelationGetSmgr
+ *		Returns smgr file handle for a relation, opening it if needed.
+ *
+ * Very little code is authorized to touch rel->rd_smgr directly.  Instead
+ * use this function to fetch its value.
+ *
+ * Note: since a relcache flush can cause the file handle to be closed again,
+ * it's unwise to hold onto the pointer returned by this function for any
+ * long period.  Recommended practice is to just re-execute RelationGetSmgr
+ * each time you need to access the SMgrRelation.  It's quite cheap in
+ * comparison to whatever an smgr function is going to do.
  */
-#define RelationOpenSmgr(relation) \
-	do { \
-		if ((relation)->rd_smgr == NULL) \
-			smgrsetowner(&((relation)->rd_smgr), smgropen((relation)->rd_node, (relation)->rd_backend)); \
-	} while (0)
+static inline SMgrRelation
+RelationGetSmgr(Relation rel)
+{
+	if (unlikely(rel->rd_smgr == NULL))
+		smgrsetowner(&(rel->rd_smgr), smgropen(rel->rd_node, rel->rd_backend));
+	return rel->rd_smgr;
+}
 
 /*
  * RelationCloseSmgr
@@ -535,7 +579,8 @@ typedef struct ViewOptions
  *		Fetch relation's current insertion target block.
  *
  * Returns InvalidBlockNumber if there is no current target block.  Note
- * that the target block status is discarded on any smgr-level invalidation.
+ * that the target block status is discarded on any smgr-level invalidation,
+ * so there's no need to re-open the smgr handle if it's not currently open.
  */
 #define RelationGetTargetBlock(relation) \
 	( (relation)->rd_smgr != NULL ? (relation)->rd_smgr->smgr_targblock : InvalidBlockNumber )
@@ -546,9 +591,15 @@ typedef struct ViewOptions
  */
 #define RelationSetTargetBlock(relation, targblock) \
 	do { \
-		RelationOpenSmgr(relation); \
-		(relation)->rd_smgr->smgr_targblock = (targblock); \
+		RelationGetSmgr(relation)->smgr_targblock = (targblock); \
 	} while (0)
+
+/*
+ * RelationIsPermanent
+ *		True if relation is permanent.
+ */
+#define RelationIsPermanent(relation) \
+	((relation)->rd_rel->relpersistence == RELPERSISTENCE_PERMANENT)
 
 /*
  * RelationNeedsWAL
@@ -559,8 +610,7 @@ typedef struct ViewOptions
  * RelFileNode" in src/backend/access/transam/README.
  */
 #define RelationNeedsWAL(relation)										\
-	((relation)->rd_rel->relpersistence == RELPERSISTENCE_PERMANENT &&	\
-	 (XLogIsNeeded() ||													\
+	(RelationIsPermanent(relation) && (XLogIsNeeded() ||				\
 	  (relation->rd_createSubid == InvalidSubTransactionId &&			\
 	   relation->rd_firstRelfilenodeSubid == InvalidSubTransactionId)))
 
@@ -626,7 +676,8 @@ typedef struct ViewOptions
  *		WAL stream.
  *
  * We don't log information for unlogged tables (since they don't WAL log
- * anyway) and for system tables (their content is hard to make sense of, and
+ * anyway), for foreign tables (since they don't WAL log, either),
+ * and for system tables (their content is hard to make sense of, and
  * it would complicate decoding slightly for little gain). Note that we *do*
  * log information for user defined catalog tables since they presumably are
  * interesting to the user...
@@ -634,6 +685,7 @@ typedef struct ViewOptions
 #define RelationIsLogicallyLogged(relation) \
 	(XLogLogicalInfoActive() && \
 	 RelationNeedsWAL(relation) && \
+	 (relation)->rd_rel->relkind != RELKIND_FOREIGN_TABLE &&	\
 	 !IsCatalogRelation(relation))
 
 /* routines in utils/cache/relcache.c */

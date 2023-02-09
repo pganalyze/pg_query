@@ -7,7 +7,7 @@
  * by the PG_KEYWORD macro, which is not defined in this file; it can
  * be defined by the caller for special purposes.
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/pl/plpgsql/src/pl_unreserved_kwlist.h
@@ -70,6 +70,7 @@ PG_KEYWORD("insert", K_INSERT)
 PG_KEYWORD("is", K_IS)
 PG_KEYWORD("last", K_LAST)
 PG_KEYWORD("log", K_LOG)
+PG_KEYWORD("merge", K_MERGE)
 PG_KEYWORD("message", K_MESSAGE)
 PG_KEYWORD("message_text", K_MESSAGE_TEXT)
 PG_KEYWORD("move", K_MOVE)
@@ -89,7 +90,6 @@ PG_KEYWORD("prior", K_PRIOR)
 PG_KEYWORD("query", K_QUERY)
 PG_KEYWORD("raise", K_RAISE)
 PG_KEYWORD("relative", K_RELATIVE)
-PG_KEYWORD("reset", K_RESET)
 PG_KEYWORD("return", K_RETURN)
 PG_KEYWORD("returned_sqlstate", K_RETURNED_SQLSTATE)
 PG_KEYWORD("reverse", K_REVERSE)
@@ -99,7 +99,6 @@ PG_KEYWORD("rowtype", K_ROWTYPE)
 PG_KEYWORD("schema", K_SCHEMA)
 PG_KEYWORD("schema_name", K_SCHEMA_NAME)
 PG_KEYWORD("scroll", K_SCROLL)
-PG_KEYWORD("set", K_SET)
 PG_KEYWORD("slice", K_SLICE)
 PG_KEYWORD("sqlstate", K_SQLSTATE)
 PG_KEYWORD("stacked", K_STACKED)

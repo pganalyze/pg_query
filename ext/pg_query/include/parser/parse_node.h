@@ -4,7 +4,7 @@
  *		Internal definitions for parser
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/parser/parse_node.h
@@ -55,6 +55,7 @@ typedef enum ParseExprKind
 	EXPR_KIND_INSERT_TARGET,	/* INSERT target list item */
 	EXPR_KIND_UPDATE_SOURCE,	/* UPDATE assignment source item */
 	EXPR_KIND_UPDATE_TARGET,	/* UPDATE assignment target item */
+	EXPR_KIND_MERGE_WHEN,		/* MERGE WHEN [NOT] MATCHED condition */
 	EXPR_KIND_GROUP_BY,			/* GROUP BY */
 	EXPR_KIND_ORDER_BY,			/* ORDER BY */
 	EXPR_KIND_DISTINCT_ON,		/* DISTINCT ON */
@@ -69,6 +70,7 @@ typedef enum ParseExprKind
 	EXPR_KIND_FUNCTION_DEFAULT, /* default parameter value for function */
 	EXPR_KIND_INDEX_EXPRESSION, /* index expression */
 	EXPR_KIND_INDEX_PREDICATE,	/* index predicate */
+	EXPR_KIND_STATS_EXPRESSION, /* extended statistics expression */
 	EXPR_KIND_ALTER_COL_TRANSFORM,	/* transform expr in ALTER COLUMN TYPE */
 	EXPR_KIND_EXECUTE_PARAMETER,	/* parameter value in EXECUTE */
 	EXPR_KIND_TRIGGER_WHEN,		/* WHEN condition in CREATE TRIGGER */
@@ -78,6 +80,7 @@ typedef enum ParseExprKind
 	EXPR_KIND_CALL_ARGUMENT,	/* procedure argument in CALL */
 	EXPR_KIND_COPY_WHERE,		/* WHERE condition in COPY FROM */
 	EXPR_KIND_GENERATED_COLUMN, /* generation expression for a column */
+	EXPR_KIND_CYCLE_MARK,		/* cycle mark value */
 } ParseExprKind;
 
 
@@ -133,7 +136,7 @@ typedef Node *(*CoerceParamHook) (ParseState *pstate, Param *param,
  * p_parent_cte: CommonTableExpr that immediately contains the current query,
  * if any.
  *
- * p_target_relation: target relation, if query is INSERT, UPDATE, or DELETE.
+ * p_target_relation: target relation, if query is INSERT/UPDATE/DELETE/MERGE
  *
  * p_target_nsitem: target relation's ParseNamespaceItem.
  *
@@ -187,7 +190,7 @@ struct ParseState
 	List	   *p_ctenamespace; /* current namespace for common table exprs */
 	List	   *p_future_ctes;	/* common table exprs not yet in namespace */
 	CommonTableExpr *p_parent_cte;	/* this query's containing CTE */
-	Relation	p_target_relation;	/* INSERT/UPDATE/DELETE target rel */
+	Relation	p_target_relation;	/* INSERT/UPDATE/DELETE/MERGE target rel */
 	ParseNamespaceItem *p_target_nsitem;	/* target rel's NSItem, or NULL */
 	bool		p_is_insert;	/* process assignment like INSERT not UPDATE */
 	List	   *p_windowdefs;	/* raw representations of window clauses */
@@ -225,8 +228,16 @@ struct ParseState
 /*
  * An element of a namespace list.
  *
+ * p_names contains the table name and column names exposed by this nsitem.
+ * (Typically it's equal to p_rte->eref, but for a JOIN USING alias it's
+ * equal to p_rte->join_using_alias.  Since the USING columns will be the
+ * join's first N columns, the net effect is just that we expose only those
+ * join columns via this nsitem.)
+ *
+ * p_rte and p_rtindex link to the underlying rangetable entry.
+ *
  * The p_nscolumns array contains info showing how to construct Vars
- * referencing corresponding elements of the RTE's colnames list.
+ * referencing the names appearing in the p_names->colnames list.
  *
  * Namespace items with p_rel_visible set define which RTEs are accessible by
  * qualified names, while those with p_cols_visible set define which RTEs are
@@ -254,9 +265,10 @@ struct ParseState
  */
 struct ParseNamespaceItem
 {
+	Alias	   *p_names;		/* Table and column names */
 	RangeTblEntry *p_rte;		/* The relation's rangetable entry */
 	int			p_rtindex;		/* The relation's index in the rangetable */
-	/* array of same length as p_rte->eref->colnames: */
+	/* array of same length as p_names->colnames: */
 	ParseNamespaceColumn *p_nscolumns;	/* per-column data */
 	bool		p_rel_visible;	/* Relation name is visible? */
 	bool		p_cols_visible; /* Column names visible as unqualified refs? */
@@ -294,6 +306,7 @@ struct ParseNamespaceColumn
 	Oid			p_varcollid;	/* OID of collation, or InvalidOid */
 	Index		p_varnosyn;		/* rangetable index of syntactic referent */
 	AttrNumber	p_varattnosyn;	/* attribute number of syntactic referent */
+	bool		p_dontexpand;	/* not included in star expansion */
 };
 
 /* Support for parser_errposition_callback function */
@@ -313,15 +326,14 @@ extern void setup_parser_errposition_callback(ParseCallbackState *pcbstate,
 											  ParseState *pstate, int location);
 extern void cancel_parser_errposition_callback(ParseCallbackState *pcbstate);
 
-extern Oid	transformContainerType(Oid *containerType, int32 *containerTypmod);
+extern void transformContainerType(Oid *containerType, int32 *containerTypmod);
 
 extern SubscriptingRef *transformContainerSubscripts(ParseState *pstate,
 													 Node *containerBase,
 													 Oid containerType,
-													 Oid elementType,
 													 int32 containerTypMod,
 													 List *indirection,
-													 Node *assignFrom);
-extern Const *make_const(ParseState *pstate, Value *value, int location);
+													 bool isAssignment);
+extern Const *make_const(ParseState *pstate, A_Const *aconst);
 
 #endif							/* PARSE_NODE_H */

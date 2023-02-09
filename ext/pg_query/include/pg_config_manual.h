@@ -6,7 +6,7 @@
  * for developers.  If you edit any of these, be sure to do a *full*
  * rebuild (and an initdb if noted).
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/pg_config_manual.h
@@ -21,7 +21,7 @@
 
 /*
  * Maximum length for identifiers (e.g. table names, column names,
- * function names).  Names actually are limited to one less byte than this,
+ * function names).  Names actually are limited to one fewer byte than this,
  * because the length must include a trailing zero byte.
  *
  * Changing this requires an initdb.
@@ -41,6 +41,23 @@
  * backend recompile (including any user-defined C functions).
  */
 #define FUNC_MAX_ARGS		100
+
+/*
+ * When creating a product derived from PostgreSQL with changes that cause
+ * incompatibilities for loadable modules, it is recommended to change this
+ * string so that dfmgr.c can refuse to load incompatible modules with a clean
+ * error message.  Typical examples that cause incompatibilities are any
+ * changes to node tags or node structures.  (Note that dfmgr.c already
+ * detects common sources of incompatibilities due to major version
+ * differences and due to some changed compile-time constants.  This setting
+ * is for catching anything that cannot be detected in a straightforward way.)
+ *
+ * There is no prescribed format for the string.  The suggestion is to include
+ * product or company name, and optionally any internally-relevant ABI
+ * version.  Example: "ACME Postgres/1.2".  Note that the string will appear
+ * in a user-facing error message if an ABI mismatch is detected.
+ */
+#define FMGR_ABI_EXTRA		"PostgreSQL"
 
 /*
  * Maximum number of columns in an index.  There is little point in making
@@ -183,8 +200,7 @@
 
 /*
  * USE_SSL code should be compiled only when compiling with an SSL
- * implementation.  (Currently, only OpenSSL is supported, but we might add
- * more implementations in the future.)
+ * implementation.
  */
 #ifdef USE_OPENSSL
 #define USE_SSL
@@ -217,17 +233,6 @@
  * This is the default event source for Windows event log.
  */
 #define DEFAULT_EVENT_SOURCE  "PostgreSQL"
-
-/*
- * The random() function is expected to yield values between 0 and
- * MAX_RANDOM_VALUE.  Currently, all known implementations yield
- * 0..2^31-1, so we just hardwire this constant.  We could do a
- * configure test if it proves to be necessary.  CAUTION: Think not to
- * replace this with RAND_MAX.  RAND_MAX defines the maximum value of
- * the older rand() function, which is often different from --- and
- * considerably inferior to --- random().
- */
-#define MAX_RANDOM_VALUE  PG_INT32_MAX
 
 /*
  * On PPC machines, decide whether to use the mutex hint bit in LWARX
@@ -276,12 +281,21 @@
 /*
  * Include Valgrind "client requests", mostly in the memory allocator, so
  * Valgrind understands PostgreSQL memory contexts.  This permits detecting
- * memory errors that Valgrind would not detect on a vanilla build.  See also
- * src/tools/valgrind.supp.  "make installcheck" runs 20-30x longer under
- * Valgrind.  Note that USE_VALGRIND slowed older versions of Valgrind by an
- * additional order of magnitude; Valgrind 3.8.1 does not have this problem.
- * The client requests fall in hot code paths, so USE_VALGRIND also slows
- * native execution by a few percentage points.
+ * memory errors that Valgrind would not detect on a vanilla build.  It also
+ * enables detection of buffer accesses that take place without holding a
+ * buffer pin (or without holding a buffer lock in the case of index access
+ * methods that superimpose their own custom client requests on top of the
+ * generic bufmgr.c requests).
+ *
+ * "make installcheck" is significantly slower under Valgrind.  The client
+ * requests fall in hot code paths, so USE_VALGRIND slows execution by a few
+ * percentage points even when not run under Valgrind.
+ *
+ * Do not try to test the server under Valgrind without having built the
+ * server with USE_VALGRIND; else you will get false positives from sinval
+ * messaging (see comments in AddCatcacheInvalidationMessage).  It's also
+ * important to use the suppression file src/tools/valgrind.supp to
+ * exclude other known false positives.
  *
  * You should normally use MEMORY_CONTEXT_CHECKING with USE_VALGRIND;
  * instrumentation of repalloc() is inferior without it.
@@ -312,6 +326,45 @@
  * memory.  Caution: this is horrendously expensive.
  */
 /* #define RANDOMIZE_ALLOCATED_MEMORY */
+
+/*
+ * For cache-invalidation debugging, define DISCARD_CACHES_ENABLED to enable
+ * use of the debug_discard_caches GUC to aggressively flush syscache/relcache
+ * entries whenever it's possible to deliver invalidations.  See
+ * AcceptInvalidationMessages() in src/backend/utils/cache/inval.c for
+ * details.
+ *
+ * USE_ASSERT_CHECKING builds default to enabling this.  It's possible to use
+ * DISCARD_CACHES_ENABLED without a cassert build and the implied
+ * CLOBBER_FREED_MEMORY and MEMORY_CONTEXT_CHECKING options, but it's unlikely
+ * to be as effective at identifying problems.
+ */
+/* #define DISCARD_CACHES_ENABLED */
+
+#if defined(USE_ASSERT_CHECKING) && !defined(DISCARD_CACHES_ENABLED)
+#define DISCARD_CACHES_ENABLED
+#endif
+
+/*
+ * Backwards compatibility for the older compile-time-only clobber-cache
+ * macros.
+ */
+#if !defined(DISCARD_CACHES_ENABLED) && (defined(CLOBBER_CACHE_ALWAYS) || defined(CLOBBER_CACHE_RECURSIVELY))
+#define DISCARD_CACHES_ENABLED
+#endif
+
+/*
+ * Recover memory used for relcache entries when invalidated.  See
+ * RelationBuildDescr() in src/backend/utils/cache/relcache.c.
+ *
+ * This is active automatically for clobber-cache builds when clobbering is
+ * active, but can be overridden here by explicitly defining
+ * RECOVER_RELATION_BUILD_MEMORY.  Define to 1 to always free relation cache
+ * memory even when clobber is off, or to 0 to never free relation cache
+ * memory even when clobbering is on.
+ */
+ /* #define RECOVER_RELATION_BUILD_MEMORY 0 */	/* Force disable */
+ /* #define RECOVER_RELATION_BUILD_MEMORY 1 */	/* Force enable */
 
 /*
  * Define this to force all parse and plan trees to be passed through

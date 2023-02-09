@@ -4,7 +4,7 @@
  *	  POSTGRES low-level lock mechanism
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/lock.h
@@ -22,6 +22,7 @@
 #include "storage/lockdefs.h"
 #include "storage/lwlock.h"
 #include "storage/shmem.h"
+#include "utils/timestamp.h"
 
 /* struct PGPROC is declared in proc.h, but must forward-reference it */
 typedef struct PGPROC PGPROC;
@@ -33,14 +34,14 @@ typedef struct PROC_QUEUE
 } PROC_QUEUE;
 
 /* GUC variables */
-extern int	max_locks_per_xact;
+extern PGDLLIMPORT int max_locks_per_xact;
 
 #ifdef LOCK_DEBUG
-extern int	Trace_lock_oidmin;
-extern bool Trace_locks;
-extern bool Trace_userlocks;
-extern int	Trace_lock_table;
-extern bool Debug_deadlocks;
+extern PGDLLIMPORT int Trace_lock_oidmin;
+extern PGDLLIMPORT bool Trace_locks;
+extern PGDLLIMPORT bool Trace_userlocks;
+extern PGDLLIMPORT int Trace_lock_table;
+extern PGDLLIMPORT bool Debug_deadlocks;
 #endif							/* LOCK_DEBUG */
 
 
@@ -153,7 +154,7 @@ typedef enum LockTagType
 
 #define LOCKTAG_LAST_TYPE	LOCKTAG_ADVISORY
 
-extern const char *const LockTagTypeNames[];
+extern PGDLLIMPORT const char *const LockTagTypeNames[];
 
 /*
  * The LOCKTAG struct is defined with malice aforethought to fit into 16
@@ -447,6 +448,8 @@ typedef struct LockInstanceData
 	LOCKMODE	waitLockMode;	/* lock awaited by this PGPROC, if any */
 	BackendId	backend;		/* backend ID of this PGPROC */
 	LocalTransactionId lxid;	/* local transaction ID of this PGPROC */
+	TimestampTz waitStart;		/* time at which this PGPROC started waiting
+								 * for lock */
 	int			pid;			/* pid of this PGPROC */
 	int			leaderPid;		/* pid of group leader; = pid if no group */
 	bool		fastpath;		/* taken via fastpath? */

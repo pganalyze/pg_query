@@ -69,7 +69,7 @@ module PgQuery
           when :row_expr
             condition_items += next_item.row_expr.args
           when :column_ref
-            column, table = next_item.column_ref.fields.map { |f| f.string.str }.reverse
+            column, table = next_item.column_ref.fields.map { |f| f.string.sval }.reverse
             filter_columns << [@aliases[table] || table, column]
           when :null_test
             condition_items << next_item.null_test.arg

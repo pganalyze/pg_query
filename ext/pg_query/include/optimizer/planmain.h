@@ -4,7 +4,7 @@
  *	  prototypes for various files in optimizer/plan
  *
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/optimizer/planmain.h
@@ -19,7 +19,7 @@
 
 /* GUC parameters */
 #define DEFAULT_CURSOR_TUPLE_FRACTION 0.1
-extern double cursor_tuple_fraction;
+extern PGDLLIMPORT double cursor_tuple_fraction;
 
 /* query_planner callback to compute query_pathkeys */
 typedef void (*query_pathkeys_callback) (PlannerInfo *root, void *extra);
@@ -64,8 +64,8 @@ extern Limit *make_limit(Plan *lefttree, Node *limitOffset, Node *limitCount,
 /*
  * prototypes for plan/initsplan.c
  */
-extern int	from_collapse_limit;
-extern int	join_collapse_limit;
+extern PGDLLIMPORT int from_collapse_limit;
+extern PGDLLIMPORT int join_collapse_limit;
 
 extern void add_base_rels_to_query(PlannerInfo *root, Node *jtnode);
 extern void add_other_rels_to_query(PlannerInfo *root);
@@ -77,16 +77,16 @@ extern void create_lateral_join_info(PlannerInfo *root);
 extern List *deconstruct_jointree(PlannerInfo *root);
 extern void distribute_restrictinfo_to_rels(PlannerInfo *root,
 											RestrictInfo *restrictinfo);
-extern void process_implied_equality(PlannerInfo *root,
-									 Oid opno,
-									 Oid collation,
-									 Expr *item1,
-									 Expr *item2,
-									 Relids qualscope,
-									 Relids nullable_relids,
-									 Index security_level,
-									 bool below_outer_join,
-									 bool both_const);
+extern RestrictInfo *process_implied_equality(PlannerInfo *root,
+											  Oid opno,
+											  Oid collation,
+											  Expr *item1,
+											  Expr *item2,
+											  Relids qualscope,
+											  Relids nullable_relids,
+											  Index security_level,
+											  bool below_outer_join,
+											  bool both_const);
 extern RestrictInfo *build_implied_join_equality(PlannerInfo *root,
 												 Oid opno,
 												 Oid collation,
@@ -112,6 +112,7 @@ extern bool innerrel_is_unique(PlannerInfo *root,
  * prototypes for plan/setrefs.c
  */
 extern Plan *set_plan_references(PlannerInfo *root, Plan *plan);
+extern bool trivial_subqueryscan(SubqueryScan *plan);
 extern void record_plan_function_dependency(PlannerInfo *root, Oid funcid);
 extern void record_plan_type_dependency(PlannerInfo *root, Oid typid);
 extern bool extract_query_dependencies_walker(Node *node, PlannerInfo *root);

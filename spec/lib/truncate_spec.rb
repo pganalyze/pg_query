@@ -17,7 +17,7 @@ describe PgQuery, '#truncate' do
   end
 
   it 'omits INSERT field list' do
-    query = 'INSERT INTO "x" (a, b, c, d, e, f) VALUES (?)'
+    query = 'INSERT INTO "x" (a, b, c, d, e, f) VALUES ($1)'
     expect(described_class.parse(query).truncate(32)).to eq 'INSERT INTO x (...) VALUES (...)'
   end
 
@@ -32,7 +32,7 @@ describe PgQuery, '#truncate' do
   end
 
   it 'works problematic cases' do
-    query = 'SELECT CASE WHEN $2.typtype = ? THEN $2.typtypmod ELSE $1.atttypmod END'
+    query = 'SELECT CASE WHEN $2.typtype = $3 THEN $2.typtypmod ELSE $1.atttypmod END'
     expect(described_class.parse(query).truncate(50)).to eq 'SELECT ...'
   end
 

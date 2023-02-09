@@ -3,7 +3,7 @@
  * objectaddress.h
  *	  functions for working with object addresses
  *
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2022, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/catalog/objectaddress.h
@@ -28,7 +28,7 @@ typedef struct ObjectAddress
 	int32		objectSubId;	/* Subitem within object (eg column), or 0 */
 } ObjectAddress;
 
-extern const ObjectAddress InvalidObjectAddress;
+extern PGDLLIMPORT const ObjectAddress InvalidObjectAddress;
 
 #define ObjectAddressSubSet(addr, class_id, object_id, object_sub_id) \
 	do { \
@@ -55,6 +55,7 @@ extern void check_object_ownership(Oid roleid,
 extern Oid	get_object_namespace(const ObjectAddress *address);
 
 extern bool is_objectclass_supported(Oid class_id);
+extern const char *get_object_class_descr(Oid class_id);
 extern Oid	get_object_oid_index(Oid class_id);
 extern int	get_object_catcache_oid(Oid class_id);
 extern int	get_object_catcache_name(Oid class_id);
@@ -69,14 +70,18 @@ extern bool get_object_namensp_unique(Oid class_id);
 extern HeapTuple get_catalog_object_by_oid(Relation catalog,
 										   AttrNumber oidcol, Oid objectId);
 
-extern char *getObjectDescription(const ObjectAddress *object);
+extern char *getObjectDescription(const ObjectAddress *object,
+								  bool missing_ok);
 extern char *getObjectDescriptionOids(Oid classid, Oid objid);
 
 extern int	read_objtype_from_string(const char *objtype);
-extern char *getObjectTypeDescription(const ObjectAddress *object);
-extern char *getObjectIdentity(const ObjectAddress *address);
+extern char *getObjectTypeDescription(const ObjectAddress *object,
+									  bool missing_ok);
+extern char *getObjectIdentity(const ObjectAddress *address,
+							   bool missing_ok);
 extern char *getObjectIdentityParts(const ObjectAddress *address,
-									List **objname, List **objargs);
+									List **objname, List **objargs,
+									bool missing_ok);
 extern struct ArrayType *strlist_to_textarray(List *list);
 
 extern ObjectType get_relkind_objtype(char relkind);

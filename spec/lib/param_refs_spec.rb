@@ -4,9 +4,9 @@ describe PgQuery, '#param_refs' do
   subject { described_class.parse(query).param_refs }
 
   context 'simple query' do
-    let(:query) { 'SELECT * FROM x WHERE y = ? AND z = ?' }
+    let(:query) { 'SELECT * FROM x WHERE y = $1 AND z = $2' }
 
-    it { is_expected.to eq [{"location"=>26, "length"=>1}, {"location"=>36, "length"=>1}] }
+    it { is_expected.to eq [{"location"=>26, "length"=>2}, {"location"=>37, "length"=>2}] }
   end
 
   context 'queries with typecasts' do
