@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pg_query (2.2.1)
+    pg_query (4.0.0)
       google-protobuf (>= 3.19.2)
 
 GEM
@@ -55,4 +55,4 @@ DEPENDENCIES
   rubocop-rspec (= 1.15.1)
 
 BUNDLED WITH
-   2.2.3
+   2.3.26
