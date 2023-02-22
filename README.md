@@ -25,10 +25,10 @@ Due to compiling parts of PostgreSQL, installation might take a while on slower 
 ```ruby
 PgQuery.parse("SELECT 1")
 
-=> #<PgQuery::ParserResult:0x00007fb69a958820
+=> #<PgQuery::ParserResult:0x000000012000c438
   @query="SELECT 1",
   @tree=<PgQuery::ParseResult:
-    version: 130002,
+    version: 150001,
     stmts: [
       <PgQuery::RawStmt:
         stmt: <PgQuery::Node:
@@ -41,10 +41,11 @@ PgQuery.parse("SELECT 1")
                   indirection: [],
                   val: <PgQuery::Node:
                     a_const: <PgQuery::A_Const:
-                      val: <PgQuery::Node:
-                        integer: <PgQuery::Integer: ival: 1>
-                      >,
-                      location: 7
+                      isnull: false,
+                      location: 7,
+                      ival: <PgQuery::Integer:
+                        ival: 1
+                      >
                     >
                   >,
                   location: 7
@@ -53,6 +54,7 @@ PgQuery.parse("SELECT 1")
             ],
             from_clause: [],
             group_clause: [],
+            group_distinct: false,
             window_clause: [],
             values_lists: [],
             sort_clause: [],
@@ -67,7 +69,12 @@ PgQuery.parse("SELECT 1")
       >
     ]
   >,
-  @warnings=[]>
+  @warnings=[],
+  @tables=nil,
+  @aliases=nil,
+  @cte_names=nil,
+  @functions=nil
+>
 ```
 
 ### Modifying a parsed query and turning it into SQL again
@@ -92,20 +99,12 @@ parsed_query.deparse
 PgQuery.normalize("SELECT 1 FROM x WHERE y = 'foo'")
 
 => "SELECT $1 FROM x WHERE y = $2"
-
-# Parsing a normalized query (pre-Postgres 10 style)
-PgQuery.parse("SELECT ? FROM x WHERE y = ?")
-
-=> #<PgQuery::ParserResult:0x00007fb69a97a5d8
-  @query="SELECT ? FROM x WHERE y = ?",
-  @tree=<PgQuery::ParseResult: ...>,
-  @warnings=[]>
 ```
 
 ### Extracting tables from a query
 
 ```ruby
-PgQuery.parse("SELECT ? FROM x JOIN y USING (id) WHERE z = ?").tables
+PgQuery.parse("SELECT $1 FROM x JOIN y USING (id) WHERE z = $2").tables
 
 => ["x", "y"]
 ```
@@ -113,7 +112,7 @@ PgQuery.parse("SELECT ? FROM x JOIN y USING (id) WHERE z = ?").tables
 ### Extracting columns from a query
 
 ```ruby
-PgQuery.parse("SELECT ? FROM x WHERE x.y = ? AND z = ?").filter_columns
+PgQuery.parse("SELECT $1 FROM x WHERE x.y = $2 AND z = $3").filter_columns
 
 => [["x", "y"], [nil, "z"]]
 ```
@@ -130,7 +129,7 @@ PgQuery.parse("SELECT 2; --- comment").fingerprint
 => "50fde20626009aba"
 
 # Faster fingerprint method that is implemented inside the native C library
-PgQuery.fingerprint("SELECT ?")
+PgQuery.fingerprint("SELECT $1")
 
 => "50fde20626009aba"
 ```
@@ -140,7 +139,7 @@ PgQuery.fingerprint("SELECT ?")
 ```ruby
 PgQuery.scan('SELECT 1 --comment')
 
-=> [<PgQuery::ScanResult: version: 130002, tokens: [
+=> [<PgQuery::ScanResult: version: 150001, tokens: [
 <PgQuery::ScanToken: start: 0, end: 6, token: :SELECT, keyword_kind: :RESERVED_KEYWORD>,
 <PgQuery::ScanToken: start: 7, end: 8, token: :ICONST, keyword_kind: :NO_KEYWORD>,
 <PgQuery::ScanToken: start: 9, end: 18, token: :SQL_COMMENT, keyword_kind: :NO_KEYWORD>]>,
@@ -177,12 +176,6 @@ First, some of the tree nodes are frozen. You can replace them, but you cannot m
 Second, table rewriting is a bit more nuanced than this example. While this will rewrite the table names, it will
 not correctly handle all CTEs, or rewrite columns with explicit table names.
 
-## Differences from Upstream PostgreSQL
-
-This gem is based on [libpg_query](https://github.com/pganalyze/libpg_query),
-which uses the latest stable PostgreSQL version, but with a patch applied
-to support parsing normalized queries containing `?` replacement characters.
-
 ## Supported Ruby Versions
 
 Currently tested and officially supported Ruby versions:
@@ -214,7 +207,7 @@ Once that is done, follow the following steps:
 
 ## Resources
 
-See [libpg_query](https://github.com/pganalyze/libpg_query/blob/13-latest/README.md#resources) for pg_query in other languages, as well as products/tools built on pg_query.
+See [libpg_query](https://github.com/pganalyze/libpg_query/blob/15-latest/README.md#resources) for pg_query in other languages, as well as products/tools built on pg_query.
 
 ## Original Author
 
@@ -228,8 +221,10 @@ See [libpg_query](https://github.com/pganalyze/libpg_query/blob/13-latest/README
 
 ## License
 
-Copyright (c) 2015, pganalyze Team <team@pganalyze.com><br>
-pg_query is licensed under the 3-clause BSD license, see LICENSE file for details.
+PostgreSQL server source code, used under the [PostgreSQL license](https://www.postgresql.org/about/licence/).<br>
+Portions Copyright (c) 1996-2023, The PostgreSQL Global Development Group<br>
+Portions Copyright (c) 1994, The Regents of the University of California
 
-Query normalization code:<br>
-Copyright (c) 2008-2015, PostgreSQL Global Development Group
+All other parts are licensed under the 3-clause BSD license, see LICENSE file for details.<br>
+Copyright (c) 2015, Lukas Fittl <lukas@fittl.com><br>
+Copyright (c) 2016-2023, Duboce Labs, Inc. (pganalyze) <team@pganalyze.com>
