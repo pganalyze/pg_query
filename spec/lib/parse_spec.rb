@@ -1535,6 +1535,15 @@ $BODY$
     expect(query.call_functions).to eq ['unnest', 'json_build_object', 'row_to_json', 'public.my_function']
   end
 
+  it 'finds the table in a SELECT INTO thats being created' do
+    query = described_class.parse(<<-SQL)
+    SELECT * INTO films_recent FROM films WHERE date_prod >= '2002-01-01';
+    SQL
+    expect(query.tables).to eq(['films', 'films_recent'])
+    expect(query.ddl_tables).to eq(['films_recent'])
+    expect(query.select_tables).to eq(['films'])
+  end
+
   describe 'parsing INSERT' do
     it 'finds the table inserted into' do
       query = described_class.parse(<<-SQL)
