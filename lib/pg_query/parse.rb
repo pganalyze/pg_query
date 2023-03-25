@@ -139,6 +139,10 @@ module PgQuery
               @cte_names.concat(cte_names)
               statements.concat(cte_statements)
             end
+
+            if statement.select_stmt.into_clause
+              from_clause_items << { item: PgQuery::Node.new(range_var: statement.select_stmt.into_clause.rel), type: :ddl }
+            end
           # The following statements modify the contents of a table
           when :insert_stmt, :update_stmt, :delete_stmt
             value = statement.public_send(statement.node)
