@@ -175,7 +175,12 @@ module PgQuery
             statements << statement.copy_stmt.query
           # The following statement types are DDL (changing table structure)
           when :alter_table_stmt
-            from_clause_items << { item: PgQuery::Node.new(range_var: statement.alter_table_stmt.relation), type: :ddl }
+            case statement.alter_table_stmt.objtype
+            when :OBJECT_INDEX # Index # rubocop:disable Lint/EmptyWhen
+              # ignore `ALTER INDEX index_name`
+            else
+              from_clause_items << { item: PgQuery::Node.new(range_var: statement.alter_table_stmt.relation), type: :ddl }
+            end
           when :create_stmt
             from_clause_items << { item: PgQuery::Node.new(range_var: statement.create_stmt.relation), type: :ddl }
           when :create_table_as_stmt
