@@ -164,6 +164,88 @@ describe PgQuery, '.parse' do
     )
   end
 
+  it "parses ALTER VIEW" do
+    query = described_class.parse("ALTER VIEW test SET (security_barrier = TRUE)")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq ['test']
+    expect(query.ddl_tables).to eq ['test']
+    expect(query.tree.stmts.first).to eq(
+      PgQuery::RawStmt.new(
+        stmt: PgQuery::Node.new(
+          alter_table_stmt: PgQuery::AlterTableStmt.new(
+            relation: PgQuery::RangeVar.new(relname: 'test', inh: true, relpersistence: 'p', location: 11),
+            cmds: [
+              PgQuery::Node.new(
+                alter_table_cmd: PgQuery::AlterTableCmd.new(
+                  subtype: :AT_SetRelOptions,
+                  def: PgQuery::Node.new(
+                    list: PgQuery::List.new(
+                      items: [PgQuery::Node.new(
+                        def_elem: PgQuery::DefElem.new(
+                          defname: "security_barrier",
+                          arg: PgQuery::Node.new(
+                            string: PgQuery::String.new(
+                              sval: "true"
+                            )
+                          ),
+                          defaction: :DEFELEM_UNSPEC,
+                          location: 21
+                        )
+                      )]
+                    )
+                  ),
+                  behavior: :DROP_RESTRICT
+                )
+              )
+            ],
+            objtype: :OBJECT_VIEW
+          )
+        )
+      )
+    )
+  end
+
+  it "parses ALTER INDEX", :aggregate_failures do
+    query = described_class.parse("ALTER INDEX my_index_name SET (fastupdate = on)")
+    expect(query.warnings).to eq []
+    expect(query.tables).to eq []
+    expect(query.ddl_tables).to eq []
+    expect(query.tree.stmts.first).to eq(
+      PgQuery::RawStmt.new(
+        stmt: PgQuery::Node.new(
+          alter_table_stmt: PgQuery::AlterTableStmt.new(
+            relation: PgQuery::RangeVar.new(relname: 'my_index_name', inh: true, relpersistence: 'p', location: 12),
+            cmds: [
+              PgQuery::Node.new(
+                alter_table_cmd: PgQuery::AlterTableCmd.new(
+                  subtype: :AT_SetRelOptions,
+                  def: PgQuery::Node.new(
+                    list: PgQuery::List.new(
+                      items: [PgQuery::Node.new(
+                        def_elem: PgQuery::DefElem.new(
+                          defname: "fastupdate",
+                          arg: PgQuery::Node.new(
+                            string: PgQuery::String.new(
+                              sval: "on"
+                            )
+                          ),
+                          defaction: :DEFELEM_UNSPEC,
+                          location: 31
+                        )
+                      )]
+                    )
+                  ),
+                  behavior: :DROP_RESTRICT
+                )
+              )
+            ],
+            objtype: :OBJECT_INDEX
+          )
+        )
+      )
+    )
+  end
+
   it "parses SET" do
     query = described_class.parse("SET statement_timeout=0")
     expect(query.warnings).to eq []
