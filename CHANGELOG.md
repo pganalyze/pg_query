@@ -5,7 +5,7 @@
 * ...
 
 
-## 4.2.1     2023-05-17
+## 4.2.1     2023-05-19
 
 * Parse: Fix `ALTER INDEX my_index_name` to return `tables=[]` ([#285](https://github.com/pganalyze/pg_query/pull/285))
 * Parse: Detect tables in a SELECT INTO clause as DDL tables ([#281](https://github.com/pganalyze/pg_query/pull/281))
