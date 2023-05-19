@@ -7,7 +7,7 @@
 
 ## 4.2.1     2023-05-17
 
-* Parse: Fix `ALTER INDEX my_index_name` to return non-nil `tables` ([#285](https://github.com/pganalyze/pg_query/pull/285))
+* Parse: Fix `ALTER INDEX my_index_name` to return `tables=[]` ([#285](https://github.com/pganalyze/pg_query/pull/285))
 * Parse: Detect tables in a SELECT INTO clause as DDL tables ([#281](https://github.com/pganalyze/pg_query/pull/281))
 * Add support for Ruby 3.2 ([#283](https://github.com/pganalyze/pg_query/pull/283))
 * Bump up `google-protobuf` dependency to `>= 3.22.3`

@@ -2,11 +2,11 @@
 
 This Ruby extension uses the actual PostgreSQL server source to parse SQL queries and return the internal PostgreSQL parsetree.
 
-In addition the extension allows you to normalize queries (replacing constant values with ?) and parse these normalized queries into a parsetree again.
+In addition the extension allows you to normalize queries (replacing constant values with $n) and parse these normalized queries into a parsetree again.
 
 When you build this extension, it builds parts of the PostgreSQL server source (see [libpg_query](https://github.com/pganalyze/libpg_query)), and then statically links it into this extension.
 
-This is slightly crazy, but is the only reliable way of parsing all valid PostgreSQL queries.
+This may seem like a lot of complexity, but is the only reliable way of parsing all valid PostgreSQL queries.
 
 You can find further examples and a longer rationale here: https://pganalyze.com/blog/parse-postgresql-queries-in-ruby.html
 
@@ -180,10 +180,11 @@ not correctly handle all CTEs, or rewrite columns with explicit table names.
 
 Currently tested and officially supported Ruby versions:
 
-* CRuby 2.5
 * CRuby 2.6
 * CRuby 2.7
 * CRuby 3.0
+* CRuby 3.1
+* CRuby 3.2
 
 Not supported:
 
