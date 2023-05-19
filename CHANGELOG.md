@@ -4,16 +4,31 @@
 
 * ...
 
+
+## 4.2.1     2023-05-19
+
+* Parse: Fix `ALTER INDEX my_index_name` to return `tables=[]` ([#285](https://github.com/pganalyze/pg_query/pull/285))
+* Parse: Detect tables in a SELECT INTO clause as DDL tables ([#281](https://github.com/pganalyze/pg_query/pull/281))
+* Add support for Ruby 3.2 ([#283](https://github.com/pganalyze/pg_query/pull/283))
+* Bump up `google-protobuf` dependency to `>= 3.22.3`
+  - 3.22.0 or newer is required for Ruby 3.2 support
+* Update to libpg_query 15-4.2.1
+  - Deparser: Handle INTERVAL correctly when used in SET statements
+  - Deparser: Ensure index names are quoted as identifiers
+
+
 ## 4.2.0     2023-02-08
 
 * Update to libpg_query 15-4.2.0
   - Update to PostgreSQL 15.1
+
 
 ## 2.2.1     2023-01-20
 
 * Detect tables used in the query of a PREPARE statement ([#273](https://github.com/pganalyze/pg_query/pull/273))
 * Expose recursive walk functionality via walk! ([#268](https://github.com/pganalyze/pg_query/pull/268))
 * Retain schema in name when parsing out functions ([#272](https://github.com/pganalyze/pg_query/pull/272))
+
 
 ## 2.2.0     2022-11-02
 
