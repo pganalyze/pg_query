@@ -12,6 +12,9 @@
 * Add support for Ruby 3.2 ([#283](https://github.com/pganalyze/pg_query/pull/283))
 * Bump up `google-protobuf` dependency to `>= 3.22.3`
   - 3.22.0 or newer is required for Ruby 3.2 support
+* Update to libpg_query 15-4.2.1
+  - Deparser: Handle INTERVAL correctly when used in SET statements
+  - Deparser: Ensure index names are quoted as identifiers
 
 
 ## 4.2.0     2023-02-08
