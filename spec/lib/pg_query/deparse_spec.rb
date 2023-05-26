@@ -1133,6 +1133,21 @@ describe PgQuery do
 
         it { is_expected.to eq oneline_query }
       end
+
+      context 'CREATE TABLE AND UNIQUE INDEX with parameters' do
+        let(:query) do
+          '''
+            CREATE TABLE distributors (
+              did     int,
+              name    varchar(40),
+              UNIQUE (name) WITH (fillfactor=70)
+            )
+            WITH (fillfactor=70);
+          '''
+        end
+
+        it { is_expected.to eq oneline_query }
+      end
     end
 
     context 'DROP GENERAL' do
