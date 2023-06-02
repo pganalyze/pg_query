@@ -2181,5 +2181,19 @@ describe PgQuery do
         it { is_expected.to eq query }
       end
     end
+
+    context 'SHOW' do
+      context 'show work_mem' do
+        let(:query) { 'SHOW work_mem' }
+
+        it { is_expected.to eq query }
+      end
+
+      context 'show all' do
+        let(:query) { 'SHOW ALL' }
+
+        it { is_expected.to eq query }
+      end
+    end
   end
 end
