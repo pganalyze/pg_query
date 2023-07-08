@@ -5,6 +5,16 @@
 * ...
 
 
+## 4.2.2     2023-07-07
+
+* Update to libpg_query 15-4.2.2
+  - Deparser: Add support for multi-statement CREATE PROCEDURE definitions
+  - Deparser: Correctly quote identifier in ALTER TABLE ... ADD CONSTRAINT [x]
+  - Deparser: Add support for index fillfactor within CREATE TABLE, fix SHOW ALL
+* Fix builds on FreeBSD ([#292](https://github.com/pganalyze/pg_query/pull/292))
+  - This was broken since 4.2.0, due to pg_query_ruby_freebsd.sym being removed by accident
+
+
 ## 4.2.1     2023-05-19
 
 * Parse: Fix `ALTER INDEX my_index_name` to return `tables=[]` ([#285](https://github.com/pganalyze/pg_query/pull/285))
