@@ -55,7 +55,7 @@ task :update_source do
   # Backup important files from ext dir
   system("rm -fr #{extbakdir}")
   system("mkdir -p #{extbakdir}")
-  system("cp -a #{extdir}/pg_query_ruby.{c,sym} #{extdir}/extconf.rb #{extbakdir}")
+  system("cp -a #{extdir}/pg_query_ruby{.c,.sym,_freebsd.sym} #{extdir}/extconf.rb #{extbakdir}")
 
   FileUtils.rm_rf extdir
 
@@ -85,5 +85,5 @@ task :update_source do
   # Other support files
   system("cp -a #{libdir}/testdata/* #{testfilesdir}")
   # Copy back the custom ext files
-  system("cp -a #{extbakdir}/pg_query_ruby.{c,sym} #{extbakdir}/extconf.rb #{extdir}")
+  system("cp -a #{extbakdir}/pg_query_ruby{.c,.sym,_freebsd.sym} #{extbakdir}/extconf.rb #{extdir}")
 end
