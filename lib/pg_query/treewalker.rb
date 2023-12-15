@@ -20,13 +20,18 @@ module PgQuery
             node = parent_node[parent_field.to_s]
             next if node.nil?
             location = parent_location + [parent_field]
-
             yield(parent_node, parent_field, node, location) if node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
 
             nodes << [node, location] unless node.nil?
           end
         when Google::Protobuf::RepeatedField
-          nodes += parent_node.map.with_index { |e, idx| [e, parent_location + [idx]] }
+          parent_node.each_with_index do |node, parent_field|
+            next if node.nil?
+            location = parent_location + [parent_field]
+            yield(parent_node, parent_field, node, location) if node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
+
+            nodes << [node, location] unless node.nil?
+          end
         end
 
         break if nodes.empty?
