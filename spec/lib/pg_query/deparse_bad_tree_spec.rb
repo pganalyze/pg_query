@@ -25,7 +25,7 @@ describe PgQuery do
 
         expect { PgQuery.deparse(tree) }.to raise_error do |error|
           expect(error).to be_a(described_class::ParseError)
-          expect(error.message).to eq "deparse: error in deparseTargetList: ResTarget without val (postgres_deparse.c:1489)"
+          expect(error.message).to eq "deparse: error in deparseTargetList: ResTarget without val (postgres_deparse.c:1553)"
         end
       end
     end
