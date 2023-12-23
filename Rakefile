@@ -5,8 +5,8 @@ require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '15-4.2.3'.freeze
-LIB_PG_QUERY_SHA256SUM = '8b820d63442b1677ce4f0df2a95b3fafdbc520a82901def81217559ec4df9e6b'.freeze
+LIB_PG_QUERY_TAG = '16-5.0.0'.freeze
+LIB_PG_QUERY_SHA256SUM = '7cf26922cbc41668fa79332504f2d5638339baa9411912b8df4526ccd1d7029e'.freeze
 
 Rake::ExtensionTask.new 'pg_query' do |ext|
   ext.lib_dir = 'lib/pg_query'
@@ -66,7 +66,7 @@ task :update_source do
   system("rmdir #{extdir}/postgres")
   system("cp -a #{libdir}/pg_query.h #{extdir}/include")
   # Make sure every .c file in the top-level directory is its own translation unit
-  system("mv #{extdir}/*{_conds,_defs,_helper}.c #{extdir}/include")
+  system("mv #{extdir}/*{_conds,_defs,_helper,.funcs}.c #{extdir}/include")
   # Protobuf definitions
   system("protoc --proto_path=#{libdir}/protobuf --ruby_out=#{File.join(__dir__, 'lib/pg_query')} #{libdir}/protobuf/pg_query.proto")
   system("mkdir -p #{extdir}/include/protobuf")

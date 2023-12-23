@@ -4,6 +4,12 @@
 
 * ...
 
+## 5.0.0     2023-12-22
+
+* Upgrade to libpg_query 16-5.0.0
+  - Updates to the Postgres 16 parser
+  - Multiple deparser improvements
+
 
 ## 4.2.3     2023-08-04
 
