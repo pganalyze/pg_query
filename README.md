@@ -25,10 +25,10 @@ Due to compiling parts of PostgreSQL, installation might take a while on slower 
 ```ruby
 PgQuery.parse("SELECT 1")
 
-=> #<PgQuery::ParserResult:0x000000012000c438
+=> #<PgQuery::ParserResult:0x000000012ec4e9e0
   @query="SELECT 1",
   @tree=<PgQuery::ParseResult:
-    version: 150001,
+    version: 160001,
     stmts: [
       <PgQuery::RawStmt:
         stmt: <PgQuery::Node:
@@ -41,11 +41,9 @@ PgQuery.parse("SELECT 1")
                   indirection: [],
                   val: <PgQuery::Node:
                     a_const: <PgQuery::A_Const:
+                      ival: <PgQuery::Integer: ival: 1>,
                       isnull: false,
-                      location: 7,
-                      ival: <PgQuery::Integer:
-                        ival: 1
-                      >
+                      location: 7
                     >
                   >,
                   location: 7
@@ -139,7 +137,7 @@ PgQuery.fingerprint("SELECT $1")
 ```ruby
 PgQuery.scan('SELECT 1 --comment')
 
-=> [<PgQuery::ScanResult: version: 150001, tokens: [
+=> [<PgQuery::ScanResult: version: 160001, tokens: [
 <PgQuery::ScanToken: start: 0, end: 6, token: :SELECT, keyword_kind: :RESERVED_KEYWORD>,
 <PgQuery::ScanToken: start: 7, end: 8, token: :ICONST, keyword_kind: :NO_KEYWORD>,
 <PgQuery::ScanToken: start: 9, end: 18, token: :SQL_COMMENT, keyword_kind: :NO_KEYWORD>]>,
@@ -160,7 +158,7 @@ parsed_query.walk! { |node, k, v, location| puts k }
 More usefully, this can be used to rewrite a query. For example:
 
 ```ruby
-parsed_query.walk! do |node, k, v, location| puts k
+parsed_query.walk! do |node, k, v, location|
   next unless k.eql?(:range_var) || k.eql?(:relation)
   next if v.relname.nil?
   v.relname = "X_" + v.relname
