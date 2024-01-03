@@ -1,8 +1,21 @@
 module PgQuery
   class ParserResult
-    def walk!
-      treewalker!(@tree) do |parent_node, parent_field, node, location|
-        yield(parent_node, parent_field, node, location)
+    # Walks the parse tree and calls the passed block for each contained node
+    #
+    # If you pass a block with 1 argument, you will get each node.
+    # If you pass a block with 4 arguments, you will get each parent_node, parent_field, node and location.
+    #
+    # Location uniquely identifies a given node within the parse tree. This is a stable identifier across
+    # multiple parser runs, assuming the same pg_query release and no modifications to the parse tree.
+    def walk!(&block)
+      if block.arity == 1
+        treewalker!(@tree) do |_, _, node, _|
+          yield(node)
+        end
+      else
+        treewalker!(@tree) do |parent_node, parent_field, node, location|
+          yield(parent_node, parent_field, node, location)
+        end
       end
     end
 
