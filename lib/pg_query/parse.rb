@@ -145,7 +145,7 @@ module PgQuery
             end
           # The following statements modify the contents of a table
           when :insert_stmt, :update_stmt, :delete_stmt
-            value = statement.public_send(statement.node)
+            value = statement.inner
             from_clause_items << { item: PgQuery::Node.new(range_var: value.relation), type: :dml }
             statements << value.select_stmt if statement.node == :insert_stmt && value.select_stmt
 

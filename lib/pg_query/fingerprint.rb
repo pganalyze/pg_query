@@ -72,9 +72,8 @@ module PgQuery
       return if ignored_node_type?(node)
 
       if node.is_a?(Node)
-        return if node.node.nil?
-        node_val = node[node.node.to_s]
-        unless ignored_node_type?(node_val)
+        node_val = node.inner
+        unless node_val.nil? || ignored_node_type?(node_val)
           unless node_val.is_a?(List)
             postgres_node_name = node_protobuf_field_name_to_json_name(node.class, node.node)
             hash.update(postgres_node_name)

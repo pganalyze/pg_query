@@ -33,4 +33,14 @@ describe PgQuery, '.treewalker' do
       [:stmts, 0, :stmt, :select_stmt, :target_list, 0, :res_target, :val, :func_call, :args, 0, :param_ref]
     ]
   end
+
+  it 'allows recursively replacing nodes' do
+    query = PgQuery.parse("SELECT * FROM tbl WHERE col::text = ANY(((ARRAY[$39, $40])::varchar[])::text[])")
+    query.walk! do |_parent_node, _parent_field, node, _location|
+      next unless node.is_a?(PgQuery::Node)
+      # Keep removing type casts until we hit a different class
+      node.inner = node.type_cast.arg.inner while node.node == :type_cast
+    end
+    expect(query.deparse).to eq 'SELECT * FROM tbl WHERE col = ANY(ARRAY[$39, $40])'
+  end
 end
