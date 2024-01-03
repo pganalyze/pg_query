@@ -1,6 +1,7 @@
 pkg
 tmp
 .DS_Store
+coverage/
 
 *.bundle
 *.o
