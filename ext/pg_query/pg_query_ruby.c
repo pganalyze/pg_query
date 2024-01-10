@@ -221,5 +221,10 @@ VALUE pg_query_ruby_hash_xxh3_64(VALUE self, VALUE input, VALUE seed)
 	Check_Type(input, T_STRING);
 	Check_Type(seed, T_FIXNUM);
 
+#ifdef HAVE_LONG_LONG
+	return ULL2NUM(XXH3_64bits_withSeed(StringValuePtr(input), RSTRING_LEN(input), NUM2ULONG(seed)));
+#else
 	return ULONG2NUM(XXH3_64bits_withSeed(StringValuePtr(input), RSTRING_LEN(input), NUM2ULONG(seed)));
+#endif
+	
 }
