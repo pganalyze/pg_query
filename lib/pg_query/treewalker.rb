@@ -5,7 +5,7 @@ module PgQuery
     # If you pass a block with 1 argument, you will get each node.
     # If you pass a block with 4 arguments, you will get each parent_node, parent_field, node and location.
     #
-    # If sufficent for the use case, the 1 argument block approach is recommended, since its faster.
+    # If sufficient for the use case, the 1 argument block approach is recommended, since it's faster.
     #
     # Location uniquely identifies a given node within the parse tree. This is a stable identifier across
     # multiple parser runs, assuming the same pg_query release and no modifications to the parse tree.
