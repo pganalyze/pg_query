@@ -3,7 +3,7 @@ module PgQuery
     def param_refs # rubocop:disable Metrics/CyclomaticComplexity
       results = []
 
-      treewalker! @tree do |_, _, node, location|
+      treewalker_with_location! @tree do |_, _, node, location|
         case node
         when PgQuery::ParamRef
           # Ignore param refs inside type casts, as these are already handled
