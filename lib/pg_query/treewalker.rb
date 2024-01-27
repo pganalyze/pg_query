@@ -35,15 +35,13 @@ module PgQuery
             node = field_descriptor.get(parent_node)
             next if node.nil?
             yield(node) if node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
-
-            nodes << node unless node.nil?
+            nodes << node
           end
         when Google::Protobuf::RepeatedField
           parent_node.each do |node|
             next if node.nil?
             yield(node) if node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
-
-            nodes << node unless node.nil?
+            nodes << node
           end
         end
 
@@ -65,16 +63,14 @@ module PgQuery
             next if node.nil?
             location = parent_location + [parent_field.to_sym]
             yield(parent_node, parent_field.to_sym, node, location) if node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
-
-            nodes << [node, location] unless node.nil?
+            nodes << [node, location]
           end
         when Google::Protobuf::RepeatedField
           parent_node.each_with_index do |node, parent_field|
             next if node.nil?
             location = parent_location + [parent_field]
             yield(parent_node, parent_field, node, location) if node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
-
-            nodes << [node, location] unless node.nil?
+            nodes << [node, location]
           end
         end
 
