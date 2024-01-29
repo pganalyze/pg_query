@@ -60,7 +60,7 @@ module PgQuery
     def find_possible_truncations # rubocop:disable Metrics/CyclomaticComplexity
       truncations = []
 
-      treewalker! @tree do |node, k, v, location|
+      treewalker_with_location! @tree do |node, k, v, location|
         case k
         when :target_list
           next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::OnConflictClause)

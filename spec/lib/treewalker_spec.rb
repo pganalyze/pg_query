@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe PgQuery, '.treewalker' do
+describe PgQuery, '#walk!' do
   it 'walks nodes contained in repeated fields' do
     locations = []
     described_class.parse("SELECT to_timestamp($1)").walk! do |_, _, _, location|
