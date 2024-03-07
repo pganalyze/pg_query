@@ -178,11 +178,11 @@ not correctly handle all CTEs, or rewrite columns with explicit table names.
 
 Currently tested and officially supported Ruby versions:
 
-* CRuby 2.6
 * CRuby 2.7
 * CRuby 3.0
 * CRuby 3.1
 * CRuby 3.2
+* CRuby 3.3
 
 Not supported:
 
