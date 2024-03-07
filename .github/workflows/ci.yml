@@ -21,4 +21,4 @@ jobs:
       run: bundle exec rake test
     - name: RuboCop
       run: bundle exec rake lint
-      if: matrix.ruby != '3.1' && matrix.ruby != '3.2'
+      if: matrix.ruby != '3.1' && matrix.ruby != '3.2' && matrix.ruby != '3.3'
