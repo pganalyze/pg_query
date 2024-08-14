@@ -183,6 +183,7 @@ Currently tested and officially supported Ruby versions:
 * CRuby 3.0
 * CRuby 3.1
 * CRuby 3.2
+* CRuby 3.3
 
 Not supported:
 

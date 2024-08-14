@@ -8,11 +8,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: ['2.6', '2.7', '3.0', '3.1', '3.2'] # 3.3+ is not yet supported by google-protobuf
+        ruby: ['2.6', '2.7', '3.0', '3.1', '3.2', '3.3']
         os: ['ubuntu-latest', 'windows-latest']
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
@@ -21,4 +21,4 @@ jobs:
       run: bundle exec rake test
     - name: RuboCop
       run: bundle exec rake lint
-      if: matrix.ruby != '3.1' && matrix.ruby != '3.2'
+      if: matrix.ruby != '3.1' && matrix.ruby != '3.2'  && matrix.ruby != '3.3'
