@@ -4,7 +4,6 @@ require 'pg_query/parse_error'
 require 'pg_query/pg_query_pb'
 require 'pg_query/node'
 
-require 'pg_query/pg_query'
 require 'pg_query/constants'
 require 'pg_query/parse'
 require 'pg_query/treewalker'
