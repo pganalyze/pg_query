@@ -96,6 +96,7 @@ extern "C" {
 #endif
 
 PgQueryNormalizeResult pg_query_normalize(const char* input);
+PgQueryNormalizeResult pg_query_normalize_utility(const char* input);
 PgQueryScanResult pg_query_scan(const char* input);
 PgQueryParseResult pg_query_parse(const char* input);
 PgQueryParseResult pg_query_parse_opts(const char* input, int parser_options);
@@ -131,9 +132,9 @@ void pg_query_free_fingerprint_result(PgQueryFingerprintResult result);
 void pg_query_exit(void);
 
 // Postgres version information
-#define PG_MAJORVERSION "16"
-#define PG_VERSION "16.1"
-#define PG_VERSION_NUM 160001
+#define PG_MAJORVERSION "17"
+#define PG_VERSION "17.0"
+#define PG_VERSION_NUM 170000
 
 // Deprecated APIs below
 
