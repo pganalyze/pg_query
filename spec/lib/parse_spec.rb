@@ -340,7 +340,8 @@ describe PgQuery, '.parse' do
       PgQuery::RawStmt.new(
         stmt: PgQuery::Node.new(
           transaction_stmt: PgQuery::TransactionStmt.new(
-            kind: :TRANS_STMT_COMMIT
+            kind: :TRANS_STMT_COMMIT,
+            location: -1
           )
         )
       )

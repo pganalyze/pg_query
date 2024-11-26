@@ -4,6 +4,24 @@
 
 * ...
 
+## 6.0.0     2024-11-26
+
+* Upgrade to libpg_query 17-6.0.0
+  - Updates to the Postgres 17 parser
+  - Deparser improvements:
+    - Add support for deparsing `JSON_TABLE`, `JSON_QUERY`, `JSON_EXISTS`, `JSON_VALUE`
+    - Add support for deparsing `JSON`, `JSON_SCALAR`, `JSON_SERIALIZE`
+    - Add support for deparsing `COPY ... FORCE_NULL(*)`
+    - Add support for deparsing `ALTER COLUMN ... SET EXPRESSION AS`
+    - Add support for deparsing `SET STATISTICS DEFAULT`
+    - Add support for deparsing `SET ACCESS METHOD DEFAULT`
+    - Add support for deparsing `... AT LOCAL`
+    - Add support for deparsing `merge_action()`
+    - Add support for deparsing `MERGE ... RETURNING`
+    - Add support for deparsing `NOT MATCHED [ BY TARGET ]`
+* Improve treewalker performance by avoiding allocations [(#309)](https://github.com/pganalyze/pg_query_go/pull/309)
+* Fix FreeBSD builds [(#313)](https://github.com/pganalyze/pg_query_go/pull/313)
+
 ## 5.1.0     2024-01-09
 
 * Update to libpg_query 16-5.1.0
