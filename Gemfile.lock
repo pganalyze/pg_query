@@ -8,10 +8,10 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
-    bigdecimal (3.1.8)
+    bigdecimal (3.1.9)
     diff-lcs (1.5.1)
     docile (1.4.1)
-    google-protobuf (4.29.2)
+    google-protobuf (4.29.3)
       bigdecimal
       rake (>= 13)
     parallel (1.26.3)
