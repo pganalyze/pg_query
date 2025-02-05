@@ -1072,7 +1072,7 @@ describe PgQuery do
         end
 
         it do
-          is_expected.to eq(
+          expect(subject).to eq(
             'CREATE TABLE types (a real, b double precision, c numeric(2, 3), d char(4), e char(5), f varchar(6), g varchar(7))'
           )
         end
@@ -1086,7 +1086,7 @@ describe PgQuery do
         end
 
         it do
-          is_expected.to eq(
+          expect(subject).to eq(
             'CREATE TABLE types (a geometry(point) NOT NULL)'
           )
         end
