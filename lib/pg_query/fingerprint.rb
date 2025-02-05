@@ -61,7 +61,7 @@ module PgQuery
 
     def ignored_node_type?(node)
       [A_Const, Alias, ParamRef, SetToDefault, IntList, OidList].include?(node.class) ||
-        node.is_a?(TypeCast) && (node.arg.node == :a_const || node.arg.node == :param_ref)
+        (node.is_a?(TypeCast) && %i[a_const param_ref].include?(node.arg.node))
     end
 
     def node_protobuf_field_name_to_json_name(node_class, field)
@@ -112,12 +112,10 @@ module PgQuery
             fingerprint_value(val.gsub(/\d{2,}/, ''), hash, postgres_node_name, postgres_field_name, true)
             next
           end
-        when 'stmt_len'
-          next if node.is_a?(RawStmt)
-        when 'stmt_location'
+        when 'stmt_len', 'stmt_location'
           next if node.is_a?(RawStmt)
         when 'kind'
-          if node.is_a?(A_Expr) && (val == :AEXPR_OP_ANY || val == :AEXPR_IN)
+          if node.is_a?(A_Expr) && %i[AEXPR_OP_ANY AEXPR_IN].include?(val)
             fingerprint_value(:AEXPR_OP, hash, postgres_node_name, postgres_field_name, true)
             next
           end

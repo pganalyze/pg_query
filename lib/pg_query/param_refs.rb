@@ -7,7 +7,7 @@ module PgQuery
         case node
         when PgQuery::ParamRef
           # Ignore param refs inside type casts, as these are already handled
-          next if location[-3..-1] == %i[type_cast arg param_ref]
+          next if location[-3..] == %i[type_cast arg param_ref]
 
           results << { 'location' => node.location,
                        'length' => param_ref_length(node) }

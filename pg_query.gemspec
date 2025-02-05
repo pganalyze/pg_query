@@ -1,4 +1,4 @@
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+$LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'pg_query/version'
 
 Gem::Specification.new do |s|
@@ -12,6 +12,8 @@ Gem::Specification.new do |s|
   s.license     = 'BSD-3-Clause'
   s.homepage    = 'https://github.com/pganalyze/pg_query'
 
+  s.metadata['rubygems_mfa_required'] = 'true'
+
   s.required_ruby_version = '>= 3.0'
 
   s.extensions = %w[ext/pg_query/extconf.rb]
@@ -23,10 +25,5 @@ Gem::Specification.new do |s|
   s.rdoc_options     = %w[--main README.md --exclude ext/]
   s.extra_rdoc_files = %w[CHANGELOG.md README.md]
 
-  s.add_development_dependency 'rake-compiler', '~> 0'
-  s.add_development_dependency 'rspec', '~> 3.0'
-  s.add_development_dependency 'rubocop', '0.49.1'
-  s.add_development_dependency 'rubocop-rspec', '1.15.1'
-  s.add_development_dependency 'simplecov', '~> 0'
   s.add_dependency 'google-protobuf', '>= 3.25.3'
 end

@@ -11,13 +11,9 @@ module PgQuery
     # multiple parser runs, assuming the same pg_query release and no modifications to the parse tree.
     def walk!(&block)
       if block.arity == 1
-        treewalker!(@tree) do |node|
-          yield(node)
-        end
+        treewalker!(@tree, &block)
       else
-        treewalker_with_location!(@tree) do |parent_node, parent_field, node, location|
-          yield(parent_node, parent_field, node, location)
-        end
+        treewalker_with_location!(@tree, &block)
       end
     end
 
