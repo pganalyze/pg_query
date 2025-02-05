@@ -653,7 +653,7 @@ describe PgQuery do
 
       context 'WITH' do
         let(:query) do
-          '''
+          '
           WITH moved AS (
             DELETE
             FROM employees
@@ -661,7 +661,7 @@ describe PgQuery do
           )
           INSERT INTO employees_of_mary
           SELECT * FROM moved;
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -693,7 +693,7 @@ describe PgQuery do
 
       context 'HAVING' do
         let(:query) do
-          '''
+          '
           INSERT INTO employees
           SELECT * FROM people
           WHERE 1 = 1
@@ -703,7 +703,7 @@ describe PgQuery do
           LIMIT 10
           OFFSET 15
           FOR UPDATE
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -717,9 +717,9 @@ describe PgQuery do
 
       context 'with locks' do
         let(:query) do
-          '''
+          '
           SELECT * FROM people FOR UPDATE OF name, email
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -727,9 +727,9 @@ describe PgQuery do
 
       context 'with cast varchar' do
         let(:query) do
-          '''
+          '
           SELECT name::varchar(255) FROM people
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -737,9 +737,9 @@ describe PgQuery do
 
       context 'with cast varchar and no arguments' do
         let(:query) do
-          '''
+          '
           SELECT name::varchar FROM people
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -747,9 +747,9 @@ describe PgQuery do
 
       context 'with cast numeric' do
         let(:query) do
-          '''
+          '
           SELECT age::numeric(5, 2) FROM people
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -757,9 +757,9 @@ describe PgQuery do
 
       context 'with cast numeric and no arguments' do
         let(:query) do
-          '''
+          '
           SELECT age::numeric FROM people
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -783,14 +783,14 @@ describe PgQuery do
 
       context 'WITH' do
         let(:query) do
-          '''
+          '
           WITH archived AS (
             DELETE
             FROM employees
             WHERE manager_name = \'Mary\'
           )
           UPDATE users SET archived = true WHERE users.id IN (SELECT user_id FROM moved)
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -798,7 +798,7 @@ describe PgQuery do
 
       context 'WITH FROM UPDATE' do
         let(:query) do
-          '''
+          '
           WITH archived AS (
             DELETE
             FROM employees
@@ -806,7 +806,7 @@ describe PgQuery do
             RETURNING user_id
           )
           UPDATE users SET archived = true FROM archived WHERE archived.user_id = id RETURNING id
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -814,7 +814,7 @@ describe PgQuery do
 
       context 'from generated sequence' do
         let(:query) do
-          '''
+          '
             INSERT INTO jackdanger_card_totals (id, amount_cents, created_at)
             SELECT
               series.i,
@@ -823,7 +823,7 @@ describe PgQuery do
                  \'2015-08-25 00:00:00 -0700\'::timestamp +
                 ((\'2015-08-25 23:59:59 -0700\'::timestamp - \'2015-08-25 00:00:00 -0700\'::timestamp) * random()))
               FROM generate_series(1, 10000) series(i);
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -857,14 +857,14 @@ describe PgQuery do
 
       context 'WITH' do
         let(:query) do
-          '''
+          '
           WITH archived AS (
             DELETE
             FROM employees
             WHERE manager_name = \'Mary\'
           )
           DELETE FROM users WHERE users.id IN (SELECT user_id FROM moved)
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -874,27 +874,29 @@ describe PgQuery do
     context 'CREATE CAST' do
       context 'with function' do
         let(:query) do
-          """
+          "
           CREATE CAST (bigint AS int4) WITH FUNCTION int4(bigint) AS ASSIGNMENT
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
       end
+
       context 'without function' do
         let(:query) do
-          """
+          "
           CREATE CAST (bigint AS int4) WITHOUT FUNCTION AS IMPLICIT
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
       end
+
       context 'with inout' do
         let(:query) do
-          """
+          "
           CREATE CAST (bigint AS int4) WITH INOUT AS ASSIGNMENT
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
@@ -904,13 +906,13 @@ describe PgQuery do
     context 'CREATE DOMAIN' do
       context 'with check' do
         let(:query) do
-          """
+          "
           CREATE DOMAIN us_postal_code AS text
           CHECK (
              \"VALUE\" ~ '^\d{5}$'
           OR \"VALUE\" ~ '^\d{5}-\d{4}$'
           );
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq oneline_query }
@@ -921,11 +923,11 @@ describe PgQuery do
       # Taken from http://www.postgresql.org/docs/8.3/static/queries-table-expressions.html
       context 'with inline function definition' do
         let(:query) do
-          """
+          "
           CREATE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
           $$ LANGUAGE sql
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
@@ -933,11 +935,11 @@ describe PgQuery do
 
       context 'with or replace' do
         let(:query) do
-          """
+          "
           CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
           $$ LANGUAGE sql
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
@@ -945,11 +947,11 @@ describe PgQuery do
 
       context 'with immutable' do
         let(:query) do
-          """
+          "
           CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
           $$ LANGUAGE sql IMMUTABLE
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
@@ -957,11 +959,11 @@ describe PgQuery do
 
       context 'with STRICT (aka return null on null input)' do
         let(:query) do
-          """
+          "
           CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
           $$ LANGUAGE sql IMMUTABLE RETURNS NULL ON NULL INPUT
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
@@ -969,11 +971,11 @@ describe PgQuery do
 
       context 'with called on null input' do
         let(:query) do
-          """
+          "
           CREATE OR REPLACE FUNCTION getfoo(int) RETURNS SETOF users AS $$
               SELECT * FROM \"users\" WHERE users.id = $1;
           $$ LANGUAGE sql IMMUTABLE CALLED ON NULL INPUT
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
@@ -981,11 +983,11 @@ describe PgQuery do
 
       context 'without parameters' do
         let(:query) do
-          """
+          "
           CREATE OR REPLACE FUNCTION getfoo() RETURNS text AS $$
               SELECT name FROM \"users\" LIMIT 1
           $$ LANGUAGE sql IMMUTABLE CALLED ON NULL INPUT
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq query }
@@ -1014,12 +1016,12 @@ describe PgQuery do
 
       context 'with cschema_element' do
         let(:query) do
-          """
+          "
           CREATE SCHEMA hollywood
           CREATE TABLE films (title text, release date, awards text[])
           CREATE VIEW winners AS
               SELECT title, release FROM films WHERE awards IS NOT NULL
-          """.strip
+          ".strip
         end
 
         it { is_expected.to eq oneline_query }
@@ -1029,7 +1031,7 @@ describe PgQuery do
     context 'CREATE TABLE' do
       context 'top-level' do
         let(:query) do
-          '''
+          '
             CREATE UNLOGGED TABLE cities (
                 name            text,
                 population      real,
@@ -1038,7 +1040,7 @@ describe PgQuery do
                 postal_code     int,
                 foreign_id      bigint
            );
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -1046,7 +1048,7 @@ describe PgQuery do
 
       context 'with common types' do
         let(:query) do
-          '''
+          '
             CREATE TABLE IF NOT EXISTS distributors (
                 name       varchar(40) DEFAULT \'Luso Films\',
                 len        interval hour to second(3),
@@ -1058,7 +1060,7 @@ describe PgQuery do
                 timetz     time with time zone,
                 CONSTRAINT name_len PRIMARY KEY (name, len)
             );
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -1066,9 +1068,9 @@ describe PgQuery do
 
       context 'with alternate typecasts' do
         let(:query) do
-          """
+          "
             CREATE TABLE types (a float(2), b float(49), c NUMERIC(2, 3), d character(4), e char(5), f varchar(6), g character varying(7));
-          """
+          "
         end
 
         it do
@@ -1080,9 +1082,9 @@ describe PgQuery do
 
       context 'with custom typecasts with arguments' do
         let(:query) do
-          """
+          "
             CREATE TABLE types (a geometry(point) not null);
-          """
+          "
         end
 
         it do
@@ -1094,11 +1096,11 @@ describe PgQuery do
 
       context 'with column definition options' do
         let(:query) do
-          '''
+          '
           CREATE TABLE tablename (
               colname int NOT NULL DEFAULT nextval(\'tablename_colname_seq\')
           );
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -1106,11 +1108,11 @@ describe PgQuery do
 
       context 'inheriting' do
         let(:query) do
-          '''
+          '
             CREATE TABLE capitals (
                 state           char(2)
             ) INHERITS (cities);
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -1352,7 +1354,7 @@ describe PgQuery do
     context 'ALTER TABLE' do
       context 'with column modifications' do
         let(:query) do
-          '''
+          '
           ALTER TABLE distributors
             DROP CONSTRAINT distributors_pkey,
             ADD CONSTRAINT distributors_pkey PRIMARY KEY USING INDEX dist_id_temp_idx,
@@ -1365,7 +1367,7 @@ describe PgQuery do
             ALTER COLUMN tstamp SET STATISTICS -5,
             ADD COLUMN some_int int NOT NULL,
             DROP IF EXISTS other_column CASCADE;
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -1510,11 +1512,11 @@ describe PgQuery do
 
     context 'COMMENTS' do
       let(:query) do
-        '''
+        '
         CREATE TABLE remove_comments (
           id int -- inline comment in multiline
         );
-        '''
+        '
       end
 
       it { is_expected.to eq('CREATE TABLE remove_comments (id int)') }
@@ -1593,37 +1595,40 @@ describe PgQuery do
     context 'SET' do
       context 'with integer value' do
         let(:query) do
-          '''
+          '
           SET statement_timeout TO 10000;
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
       end
+
       context 'with string value' do
         let(:query) do
-          '''
+          '
           SET search_path TO my_schema, public;
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
       end
+
       context 'with local scope' do
         let(:query) do
-          '''
+          '
           SET LOCAL search_path TO my_schema, public;
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
       end
+
       # Because SESSION is default, it is removed by the query parser.
       context 'with session scope' do
         let(:query) do
-          '''
+          '
           SET SESSION search_path TO 10000;
-          '''
+          '
         end
 
         it { is_expected.to eq "SET search_path TO 10000" }
@@ -1772,16 +1777,19 @@ describe PgQuery do
 
         it { is_expected.to eq oneline_query }
       end
+
       context 'plans' do
         let(:query) { 'DISCARD PLANS' }
 
         it { is_expected.to eq oneline_query }
       end
+
       context 'sequences' do
         let(:query) { 'DISCARD SEQUENCES' }
 
         it { is_expected.to eq oneline_query }
       end
+
       context 'temp' do
         let(:query) { 'DISCARD TEMP' }
 
@@ -2110,10 +2118,10 @@ describe PgQuery do
 
       context 'for single query' do
         let(:query) do
-          '''
+          '
           SELECT m.name AS mname, pname
             FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -2121,12 +2129,12 @@ describe PgQuery do
 
       context 'for multiple queries' do
         let(:query) do
-          '''
+          '
           SELECT m.name AS mname, pname
             FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
           INSERT INTO manufacturers_daily (a, b)
             SELECT a, b FROM manufacturers;
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
@@ -2134,13 +2142,13 @@ describe PgQuery do
 
       context 'for multiple queries with a semicolon inside a value' do
         let(:query) do
-          '''
+          '
           SELECT m.name AS mname, pname
             FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;
           UPDATE users SET name = \'bobby; drop tables\';
           INSERT INTO manufacturers_daily (a, b)
             SELECT a, b FROM manufacturers;
-          '''
+          '
         end
 
         it { is_expected.to eq oneline_query }
