@@ -28,4 +28,3 @@ jobs:
       run: bundle exec rake test
     - name: RuboCop
       run: bundle exec rake lint
-      if:  matrix.ruby == '3.0'

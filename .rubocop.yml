@@ -1,6 +1,7 @@
 require: rubocop-rspec
 
 AllCops:
+  NewCops: enable
   Exclude:
     - ext/pg_query/extconf.rb
     - vendor/**/*
@@ -9,15 +10,7 @@ AllCops:
     - lib/pg_query/json_field_names.rb
     - Rakefile
 
-Layout/AlignHash:
-  Exclude:
-    - spec/**/*
-
-Style/WordArray:
-  Exclude:
-    - spec/**/*
-
-Style/StringLiterals:
+Layout/HashAlignment:
   Exclude:
     - spec/**/*
 
@@ -29,9 +22,28 @@ Layout/SpaceInsideHashLiteralBraces:
   Exclude:
     - spec/**/*
 
-Performance/RegexpMatch:
+Style/WordArray:
   Exclude:
-    - ext/pg_query/extconf.rb
+    - spec/**/*
+
+Style/StringLiterals:
+  Exclude:
+    - spec/**/*
+
+Layout/LineLength:
+  Enabled: false
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
+Style/FormatStringToken:
+  Enabled: false
+
+Style/StringConcatenation:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
 
 Style/FrozenStringLiteralComment:
   Enabled: false
@@ -39,16 +51,18 @@ Style/FrozenStringLiteralComment:
 Style/SafeNavigation:
   Enabled: false
 
-Documentation:
+Style/Documentation:
   Enabled: false
 
-LineLength:
+# extend self preserves private methods,
+# module_function buggily removes them.
+Style/ModuleFunction:
   Enabled: false
 
-MethodLength:
+Metrics/MethodLength:
   Enabled: false
 
-ClassLength:
+Metrics/ClassLength:
   Enabled: false
 
 Metrics/AbcSize:
@@ -75,9 +89,16 @@ RSpec/NestedGroups:
 RSpec/DescribedClass:
   Enabled: false
 
-# extend self preserves private methods,
-# module_function buggily removes them.
-Style/ModuleFunction:
+RSpec/ContextWording:
+  Enabled: false
+
+RSpec/MatchArray:
+  Enabled: false
+
+RSpec/NamedSubject:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
   Enabled: false
 
 Lint/ImplicitStringConcatenation:
