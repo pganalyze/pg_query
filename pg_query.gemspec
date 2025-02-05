@@ -12,6 +12,8 @@ Gem::Specification.new do |s|
   s.license     = 'BSD-3-Clause'
   s.homepage    = 'https://github.com/pganalyze/pg_query'
 
+  s.required_ruby_version = '>= 3.0'
+
   s.extensions = %w[ext/pg_query/extconf.rb]
 
   s.files = Dir['CHANGELOG.md', 'LICENSE', 'README.md', 'Rakefile', 'lib/**/*.rb',

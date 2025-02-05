@@ -21,12 +21,25 @@ if RUBY_PLATFORM =~ /mswin/
   $INCFLAGS = "-I#{File.join(__dir__, 'include', 'postgres', 'port', 'win32_msvc')} " + $INCFLAGS
 end
 
-SYMFILE =
-  if RUBY_PLATFORM =~ /freebsd/
-    File.join(__dir__, 'pg_query_ruby_freebsd.sym')
-  elsif RUBY_PLATFORM !~ /cygwin|mswin|mingw|bccwin|wince|emx/
-    File.join(__dir__, 'pg_query_ruby.sym')
-  end
+# "ruby_abi_version" is a required symbol to be exported on Ruby 3.2+ development releases
+# See https://github.com/ruby/ruby/pull/5474 and https://github.com/ruby/ruby/pull/6231
+def export_ruby_abi_version
+  return false if RUBY_PATCHLEVEL >= 0 # Not a development release
+  m = /(\d+)\.(\d+)/.match(RUBY_VERSION)
+  return false if m.nil?
+  major = m[1].to_i
+  minor = m[2].to_i
+  major >= 3 && minor >= 2
+end
+
+def ext_symbols_filename
+  name = 'ext_symbols'
+  name += '_freebsd' if RUBY_PLATFORM =~ /freebsd/
+  name += '_with_ruby_abi_version' if export_ruby_abi_version
+  "#{name}.sym"
+end
+
+SYMFILE = File.join(__dir__, ext_symbols_filename)
 
 if RUBY_PLATFORM =~ /darwin/
   $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
