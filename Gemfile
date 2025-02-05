@@ -4,6 +4,6 @@ gemspec
 
 gem 'rake-compiler', '~> 0'
 gem 'rspec', '~> 3.0'
-gem 'rubocop', '0.49.1'
-gem 'rubocop-rspec', '1.15.1'
+gem 'rubocop', '~> 1.71'
+gem 'rubocop-rspec', '~> 3.4'
 gem 'simplecov', '~> 0'

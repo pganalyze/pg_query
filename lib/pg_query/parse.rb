@@ -174,7 +174,7 @@ module PgQuery
           # The following statement types are DDL (changing table structure)
           when :alter_table_stmt
             case statement.alter_table_stmt.objtype
-            when :OBJECT_INDEX # Index # rubocop:disable Lint/EmptyWhen
+            when :OBJECT_INDEX # Index
               # ignore `ALTER INDEX index_name`
             else
               from_clause_items << { item: PgQuery::Node.new(range_var: statement.alter_table_stmt.relation), type: :ddl }
@@ -228,11 +228,11 @@ module PgQuery
           when :grant_stmt
             objects = statement.grant_stmt.objects
             case statement.grant_stmt.objtype
-            when :OBJECT_COLUMN # Column # rubocop:disable Lint/EmptyWhen
+            when :OBJECT_COLUMN # Column
               # FIXME
             when :OBJECT_TABLE # Table
               from_clause_items += objects.map { |o| { item: o, type: :ddl } }
-            when :OBJECT_SEQUENCE # Sequence # rubocop:disable Lint/EmptyWhen
+            when :OBJECT_SEQUENCE # Sequence
               # FIXME
             end
           when :lock_stmt
