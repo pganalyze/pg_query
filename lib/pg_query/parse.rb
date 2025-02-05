@@ -339,7 +339,7 @@ module PgQuery
       @cte_names.uniq!
     end
 
-    def statements_and_cte_names_for_with_clause(with_clause) # FIXME
+    def statements_and_cte_names_for_with_clause(with_clause)
       statements = []
       cte_names = []
 
