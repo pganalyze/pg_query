@@ -1,4 +1,4 @@
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+$LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'pg_query/version'
 
 Gem::Specification.new do |s|
@@ -11,6 +11,8 @@ Gem::Specification.new do |s|
   s.email       = 'lukas@fittl.com'
   s.license     = 'BSD-3-Clause'
   s.homepage    = 'https://github.com/pganalyze/pg_query'
+
+  s.metadata['rubygems_mfa_required'] = 'true'
 
   s.required_ruby_version = '>= 3.0'
 
