@@ -24,9 +24,7 @@ module PgQuery
   end
 
   class ParserResult
-    attr_reader :query
-    attr_reader :tree
-    attr_reader :warnings
+    attr_reader :query, :tree, :warnings
 
     def initialize(query, tree, warnings = [])
       @query = query
