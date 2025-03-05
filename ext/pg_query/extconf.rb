@@ -35,6 +35,7 @@ end
 def ext_symbols_filename
   name = 'ext_symbols'
   name += '_freebsd' if RUBY_PLATFORM =~ /freebsd/
+  name += '_openbsd' if RUBY_PLATFORM =~ /openbsd/
   name += '_with_ruby_abi_version' if export_ruby_abi_version
   "#{name}.sym"
 end
