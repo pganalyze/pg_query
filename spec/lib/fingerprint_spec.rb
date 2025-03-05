@@ -69,12 +69,6 @@ describe PgQuery, "#fingerprint" do
     expect(fingerprint("SELECT a AS b UNION SELECT x AS y")).to eq fingerprint("SELECT a AS c UNION SELECT x AS z")
   end
 
-  it "ignores aliases referenced in query" do
-    pending
-    expect(fingerprint("SELECT s1.id FROM snapshots s1")).to eq fingerprint("SELECT s2.id FROM snapshots s2")
-    expect(fingerprint("SELECT a AS b ORDER BY b")).to eq fingerprint("SELECT a AS c ORDER BY c")
-  end
-
   it "ignores param references" do
     expect(fingerprint("SELECT $1")).to eq fingerprint("SELECT $2")
   end

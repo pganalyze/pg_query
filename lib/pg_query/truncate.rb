@@ -1,7 +1,6 @@
-
 module PgQuery
   class ParserResult
-    PossibleTruncation = Struct.new(:location, :node_type, :length, :is_array)
+    PossibleTruncation = Struct.new(:location, :node_type, :len, :is_array)
 
     # Truncates the query string to be below the specified length, first trying to
     # omit less important parts of the query, and only then cutting off the end.
@@ -14,11 +13,11 @@ module PgQuery
       truncations = find_possible_truncations
 
       # Truncate the deepest possible truncation that is the longest first
-      truncations.sort_by! { |t| [-t.location.size, -t.length] }
+      truncations.sort_by! { |t| [-t.location.size, -t.len] }
 
       tree = dup_tree
       truncations.each do |truncation|
-        next if truncation.length < 3
+        next if truncation.len < 3
 
         find_tree_location(tree, truncation.location) do |node, _k|
           dummy_column_ref = PgQuery::Node.new(column_ref: PgQuery::ColumnRef.new(fields: [PgQuery::Node.new(string: PgQuery::String.new(sval: '…'))]))
@@ -64,30 +63,29 @@ module PgQuery
         case k
         when :target_list
           next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::OnConflictClause)
-          length = if node.is_a?(PgQuery::SelectStmt)
-                     select_target_list_len(v)
-                   else # UpdateStmt / OnConflictClause
-                     update_target_list_len(v)
-                   end
-          truncations << PossibleTruncation.new(location, :target_list, length, true)
+          len = if node.is_a?(PgQuery::SelectStmt)
+                  select_target_list_len(v)
+                else # UpdateStmt / OnConflictClause
+                  update_target_list_len(v)
+                end
+          truncations << PossibleTruncation.new(location, :target_list, len, true)
         when :where_clause
           next unless node.is_a?(PgQuery::SelectStmt) || node.is_a?(PgQuery::UpdateStmt) || node.is_a?(PgQuery::DeleteStmt) ||
                       node.is_a?(PgQuery::CopyStmt) || node.is_a?(PgQuery::IndexStmt) || node.is_a?(PgQuery::RuleStmt) ||
                       node.is_a?(PgQuery::InferClause) || node.is_a?(PgQuery::OnConflictClause)
-
-          length = PgQuery.deparse_expr(v).size
-          truncations << PossibleTruncation.new(location, :where_clause, length, false)
+          len = PgQuery.deparse_expr(v).size
+          truncations << PossibleTruncation.new(location, :where_clause, len, false)
         when :values_lists
-          length = select_values_lists_len(v)
-          truncations << PossibleTruncation.new(location, :values_lists, length, false)
+          len = select_values_lists_len(v)
+          truncations << PossibleTruncation.new(location, :values_lists, len, false)
         when :ctequery
           next unless node.is_a?(PgQuery::CommonTableExpr)
-          length = PgQuery.deparse_stmt(v[v.node.to_s]).size
-          truncations << PossibleTruncation.new(location, :ctequery, length, false)
+          len = PgQuery.deparse_stmt(v[v.node.to_s]).size
+          truncations << PossibleTruncation.new(location, :ctequery, len, false)
         when :cols
           next unless node.is_a?(PgQuery::InsertStmt)
-          length = cols_len(v)
-          truncations << PossibleTruncation.new(location, :cols, length, true)
+          len = cols_len(v)
+          truncations << PossibleTruncation.new(location, :cols, len, true)
         end
       end
 

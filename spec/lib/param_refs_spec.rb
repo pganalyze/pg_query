@@ -13,7 +13,7 @@ describe PgQuery, '#param_refs' do
     let(:query) { 'SELECT * FROM x WHERE y = $1::text AND z < now() - INTERVAL $2' }
 
     it do
-      is_expected.to eq(
+      expect(subject).to eq(
         [
           {
             "location"=>26,
@@ -34,9 +34,9 @@ describe PgQuery, '#param_refs' do
     let(:query) { 'SELECT * FROM a WHERE x = $1 AND y = $12 AND z = $255' }
 
     it do
-      is_expected.to eq [{"location"=>26, "length"=>2},
-                         {"location"=>37, "length"=>3},
-                         {"location"=>49, "length"=>4}]
+      expect(subject).to eq [{"location"=>26, "length"=>2},
+                             {"location"=>37, "length"=>3},
+                             {"location"=>49, "length"=>4}]
     end
   end
 end
