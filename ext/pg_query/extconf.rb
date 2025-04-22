@@ -43,7 +43,7 @@ end
 SYMFILE = File.join(__dir__, ext_symbols_filename)
 
 if RUBY_PLATFORM =~ /darwin/
-  $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless defined?(::Rubinius)
+  $DLDFLAGS << " -Wl,-exported_symbols_list #{SYMFILE}" unless %w(rbx truffleruby).include?(RUBY_ENGINE)
 elsif RUBY_PLATFORM !~ /cygwin|mswin|mingw|bccwin|wince|emx/
   $DLDFLAGS << " -Wl,--retain-symbols-file=#{SYMFILE}"
 end
