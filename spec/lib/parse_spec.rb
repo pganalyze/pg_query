@@ -1627,6 +1627,18 @@ $BODY$
     expect(query.select_tables).to eq(['films'])
   end
 
+  it 'finds tables and functions inside subselects in null_test' do
+    query = described_class.parse(<<-SQL)
+      SELECT col1 FROM t1 WHERE ((SELECT col2 FROM t2 LIMIT 1) IS NULL) AND ((SELECT * FROM f1() LIMIT 1) IS NULL);
+    SQL
+    expect(query.tables).to eq(['t1', 't2'])
+    expect(query.select_tables).to eq(['t1', 't2'])
+    expect(query.dml_tables).to eq([])
+    expect(query.ddl_tables).to eq([])
+    expect(query.ddl_functions).to eq []
+    expect(query.call_functions).to eq ['f1']
+  end
+
   describe 'parsing INSERT' do
     it 'finds the table inserted into' do
       query = described_class.parse(<<-SQL)
