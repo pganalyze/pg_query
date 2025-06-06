@@ -1276,6 +1276,17 @@ $BODY$
     expect(query.call_functions).to eq ['foo.testfunc']
   end
 
+  it 'correctly finds functions invoked with CALL' do
+    query = described_class.parse(<<-SQL)
+      CALL foo.testfunc(1);
+    SQL
+    expect(query.tables).to eq []
+    expect(query.warnings).to eq []
+    expect(query.functions).to eq ['foo.testfunc']
+    expect(query.ddl_functions).to eq []
+    expect(query.call_functions).to eq ['foo.testfunc']
+  end
+
   it 'correctly finds dropped functions' do
     query = described_class.parse(<<-SQL)
       DROP FUNCTION IF EXISTS foo.testfunc(x integer);
