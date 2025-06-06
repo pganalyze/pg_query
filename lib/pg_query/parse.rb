@@ -296,6 +296,8 @@ module PgQuery
             subselect_items << next_item.case_expr.defresult
           when :type_cast
             subselect_items << next_item.type_cast.arg
+          when :null_test
+            subselect_items << next_item.null_test.arg
           end
         end
 
