@@ -276,10 +276,14 @@ module PgQuery
             end
           when :bool_expr
             subselect_items.concat(next_item.bool_expr.args.to_ary)
+          when :boolean_test
+            subselect_items << next_item.boolean_test.arg
           when :coalesce_expr
             subselect_items.concat(next_item.coalesce_expr.args.to_ary)
           when :min_max_expr
             subselect_items.concat(next_item.min_max_expr.args.to_ary)
+          when :null_test
+            subselect_items << next_item.null_test.arg
           when :res_target
             subselect_items << next_item.res_target.val
           when :sub_link
