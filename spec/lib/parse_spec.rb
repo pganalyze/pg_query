@@ -1639,6 +1639,14 @@ $BODY$
     expect(query.call_functions).to eq ['f1']
   end
 
+  it 'finds the table in boolean_test' do
+    query = described_class.parse(<<-SQL)
+      SELECT col1 FROM t1 WHERE (SELECT col2 FROM t2 LIMIT 1) IS TRUE;
+    SQL
+    expect(query.tables).to eq(['t1', 't2'])
+    expect(query.select_tables).to eq(['t1', 't2'])
+  end
+
   describe 'parsing INSERT' do
     it 'finds the table inserted into' do
       query = described_class.parse(<<-SQL)
