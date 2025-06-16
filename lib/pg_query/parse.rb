@@ -106,6 +106,7 @@ module PgQuery
       statements = @tree.stmts.dup.to_a.map(&:stmt)
       from_clause_items = [] # types: select, dml, ddl
       subselect_items = []
+      call_items = [] # CALL fn()
 
       loop do
         statement = statements.shift
@@ -171,6 +172,8 @@ module PgQuery
           when :copy_stmt
             from_clause_items << { item: PgQuery::Node.new(range_var: statement.copy_stmt.relation), type: :dml } if statement.copy_stmt.relation
             statements << statement.copy_stmt.query
+          when :call_stmt
+            call_items << statement.call_stmt
           # The following statement types are DDL (changing table structure)
           when :alter_table_stmt
             case statement.alter_table_stmt.objtype
@@ -289,6 +292,7 @@ module PgQuery
           when :sub_link
             statements << next_item.sub_link.subselect
           when :func_call
+            # See also CALL below
             subselect_items.concat(next_item.func_call.args.to_ary)
             @functions << {
               function: next_item.func_call.funcname.map { |f| f.string.sval }.join('.'),
@@ -301,6 +305,17 @@ module PgQuery
           when :type_cast
             subselect_items << next_item.type_cast.arg
           end
+        end
+
+        # CALL fn()
+        next_item = call_items.shift
+        if next_item
+          # Treat as a sub-select. Note the difference in underscore in func_call versus the above.
+          subselect_items.concat(next_item.funccall.args.to_ary)
+          @functions << {
+            function: next_item.funccall.funcname.map { |f| f.string.sval }.join('.'),
+            type: :call
+          }
         end
 
         next_item = from_clause_items.shift
