@@ -6,12 +6,14 @@ void raise_ruby_parse_error(PgQueryProtobufParseResult result);
 void raise_ruby_normalize_error(PgQueryNormalizeResult result);
 void raise_ruby_fingerprint_error(PgQueryFingerprintResult result);
 void raise_ruby_scan_error(PgQueryScanResult result);
+void raise_ruby_split_error(PgQuerySplitResult result);
 
 VALUE pg_query_ruby_parse_protobuf(VALUE self, VALUE input);
 VALUE pg_query_ruby_deparse_protobuf(VALUE self, VALUE input);
 VALUE pg_query_ruby_normalize(VALUE self, VALUE input);
 VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input);
 VALUE pg_query_ruby_scan(VALUE self, VALUE input);
+VALUE pg_query_ruby_split_with_parser(VALUE self, VALUE input);
 VALUE pg_query_ruby_hash_xxh3_64(VALUE self, VALUE input, VALUE seed);
 
 __attribute__((visibility ("default"))) void Init_pg_query(void)
@@ -25,6 +27,7 @@ __attribute__((visibility ("default"))) void Init_pg_query(void)
 	rb_define_singleton_method(cPgQuery, "normalize", pg_query_ruby_normalize, 1);
 	rb_define_singleton_method(cPgQuery, "fingerprint", pg_query_ruby_fingerprint, 1);
 	rb_define_singleton_method(cPgQuery, "_raw_scan", pg_query_ruby_scan, 1);
+	rb_define_singleton_method(cPgQuery, "_raw_split_with_parser", pg_query_ruby_split_with_parser, 1);
 	rb_define_singleton_method(cPgQuery, "hash_xxh3_64", pg_query_ruby_hash_xxh3_64, 2);
 	rb_define_const(cPgQuery, "PG_VERSION", rb_str_new2(PG_VERSION));
 	rb_define_const(cPgQuery, "PG_MAJORVERSION", rb_str_new2(PG_MAJORVERSION));
@@ -121,6 +124,24 @@ void raise_ruby_scan_error(PgQueryScanResult result)
 	rb_exc_raise(rb_class_new_instance(4, args, cScanError));
 }
 
+void raise_ruby_split_error(PgQuerySplitResult result)
+{
+	VALUE cPgQuery, cSplitError;
+	VALUE args[4];
+
+	cPgQuery   = rb_const_get(rb_cObject, rb_intern("PgQuery"));
+	cSplitError = rb_const_get_at(cPgQuery, rb_intern("SplitError"));
+
+	args[0] = rb_str_new2(result.error->message);
+	args[1] = rb_str_new2(result.error->filename);
+	args[2] = INT2NUM(result.error->lineno);
+	args[3] = INT2NUM(result.error->cursorpos);
+
+	pg_query_free_split_result(result);
+
+	rb_exc_raise(rb_class_new_instance(4, args, cSplitError));
+}
+
 VALUE pg_query_ruby_parse_protobuf(VALUE self, VALUE input)
 {
 	Check_Type(input, T_STRING);
@@ -212,6 +233,35 @@ VALUE pg_query_ruby_scan(VALUE self, VALUE input)
 	rb_ary_push(output, rb_str_new2(result.stderr_buffer));
 
 	pg_query_free_scan_result(result);
+
+	return output;
+}
+
+VALUE pg_query_ruby_split_with_parser(VALUE self, VALUE input)
+{
+	Check_Type(input, T_STRING);
+
+	VALUE output;
+	VALUE stmts;
+	PgQuerySplitResult result = pg_query_split_with_parser(StringValueCStr(input));
+
+	if (result.error) raise_ruby_split_error(result);
+
+	output = rb_ary_new();
+	stmts = rb_ary_new();
+
+	for (int i = 0; i < result.n_stmts; i++)
+	{
+		VALUE stmt = rb_ary_new();
+		rb_ary_push(stmt, INT2NUM(result.stmts[i]->stmt_location));
+		rb_ary_push(stmt, INT2NUM(result.stmts[i]->stmt_len));
+		rb_ary_push(stmts, stmt);
+	}
+
+	rb_ary_push(output, stmts);
+	rb_ary_push(output, rb_str_new2(result.stderr_buffer));
+
+	pg_query_free_split_result(result);
 
 	return output;
 }
