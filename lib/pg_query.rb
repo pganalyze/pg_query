@@ -16,3 +16,4 @@ require 'pg_query/deparse'
 require 'pg_query/truncate'
 
 require 'pg_query/scan'
+require 'pg_query/split'
