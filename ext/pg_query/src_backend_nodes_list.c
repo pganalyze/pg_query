@@ -19,6 +19,10 @@
  * - list_copy_deep
  * - list_copy_tail
  * - list_truncate
+ * - list_delete_last
+ * - list_insert_nth
+ * - insert_new_cell
+ * - list_sort
  *--------------------------------------------------------------------
  */
 
@@ -383,7 +387,22 @@ lappend(List *list, void *datum)
  * list position, ie, 0 <= pos <= list's length.
  * Returns address of the new cell.
  */
+static ListCell *
+insert_new_cell(List *list, int pos)
+{
+	Assert(pos >= 0 && pos <= list->length);
 
+	/* Enlarge array if necessary */
+	if (list->length >= list->max_length)
+		enlarge_list(list, list->length + 1);
+	/* Now shove the existing data over */
+	if (pos < list->length)
+		memmove(&list->elements[pos + 1], &list->elements[pos],
+				(list->length - pos) * sizeof(ListCell));
+	list->length++;
+
+	return &list->elements[pos];
+}
 
 /*
  * Insert the given datum at position 'pos' (measured from 0) in the list.
@@ -392,7 +411,19 @@ lappend(List *list, void *datum)
  * Note that this takes time proportional to the distance to the end of the
  * list, since the following entries must be moved.
  */
-
+List *
+list_insert_nth(List *list, int pos, void *datum)
+{
+	if (list == NIL)
+	{
+		Assert(pos == 0);
+		return list_make1(datum);
+	}
+	Assert(IsPointerList(list));
+	lfirst(insert_new_cell(list, pos)) = datum;
+	check_list_invariants(list);
+	return list;
+}
 
 
 
@@ -674,7 +705,23 @@ list_delete_nth_cell(List *list, int n)
 /*
  * Delete the last element of the list.
  */
+List *
+list_delete_last(List *list)
+{
+	check_list_invariants(list);
 
+	if (list == NIL)
+		return NIL;				/* would an error be better? */
+
+	/* list_truncate won't free list if it goes to empty, but this should */
+	if (list_length(list) <= 1)
+	{
+		list_free(list);
+		return NIL;
+	}
+
+	return list_truncate(list, list_length(list) - 1);
+}
 
 /*
  * Delete the first N cells of the list.
@@ -992,7 +1039,19 @@ list_copy_deep(const List *oldlist)
  *
  * This is based on qsort(), so it likewise has O(N log N) runtime.
  */
+void
+list_sort(List *list, list_sort_comparator cmp)
+{
+	typedef int (*qsort_comparator) (const void *a, const void *b);
+	int			len;
 
+	check_list_invariants(list);
+
+	/* Nothing to do if there's less than two elements */
+	len = list_length(list);
+	if (len > 1)
+		qsort(list->elements, len, sizeof(ListCell), (qsort_comparator) cmp);
+}
 
 /*
  * list_sort comparator for sorting a list into ascending int order.
