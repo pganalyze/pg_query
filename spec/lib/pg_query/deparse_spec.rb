@@ -583,7 +583,7 @@ describe PgQuery do
       end
 
       context 'with parentheses' do
-        let(:query) { "SELECT CAST(1 + 3 AS int8)" }
+        let(:query) { "SELECT (1 + 3)::int8" }
 
         it { is_expected.to eq query }
       end

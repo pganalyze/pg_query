@@ -5,8 +5,8 @@ require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '17-6.1.0'.freeze
-LIB_PG_QUERY_SHA256SUM = 'a3dc0e4084a23da35128d4e9809ff27241c29a44fde74ba40a378b33d2cdefe2'.freeze
+LIB_PG_QUERY_TAG = '17-6.2.1'.freeze
+LIB_PG_QUERY_SHA256SUM = '678434d59511c8892c37ba5b9816ab641bd007cef2eda215b2297c39b79c861d'.freeze
 
 Rake::ExtensionTask.new 'pg_query' do |ext|
   ext.lib_dir = 'lib/pg_query'
@@ -66,6 +66,7 @@ task :update_source do
   system("mv #{extdir}/postgres/* #{extdir}/")
   system("rmdir #{extdir}/postgres")
   system("cp -a #{libdir}/pg_query.h #{extdir}/include")
+  system("cp -a #{libdir}/postgres_deparse.h #{extdir}/include")
   # Protobuf definitions
   system("protoc --proto_path=#{libdir}/protobuf --ruby_out=#{File.join(__dir__, 'lib/pg_query')} #{libdir}/protobuf/pg_query.proto")
   system("mkdir -p #{extdir}/include/protobuf")

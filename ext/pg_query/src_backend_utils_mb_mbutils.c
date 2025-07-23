@@ -17,6 +17,8 @@
  * - pg_mbstrlen_with_len
  * - pg_mblen
  * - SetDatabaseEncoding
+ * - pg_mbcharcliplen
+ * - pg_mbstrlen
  * - GetMessageEncoding
  * - MessageEncoding
  *--------------------------------------------------------------------
@@ -386,7 +388,22 @@ pg_mblen(const char *mbstr)
 
 
 /* returns the length (counted in wchars) of a multibyte string */
+int
+pg_mbstrlen(const char *mbstr)
+{
+	int			len = 0;
 
+	/* optimization for single byte encoding */
+	if (pg_database_encoding_max_length() == 1)
+		return strlen(mbstr);
+
+	while (*mbstr)
+	{
+		mbstr += pg_mblen(mbstr);
+		len++;
+	}
+	return len;
+}
 
 /* returns the length (counted in wchars) of a multibyte string
  * (not necessarily NULL terminated)
@@ -425,7 +442,7 @@ pg_mbcliplen(const char *mbstr, int len, int limit)
 }
 
 /*
- * pg_mbcliplen with specified encoding
+ * pg_mbcliplen with specified encoding; string must be valid in encoding
  */
 int
 pg_encoding_mbcliplen(int encoding, const char *mbstr,
@@ -459,7 +476,29 @@ pg_encoding_mbcliplen(int encoding, const char *mbstr,
  * Similar to pg_mbcliplen except the limit parameter specifies the
  * character length, not the byte length.
  */
+int
+pg_mbcharcliplen(const char *mbstr, int len, int limit)
+{
+	int			clen = 0;
+	int			nch = 0;
+	int			l;
 
+	/* optimization for single byte encoding */
+	if (pg_database_encoding_max_length() == 1)
+		return cliplen(mbstr, len, limit);
+
+	while (len > 0 && *mbstr)
+	{
+		l = pg_mblen(mbstr);
+		nch++;
+		if (nch > limit)
+			break;
+		clen += l;
+		len -= l;
+		mbstr += l;
+	}
+	return clen;
+}
 
 /* mbcliplen for any single-byte encoding */
 static int
@@ -726,12 +765,12 @@ pg_verify_mbstr(int encoding, const char *mbstr, int len, bool noError)
  * report_invalid_encoding: complain about invalid multibyte character
  *
  * note: len is remaining length of string, not length of character;
- * len must be greater than zero, as we always examine the first byte.
+ * len must be greater than zero (or we'd neglect initializing "buf").
  */
 void
 report_invalid_encoding(int encoding, const char *mbstr, int len)
 {
-	int			l = pg_encoding_mblen(encoding, mbstr);
+	int			l = pg_encoding_mblen_or_incomplete(encoding, mbstr, len);
 	char		buf[8 * 5 + 1];
 	char	   *p = buf;
 	int			j,
@@ -758,7 +797,7 @@ report_invalid_encoding(int encoding, const char *mbstr, int len)
  * report_untranslatable_char: complain about untranslatable character
  *
  * note: len is remaining length of string, not length of character;
- * len must be greater than zero, as we always examine the first byte.
+ * len must be greater than zero (or we'd neglect initializing "buf").
  */
 
 
