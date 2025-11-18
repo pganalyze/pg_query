@@ -29,7 +29,7 @@ def export_ruby_abi_version
   return false if m.nil?
   major = m[1].to_i
   minor = m[2].to_i
-  major >= 3 && minor >= 2
+  ((major >= 3 && minor >= 2) || major >= 4)
 end
 
 def ext_symbols_filename
