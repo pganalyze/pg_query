@@ -17,6 +17,15 @@ module PgQuery
       end
     end
 
+    # Traverses the tree to find the node at the given location and yields
+    # its parent node, the parent field, and the node itself.
+    def find_tree_location(tree, searched_location)
+      treewalker_with_location! tree do |parent_node, parent_field, node, location|
+        next unless location == searched_location
+        yield(parent_node, parent_field, node)
+      end
+    end
+
     private
 
     def treewalker!(tree) # rubocop:disable Metrics/CyclomaticComplexity
@@ -71,13 +80,6 @@ module PgQuery
         end
 
         break if nodes.empty?
-      end
-    end
-
-    def find_tree_location(tree, searched_location)
-      treewalker_with_location! tree do |parent_node, parent_field, node, location|
-        next unless location == searched_location
-        yield(parent_node, parent_field, node)
       end
     end
   end
