@@ -15,4 +15,6 @@ require 'pg_query/param_refs'
 require 'pg_query/deparse'
 require 'pg_query/truncate'
 
+require 'pg_query/parse_plpgsql'
+
 require 'pg_query/scan'
