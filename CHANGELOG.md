@@ -9,12 +9,6 @@
 * Upgrade to libpg_query 17-6.2.1
   - Add pg_query_is_utility_stmt function to determine if query text contains utility statements [#313](https://github.com/pganalyze/libpg_query/pull/313)
     - This is a fast check for callers that don't actually need the parse tree itself
-  - Add missing top-level postgres_deparse.h in Makefile install step
-    - This was an oversight from the previous 6.2.0 release
-  - Improve pg_query_summary function:
-    - Speed up summary truncate replacement logic
-    - Correctly handle `GRANT .. ON ALL TABLES IN SCHEMA` statements
-    - Correctly handle schema qualified filter columns
   - Add fast summary information function (pg_query_summary)
     - This allows gathering certain information, for example which tables are referenced in a
       statement, without requiring a Protobuf serialization step in a higher level library
