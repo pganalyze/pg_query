@@ -1,18 +1,39 @@
 module PgQuery
   class ParserResult
-    def deparse
-      PgQuery.deparse(@tree)
+    def deparse(opts: nil)
+      PgQuery.deparse(@tree, opts: opts)
     end
   end
 
+  class DeparseComment
+    attr_accessor :match_location, :newlines_before_comment, :newlines_after_comment, :str
+  end
+
+  DeparseOpts = Struct.new(:pretty_print, :comments, :indent_size, :max_line_length,
+                           :trailing_newline, :commas_start_of_line, keyword_init: true)
+
   # Reconstruct all of the parsed queries into their original form
-  def self.deparse(tree)
-    if PgQuery::ParseResult.method(:encode).arity == 1
-      PgQuery.deparse_protobuf(PgQuery::ParseResult.encode(tree)).force_encoding('UTF-8')
-    elsif PgQuery::ParseResult.method(:encode).arity == -1
-      PgQuery.deparse_protobuf(PgQuery::ParseResult.encode(tree, recursion_limit: 1_000)).force_encoding('UTF-8')
+  def self.deparse(tree, opts: nil)
+    protobuf_encoded = if PgQuery::ParseResult.method(:encode).arity == 1
+                         PgQuery::ParseResult.encode(tree)
+                       elsif PgQuery::ParseResult.method(:encode).arity == -1
+                         PgQuery::ParseResult.encode(tree, recursion_limit: 1_000)
+                       else
+                         raise ArgumentError, 'Unsupported protobuf Ruby API'
+                       end
+
+    if opts
+      PgQuery.deparse_protobuf_opts(
+        protobuf_encoded,
+        opts.pretty_print,
+        opts.comments || [],
+        opts.indent_size || 0,
+        opts.max_line_length || 0,
+        opts.trailing_newline,
+        opts.commas_start_of_line
+      ).force_encoding('UTF-8')
     else
-      raise ArgumentError, 'Unsupported protobuf Ruby API'
+      PgQuery.deparse_protobuf(protobuf_encoded).force_encoding('UTF-8')
     end
   end
 
