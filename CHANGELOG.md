@@ -4,6 +4,49 @@
 
 * ...
 
+## 6.2.1     2026-01-20
+
+* Upgrade to libpg_query 17-6.2.1
+  - Add pg_query_is_utility_stmt function to determine if query text contains utility statements [#313](https://github.com/pganalyze/libpg_query/pull/313)
+    - This is a fast check for callers that don't actually need the parse tree itself
+  - Add missing top-level postgres_deparse.h in Makefile install step
+    - This was an oversight from the previous 6.2.0 release
+  - Improve pg_query_summary function:
+    - Speed up summary truncate replacement logic
+    - Correctly handle `GRANT .. ON ALL TABLES IN SCHEMA` statements
+    - Correctly handle schema qualified filter columns
+  - Add fast summary information function (pg_query_summary)
+    - This allows gathering certain information, for example which tables are referenced in a
+      statement, without requiring a Protobuf serialization step in a higher level library
+    - Additionally this can also be used to perform "smart truncation" of a query by
+      omitting deeply nested information (e.g. a CTE definition, or a target list) whilst
+        preserving more essential parts like the FROM clause
+  - Deparser:
+    - Introduce pretty printing / formatting
+      - Introduces a new optional pretty print mode that emits a human readable
+        output. A detailed explanation of the mechanism can be found at the start
+        of the deparser file.
+    - Rework handling of expressions inside typecasts
+      - Prefer (..)::type syntax, unless we are already in a function call.
+    - Use lowercase keywords in xmlroot functions
+      - This matches other XML functions as well as the Postgres documentation,
+        since these are closer to function argument names than regular keywords.
+    - Fix deparse of ALTER TABLE a ALTER b SET STATISTICS DEFAULT
+    - Fix the null pointer dereference when handling identity columns
+  - Allow alternate definitions of NAMEDATALEN identifier limit
+    - This allows building libpg_query with an override of the built-time limit of
+      Postgres identifiers (typically 63 characters)
+  - Normalization: Add support for CALL statements
+  - Bump Postgres to 17.7 and switch back to release tarballs
+* Deparser: Support pretty-printing and other deparser options
+  - `PgQuery::ParserResult#deparse` now takes options like `pretty_print`
+* Add `PgQuery.split_with_parser` method to allow splitting statements
+* Support Ruby 4.0+ development versions for extension building
+* Fix ABI version error with TruffleRuby on Mac
+* Support finding functions invoked with CALL
+* Support null_test and boolean_test node type with parsing
+* Expose `PgQuery::ParserResult#find_tree_location` method
+
 ## 6.1.0     2025-04-02
 
 * Upgrade to libpg_query 17-6.1.0
@@ -174,7 +217,7 @@
 
 * Update to libpg_query 13-2.0.6
   - Update to Postgres 13.3 patch release
-  - Normalize: Don't touch "GROUP BY 1" and "ORDER BY 1" expressions, keep original text 
+  - Normalize: Don't touch "GROUP BY 1" and "ORDER BY 1" expressions, keep original text
   - Fingerprint: Cache list item hashes to fingerprint complex queries faster
   - Deparser: Emit the RangeVar catalogname if present
   - Fix crash in pg_scan function when encountering backslash escapes
