@@ -4,6 +4,15 @@
 
 * ...
 
+## 6.2.2     2026-01-26
+
+* Upgrade to libpg_query 17-6.2.2
+  - pg_query_normalize: Fix handling of special strings in DefElem
+    - This avoids a crash when running the normalize function on certain utility statements
+  - pg_query_deparse_comments_for_query: Add missing initialization
+    - This avoids a crash for callers that read the error field of the result when there is no error
+
+
 ## 6.2.1     2026-01-20
 
 * Upgrade to libpg_query 17-6.2.1
