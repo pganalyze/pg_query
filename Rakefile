@@ -5,8 +5,8 @@ require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'open-uri'
 
-LIB_PG_QUERY_TAG = '17-6.2.1'.freeze
-LIB_PG_QUERY_SHA256SUM = '678434d59511c8892c37ba5b9816ab641bd007cef2eda215b2297c39b79c861d'.freeze
+LIB_PG_QUERY_TAG = '17-6.2.2'.freeze
+LIB_PG_QUERY_SHA256SUM = 'e68962c18dbf5890821511be6c5c42261170bf8bfd51a82ea9176069f3d0df8b'.freeze
 
 Rake::ExtensionTask.new 'pg_query' do |ext|
   ext.lib_dir = 'lib/pg_query'
