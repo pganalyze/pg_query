@@ -44,3 +44,45 @@ describe PgQuery, '#walk!' do
     expect(query.deparse).to eq 'SELECT * FROM tbl WHERE col = ANY(ARRAY[$39, $40])'
   end
 end
+
+describe PgQuery, '#walk_subtree!' do
+  it 'yields the starting subtree itself first' do
+    query = described_class.parse("SELECT 1")
+    select_stmt = query.tree.stmts[0].stmt.select_stmt
+    yielded = []
+    query.walk_subtree!(select_stmt) { |node| yielded << node }
+    expect(yielded.first).to be(select_stmt)
+  end
+
+  it 'yields nested messages and repeated fields under the subtree' do
+    query = described_class.parse("SELECT 1, 2")
+    select_stmt = query.tree.stmts[0].stmt.select_stmt
+    classes = []
+    query.walk_subtree!(select_stmt) { |node| classes << node.class }
+    expect(classes).to include(PgQuery::SelectStmt, Google::Protobuf::RepeatedField, PgQuery::ResTarget, PgQuery::Node, PgQuery::A_Const, PgQuery::Integer)
+  end
+
+  it 'stops descending when the block returns :skip' do
+    query = described_class.parse("SELECT foo(1) FROM tbl")
+    yielded = []
+    query.walk_subtree!(query.tree) do |node|
+      yielded << node
+      node.is_a?(PgQuery::FuncCall) ? :skip : nil
+    end
+    func_call = yielded.find { |n| n.is_a?(PgQuery::FuncCall) }
+    expect(func_call).not_to be_nil
+    # Nothing nested inside the FuncCall (e.g. its funcname/args) should have been yielded
+    expect(yielded.any? { |n| n.equal?(func_call.funcname) }).to be false
+    expect(yielded.any? { |n| n.equal?(func_call.args) }).to be false
+  end
+
+  it 'does not yield anything when the root is skipped' do
+    query = described_class.parse("SELECT 1")
+    yielded = []
+    query.walk_subtree!(query.tree) do |node|
+      yielded << node
+      :skip
+    end
+    expect(yielded).to eq [query.tree]
+  end
+end
