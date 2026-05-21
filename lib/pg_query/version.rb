@@ -1,3 +1,3 @@
 module PgQuery
-  VERSION = '6.2.5'.freeze
+  VERSION = '18.1.0'.freeze
 end
