@@ -93,6 +93,10 @@ module PgQuery
         case postgres_field_name
         when 'location'
           next
+        when 'list_start', 'list_end'
+          next if [A_ArrayExpr, ArrayExpr].include?(node.class)
+        when 'rexpr_list_start', 'rexpr_list_end'
+          next if node.is_a?(A_Expr)
         when 'name'
           next if [PrepareStmt, ExecuteStmt, DeallocateStmt, FunctionParameter].include?(node.class)
           next if node.is_a?(ResTarget) && parent_node_name == 'SelectStmt' && parent_field_name == 'targetList'

@@ -241,8 +241,8 @@
   },
   {
     "input": "CREATE TEMPORARY TABLE my_temp_table (test_id integer NOT NULL) ON COMMIT DROP",
-    "expectedParts": ["RawStmt", "stmt", "CreateStmt", "oncommit", "ONCOMMIT_DROP", "relation", "inh", "true", "relpersistence", "t", "tableElts", "ColumnDef", "colname", "test_id", "constraints", "Constraint", "contype", "CONSTR_NOTNULL", "is_local", "true", "typeName", "names", "String", "str", "pg_catalog", "String", "str", "int4", "typemod", "-1"],
-    "expectedHash": "1407ed5c5bb00967"
+    "expectedParts": ["RawStmt", "stmt", "CreateStmt", "oncommit", "ONCOMMIT_DROP", "relation", "inh", "true", "relpersistence", "t", "tableElts", "ColumnDef", "colname", "test_id", "constraints", "Constraint", "contype", "CONSTR_NOTNULL", "initially_valid", "true", "is_enforced", "true", "is_local", "true", "typeName", "names", "String", "str", "pg_catalog", "String", "str", "int4", "typemod", "-1"],
+    "expectedHash": "a6d58d968d06bbad"
   },
   {
     "input": "CREATE TEMPORARY TABLE my_temp_table AS SELECT 1",

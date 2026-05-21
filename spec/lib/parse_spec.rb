@@ -263,7 +263,8 @@ describe PgQuery, '.parse' do
                   location: 22
                 )
               )
-            ]
+            ],
+            location: 22
           )
         )
       )
@@ -1109,7 +1110,8 @@ $BODY$
                   typemod: -1,
                   location: 49
                 ),
-                mode: :FUNC_PARAM_DEFAULT
+                mode: :FUNC_PARAM_DEFAULT,
+                location: 33
               ))
             ],
             return_type: PgQuery::TypeName.new(
@@ -1189,7 +1191,8 @@ $BODY$
                     typemod: -1,
                     location: 23
                   ),
-                  mode: :FUNC_PARAM_DEFAULT
+                  mode: :FUNC_PARAM_DEFAULT,
+                  location: 23
                 )
               ),
               PgQuery::Node.new(
@@ -1203,7 +1206,8 @@ $BODY$
                     typemod: -1,
                     location: 46
                   ),
-                  mode: :FUNC_PARAM_TABLE
+                  mode: :FUNC_PARAM_TABLE,
+                  location: 43
                 )
               )
             ],
