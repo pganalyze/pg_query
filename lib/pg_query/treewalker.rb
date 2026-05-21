@@ -17,6 +17,33 @@ module PgQuery
       end
     end
 
+    # Walks a subtree starting at `tree`, yielding the tree itself and each nested
+    # Protobuf message or repeated field. Modeled on PgQuery::ParserResult#walk! but
+    # operates on a given starting subtree and also yields the root (so callers can
+    # match on it). If the block returns :skip for a node, descent stops there.
+    def walk_subtree!(tree) # rubocop:disable Metrics/CyclomaticComplexity
+      return if yield(tree) == :skip
+      nodes = [tree]
+      until nodes.empty?
+        parent_node = nodes.shift
+        case parent_node
+        when Google::Protobuf::MessageExts
+          parent_node.class.descriptor.each do |field_descriptor|
+            node = field_descriptor.get(parent_node)
+            next unless node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
+            next if yield(node) == :skip
+            nodes << node
+          end
+        when Google::Protobuf::RepeatedField
+          parent_node.each do |node|
+            next unless node.is_a?(Google::Protobuf::MessageExts) || node.is_a?(Google::Protobuf::RepeatedField)
+            next if yield(node) == :skip
+            nodes << node
+          end
+        end
+      end
+    end
+
     # Traverses the tree to find the node at the given location and yields
     # its parent node, the parent field, and the node itself.
     def find_tree_location(tree, searched_location)

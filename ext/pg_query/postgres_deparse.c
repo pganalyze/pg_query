@@ -93,6 +93,7 @@ typedef enum DeparseNodeContext {
 	DEPARSE_NODE_CONTEXT_A_EXPR,
 	DEPARSE_NODE_CONTEXT_CREATE_TYPE,
 	DEPARSE_NODE_CONTEXT_ALTER_TYPE,
+	DEPARSE_NODE_CONTEXT_ALTER_DOMAIN,
 	DEPARSE_NODE_CONTEXT_SET_STATEMENT,
 	DEPARSE_NODE_CONTEXT_FUNC_EXPR,
 	DEPARSE_NODE_CONTEXT_SELECT_SETOP,
@@ -151,7 +152,7 @@ typedef struct DeparseState
 	List *result_parts;
 
 	/* Deparse options originally passed in */
-	PostgresDeparseOpts opts;
+	PostgresDeparseOpts *opts;
 
 	/* Set of indexes of comments already placed in the output query */
 	Bitmapset *emitted_comments;
@@ -231,7 +232,8 @@ static void deparseJsonFuncExpr(DeparseState *state, JsonFuncExpr *json_func_exp
 static void deparseJsonQuotesClauseOpt(DeparseState *state, JsonQuotes quotes);
 static void deparseJsonOnErrorClauseOpt(DeparseState *state, JsonBehavior *behavior);
 static void deparseJsonOnEmptyClauseOpt(DeparseState *state, JsonBehavior *behavior);
-static void deparseConstraint(DeparseState *state, Constraint *constraint);
+static void deparseConstraint(DeparseState *state, Constraint *constraint, DeparseNodeContext context);
+static void deparseATAlterConstraint(DeparseState *state, ATAlterConstraint *constraint);
 static void deparseSchemaStmt(DeparseState *state, Node *node);
 static void deparseExecuteStmt(DeparseState *state, ExecuteStmt *execute_stmt);
 static void deparseTriggerTransition(DeparseState *state, TriggerTransition *trigger_transition);
@@ -321,7 +323,7 @@ makeDeparseStatePart(DeparseState *state, DeparseStateNestingLevel *level, Depar
 	part->str = makeStringInfo();
 	part->indent = level->base_indent;
 	if (indent_mode != DEPARSE_PART_NO_INDENT)
-		part->indent += state->opts.indent_size;
+		part->indent += state->opts->indent_size;
 	part->mergeable = indent_mode == DEPARSE_PART_INDENT_AND_MERGE;
 	return part;
 }
@@ -441,7 +443,7 @@ deparseAppendPart(DeparseState *state, bool deduplicate)
 static void
 deparseAppendCommaAndPart(DeparseState *state)
 {
-	if (state->opts.commas_start_of_line)
+	if (state->opts->commas_start_of_line)
 	{
 		deparseAppendPart(state, true);
 		deparseAppendStringInfoString(state, ", ");
@@ -472,25 +474,25 @@ deparseAppendPartGroup(DeparseState *state, const char *keyword, DeparsePartInde
 static void
 deparseAppendCommentsIfNeeded(DeparseState *state, ParseLoc location)
 {
-	for (int i = 0; i < state->opts.comment_count; i++)
+	for (int i = 0; i < state->opts->comment_count; i++)
 	{
 		if (bms_is_member(i, state->emitted_comments))
 			continue;
 
-		PostgresDeparseComment *comment = state->opts.comments[i];
+		PostgresDeparseComment *comment = state->opts->comments[i];
 		if (comment->match_location > location)
 			continue;
 
 		// Emit one less leading newline if we already emitted one for formatting reasons
 		int newlines_before_comment = comment->newlines_before_comment;
-		if (state->opts.pretty_print && newlines_before_comment > 0 &&
+		if (state->opts->pretty_print && newlines_before_comment > 0 &&
 			deparseGetCurrentPartGroup(state)->keyword != NULL &&
 			deparseGetCurrentStringInfo(state)->len == 0)
 			newlines_before_comment -= 1;
 
 		for (int j = 0; j < newlines_before_comment; j++)
 		{
-			if (state->opts.pretty_print)
+			if (state->opts->pretty_print)
 				deparseAppendPart(state, false);
 			else
 				deparseAppendStringInfoChar(state, '\n');
@@ -503,7 +505,7 @@ deparseAppendCommentsIfNeeded(DeparseState *state, ParseLoc location)
 
 		for (int j = 0; j < comment->newlines_after_comment; j++)
 		{
-			if (state->opts.pretty_print)
+			if (state->opts->pretty_print)
 				deparseAppendPart(state, false);
 			else
 				deparseAppendStringInfoChar(state, '\n');
@@ -531,10 +533,10 @@ deparseEmit(DeparseState *state, StringInfo str)
 		DeparseStatePart *part = (DeparseStatePart *) lfirst(lc);
 		bool last_part = list_cell_number(state->result_parts, lc) == list_length(state->result_parts) - 1;
 
-		if (!state->opts.pretty_print && part->str->len > 0 && (part->str->data[0] == ')' || part->str->data[0] == ';'))
+		if (!state->opts->pretty_print && part->str->len > 0 && (part->str->data[0] == ')' || part->str->data[0] == ';'))
 			removeTrailingSpaceFromStr(str);
 
-		if (state->opts.pretty_print)
+		if (state->opts->pretty_print)
 		{
 			for (int i = 0; i < part->indent; i++)
 				appendStringInfoChar(str, ' ');
@@ -545,7 +547,7 @@ deparseEmit(DeparseState *state, StringInfo str)
 
 		if (!last_part)
 		{
-			if (state->opts.pretty_print)
+			if (state->opts->pretty_print)
 				appendStringInfoChar(str, '\n');
 			else if (str->data[str->len - 1] != '(')
 				appendStringInfoChar(str, ' ');
@@ -556,7 +558,7 @@ deparseEmit(DeparseState *state, StringInfo str)
 	list_free(state->result_parts);
 	state->result_parts = NIL;
 
-	if (state->opts.pretty_print && state->opts.trailing_newline)
+	if (state->opts->pretty_print && state->opts->trailing_newline)
 		appendStringInfoChar(str, '\n');
 }
 
@@ -568,9 +570,9 @@ deparseStateIncreaseNestingLevel(DeparseState *state)
 	if (parent)
 	{
 		DeparseStatePartGroup *part_group = deparseGetCurrentPartGroup(state);
-		level->base_indent = parent->base_indent + state->opts.indent_size;
+		level->base_indent = parent->base_indent + state->opts->indent_size;
 		if (part_group->indent_mode != DEPARSE_PART_NO_INDENT) /* Indent again if parts next to us are also indented */
-			level->base_indent += state->opts.indent_size;
+			level->base_indent += state->opts->indent_size;
 
 		/* Parts with nested elements don't get merged, even if otherwise permitted */
 		deparseMarkCurrentPartNonMergable(state);
@@ -600,7 +602,7 @@ deparseStateDecreaseNestingLevel(DeparseState *state, DeparseStateNestingLevel *
 				DeparseStatePart *part = (DeparseStatePart *) lfirst(lc2);
 				removeTrailingSpaceFromStr(target->str);
 				if (target->mergeable && part->mergeable &&
-					target->indent + target->str->len + 1 + part->str->len <= state->opts.max_line_length)
+					target->indent + target->str->len + 1 + part->str->len <= state->opts->max_line_length)
 				{
 					if (target->str->len > 0 && target->str->data[target->str->len - 1] != '(')
 						appendStringInfoChar(target->str, ' ');
@@ -1712,6 +1714,23 @@ static void deparseColumnList(DeparseState *state, List *columns)
 	}
 }
 
+// "opt_column_and_period_list" and "optionalPeriodName" in gram.y
+static void deparseColumnListWithPeriod(DeparseState *state, List *columns)
+{
+	ListCell *lc = NULL;
+	foreach(lc, columns)
+	{
+		bool not_last = lnext(columns, lc);
+		if (!not_last)
+			deparseAppendStringInfoString(state, "PERIOD ");
+
+		deparseAppendStringInfoString(state, quote_identifier(strVal(lfirst(lc))));
+
+		if (not_last)
+			deparseAppendStringInfoString(state, ", ");
+	}
+}
+
 // "OptTemp" in gram.y
 //
 // Note this method adds a trailing space if a value is output
@@ -2647,6 +2666,9 @@ static void deparsePrivilegeTarget(DeparseState *state, GrantTargetType targtype
 				case OBJECT_SCHEMA:
 					deparseAppendStringInfoString(state, "SCHEMAS");
 					break;
+				case OBJECT_LARGEOBJECT:
+					deparseAppendStringInfoString(state, "LARGE OBJECTS");
+					break;
 				default:
 					// Other types are not supported here
 					Assert(false);
@@ -3008,10 +3030,10 @@ void deparseRawStmt(StringInfo str, struct RawStmt *raw_stmt)
 {
 	PostgresDeparseOpts opts;
 	MemSet(&opts, 0, sizeof(PostgresDeparseOpts)); // zero initialized means pretty print = false
-	deparseRawStmtOpts(str, raw_stmt, opts);
+	deparseRawStmtOpts(str, raw_stmt, &opts);
 }
 
-void deparseRawStmtOpts(StringInfo str, struct RawStmt *raw_stmt, PostgresDeparseOpts opts)
+void deparseRawStmtOpts(StringInfo str, struct RawStmt *raw_stmt, PostgresDeparseOpts *opts)
 {
 	DeparseState *state = NULL;
 	if (raw_stmt->stmt == NULL)
@@ -3019,24 +3041,14 @@ void deparseRawStmtOpts(StringInfo str, struct RawStmt *raw_stmt, PostgresDepars
 
 	state = palloc0(sizeof(DeparseState));
 	state->opts = opts;
-	if (state->opts.indent_size == 0)
-		state->opts.indent_size = 4;
-	if (state->opts.max_line_length == 0)
-		state->opts.max_line_length = 80;
+	if (state->opts->indent_size == 0)
+		state->opts->indent_size = 4;
+	if (state->opts->max_line_length == 0)
+		state->opts->max_line_length = 80;
 
 	/* Check for any comments at the start of the statement */
-	if (state->opts.comment_count > 0)
+	if (state->opts->comment_count > 0)
 	{
-		/*
-		 * Filter out comments that are placed before this statement starts, this
-		 * avoids emitting comments multiple times in multi-statement queries.
-		 */
-		for (int i = 0; i < state->opts.comment_count; i++)
-		{
-			if (state->opts.comments[i]->match_location < raw_stmt->stmt_location)
-				state->emitted_comments = bms_add_member(state->emitted_comments, i);
-		}
-
 		deparseStateIncreaseNestingLevel(state);
 		deparseAppendCommentsIfNeeded(state, raw_stmt->stmt_location);
 		deparseRemoveTrailingEmptyPart(state);
@@ -3044,6 +3056,15 @@ void deparseRawStmtOpts(StringInfo str, struct RawStmt *raw_stmt, PostgresDepars
 	}
 
 	deparseStmt(state, raw_stmt->stmt);
+
+	/* Check for any comments at the end of the statement */
+	if (state->opts->comment_count > 0)
+	{
+		deparseStateIncreaseNestingLevel(state);
+		deparseAppendCommentsIfNeeded(state, INT_MAX);
+		deparseRemoveTrailingEmptyPart(state);
+		deparseStateDecreaseNestingLevel(state, NULL);
+	}
 
 	deparseEmit(state, str);
 
@@ -4027,6 +4048,7 @@ static void deparseJoinExpr(DeparseState *state, JoinExpr *join_expr)
 			break;
 		case JOIN_SEMI:
 		case JOIN_ANTI:
+		case JOIN_RIGHT_SEMI:
 		case JOIN_RIGHT_ANTI:
 		case JOIN_UNIQUE_OUTER:
 		case JOIN_UNIQUE_INNER:
@@ -4638,6 +4660,7 @@ static void deparseAIndirection(DeparseState *state, A_Indirection *a_indirectio
 		IsA(a_indirection->arg, A_Expr) ||
 		IsA(a_indirection->arg, TypeCast) ||
 		IsA(a_indirection->arg, RowExpr) ||
+		IsA(a_indirection->arg, A_ArrayExpr) ||
 		(IsA(a_indirection->arg, ColumnRef) && !IsA(linitial(a_indirection->indirection), A_Indices)) ||
 		IsA(a_indirection->arg, JsonFuncExpr);
 
@@ -4769,7 +4792,7 @@ static void deparseColumnDef(DeparseState *state, ColumnDef *column_def)
 
 	foreach(lc, column_def->constraints)
 	{
-		deparseConstraint(state, castNode(Constraint, lfirst(lc)));
+		deparseConstraint(state, castNode(Constraint, lfirst(lc)), DEPARSE_NODE_CONTEXT_NONE);
 		deparseAppendStringInfoChar(state, ' ');
 	}
 
@@ -4779,6 +4802,36 @@ static void deparseColumnDef(DeparseState *state, ColumnDef *column_def)
 	}
 
 	removeTrailingSpace(state);
+}
+
+// "returning_clause" and "returning_option" in gram.y
+static void deparseReturningClause(DeparseState *state, ReturningClause *returning_clause)
+{
+	ListCell *lc;
+
+	deparseAppendPartGroup(state, "RETURNING", DEPARSE_PART_INDENT_AND_MERGE);
+	if (list_length(returning_clause->options) > 0)
+	{
+		deparseAppendStringInfoString(state, "WITH (");
+		foreach(lc, returning_clause->options)
+		{
+			ReturningOption *opt = castNode(ReturningOption, lfirst(lc));
+			switch (opt->option)
+			{
+				case RETURNING_OPTION_OLD:
+					deparseAppendStringInfoString(state, "OLD AS ");
+					break;
+				case RETURNING_OPTION_NEW:
+					deparseAppendStringInfoString(state, "NEW AS ");
+					break;
+			}
+			deparseColId(state, opt->value);
+			if (lnext(returning_clause->options, lc))
+				deparseAppendStringInfoString(state, ", ");
+		}
+		deparseAppendStringInfoString(state, ") ");
+	}
+	deparseTargetList(state, returning_clause->exprs);
 }
 
 static void deparseInsertOverride(DeparseState *state, OverridingKind override)
@@ -4838,11 +4891,8 @@ static void deparseInsertStmt(DeparseState *state, InsertStmt *insert_stmt)
 		deparseAppendStringInfoChar(state, ' ');
 	}
 
-	if (list_length(insert_stmt->returningList) > 0)
-	{
-		deparseAppendPartGroup(state, "RETURNING", DEPARSE_PART_INDENT_AND_MERGE);
-		deparseTargetList(state, insert_stmt->returningList);
-	}
+	if (insert_stmt->returningClause != NULL)
+		deparseReturningClause(state, insert_stmt->returningClause);
 
 	removeTrailingSpace(state);
 	deparseStateDecreaseNestingLevel(state, parent_level);
@@ -4940,11 +4990,8 @@ static void deparseUpdateStmt(DeparseState *state, UpdateStmt *update_stmt)
 	deparseFromClause(state, update_stmt->fromClause);
 	deparseWhereOrCurrentClause(state, update_stmt->whereClause);
 
-	if (list_length(update_stmt->returningList) > 0)
-	{
-		deparseAppendPartGroup(state, "RETURNING", DEPARSE_PART_INDENT_AND_MERGE);
-		deparseTargetList(state, update_stmt->returningList);
-	}
+	if (update_stmt->returningClause != NULL)
+		deparseReturningClause(state, update_stmt->returningClause);
 
 	removeTrailingSpace(state);
 	deparseStateDecreaseNestingLevel(state, parent_level);
@@ -5039,16 +5086,13 @@ static void deparseMergeStmt(DeparseState *state, MergeStmt *merge_stmt)
 				break;
 		}
 
-		if (lfirst(lc) != llast(merge_stmt->mergeWhenClauses))
-			deparseAppendStringInfoChar(state, ' ');
+		deparseAppendStringInfoChar(state, ' ');
 	}
 
-	if (merge_stmt->returningList)
-	{
-		deparseAppendPartGroup(state, "RETURNING", DEPARSE_PART_INDENT_AND_MERGE);
-		deparseTargetList(state, merge_stmt->returningList);
-	}
+	if (merge_stmt->returningClause != NULL)
+		deparseReturningClause(state, merge_stmt->returningClause);
 
+	removeTrailingSpace(state);
 	deparseStateDecreaseNestingLevel(state, parent_level);
 }
 
@@ -5076,11 +5120,8 @@ static void deparseDeleteStmt(DeparseState *state, DeleteStmt *delete_stmt)
 
 	deparseWhereOrCurrentClause(state, delete_stmt->whereClause);
 
-	if (list_length(delete_stmt->returningList) > 0)
-	{
-		deparseAppendPartGroup(state, "RETURNING", DEPARSE_PART_INDENT_AND_MERGE);
-		deparseTargetList(state, delete_stmt->returningList);
-	}
+	if (delete_stmt->returningClause != NULL)
+		deparseReturningClause(state, delete_stmt->returningClause);
 
 	removeTrailingSpace(state);
 	deparseStateDecreaseNestingLevel(state, parent_level);
@@ -5332,7 +5373,7 @@ static void deparseCreateDomainStmt(DeparseState *state, CreateDomainStmt *creat
 
 	foreach(lc, create_domain_stmt->constraints)
 	{
-		deparseConstraint(state, castNode(Constraint, lfirst(lc)));
+		deparseConstraint(state, castNode(Constraint, lfirst(lc)), DEPARSE_NODE_CONTEXT_NONE);
 		deparseAppendStringInfoChar(state, ' ');
 	}
 
@@ -5381,7 +5422,7 @@ static void deparseCreateExtensionStmt(DeparseState *state, CreateExtensionStmt 
 }
 
 // "ColConstraintElem" and "ConstraintElem" in gram.y
-static void deparseConstraint(DeparseState *state, Constraint *constraint)
+static void deparseConstraint(DeparseState *state, Constraint *constraint, DeparseNodeContext context)
 {
 	ListCell *lc;
 
@@ -5423,7 +5464,11 @@ static void deparseConstraint(DeparseState *state, Constraint *constraint)
 			Assert(constraint->generated_when == ATTRIBUTE_IDENTITY_ALWAYS);
 			deparseAppendStringInfoString(state, "GENERATED ALWAYS AS (");
 			deparseExpr(state, constraint->raw_expr, DEPARSE_NODE_CONTEXT_A_EXPR);
-			deparseAppendStringInfoString(state, ") STORED ");
+			deparseAppendStringInfoString(state, ") ");
+			if (constraint->generated_kind == ATTRIBUTE_GENERATED_STORED)
+				deparseAppendStringInfoString(state, "STORED ");
+			else
+				deparseAppendStringInfoString(state, "VIRTUAL ");
 			break;
 		case CONSTR_CHECK:
 			deparseAppendStringInfoString(state, "CHECK (");
@@ -5481,28 +5526,49 @@ static void deparseConstraint(DeparseState *state, Constraint *constraint)
 		case CONSTR_ATTR_IMMEDIATE:
 			deparseAppendStringInfoString(state, "INITIALLY IMMEDIATE ");
 			break;
+		case CONSTR_ATTR_ENFORCED:
+			deparseAppendStringInfoString(state, "ENFORCED ");
+			break;
+		case CONSTR_ATTR_NOT_ENFORCED:
+			deparseAppendStringInfoString(state, "NOT ENFORCED ");
+			break;
 	}
 
 	if (list_length(constraint->keys) > 0)
 	{
-		bool valueOnly = false;
+		bool emit_keys = true;
+		bool needs_parens = true;
 
-		if (list_length(constraint->keys) == 1) {
-			Node* firstKey = constraint->keys->elements[0].ptr_value;
-			valueOnly = IsA(firstKey, String) && !strcmp("value", ((String*)firstKey)->sval);
+		if (list_length(constraint->keys) == 1)
+		{
+			Node* key = linitial(constraint->keys);
+			if (context == DEPARSE_NODE_CONTEXT_ALTER_DOMAIN)
+				emit_keys = !(IsA(key, String) && strcmp(castNode(String, key)->sval, "value") == 0);
+			needs_parens = constraint->contype != CONSTR_NULL && constraint->contype != CONSTR_NOTNULL;
 		}
 
-		if (!valueOnly) {
+		if (needs_parens)
 			deparseAppendStringInfoChar(state, '(');
+
+		if (emit_keys)
 			deparseColumnList(state, constraint->keys);
-			deparseAppendStringInfoString(state, ") ");
-		}
+
+		if (constraint->without_overlaps)
+			deparseAppendStringInfoString(state, " WITHOUT OVERLAPS");
+
+		if (needs_parens)
+			deparseAppendStringInfoChar(state, ')');
+
+		deparseAppendStringInfoChar(state, ' ');
 	}
 
 	if (list_length(constraint->fk_attrs) > 0)
 	{
 		deparseAppendStringInfoChar(state, '(');
-		deparseColumnList(state, constraint->fk_attrs);
+		if (constraint->fk_with_period)
+			deparseColumnListWithPeriod(state, constraint->fk_attrs);
+		else
+			deparseColumnList(state, constraint->fk_attrs);
 		deparseAppendStringInfoString(state, ") ");
 	}
 
@@ -5514,7 +5580,10 @@ static void deparseConstraint(DeparseState *state, Constraint *constraint)
 		if (list_length(constraint->pk_attrs) > 0)
 		{
 			deparseAppendStringInfoChar(state, '(');
-			deparseColumnList(state, constraint->pk_attrs);
+			if (constraint->pk_with_period)
+				deparseColumnListWithPeriod(state, constraint->pk_attrs);
+			else
+				deparseColumnList(state, constraint->pk_attrs);
 			deparseAppendStringInfoString(state, ") ");
 		}
 	}
@@ -5627,9 +5696,53 @@ static void deparseConstraint(DeparseState *state, Constraint *constraint)
 	if (constraint->is_no_inherit)
 		deparseAppendStringInfoString(state, "NO INHERIT ");
 
+	if ((constraint->contype == CONSTR_FOREIGN || constraint->contype == CONSTR_CHECK) && !constraint->is_enforced)
+		deparseAppendStringInfoString(state, "NOT ENFORCED ");
+
 	if (constraint->skip_validation)
 		deparseAppendStringInfoString(state, "NOT VALID ");
 	
+	removeTrailingSpace(state);
+}
+
+// "ALTER CONSTRAINT name ConstraintAttributeSpec" in gram.y
+static void deparseATAlterConstraint(DeparseState *state, ATAlterConstraint *constraint)
+{
+	ListCell *lc;
+
+	if (constraint->conname != NULL)
+	{
+		deparseAppendStringInfoString(state, "CONSTRAINT ");
+		deparseAppendStringInfoString(state, quote_identifier(constraint->conname));
+		deparseAppendStringInfoChar(state, ' ');
+	}
+
+	if (constraint->alterEnforceability)
+	{
+		if (constraint->is_enforced)
+			deparseAppendStringInfoString(state, "ENFORCED ");
+		else
+			deparseAppendStringInfoString(state, "NOT ENFORCED ");
+	}
+
+	if (constraint->alterDeferrability)
+	{
+		if (constraint->initdeferred)
+			deparseAppendStringInfoString(state, "INITIALLY DEFERRED ");
+		else if (constraint->deferrable)
+			deparseAppendStringInfoString(state, "DEFERRABLE ");
+		else
+			deparseAppendStringInfoString(state, "NOT DEFERRABLE ");
+	}
+
+	if (constraint->alterInheritability)
+	{
+		if (constraint->noinherit)
+			deparseAppendStringInfoString(state, "NO INHERIT ");
+		else
+			deparseAppendStringInfoString(state, "INHERIT ");
+	}
+
 	removeTrailingSpace(state);
 }
 
@@ -5997,7 +6110,7 @@ static void deparseTableElement(DeparseState *state, Node *node)
 			deparseTableLikeClause(state, castNode(TableLikeClause, node));
 			break;
 		case T_Constraint:
-			deparseConstraint(state, castNode(Constraint, node));
+			deparseConstraint(state, castNode(Constraint, node), DEPARSE_NODE_CONTEXT_NONE);
 			break;
 		default:
 			Assert(false);
@@ -7005,10 +7118,6 @@ static void deparseAlterTableCmd(DeparseState *state, AlterTableCmd *alter_table
 			options = "DROP EXPRESSION";
 			trailing_missing_ok = true;
 			break;
-		case AT_CheckNotNull: /* check column is already marked not null */
-			// Not present in raw parser output
-			Assert(false);
-			break;
 		case AT_SetStatistics: /* alter column set statistics */
 			deparseAppendStringInfoString(state, "ALTER COLUMN ");
 			options = "SET STATISTICS";
@@ -7244,7 +7353,7 @@ static void deparseAlterTableCmd(DeparseState *state, AlterTableCmd *alter_table
 			break;
 		case AT_DetachPartitionFinalize:
 			deparsePartitionCmd(state, castNode(PartitionCmd, alter_table_cmd->def));
-			deparseAppendStringInfoString(state, "FINALIZE ");
+			deparseAppendStringInfoString(state, " FINALIZE ");
 			break;
 		case AT_AddColumn:
 		case AT_AlterColumnType:
@@ -7285,8 +7394,11 @@ static void deparseAlterTableCmd(DeparseState *state, AlterTableCmd *alter_table
 			break;
 		case AT_AddIdentity:
 		case AT_AddConstraint:
+			deparseConstraint(state, castNode(Constraint, alter_table_cmd->def), DEPARSE_NODE_CONTEXT_NONE);
+			deparseAppendStringInfoChar(state, ' ');
+			break;
 		case AT_AlterConstraint:
-			deparseConstraint(state, castNode(Constraint, alter_table_cmd->def));
+			deparseATAlterConstraint(state, castNode(ATAlterConstraint, alter_table_cmd->def));
 			deparseAppendStringInfoChar(state, ' ');
 			break;
 		case AT_SetIdentity:
@@ -7452,7 +7564,7 @@ static void deparseAlterDomainStmt(DeparseState *state, AlterDomainStmt *alter_d
 			break;
 		case 'C':
 			deparseAppendStringInfoString(state, "ADD ");
-			deparseConstraint(state, castNode(Constraint, alter_domain_stmt->def));
+			deparseConstraint(state, castNode(Constraint, alter_domain_stmt->def), DEPARSE_NODE_CONTEXT_ALTER_DOMAIN);
 			break;
 		case 'X':
 			deparseAppendStringInfoString(state, "DROP CONSTRAINT ");
@@ -7776,22 +7888,6 @@ static void deparseTransactionStmt(DeparseState *state, TransactionStmt *transac
 	removeTrailingSpace(state);
 }
 
-// Determine if we hit SET TIME ZONE INTERVAL, that has special syntax not
-// supported for other SET statements
-static bool isSetTimeZoneInterval(VariableSetStmt* stmt)
-{
-	if (!(strcmp(stmt->name, "timezone") == 0 &&
-		  list_length(stmt->args) == 1 &&
-		  IsA(linitial(stmt->args), TypeCast)))
-		return false;
-
-	TypeName* typeName = castNode(TypeCast, linitial(stmt->args))->typeName;
-
-	return (list_length(typeName->names) == 2 &&
-		strcmp(strVal(linitial(typeName->names)), "pg_catalog") == 0 &&
-		strcmp(strVal(llast(typeName->names)), "interval") == 0);
-}
-
 static void deparseVariableSetStmt(DeparseState *state, VariableSetStmt* variable_set_stmt)
 {
 	ListCell *lc;
@@ -7802,10 +7898,21 @@ static void deparseVariableSetStmt(DeparseState *state, VariableSetStmt* variabl
 			deparseAppendStringInfoString(state, "SET ");
 			if (variable_set_stmt->is_local)
 				deparseAppendStringInfoString(state, "LOCAL ");
-			if (isSetTimeZoneInterval(variable_set_stmt))
+			if (strcmp(variable_set_stmt->name, "timezone") == 0 && variable_set_stmt->jumble_args)
 			{
 				deparseAppendStringInfoString(state, "TIME ZONE ");
 				deparseVarList(state, variable_set_stmt->args);
+			}
+			else if (strcmp(variable_set_stmt->name, "xmloption") == 0 && variable_set_stmt->jumble_args)
+			{
+				char *option = linitial_node(A_Const, variable_set_stmt->args)->val.sval.sval;
+				deparseAppendStringInfoString(state, "XML OPTION ");
+				if (strcmp(option, "DOCUMENT") == 0)
+					deparseAppendStringInfoString(state, "DOCUMENT ");
+				else if (strcmp(option, "CONTENT") == 0)
+					deparseAppendStringInfoString(state, "CONTENT ");
+				else
+					deparseVarList(state, variable_set_stmt->args);
 			}
 			else
 			{
@@ -7818,8 +7925,15 @@ static void deparseVariableSetStmt(DeparseState *state, VariableSetStmt* variabl
 			deparseAppendStringInfoString(state, "SET ");
 			if (variable_set_stmt->is_local)
 				deparseAppendStringInfoString(state, "LOCAL ");
-			deparseVarName(state, variable_set_stmt->name);
-			deparseAppendStringInfoString(state, " TO DEFAULT");
+			if (strcmp(variable_set_stmt->name, "timezone") == 0 && variable_set_stmt->jumble_args)
+			{
+				deparseAppendStringInfoString(state, "TIME ZONE DEFAULT");
+			}
+			else
+			{
+				deparseVarName(state, variable_set_stmt->name);
+				deparseAppendStringInfoString(state, " TO DEFAULT");
+			}
 			break;
 		case VAR_SET_CURRENT: /* SET var FROM CURRENT */
 			deparseAppendStringInfoString(state, "SET ");
@@ -8089,7 +8203,7 @@ static void deparseCopyStmt(DeparseState *state, CopyStmt *copy_stmt)
 		{
 			DefElem *def_elem = castNode(DefElem, lfirst(lc));
 
-			if (strcmp(def_elem->defname, "freeze") == 0 && optBooleanValue(def_elem->arg))
+			if (strcmp(def_elem->defname, "freeze") == 0 && def_elem->arg && optBooleanValue(def_elem->arg))
 			{}
 			else if (strcmp(def_elem->defname, "header") == 0 && def_elem->arg && optBooleanValue(def_elem->arg))
 			{}
@@ -8110,7 +8224,7 @@ static void deparseCopyStmt(DeparseState *state, CopyStmt *copy_stmt)
 			{
 				DefElem *def_elem = castNode(DefElem, lfirst(lc));
 
-				if (strcmp(def_elem->defname, "freeze") == 0 && optBooleanValue(def_elem->arg))
+				if (strcmp(def_elem->defname, "freeze") == 0 && def_elem->arg && optBooleanValue(def_elem->arg))
 				{
 					deparseAppendStringInfoString(state, "FREEZE ");
 				}
