@@ -28,7 +28,7 @@ PgQuery.parse("SELECT 1")
 => #<PgQuery::ParserResult:0x000000012ec4e9e0
   @query="SELECT 1",
   @tree=<PgQuery::ParseResult:
-    version: 160001,
+    version: 180004,
     stmts: [
       <PgQuery::RawStmt:
         stmt: <PgQuery::Node:
@@ -221,9 +221,9 @@ See [libpg_query](https://github.com/pganalyze/libpg_query/blob/15-latest/README
 ## License
 
 PostgreSQL server source code, used under the [PostgreSQL license](https://www.postgresql.org/about/licence/).<br>
-Portions Copyright (c) 1996-2023, The PostgreSQL Global Development Group<br>
+Portions Copyright (c) 1996-2026, The PostgreSQL Global Development Group<br>
 Portions Copyright (c) 1994, The Regents of the University of California
 
 All other parts are licensed under the 3-clause BSD license, see LICENSE file for details.<br>
 Copyright (c) 2015, Lukas Fittl <lukas@fittl.com><br>
-Copyright (c) 2016-2023, Duboce Labs, Inc. (pganalyze) <team@pganalyze.com>
+Copyright (c) 2016-2026, Duboce Labs, Inc. (pganalyze) <team@pganalyze.com>

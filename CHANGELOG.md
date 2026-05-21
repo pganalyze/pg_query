@@ -4,6 +4,21 @@
 
 * ...
 
+
+## 18.0.0    2026-05-21
+
+* Upgrade to libpg_query 18.0.0
+  - Upgrade to Postgres 18
+  - Deparser: Rework comment handling for PG 18 multi-statement strings
+    - Previously a subsequent statement in a multi-statement string would start
+      at the end of the prior statement, including any comments between. In
+      Postgres 18 this has changed, and such comments (and whitespace) are
+      excluded from the statements, the next statement starts at the first
+      non-whitespace (and non-comment) character.
+  - Fingerprinting: Rework alias/schema name handling to match Postgres 18
+* Add #walk_subtree helper to tree walk from arbitrary child nodes
+
+
 ## 6.2.2     2026-01-26
 
 * Upgrade to libpg_query 17-6.2.2
