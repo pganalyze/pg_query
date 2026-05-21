@@ -21,7 +21,7 @@ module PgQuery
     # Protobuf message or repeated field. Modeled on PgQuery::ParserResult#walk! but
     # operates on a given starting subtree and also yields the root (so callers can
     # match on it). If the block returns :skip for a node, descent stops there.
-    def walk_subtree!(tree)
+    def walk_subtree!(tree) # rubocop:disable Metrics/CyclomaticComplexity
       return if yield(tree) == :skip
       nodes = [tree]
       until nodes.empty?
