@@ -60,13 +60,18 @@ describe PgQuery, "#fingerprint" do
     expect(fingerprint("SET x=$1; SELECT A")).not_to eq fingerprint("SELECT a")
   end
 
-  it "ignores aliases" do
+  it "ignores column and subquery aliases" do
     expect(fingerprint("SELECT a AS b")).to eq fingerprint("SELECT a AS c")
     expect(fingerprint("SELECT a")).to eq fingerprint("SELECT a AS c")
-    expect(fingerprint("SELECT * FROM a AS b")).to eq fingerprint("SELECT * FROM a AS c")
-    expect(fingerprint("SELECT * FROM a")).to eq fingerprint("SELECT * FROM a AS c")
-    expect(fingerprint("SELECT * FROM (SELECT * FROM x AS y) AS a")).to eq fingerprint("SELECT * FROM (SELECT * FROM x AS z) AS b")
+    expect(fingerprint("SELECT * FROM (SELECT * FROM x AS y) AS a")).to eq fingerprint("SELECT * FROM (SELECT * FROM x AS y) AS b")
     expect(fingerprint("SELECT a AS b UNION SELECT x AS y")).to eq fingerprint("SELECT a AS c UNION SELECT x AS z")
+  end
+
+  it "fingerprints relation aliases instead of relation names (like Postgres 18+ query IDs)" do
+    expect(fingerprint("SELECT * FROM a AS b")).not_to eq fingerprint("SELECT * FROM a AS c")
+    expect(fingerprint("SELECT * FROM a")).not_to eq fingerprint("SELECT * FROM a AS c")
+    expect(fingerprint("SELECT * FROM a AS c")).to eq fingerprint("SELECT * FROM b AS c")
+    expect(fingerprint("SELECT * FROM a")).to eq fingerprint("SELECT * FROM s.a")
   end
 
   it "ignores param references" do

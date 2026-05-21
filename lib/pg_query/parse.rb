@@ -167,7 +167,7 @@ module PgQuery
               end
             end
 
-            subselect_items.concat(value.returning_list.to_ary)
+            subselect_items.concat(value.returning_clause.exprs.to_ary) if value.returning_clause
 
             if statement.node == :insert_stmt && value.on_conflict_clause
               subselect_items.concat(value.on_conflict_clause.target_list.to_ary)

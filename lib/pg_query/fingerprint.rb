@@ -95,17 +95,34 @@ module PgQuery
           next
         when 'arg_location'
           next if node.is_a?(DefElem)
-        when 'payload_location'
+        when 'payload', 'payload_location'
           next if node.is_a?(NotifyStmt)
         when 'conninfo_location'
           next if [CreateSubscriptionStmt, AlterSubscriptionStmt].include?(node.class)
+        when 'list_start', 'list_end'
+          next if [A_ArrayExpr, ArrayExpr].include?(node.class)
+        when 'rexpr_list_start', 'rexpr_list_end'
+          next if node.is_a?(A_Expr)
         when 'name'
           next if [PrepareStmt, ExecuteStmt, DeallocateStmt, FunctionParameter].include?(node.class)
           next if node.is_a?(ResTarget) && parent_node_name == 'SelectStmt' && parent_field_name == 'targetList'
         when 'gid', 'savepoint_name'
           next if node.is_a?(TransactionStmt)
         when 'options'
-          next if [TransactionStmt, CreateFunctionStmt].include?(node.class)
+          next if node.is_a?(CreateFunctionStmt)
+        when 'rolename'
+          next if node.is_a?(RoleSpec)
+        when 'role'
+          next if node.is_a?(CreateRoleStmt)
+        when 'newname', 'subname'
+          next if node.is_a?(RenameStmt)
+        when 'alias'
+          if node.is_a?(RangeVar)
+            fingerprint_value(val.aliasname, hash, postgres_node_name, 'aliasname', true)
+            next
+          end
+        when 'schemaname'
+          next if node.is_a?(RangeVar) && range_var_in_dml_context?(parent_node_name, parent_field_name)
         when 'portalname'
           next if [DeclareCursorStmt, FetchStmt, ClosePortalStmt].include?(node.class)
         when 'conditionname'
@@ -114,6 +131,8 @@ module PgQuery
           next if node.is_a?(DoStmt)
         when 'relname'
           next if node.is_a?(RangeVar) && node.relpersistence == 't'
+          # In SELECT/DML context the alias name replaces the relation name (matches Postgres 18+ query IDs)
+          next if node.is_a?(RangeVar) && node.alias && range_var_in_dml_context?(parent_node_name, parent_field_name)
           if node.is_a?(RangeVar)
             fingerprint_value(val.gsub(/\d{2,}/, ''), hash, postgres_node_name, postgres_field_name, true)
             next
@@ -132,6 +151,18 @@ module PgQuery
         end
 
         fingerprint_value(val, hash, postgres_node_name, postgres_field_name, true)
+      end
+    end
+
+    def range_var_in_dml_context?(parent_node_name, parent_field_name)
+      case parent_node_name
+      when 'SelectStmt' then parent_field_name == 'fromClause'
+      when 'InsertStmt' then parent_field_name == 'relation'
+      when 'UpdateStmt' then %w[relation fromClause].include?(parent_field_name)
+      when 'DeleteStmt' then %w[relation usingClause].include?(parent_field_name)
+      when 'MergeStmt' then %w[relation sourceRelation].include?(parent_field_name)
+      when 'JoinExpr', 'RangeTableSample', 'LockingClause' then true
+      else false
       end
     end
 

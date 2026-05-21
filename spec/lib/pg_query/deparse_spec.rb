@@ -821,7 +821,7 @@ describe PgQuery do
               random() * 1000,
               (SELECT
                  \'2015-08-25 00:00:00 -0700\'::timestamp +
-                ((\'2015-08-25 23:59:59 -0700\'::timestamp - \'2015-08-25 00:00:00 -0700\'::timestamp) * random()))
+                (\'2015-08-25 23:59:59 -0700\'::timestamp - \'2015-08-25 00:00:00 -0700\'::timestamp) * random())
               FROM generate_series(1, 10000) series(i);
           '
         end
@@ -1361,7 +1361,7 @@ describe PgQuery do
             ADD CONSTRAINT zipchk CHECK (char_length(zipcode) = 5),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp TYPE timestamp with time zone
-              USING \'epoch\'::timestamp with time zone + (date_part(\'epoch\', tstamp) * \'1 second\'::interval),
+              USING \'epoch\'::timestamp with time zone + date_part(\'epoch\', tstamp) * \'1 second\'::interval,
             ALTER COLUMN tstamp SET DEFAULT now(),
             ALTER COLUMN tstamp DROP DEFAULT,
             ALTER COLUMN tstamp SET STATISTICS -5,

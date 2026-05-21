@@ -5,6 +5,9 @@
  * - max_stack_depth_bytes
  * - check_stack_depth
  * - max_stack_depth
+ * - set_stack_base
+ * - restore_stack_base
+ * - assign_max_stack_depth
  *--------------------------------------------------------------------
  */
 
@@ -53,11 +56,30 @@ static __thread char *stack_base_ptr = NULL;
  *
  * Returns the old reference point, if any.
  */
+pg_stack_base_t
+set_stack_base(void)
+{
 #ifndef HAVE__BUILTIN_FRAME_ADDRESS
+	char		stack_base;
 #endif
+	pg_stack_base_t old;
+
+	old = stack_base_ptr;
+
+	/*
+	 * Set up reference point for stack depth checking.  On recent gcc we use
+	 * __builtin_frame_address() to avoid a warning about storing a local
+	 * variable's address in a long-lived variable.  This is also important
+	 * with address sanitizer, see comment in stack_is_too_deep().
+	 */
 #ifdef HAVE__BUILTIN_FRAME_ADDRESS
+	stack_base_ptr = __builtin_frame_address(0);
 #else
+	stack_base_ptr = &stack_base;
 #endif
+
+	return old;
+}
 
 /*
  * restore_stack_base: restore reference point for stack depth checking
@@ -68,7 +90,11 @@ static __thread char *stack_base_ptr = NULL;
  * the main thread's stack, so it sets the base pointer before the call, and
  * restores it afterwards.
  */
-
+void
+restore_stack_base(pg_stack_base_t base)
+{
+	stack_base_ptr = base;
+}
 
 
 /*
@@ -99,13 +125,28 @@ check_stack_depth(void)
 bool
 stack_is_too_deep(void)
 {
+#ifndef HAVE__BUILTIN_FRAME_ADDRESS
 	char		stack_top_loc;
+#endif
 	ssize_t		stack_depth;
+	char	   *stack_address;
 
 	/*
-	 * Compute distance from reference point to my local variables
+	 * With address sanitizer's stack-use-after-return check, stack variables
+	 * are moved to heap allocations, to allow to detect references to the
+	 * memory at a later time. That would break our stack-depth check. Luckily
+	 * __builtin_frame_address() works correctly, even under asan.
 	 */
-	stack_depth = (ssize_t) (stack_base_ptr - &stack_top_loc);
+#ifndef HAVE__BUILTIN_FRAME_ADDRESS
+	stack_address = &stack_top_loc;
+#else
+	stack_address = (char *) __builtin_frame_address(0);
+#endif
+
+	/*
+	 * Compute distance from reference point to my stack frame.
+	 */
+	stack_depth = (ssize_t) (stack_base_ptr - stack_address);
 
 	/*
 	 * Take abs value, since stacks grow up on some machines, down on others
@@ -132,7 +173,13 @@ stack_is_too_deep(void)
 
 
 /* GUC assign hook for max_stack_depth */
+void
+assign_max_stack_depth(int newval, void *extra)
+{
+	ssize_t		newval_bytes = newval * (ssize_t) 1024;
 
+	max_stack_depth_bytes = newval_bytes;
+}
 
 /*
  * Obtain platform stack depth limit (in bytes)

@@ -203,11 +203,8 @@ describe PgQuery, '.summary' do
         expect(described_class.summary(query, truncate_limit: 40).truncated_query).to eq 'WITH "都道府県別ストア別月次売上集計" AS (...) SELECT w'
       end
 
-      # The C implementation checks whether the query still needs truncating based on its
-      # length in bytes, but performs the final cut based on its length in characters, so
-      # the result can be shorter than the one PgQuery.parse(...).truncate returns.
-      it 'is a known difference to .parse for limits between the byte and character length' do
-        expect(described_class.summary(query, truncate_limit: 22).truncated_query).to eq 'WITH "都道府県別ストア別月次売...'
+      it 'matches .parse for limits between the byte and character length' do
+        expect(described_class.summary(query, truncate_limit: 22).truncated_query).to eq 'WITH "都道府県別ストア別月次売上...'
         expect(described_class.parse(query).truncate(22)).to eq 'WITH "都道府県別ストア別月次売上...'
       end
     end

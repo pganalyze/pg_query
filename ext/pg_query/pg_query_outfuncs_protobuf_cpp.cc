@@ -19,6 +19,7 @@ extern "C"
 #include "nodes/plannodes.h"
 #include "nodes/value.h"
 #include "utils/datum.h"
+#include "miscadmin.h"
 }
 
 #define OUT_TYPE(typename, typename_c) pg_query::typename*
@@ -30,27 +31,33 @@ extern "C"
 		_out##typename_c(fldname, (const typename_cast *) obj); \
 	}
 
-#define WRITE_INT_FIELD(outname, outname_json, fldname) out->set_##outname(node->fldname);
-#define WRITE_UINT_FIELD(outname, outname_json, fldname) out->set_##outname(node->fldname);
-#define WRITE_UINT64_FIELD(outname, outname_json, fldname) out->set_##outname(node->fldname);
-#define WRITE_LONG_FIELD(outname, outname_json, fldname) out->set_##outname(node->fldname);
-#define WRITE_FLOAT_FIELD(outname, outname_json, fldname) out->set_##outname(node->fldname);
-#define WRITE_BOOL_FIELD(outname, outname_json, fldname) out->set_##outname(node->fldname);
+/*
+ * These macros are invoked from the generated pg_query_outfuncs_defs.c /
+ * _conds.c, shared with the upb and JSON backends. The leading `msgtype`
+ * argument names the enclosing message for the upb backend; the C++ backend
+ * sets fields on the typed `out` message and ignores it.
+ */
+#define WRITE_INT_FIELD(msgtype, outname, outname_json, fldname) out->set_##outname(node->fldname);
+#define WRITE_UINT_FIELD(msgtype, outname, outname_json, fldname) out->set_##outname(node->fldname);
+#define WRITE_UINT64_FIELD(msgtype, outname, outname_json, fldname) out->set_##outname(node->fldname);
+#define WRITE_LONG_FIELD(msgtype, outname, outname_json, fldname) out->set_##outname(node->fldname);
+#define WRITE_FLOAT_FIELD(msgtype, outname, outname_json, fldname) out->set_##outname(node->fldname);
+#define WRITE_BOOL_FIELD(msgtype, outname, outname_json, fldname) out->set_##outname(node->fldname);
 
-#define WRITE_CHAR_FIELD(outname, outname_json, fldname) \
+#define WRITE_CHAR_FIELD(msgtype, outname, outname_json, fldname) \
 	if (node->fldname != 0) { \
 		out->set_##outname({node->fldname}); \
 	}
 
-#define WRITE_STRING_FIELD(outname, outname_json, fldname) \
+#define WRITE_STRING_FIELD(msgtype, outname, outname_json, fldname) \
 	if (node->fldname != NULL) { \
 	  out->set_##outname(node->fldname); \
 	}
 
-#define WRITE_ENUM_FIELD(typename, outname, outname_json, fldname) \
-	out->set_##outname((pg_query::typename) _enumToInt##typename(node->fldname));
+#define WRITE_ENUM_FIELD(msgtype, enumtype, outname, outname_json, fldname) \
+	out->set_##outname((pg_query::enumtype) _enumToInt##enumtype(node->fldname));
 
-#define WRITE_LIST_FIELD(outname, outname_json, fldname) \
+#define WRITE_LIST_FIELD(msgtype, outname, outname_json, fldname) \
 	if (node->fldname != NULL) { \
     	const ListCell *lc; \
     	foreach(lc, node->fldname) \
@@ -59,28 +66,32 @@ extern "C"
     	} \
 	}
 
-#define WRITE_BITMAPSET_FIELD(outname, outname_json, fldname) // FIXME
+#define WRITE_BITMAPSET_FIELD(msgtype, outname, outname_json, fldname) // FIXME
 
-#define WRITE_NODE_FIELD(outname, outname_json, fldname) \
+#define WRITE_NODE_FIELD(msgtype, outname, outname_json, fldname) \
 	{ \
 		out->set_allocated_##fldname(new pg_query::Node()); \
     	_outNode(out->mutable_##outname(), &node->fldname); \
   	}
 
-#define WRITE_NODE_PTR_FIELD(outname, outname_json, fldname) \
+#define WRITE_NODE_PTR_FIELD(msgtype, outname, outname_json, fldname) \
 	if (node->fldname != NULL) { \
     	out->set_allocated_##outname(new pg_query::Node()); \
     	_outNode(out->mutable_##outname(), node->fldname); \
 	}
 
-#define WRITE_SPECIFIC_NODE_FIELD(typename, typename_underscore, outname, outname_json, fldname) \
+#define WRITE_SPECIFIC_NODE_FIELD(msgtype, typename, typename_underscore, outname, outname_json, fldname) \
 	{ \
 		out->set_allocated_##outname(new pg_query::typename()); \
 		_out##typename(out->mutable_##outname(), &node->fldname); \
 	}
 
-#define WRITE_SPECIFIC_NODE_PTR_FIELD(typename, typename_underscore, outname, outname_json, fldname) \
+// This recurses into _out##typename directly, bypassing the stack depth check
+// in _outNode, so check here (e.g. a long UNION chain nests SelectStmt in
+// SelectStmt without ever going through _outNode).
+#define WRITE_SPECIFIC_NODE_PTR_FIELD(msgtype, typename, typename_underscore, outname, outname_json, fldname) \
 	if (node->fldname != NULL) { \
+		check_stack_depth(); \
 		out->set_allocated_##outname(new pg_query::typename()); \
 		_out##typename(out->mutable_##outname(), node->fldname); \
 	}
@@ -203,6 +214,8 @@ _outAConst(pg_query::A_Const* out_node, const A_Const *node)
 static void
 _outNode(pg_query::Node* out, const void *obj)
 {
+	check_stack_depth();
+
 	if (obj == NULL)
 		return; // Keep out as NULL
 
@@ -224,26 +237,38 @@ pg_query_nodes_to_protobuf(const void *obj)
 {
 	PgQueryProtobuf protobuf;
 	const ListCell *lc;
-	pg_query::ParseResult parse_result;
+
 	if (obj == NULL) {
 		protobuf.data = strdup("");
 		protobuf.len = 0;
 		return protobuf;
 	}
 
-	parse_result.set_version(PG_VERSION_NUM);
-	foreach(lc, (List*) obj)
+	pg_query::ParseResult *parse_result = new pg_query::ParseResult();
+
+	PG_TRY();
 	{
-		_outRawStmt(parse_result.add_stmts(), (const RawStmt*) lfirst(lc));
+		parse_result->set_version(PG_VERSION_NUM);
+		foreach(lc, (List*) obj)
+		{
+			_outRawStmt(parse_result->add_stmts(), (const RawStmt*) lfirst(lc));
+		}
+
+		std::string output;
+		parse_result->SerializeToString(&output);
+
+		protobuf.data = (char*) calloc(output.size(), sizeof(char));
+		memcpy(protobuf.data, output.data(), output.size());
+		protobuf.len = output.size();
 	}
+	PG_CATCH();
+	{
+		delete parse_result;
+		PG_RE_THROW();
+	}
+	PG_END_TRY();
 
-	std::string output;
-	parse_result.SerializeToString(&output);
-
-	protobuf.data = (char*) calloc(output.size(), sizeof(char));
-	memcpy(protobuf.data, output.data(), output.size());
-	protobuf.len = output.size();
-
+	delete parse_result;
 	return protobuf;
 }
 
@@ -251,19 +276,32 @@ extern "C" char *
 pg_query_nodes_to_json(const void *obj)
 {
 	const ListCell *lc;
-	pg_query::ParseResult parse_result;
+	char	   *result = NULL;
 
 	if (obj == NULL)
 		return pstrdup("{}");
 
-	parse_result.set_version(PG_VERSION_NUM);
-	foreach(lc, (List*) obj)
+	pg_query::ParseResult *parse_result = new pg_query::ParseResult();
+
+	PG_TRY();
 	{
-		_outRawStmt(parse_result.add_stmts(), (const RawStmt*) lfirst(lc));
+		parse_result->set_version(PG_VERSION_NUM);
+		foreach(lc, (List*) obj)
+		{
+			_outRawStmt(parse_result->add_stmts(), (const RawStmt*) lfirst(lc));
+		}
+
+		std::string output;
+		google::protobuf::util::MessageToJsonString(*parse_result, &output);
+		result = pstrdup(output.c_str());
 	}
+	PG_CATCH();
+	{
+		delete parse_result;
+		PG_RE_THROW();
+	}
+	PG_END_TRY();
 
-	std::string output;
-	google::protobuf::util::MessageToJsonString(parse_result, &output);
-
-	return pstrdup(output.c_str());
+	delete parse_result;
+	return result;
 }
