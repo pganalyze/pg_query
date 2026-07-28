@@ -294,6 +294,7 @@ module PgQuery
           when :func_call
             # See also CALL below
             subselect_items.concat(next_item.func_call.args.to_ary)
+            subselect_items << next_item.func_call.agg_filter if next_item.func_call.agg_filter
             @functions << {
               function: next_item.func_call.funcname.map { |f| f.string.sval }.join('.'),
               type: :call

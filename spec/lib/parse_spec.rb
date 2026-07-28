@@ -1592,6 +1592,21 @@ $BODY$
     expect(query.tables).to match_array(['foo', 'bar', 'baz'])
   end
 
+  it 'finds tables inside of aggregate FILTER clauses' do
+    query = described_class.parse(<<-SQL)
+      SELECT count(*) FILTER (
+               WHERE NOT EXISTS (
+                 SELECT 1 FROM rental r WHERE r.inventory_id = i.inventory_id
+               )
+             )
+      FROM   inventory i
+    SQL
+    expect(query.tables).to match_array(['inventory', 'rental'])
+    expect(query.select_tables).to match_array(['inventory', 'rental'])
+    expect(query.dml_tables).to eq([])
+    expect(query.ddl_tables).to eq([])
+  end
+
   it 'finds functions in FROM clauses' do
     query = described_class.parse(<<-SQL)
     SELECT *
