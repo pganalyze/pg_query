@@ -1599,12 +1599,85 @@ $BODY$
                  SELECT 1 FROM rental r WHERE r.inventory_id = i.inventory_id
                )
              )
-      FROM   inventory i
+      FROM inventory i
     SQL
     expect(query.tables).to match_array(['inventory', 'rental'])
     expect(query.select_tables).to match_array(['inventory', 'rental'])
     expect(query.dml_tables).to eq([])
     expect(query.ddl_tables).to eq([])
+  end
+
+  it 'finds tables inside of aggregate ORDER BY clauses' do
+    query = described_class.parse(<<-SQL)
+      SELECT array_agg(x ORDER BY (SELECT y FROM other)) FROM foo
+    SQL
+    expect(query.tables).to match_array(['foo', 'other'])
+    expect(query.select_tables).to match_array(['foo', 'other'])
+  end
+
+  it 'finds tables inside of window definitions' do
+    query = described_class.parse(<<-SQL)
+      SELECT count(*) OVER (
+               PARTITION BY (SELECT a FROM part)
+               ORDER BY (SELECT b FROM ord)
+             )
+      FROM foo
+    SQL
+    expect(query.tables).to match_array(['foo', 'part', 'ord'])
+    expect(query.select_tables).to match_array(['foo', 'part', 'ord'])
+  end
+
+  it 'finds tables inside of VALUES lists' do
+    query = described_class.parse(<<-SQL)
+      SELECT * FROM (VALUES ((SELECT a FROM foo)), ((SELECT b FROM bar))) v
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar'])
+    expect(query.select_tables).to match_array(['foo', 'bar'])
+  end
+
+  it 'finds tables inside of a RETURNING clause' do
+    query = described_class.parse(<<-SQL)
+      INSERT INTO foo (a) VALUES (1) RETURNING (SELECT b FROM bar)
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar'])
+    expect(query.dml_tables).to eq(['foo'])
+    expect(query.select_tables).to eq(['bar'])
+  end
+
+  it 'finds tables inside of an ON CONFLICT clause' do
+    query = described_class.parse(<<-SQL)
+      INSERT INTO foo (a) VALUES (1)
+      ON CONFLICT (a) DO UPDATE SET b = (SELECT b FROM bar)
+      WHERE foo.c > (SELECT c FROM baz)
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar', 'baz'])
+    expect(query.dml_tables).to eq(['foo'])
+    expect(query.select_tables).to match_array(['bar', 'baz'])
+  end
+
+  it 'does not confuse CTE names for tables when referenced from a FILTER or window clause' do
+    query = described_class.parse(<<-SQL)
+      WITH cte_a AS (SELECT 1 AS x), cte_b AS (SELECT 2 AS y)
+      SELECT count(*) FILTER (WHERE EXISTS (SELECT 1 FROM cte_a)),
+             count(*) OVER (PARTITION BY (SELECT y FROM cte_b))
+      FROM foo
+    SQL
+    expect(query.tables).to eq(['foo'])
+    expect(query.select_tables).to eq(['foo'])
+    expect(query.cte_names).to match_array(['cte_a', 'cte_b'])
+  end
+
+  it 'does not confuse CTE names for tables when referenced from RETURNING or ON CONFLICT' do
+    query = described_class.parse(<<-SQL)
+      WITH cte_a AS (SELECT 1 AS x)
+      INSERT INTO foo (a) VALUES (1)
+      ON CONFLICT (a) DO UPDATE SET b = (SELECT x FROM cte_a)
+      RETURNING (SELECT x FROM cte_a)
+    SQL
+    expect(query.tables).to eq(['foo'])
+    expect(query.dml_tables).to eq(['foo'])
+    expect(query.select_tables).to eq([])
+    expect(query.cte_names).to eq(['cte_a'])
   end
 
   it 'finds functions in FROM clauses' do

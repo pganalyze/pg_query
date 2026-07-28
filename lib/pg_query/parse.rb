@@ -122,6 +122,7 @@ module PgQuery
             subselect_items.concat(statement.select_stmt.sort_clause.collect { |h| h.sort_by.node })
             subselect_items.concat(statement.select_stmt.group_clause.to_ary)
             subselect_items << statement.select_stmt.having_clause if statement.select_stmt.having_clause
+            subselect_items.concat(statement.select_stmt.values_lists.to_ary)
 
             case statement.select_stmt.op
             when :SETOP_NONE
@@ -162,6 +163,13 @@ module PgQuery
               statement.delete_stmt.using_clause.each do |using_clause|
                 from_clause_items << { item: using_clause, type: :select }
               end
+            end
+
+            subselect_items.concat(value.returning_list.to_ary)
+
+            if statement.node == :insert_stmt && value.on_conflict_clause
+              subselect_items.concat(value.on_conflict_clause.target_list.to_ary)
+              subselect_items << value.on_conflict_clause.where_clause if value.on_conflict_clause.where_clause
             end
 
             if value.with_clause
@@ -294,11 +302,20 @@ module PgQuery
           when :func_call
             # See also CALL below
             subselect_items.concat(next_item.func_call.args.to_ary)
+            subselect_items.concat(next_item.func_call.agg_order.to_ary)
             subselect_items << next_item.func_call.agg_filter if next_item.func_call.agg_filter
+            subselect_items << PgQuery::Node.new(window_def: next_item.func_call.over) if next_item.func_call.over
             @functions << {
               function: next_item.func_call.funcname.map { |f| f.string.sval }.join('.'),
               type: :call
             }
+          when :sort_by
+            subselect_items << next_item.sort_by.node
+          when :window_def
+            subselect_items.concat(next_item.window_def.partition_clause.to_ary)
+            subselect_items.concat(next_item.window_def.order_clause.to_ary)
+            subselect_items << next_item.window_def.start_offset if next_item.window_def.start_offset
+            subselect_items << next_item.window_def.end_offset if next_item.window_def.end_offset
           when :case_expr
             subselect_items.concat(next_item.case_expr.args.map { |arg| arg.case_when.expr })
             subselect_items.concat(next_item.case_expr.args.map { |arg| arg.case_when.result })
