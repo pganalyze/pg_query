@@ -115,6 +115,30 @@ PgQuery.parse("SELECT $1 FROM x WHERE x.y = $2 AND z = $3").filter_columns
 => [["x", "y"], [nil, "z"]]
 ```
 
+### Summarizing a query
+
+`PgQuery.summary` returns the same kind of information as `PgQuery.parse` (tables, functions,
+CTE names, aliases, filter columns and statement types), but gathers it inside the native C
+library instead of sending the full parse tree over protobuf, which is significantly faster
+for large queries.
+
+```ruby
+summary = PgQuery.summary("SELECT $1 FROM x JOIN y USING (id) WHERE z = $2")
+
+summary.tables
+=> ["x", "y"]
+
+summary.statement_types
+=> ["SelectStmt"]
+
+# Like PgQuery.parse(query).truncate(40), except the limit has to be passed in up front
+PgQuery.summary("SELECT a, b, c, d, e, f FROM xyz WHERE a = b", truncate_limit: 40).truncated_query
+
+=> "SELECT ... FROM xyz WHERE a = b"
+```
+
+See the comments on `PgQuery::SummaryParserResult` for how it differs from `PgQuery::ParserResult`.
+
 ### Fingerprinting a query
 
 ```ruby

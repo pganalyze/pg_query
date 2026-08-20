@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-* ...
+* Add `PgQuery.summary` method
+  - This uses the new `pg_query_summary` C function that significantly improves performance when
+    you need metadata (like a list of referenced tables) but don't need the full parse tree.
 
 ## 6.2.2     2026-01-26
 

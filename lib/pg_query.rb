@@ -17,3 +17,4 @@ require 'pg_query/truncate'
 
 require 'pg_query/scan'
 require 'pg_query/split'
+require 'pg_query/summary'
