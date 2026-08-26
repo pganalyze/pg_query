@@ -2,9 +2,21 @@
 
 ## Unreleased
 
-* Add `PgQuery.summary` method
+* ...
+
+## 6.2.3     2026-08-26
+
+* Upgrade to libpg_query 17-6.2.3 ([#350](https://github.com/pganalyze/pg_query/pull/350))
+  - Deparser:
+    - Preserve parentheses around subscripted array constructors
+      - This prevents `(ARRAY[...])[...]` from being deparsed as invalid SQL
+    - Fix handling of constraint key named `value` in `ALTER TABLE` [#329](https://github.com/pganalyze/libpg_query/pull/329)
+  - Preserve `ARFLAGS` when overriding `AR` [#328](https://github.com/pganalyze/libpg_query/pull/328)
+* Add `PgQuery.summary` method ([#349](https://github.com/pganalyze/pg_query/pull/349))
   - This uses the new `pg_query_summary` C function that significantly improves performance when
     you need metadata (like a list of referenced tables) but don't need the full parse tree.
+* Support finding tables inside function/aggregate clauses ([#348](https://github.com/pganalyze/pg_query/pull/348))
+
 
 ## 6.2.2     2026-01-26
 
