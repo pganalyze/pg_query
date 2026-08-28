@@ -16,6 +16,9 @@
   - This uses the new `pg_query_summary` C function that significantly improves performance when
     you need metadata (like a list of referenced tables) but don't need the full parse tree.
 * Support finding tables inside function/aggregate clauses ([#348](https://github.com/pganalyze/pg_query/pull/348))
+* Add support for Ruby 4.0, drop Ruby 3.0 and 3.1 ([#354](https://github.com/pganalyze/pg_query/pull/354))
+* Bump `google-protobuf` dependency to `>= 4.34.0`
+  - 4.34.0 or newer is required for Ruby 4.0 support
 
 
 ## 6.2.2     2026-01-26

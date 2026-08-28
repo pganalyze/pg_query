@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
 
   s.metadata['rubygems_mfa_required'] = 'true'
 
-  s.required_ruby_version = '>= 3.0'
+  s.required_ruby_version = '>= 3.2'
 
   s.extensions = %w[ext/pg_query/extconf.rb]
 
@@ -25,5 +25,5 @@ Gem::Specification.new do |s|
   s.rdoc_options     = %w[--main README.md --exclude ext/]
   s.extra_rdoc_files = %w[CHANGELOG.md README.md]
 
-  s.add_dependency 'google-protobuf', '>= 3.25.3'
+  s.add_dependency 'google-protobuf', '>= 4.34.0'
 end
