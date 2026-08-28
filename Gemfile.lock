@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    pg_query (6.2.2)
-      google-protobuf (>= 3.25.3)
+    pg_query (6.2.3)
+      google-protobuf (>= 4.34.0)
 
 GEM
   remote: https://rubygems.org/
