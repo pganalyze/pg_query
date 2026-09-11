@@ -9,6 +9,7 @@ describe PgQuery do
     context 'bad parse trees' do
       it 'raises an error in deparseTargetList when res target misses val' do
         tree = PgQuery::ParseResult.new(
+          version: PgQuery::PG_VERSION_NUM,
           stmts: [
             PgQuery::RawStmt.new(
               stmt: PgQuery::Node.from(
