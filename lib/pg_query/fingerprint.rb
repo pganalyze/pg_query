@@ -93,6 +93,12 @@ module PgQuery
         case postgres_field_name
         when 'location'
           next
+        when 'arg_location'
+          next if node.is_a?(DefElem)
+        when 'payload_location'
+          next if node.is_a?(NotifyStmt)
+        when 'conninfo_location'
+          next if [CreateSubscriptionStmt, AlterSubscriptionStmt].include?(node.class)
         when 'name'
           next if [PrepareStmt, ExecuteStmt, DeallocateStmt, FunctionParameter].include?(node.class)
           next if node.is_a?(ResTarget) && parent_node_name == 'SelectStmt' && parent_field_name == 'targetList'

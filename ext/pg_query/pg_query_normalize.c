@@ -255,8 +255,8 @@ generate_normalized_query(pgssConstLocations *jstate, int query_loc, int* query_
 	for (i = 0; i < jstate->clocations_count; i++)
 	{
 		int			off,		/* Offset from start for cur tok */
-					tok_len,	/* Length (in bytes) of that tok */
-					param_id;	/* Param ID to be assigned */
+					tok_len;	/* Length (in bytes) of that tok */
+		int64_t		param_id;	/* Param ID to be assigned */
 
 		off = jstate->clocations[i].location;
 		/* Adjust recorded location if we're dealing with partial string */
@@ -266,6 +266,16 @@ generate_normalized_query(pgssConstLocations *jstate, int query_loc, int* query_
 
 		if (tok_len < 0)
 			continue;			/* ignore any duplicates */
+
+		/*
+		 * Defend against constant locations that overlap the previous
+		 * constant or run past the end of the query. Locations come from the
+		 * parser and so should never do either, but getting this wrong means
+		 * a negative length below and a write outside of norm_query, so check
+		 * it at runtime rather than only asserting it.
+		 */
+		if (off < last_off + last_tok_len || off > query_len || tok_len > query_len - off)
+			continue;
 
 		/* Copy next chunk (what precedes the next constant) */
 		len_to_wrt = off - last_off;
@@ -277,9 +287,9 @@ generate_normalized_query(pgssConstLocations *jstate, int query_loc, int* query_
 
 		/* And insert a param symbol in place of the constant token */
 		param_id = (jstate->clocations[i].param_id < 0) ?
-					jstate->highest_extern_param_id + abs(jstate->clocations[i].param_id) :
+					(int64_t) jstate->highest_extern_param_id + abs(jstate->clocations[i].param_id) :
 					jstate->clocations[i].param_id;
-		n_quer_loc += sprintf(norm_query + n_quer_loc, "$%d", param_id);
+		n_quer_loc += sprintf(norm_query + n_quer_loc, "$" INT64_FORMAT, (int64) param_id);
 
 		quer_loc = off + tok_len;
 		last_off = off;
@@ -336,37 +346,6 @@ static void RecordConstLocation(pgssConstLocations *jstate, int location)
 	}
 }
 
-static bool is_string_delimiter(char c)
-{
-	return c == '\'' || c == '$';
-}
-
-static bool is_special_string_start(char c)
-{
-	return c == 'b' || c == 'B' || c == 'x' || c == 'X' || c == 'n' || c == 'N' || c == 'e' || c == 'E';
-}
-
-static void record_defelem_arg_location(pgssConstLocations *jstate, int location)
-{
-	for (int i = location; i < jstate->query_len; i++) {
-		if (is_string_delimiter(jstate->query[i]) || (i + 1 < jstate->query_len && is_special_string_start(jstate->query[i]) && is_string_delimiter(jstate->query[i + 1]))) {
-			RecordConstLocation(jstate, i);
-			break;
-		}
-	}
-}
-
-static void record_matching_string(pgssConstLocations *jstate, const char *str)
-{
-	char *loc = NULL;
-	if (str == NULL)
-		return;
-
-	loc = strstr(jstate->query, str);
-	if (loc != NULL)
-		RecordConstLocation(jstate, loc - jstate->query - 1);
-}
-
 static bool const_record_walker(Node *node, pgssConstLocations *jstate)
 {
 	bool result;
@@ -398,14 +377,15 @@ static bool const_record_walker(Node *node, pgssConstLocations *jstate)
 		case T_DefElem:
 			{
 				DefElem * defElem = (DefElem *) node;
-				if (defElem->arg == NULL) {
-					// No argument
-				} else if (IsA(defElem->arg, String)) {
-					record_defelem_arg_location(jstate, defElem->location);
-				} else if (IsA(defElem->arg, List) && list_length((List *) defElem->arg) == 1 && IsA(linitial((List *) defElem->arg), String)) {
-					record_defelem_arg_location(jstate, defElem->location);
-				}
-				return const_record_walker((Node *) ((DefElem *) node)->arg, jstate);
+
+				/*
+				 * The grammar records where the option's string constant
+				 * starts, and leaves this as -1 when the argument wasn't
+				 * written as a string constant.
+				 */
+				RecordConstLocation(jstate, defElem->arg_location);
+
+				return const_record_walker((Node *) defElem->arg, jstate);
 			}
 			break;
 		case T_RawStmt:
@@ -435,11 +415,21 @@ static bool const_record_walker(Node *node, pgssConstLocations *jstate)
 			if (jstate->normalize_utility_only) return false;
 			return const_record_walker((Node *) ((DoStmt *) node)->args, jstate);
 		case T_CreateSubscriptionStmt:
-			record_matching_string(jstate, ((CreateSubscriptionStmt *) node)->conninfo);
-			break;
+			{
+				CreateSubscriptionStmt *stmt = (CreateSubscriptionStmt *) node;
+
+				if (stmt->conninfo != NULL)
+					RecordConstLocation(jstate, stmt->conninfo_location);
+				break;
+			}
 		case T_AlterSubscriptionStmt:
-			record_matching_string(jstate, ((AlterSubscriptionStmt *) node)->conninfo);
-			break;
+			{
+				AlterSubscriptionStmt *stmt = (AlterSubscriptionStmt *) node;
+
+				if (stmt->conninfo != NULL)
+					RecordConstLocation(jstate, stmt->conninfo_location);
+				break;
+			}
 		case T_CreateUserMappingStmt:
 			return const_record_walker((Node *) ((CreateUserMappingStmt *) node)->options, jstate);
 		case T_AlterUserMappingStmt:
@@ -566,6 +556,14 @@ static bool const_record_walker(Node *node, pgssConstLocations *jstate)
 			{
 				if (jstate->normalize_utility_only) return false;
 				return raw_expression_tree_walker(node, const_record_walker, (void*) jstate);
+			}
+		case T_NotifyStmt:
+			{
+				NotifyStmt *stmt = castNode(NotifyStmt, node);
+
+				if (stmt->payload != NULL)
+					RecordConstLocation(jstate, stmt->payload_location);
+				break;
 			}
 		case T_InsertStmt:
 			{

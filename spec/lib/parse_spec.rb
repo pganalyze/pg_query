@@ -189,7 +189,8 @@ describe PgQuery, '.parse' do
                             )
                           ),
                           defaction: :DEFELEM_UNSPEC,
-                          location: 21
+                          location: 21,
+                          arg_location: -1
                         )
                       )]
                     )
@@ -230,7 +231,8 @@ describe PgQuery, '.parse' do
                             )
                           ),
                           defaction: :DEFELEM_UNSPEC,
-                          location: 31
+                          location: 31,
+                          arg_location: -1
                         )
                       )]
                     )
@@ -1134,7 +1136,8 @@ $BODY$
                     )
                   ),
                   defaction: :DEFELEM_UNSPEC,
-                  location: 72
+                  location: 72,
+                  arg_location: 75
                 )
               ),
               PgQuery::Node.new(
@@ -1144,7 +1147,8 @@ $BODY$
                     string: PgQuery::String.new(sval: 'plpgsql')
                   ),
                   defaction: :DEFELEM_UNSPEC,
-                  location: 407
+                  location: 407,
+                  arg_location: -1
                 )
               ),
               PgQuery::Node.new(
@@ -1154,7 +1158,8 @@ $BODY$
                     string: PgQuery::String.new(sval: 'stable')
                   ),
                   defaction: :DEFELEM_UNSPEC,
-                  location: 424
+                  location: 424,
+                  arg_location: -1
                 )
               )
             ]
@@ -1230,7 +1235,8 @@ $BODY$
                     )
                   ),
                   defaction: :DEFELEM_UNSPEC,
-                  location: 51
+                  location: 51,
+                  arg_location: 54
                 )
               ),
               PgQuery::Node.new(
@@ -1240,7 +1246,8 @@ $BODY$
                     string: PgQuery::String.new(sval: 'sql')
                   ),
                   defaction: :DEFELEM_UNSPEC,
-                  location: 98
+                  location: 98,
+                  arg_location: -1
                 )
               )
             ]
@@ -2003,7 +2010,8 @@ $BODY$
                 defname: 'format',
                 arg: PgQuery::Node.from_string('csv'),
                 defaction: :DEFELEM_UNSPEC,
-                location: 44
+                location: 44,
+                arg_location: -1
               ))
             ]
           )
