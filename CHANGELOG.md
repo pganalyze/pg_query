@@ -2,7 +2,18 @@
 
 ## Unreleased
 
-* ...
+* Fix `#tables` dropping a relation when a CTE shares its name
+  - A non-recursive CTE is not visible inside its own definition, so
+    `WITH users AS (SELECT * FROM users) SELECT * FROM users` reads the `users`
+    table in the CTE body and the CTE in the outer query. Previously any
+    unqualified reference matching a CTE name was treated as the CTE, so this
+    returned `tables == []` and the relation was lost entirely.
+  - `WITH RECURSIVE` self-references are still correctly excluded, as are
+    references to a CTE that is already visible from an enclosing scope.
+  - DML/DDL targets are no longer treated as CTE references, since a CTE cannot
+    be the target of `INSERT`/`UPDATE`/`DELETE`/`COPY` or DDL. This fixes
+    `#dml_tables` being empty for e.g.
+    `WITH users AS (...) UPDATE users SET ...`.
 
 ## 6.2.3     2026-08-26
 

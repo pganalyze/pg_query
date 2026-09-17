@@ -102,6 +102,7 @@ module PgQuery
       @cte_names = []
       @aliases = {}
       @functions = [] # types: call, ddl
+      @cte_self_reference_locations = []
 
       statements = @tree.stmts.dup.to_a.map(&:stmt)
       from_clause_items = [] # types: select, dml, ddl
@@ -135,6 +136,7 @@ module PgQuery
             end
 
             if statement.select_stmt.with_clause
+              record_cte_self_references!(statement.select_stmt.with_clause)
               cte_statements, cte_names = statements_and_cte_names_for_with_clause(statement.select_stmt.with_clause)
               @cte_names.concat(cte_names)
               statements.concat(cte_statements)
@@ -173,6 +175,7 @@ module PgQuery
             end
 
             if value.with_clause
+              record_cte_self_references!(value.with_clause)
               cte_statements, cte_names = statements_and_cte_names_for_with_clause(value.with_clause)
               @cte_names.concat(cte_names)
               statements.concat(cte_statements)
@@ -347,7 +350,7 @@ module PgQuery
             from_clause_items += next_item[:item].row_expr.args.map { |a| { item: a, type: next_item[:type] } }
           when :range_var
             rangevar = next_item[:item].range_var
-            next if rangevar.schemaname.empty? && @cte_names.include?(rangevar.relname)
+            next if cte_reference?(rangevar, next_item[:type])
 
             table = [rangevar.schemaname, rangevar.relname].reject { |s| s.nil? || s.empty? }.join('.')
             @tables << {
@@ -385,6 +388,79 @@ module PgQuery
       end
 
       [statements, cte_names]
+    end
+
+    # Determines whether a RangeVar refers to a CTE rather than to a relation.
+    #
+    # Only plain (SELECT-style) references can resolve to a CTE: a CTE is not a
+    # valid target for DML (INSERT/UPDATE/DELETE/COPY) or DDL, so those always
+    # name a real relation even when a CTE in the same statement shares the name.
+    def cte_reference?(rangevar, type)
+      return false unless type == :select
+      return false unless rangevar.schemaname.empty?
+      return false unless @cte_names.include?(rangevar.relname)
+
+      !@cte_self_reference_locations.include?(rangevar.location)
+    end
+
+    # A non-recursive CTE is not visible inside its own definition, so a
+    # reference to its own name there resolves to a real relation:
+    #
+    #   WITH users AS (SELECT * FROM users) SELECT * FROM users
+    #                              ^^^^^ the table          ^^^^^ the CTE
+    #
+    # Records the locations of those self-references so they are not mistaken
+    # for CTE references. Locations uniquely identify a RangeVar occurrence,
+    # which keeps the outer (genuine) CTE reference above excluded.
+    def record_cte_self_references!(with_clause)
+      return if with_clause.recursive
+
+      with_clause.ctes.each do |item|
+        next unless item.node == :common_table_expr
+
+        record_self_references_for_cte!(item.common_table_expr)
+      end
+    end
+
+    def record_self_references_for_cte!(cte)
+      return if cte.ctequery.nil?
+      return if @cte_names.include?(cte.ctename)
+
+      record_self_references_in(cte.ctequery, cte.ctename)
+    end
+
+    # Depth-first scan of a CTE definition for unqualified RangeVars matching
+    # the CTE's own name.
+    #
+    # This deliberately avoids #walk!, which yields every node and iterates all
+    # of PgQuery::Node's oneof fields. Following the oneof directly via #inner
+    # keeps this proportional to the nodes actually present.
+    def record_self_references_in(node, cte_name)
+      case node
+      when PgQuery::Node
+        record_self_references_in(node.inner, cte_name)
+      when PgQuery::RangeVar
+        @cte_self_reference_locations << node.location if cte_self_reference?(node, cte_name)
+      when Google::Protobuf::RepeatedField
+        node.each { |child| record_self_references_in(child, cte_name) }
+      when Google::Protobuf::MessageExts
+        record_self_references_in_message(node, cte_name)
+      end
+    end
+
+    def record_self_references_in_message(message, cte_name)
+      message.class.descriptor.each do |field_descriptor|
+        child = field_descriptor.get(message)
+        next unless child.is_a?(Google::Protobuf::MessageExts) || child.is_a?(Google::Protobuf::RepeatedField)
+
+        record_self_references_in(child, cte_name)
+      end
+    end
+
+    def cte_self_reference?(node, cte_name)
+      node.schemaname.empty? &&
+        node.relname == cte_name &&
+        !node.location.negative?
     end
   end
 end
