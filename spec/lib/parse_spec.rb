@@ -1325,6 +1325,87 @@ $BODY$
     expect(query.select_tables).to eq ['table_name']
   end
 
+  describe 'when a CTE has the same name as a table' do
+    it 'finds the table referenced inside the CTE definition' do
+      query = described_class.parse('WITH users AS (SELECT * FROM users) SELECT * FROM users')
+      expect(query.cte_names).to eq ['users']
+      expect(query.tables).to eq ['users']
+      expect(query.select_tables).to eq ['users']
+    end
+
+    it 'reports the table only for the reference inside the CTE definition' do
+      query = described_class.parse('WITH users AS (SELECT * FROM users) SELECT * FROM users')
+      # The outer `FROM users` is the CTE, so only the inner reference counts.
+      expect(query.tables_with_details.length).to eq 1
+      expect(query.tables_with_details.first).to include(relname: 'users', type: :select)
+    end
+
+    it 'still excludes the CTE when its definition reads a different table' do
+      query = described_class.parse('WITH users AS (SELECT * FROM people) SELECT * FROM users')
+      expect(query.tables).to eq ['people']
+    end
+
+    it 'still excludes a CTE referenced from a later sibling CTE' do
+      query = described_class.parse(<<-SQL)
+        WITH a AS (SELECT * FROM a), b AS (SELECT * FROM a) SELECT * FROM b
+      SQL
+      # `a` inside a's own definition is the table; `a` inside b's definition is
+      # the CTE, because earlier siblings are visible to later ones.
+      expect(query.cte_names).to match_array(%w[a b])
+      expect(query.tables).to eq ['a']
+      expect(query.tables_with_details.length).to eq 1
+    end
+
+    it 'does not treat a WITH RECURSIVE self-reference as a table' do
+      query = described_class.parse(<<-SQL)
+        WITH RECURSIVE t AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM t WHERE n < 5) SELECT * FROM t
+      SQL
+      # RECURSIVE makes the CTE visible to itself, so `t` is never the table.
+      expect(query.cte_names).to eq ['t']
+      expect(query.tables).to eq []
+    end
+
+    it 'keeps a schema-qualified reference to the shadowed table' do
+      query = described_class.parse('WITH users AS (SELECT * FROM public.users) SELECT * FROM users')
+      expect(query.tables).to eq ['public.users']
+    end
+
+    it 'finds the table when the CTE definition is nested in a subquery' do
+      query = described_class.parse(<<-SQL)
+        SELECT * FROM (WITH users AS (SELECT * FROM users) SELECT * FROM users) sub
+      SQL
+      expect(query.tables).to eq ['users']
+    end
+
+    it 'resolves to an outer CTE rather than a table when one is already visible' do
+      query = described_class.parse(<<-SQL)
+        WITH a AS (SELECT * FROM t)
+        SELECT * FROM (WITH a AS (SELECT * FROM a) SELECT * FROM a) sub
+      SQL
+      # The inner definition's `a` resolves to the outer CTE `a`, not to a table.
+      expect(query.tables).to eq ['t']
+    end
+
+    it 'finds the DML target even when a CTE shares its name' do
+      query = described_class.parse(<<-SQL)
+        WITH users AS (SELECT id FROM users)
+        UPDATE users SET name = 'x' WHERE id IN (SELECT id FROM users)
+      SQL
+      # A CTE is not an updatable target, so `UPDATE users` is always the table.
+      expect(query.cte_names).to eq ['users']
+      expect(query.tables).to eq ['users']
+      expect(query.dml_tables).to eq ['users']
+    end
+
+    it 'finds the INSERT target even when a CTE shares its name' do
+      query = described_class.parse(<<-SQL)
+        WITH users AS (SELECT id FROM other) INSERT INTO users (id) SELECT id FROM users
+      SQL
+      expect(query.dml_tables).to eq ['users']
+      expect(query.select_tables).to eq ['other']
+    end
+  end
+
   it 'correctly finds nested tables in from clause' do
     query = described_class.parse("select u.* from (select * from users) u")
     expect(query.warnings).to eq []
