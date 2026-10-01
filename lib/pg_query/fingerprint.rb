@@ -1,10 +1,22 @@
 require 'digest'
 
 module PgQuery
+  # Faster fingerprint method that is implemented inside the native C library
+  #
+  # See ParserResult#fingerprint for the supported options
+  def self.fingerprint(query, opts: FINGERPRINT_DEFAULT)
+    _raw_fingerprint(query, opts)
+  end
+
   class ParserResult
-    def fingerprint
+    # Fingerprint the parsed query
+    #
+    # Pass PgQuery::FINGERPRINT_* flags (combined with |) as opts to change how the
+    # fingerprint is calculated, e.g. PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT to
+    # fingerprint relation references like pg_query 6.x and earlier (libpg_query 17)
+    def fingerprint(opts: PgQuery::FINGERPRINT_DEFAULT)
       hash = FingerprintSubHash.new
-      fingerprint_tree(hash)
+      fingerprint_tree(hash, opts)
       fp = PgQuery.hash_xxh3_64(hash.parts.join, FINGERPRINT_VERSION)
       format('%016x', fp)
     end
@@ -35,7 +47,7 @@ module PgQuery
       [nil, 0, false, [], ''].include?(val)
     end
 
-    def fingerprint_value(val, hash, parent_node_name, parent_field_name, need_to_write_name) # rubocop:disable Metrics/CyclomaticComplexity
+    def fingerprint_value(val, hash, opts, parent_node_name, parent_field_name, need_to_write_name) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/ParameterLists
       subhash = FingerprintSubHash.new
 
       if val.is_a?(Google::Protobuf::RepeatedField)
@@ -44,11 +56,11 @@ module PgQuery
           hash.update(parent_field_name) if need_to_write_name
           return
         end
-        fingerprint_list(val, subhash, parent_node_name, parent_field_name)
+        fingerprint_list(val, subhash, opts, parent_node_name, parent_field_name)
       elsif val.is_a?(List)
-        fingerprint_list(val.items, subhash, parent_node_name, parent_field_name)
+        fingerprint_list(val.items, subhash, opts, parent_node_name, parent_field_name)
       elsif val.is_a?(Google::Protobuf::MessageExts)
-        fingerprint_node(val, subhash, parent_node_name, parent_field_name)
+        fingerprint_node(val, subhash, opts, parent_node_name, parent_field_name)
       elsif !ignored_fingerprint_value?(val)
         subhash.update val.to_s
       end
@@ -68,7 +80,7 @@ module PgQuery
       node_class.descriptor.find { |d| d.name == field.to_s }.json_name
     end
 
-    def fingerprint_node(node, hash, parent_node_name = nil, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
+    def fingerprint_node(node, hash, opts, parent_node_name = nil, parent_field_name = nil) # rubocop:disable Metrics/CyclomaticComplexity
       return if ignored_node_type?(node)
 
       if node.is_a?(Node)
@@ -78,7 +90,7 @@ module PgQuery
             postgres_node_name = node_protobuf_field_name_to_json_name(node.class, node.node)
             hash.update(postgres_node_name)
           end
-          fingerprint_value(node_val, hash, parent_node_name, parent_field_name, false)
+          fingerprint_value(node_val, hash, opts, parent_node_name, parent_field_name, false)
         end
         return
       end
@@ -95,17 +107,35 @@ module PgQuery
           next
         when 'arg_location'
           next if node.is_a?(DefElem)
-        when 'payload_location'
+        when 'payload', 'payload_location'
           next if node.is_a?(NotifyStmt)
         when 'conninfo_location'
           next if [CreateSubscriptionStmt, AlterSubscriptionStmt].include?(node.class)
+        when 'list_start', 'list_end'
+          next if [A_ArrayExpr, ArrayExpr].include?(node.class)
+        when 'rexpr_list_start', 'rexpr_list_end'
+          next if node.is_a?(A_Expr)
         when 'name'
           next if [PrepareStmt, ExecuteStmt, DeallocateStmt, FunctionParameter].include?(node.class)
           next if node.is_a?(ResTarget) && parent_node_name == 'SelectStmt' && parent_field_name == 'targetList'
         when 'gid', 'savepoint_name'
           next if node.is_a?(TransactionStmt)
         when 'options'
-          next if [TransactionStmt, CreateFunctionStmt].include?(node.class)
+          next if node.is_a?(CreateFunctionStmt)
+        when 'rolename'
+          next if node.is_a?(RoleSpec)
+        when 'role'
+          next if node.is_a?(CreateRoleStmt)
+        when 'newname', 'subname'
+          next if node.is_a?(RenameStmt)
+        when 'alias'
+          if node.is_a?(RangeVar)
+            fingerprint_value(val.aliasname, hash, opts, postgres_node_name, 'aliasname', true) if opts.nobits?(FINGERPRINT_RANGEVAR_IGNORE_ALIASES)
+            next
+          end
+        when 'schemaname'
+          next if node.is_a?(RangeVar) && opts.nobits?(FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA) &&
+                  range_var_in_dml_context?(parent_node_name, parent_field_name)
         when 'portalname'
           next if [DeclareCursorStmt, FetchStmt, ClosePortalStmt].include?(node.class)
         when 'conditionname'
@@ -114,15 +144,19 @@ module PgQuery
           next if node.is_a?(DoStmt)
         when 'relname'
           next if node.is_a?(RangeVar) && node.relpersistence == 't'
-          if node.is_a?(RangeVar)
-            fingerprint_value(val.gsub(/\d{2,}/, ''), hash, postgres_node_name, postgres_field_name, true)
+          # In SELECT/DML context the alias name replaces the relation name (matches Postgres 18+ query IDs)
+          next if node.is_a?(RangeVar) && node.alias && opts.nobits?(FINGERPRINT_RANGEVAR_IGNORE_ALIASES) &&
+                  range_var_in_dml_context?(parent_node_name, parent_field_name)
+          # By default, 2+ consecutive digits are ignored (e.g. for date/number-suffixed partitions)
+          if node.is_a?(RangeVar) && opts.nobits?(FINGERPRINT_FULL_RELNAME)
+            fingerprint_value(val.gsub(/\d{2,}/, ''), hash, opts, postgres_node_name, postgres_field_name, true)
             next
           end
         when 'stmt_len', 'stmt_location'
           next if node.is_a?(RawStmt)
         when 'kind'
           if node.is_a?(A_Expr) && %i[AEXPR_OP_ANY AEXPR_IN].include?(val)
-            fingerprint_value(:AEXPR_OP, hash, postgres_node_name, postgres_field_name, true)
+            fingerprint_value(:AEXPR_OP, hash, opts, postgres_node_name, postgres_field_name, true)
             next
           end
         # libpg_query still outputs `str` parts when print a string node. Here we override that to
@@ -131,15 +165,27 @@ module PgQuery
           postgres_field_name = 'str' if node.is_a?(String) || node.is_a?(BitString) || node.is_a?(Float)
         end
 
-        fingerprint_value(val, hash, postgres_node_name, postgres_field_name, true)
+        fingerprint_value(val, hash, opts, postgres_node_name, postgres_field_name, true)
       end
     end
 
-    def fingerprint_list(values, hash, parent_node_name, parent_field_name)
+    def range_var_in_dml_context?(parent_node_name, parent_field_name)
+      case parent_node_name
+      when 'SelectStmt' then parent_field_name == 'fromClause'
+      when 'InsertStmt' then parent_field_name == 'relation'
+      when 'UpdateStmt' then %w[relation fromClause].include?(parent_field_name)
+      when 'DeleteStmt' then %w[relation usingClause].include?(parent_field_name)
+      when 'MergeStmt' then %w[relation sourceRelation].include?(parent_field_name)
+      when 'JoinExpr', 'RangeTableSample', 'LockingClause' then true
+      else false
+      end
+    end
+
+    def fingerprint_list(values, hash, opts, parent_node_name, parent_field_name)
       if %w[fromClause targetList cols rexpr valuesLists args].include?(parent_field_name)
         values_subhashes = values.map do |val|
           subhash = FingerprintSubHash.new
-          fingerprint_value(val, subhash, parent_node_name, parent_field_name, false)
+          fingerprint_value(val, subhash, opts, parent_node_name, parent_field_name, false)
           subhash
         end
 
@@ -151,15 +197,15 @@ module PgQuery
         end
       else
         values.each do |val|
-          fingerprint_value(val, hash, parent_node_name, parent_field_name, false)
+          fingerprint_value(val, hash, opts, parent_node_name, parent_field_name, false)
         end
       end
     end
 
-    def fingerprint_tree(hash)
+    def fingerprint_tree(hash, opts = PgQuery::FINGERPRINT_DEFAULT)
       @tree.stmts.each do |node|
         hash.update 'RawStmt'
-        fingerprint_node(node, hash)
+        fingerprint_node(node, hash, opts)
       end
     end
   end

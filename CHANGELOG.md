@@ -2,6 +2,38 @@
 
 ## Unreleased
 
+* ...
+
+
+## 18.1.0    2026-05-21
+
+* Upgrade to libpg_query 18.1.0
+  - Upgrade to Postgres 18
+  - Includes the security fix for `PgQuery.normalize` released in 6.2.5 ([GHSA-6ggm-xmc9-8ffg](https://github.com/pganalyze/libpg_query/security/advisories/GHSA-6ggm-xmc9-8ffg))
+  - Deparser: Rework comment handling for PG 18 multi-statement strings
+    - Previously a subsequent statement in a multi-statement string would start
+      at the end of the prior statement, including any comments between. In
+      Postgres 18 this has changed, and such comments (and whitespace) are
+      excluded from the statements, the next statement starts at the first
+      non-whitespace (and non-comment) character.
+  - Deparser: Rework when parentheses are added based on operator precedence
+    - This avoids unnecessary parentheses in the deparsed output
+  - Fingerprinting: Rework alias/schema name handling to match Postgres 18
+    - In SELECT/DML statements the relation alias is fingerprinted instead of
+      the relation name when present, and schema names are ignored
+    - Role names, `RENAME` targets and `NOTIFY` payloads are now ignored, and
+      transaction options (e.g. isolation level) are now fingerprinted
+    - This changes fingerprints for affected queries compared to 6.x releases
+* Add fingerprint options to `PgQuery.fingerprint` and `PgQuery::ParserResult#fingerprint`
+  - Pass `opts:` with a combination of `PgQuery::FINGERPRINT_*` flags to change how
+    relation references are fingerprinted
+  - Use `PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT` to fingerprint relation references like 6.x releases
+    (other fingerprinting changes in this release still apply)
+  - Use `PgQuery::FINGERPRINT_FULL_RELNAME` to fingerprint the full relation name, instead
+    of ignoring 2+ consecutive digits
+  - Switch Protobuf implementation from protobuf-c to upb
+  - Overly deep queries now return a "stack depth limit exceeded" error instead of crashing
+* Add #walk_subtree helper to tree walk from arbitrary child nodes
 * Fix `#tables` dropping a relation when a CTE shares its name
   - A non-recursive CTE is not visible inside its own definition, so
     `WITH users AS (SELECT * FROM users) SELECT * FROM users` reads the `users`

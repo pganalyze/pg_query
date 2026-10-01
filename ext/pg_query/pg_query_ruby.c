@@ -15,7 +15,7 @@ VALUE pg_query_ruby_deparse_protobuf(VALUE self, VALUE input);
 VALUE pg_query_ruby_deparse_protobuf_opts(VALUE self, VALUE input, VALUE pretty_print, VALUE comments, VALUE indent_size, VALUE max_line_length, VALUE trailing_newline, VALUE commas_start_of_line);
 VALUE pg_query_ruby_deparse_comments_for_query(VALUE self, VALUE input);
 VALUE pg_query_ruby_normalize(VALUE self, VALUE input);
-VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input);
+VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input, VALUE fingerprint_options);
 VALUE pg_query_ruby_scan(VALUE self, VALUE input);
 VALUE pg_query_ruby_split_with_parser(VALUE self, VALUE input);
 VALUE pg_query_ruby_summary(VALUE self, VALUE input, VALUE truncate_limit);
@@ -32,7 +32,7 @@ __attribute__((visibility ("default"))) void Init_pg_query(void)
 	rb_define_singleton_method(cPgQuery, "deparse_protobuf_opts", pg_query_ruby_deparse_protobuf_opts, 7);
 	rb_define_singleton_method(cPgQuery, "deparse_comments_for_query", pg_query_ruby_deparse_comments_for_query, 1);
 	rb_define_singleton_method(cPgQuery, "normalize", pg_query_ruby_normalize, 1);
-	rb_define_singleton_method(cPgQuery, "fingerprint", pg_query_ruby_fingerprint, 1);
+	rb_define_singleton_method(cPgQuery, "_raw_fingerprint", pg_query_ruby_fingerprint, 2);
 	rb_define_singleton_method(cPgQuery, "_raw_scan", pg_query_ruby_scan, 1);
 	rb_define_singleton_method(cPgQuery, "_raw_split_with_parser", pg_query_ruby_split_with_parser, 1);
 	rb_define_singleton_method(cPgQuery, "_raw_summary", pg_query_ruby_summary, 2);
@@ -40,6 +40,11 @@ __attribute__((visibility ("default"))) void Init_pg_query(void)
 	rb_define_const(cPgQuery, "PG_VERSION", rb_str_new2(PG_VERSION));
 	rb_define_const(cPgQuery, "PG_MAJORVERSION", rb_str_new2(PG_MAJORVERSION));
 	rb_define_const(cPgQuery, "PG_VERSION_NUM", INT2NUM(PG_VERSION_NUM));
+	rb_define_const(cPgQuery, "FINGERPRINT_DEFAULT", INT2NUM(PG_QUERY_FINGERPRINT_DEFAULT));
+	rb_define_const(cPgQuery, "FINGERPRINT_RANGEVAR_IGNORE_ALIASES", INT2NUM(PG_QUERY_FINGERPRINT_RANGEVAR_IGNORE_ALIASES));
+	rb_define_const(cPgQuery, "FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA", INT2NUM(PG_QUERY_FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA));
+	rb_define_const(cPgQuery, "FINGERPRINT_RANGEVAR_PG17_COMPAT", INT2NUM(PG_QUERY_FINGERPRINT_RANGEVAR_PG17_COMPAT));
+	rb_define_const(cPgQuery, "FINGERPRINT_FULL_RELNAME", INT2NUM(PG_QUERY_FINGERPRINT_FULL_RELNAME));
 }
 
 void raise_ruby_parse_error(PgQueryProtobufParseResult result)
@@ -319,12 +324,13 @@ VALUE pg_query_ruby_normalize(VALUE self, VALUE input)
 	return output;
 }
 
-VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input)
+VALUE pg_query_ruby_fingerprint(VALUE self, VALUE input, VALUE fingerprint_options)
 {
 	Check_Type(input, T_STRING);
+	Check_Type(fingerprint_options, T_FIXNUM);
 
 	VALUE output;
-	PgQueryFingerprintResult result = pg_query_fingerprint(StringValueCStr(input));
+	PgQueryFingerprintResult result = pg_query_fingerprint_opts(StringValueCStr(input), PG_QUERY_PARSE_DEFAULT, NUM2INT(fingerprint_options));
 
 	if (result.error) raise_ruby_fingerprint_error(result);
 

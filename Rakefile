@@ -4,9 +4,10 @@ require 'rake/extensiontask'
 require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 require 'open-uri'
+require 'json'
 
-LIB_PG_QUERY_TAG = '17-6.2.5'.freeze
-LIB_PG_QUERY_SHA256SUM = '344ee7a39d3fa4eb5e8cdff8aa7db514a30883423c65731c9ce04b2b7089abb6'.freeze
+LIB_PG_QUERY_TAG = '18.1.0'.freeze
+LIB_PG_QUERY_SHA256SUM = '2d3486cf6a9d3955b53e66235db39d62b54216c820cd392ab66dc842c5b1316d'.freeze
 
 Rake::ExtensionTask.new 'pg_query' do |ext|
   ext.lib_dir = 'lib/pg_query'
@@ -67,23 +68,76 @@ task :update_source do
   system("rmdir #{extdir}/postgres")
   system("cp -a #{libdir}/pg_query.h #{extdir}/include")
   system("cp -a #{libdir}/postgres_deparse.h #{extdir}/include")
+  system("cp -a #{libdir}/pg_query_scan_tokens.h #{extdir}/include")
   # Protobuf definitions
   system("protoc --proto_path=#{libdir}/protobuf --ruby_out=#{File.join(__dir__, 'lib/pg_query')} #{libdir}/protobuf/pg_query.proto")
   system("mkdir -p #{extdir}/include/protobuf")
-  system("cp -a #{libdir}/protobuf/*.h #{extdir}/include/protobuf")
-  system("cp -a #{libdir}/protobuf/*.c #{extdir}/")
-  # Protobuf library code
-  system("mkdir -p #{extdir}/include/protobuf-c")
-  system("cp -a #{libdir}/vendor/protobuf-c/*.h #{extdir}/include")
-  system("cp -a #{libdir}/vendor/protobuf-c/*.h #{extdir}/include/protobuf-c")
-  system("cp -a #{libdir}/vendor/protobuf-c/*.c #{extdir}/")
+  system("cp -a #{libdir}/protobuf/pg_query.upb*.h #{extdir}/include/protobuf")
+  system("cp -a #{libdir}/protobuf/pg_query.upb_minitable.c #{extdir}/")
+  # Protobuf library code (upb)
+  system("mkdir -p #{extdir}/include/upb")
+  system("cp -a #{libdir}/vendor/upb/upb/* #{extdir}/include/upb")
+  system("cp -a #{libdir}/vendor/upb/upb.c #{extdir}/")
+  system("cp -a #{libdir}/vendor/upb/third_party/utf8_range/*.{h,inc} #{extdir}/include")
+  system("cp -a #{libdir}/vendor/upb/third_party/utf8_range/*.c #{extdir}/")
   # xxhash library code
   system("mkdir -p #{extdir}/include/xxhash")
   system("cp -a #{libdir}/vendor/xxhash/*.h #{extdir}/include")
   system("cp -a #{libdir}/vendor/xxhash/*.h #{extdir}/include/xxhash")
   system("cp -a #{libdir}/vendor/xxhash/*.c #{extdir}/")
-  # Other support files
-  system("cp -a #{libdir}/testdata/* #{testfilesdir}")
   # Copy back the custom ext files
   system("cp -a #{extbakdir}/pg_query_ruby.c #{extbakdir}/ext_symbols*.sym #{extbakdir}/extconf.rb #{extdir}")
+  # Generate fingerprint test data (hash and hash parts) from libpg_query's fingerprint tests
+  generate_fingerprint_json(libdir, workdir, File.join(testfilesdir, 'fingerprint.json'))
+end
+
+def generate_fingerprint_json(libdir, workdir, outfile)
+  system("make -C #{libdir} build") || raise('ERROR')
+
+  helper_src = File.join(workdir, 'fingerprint_parts.c')
+  helper_bin = File.join(workdir, 'fingerprint_parts')
+  File.write(helper_src, <<~C)
+    #include <pg_query.h>
+    #include <pg_query_fingerprint.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+
+    int main(void)
+    {
+      PgQueryFingerprintResult result;
+      size_t len = 0, cap = 4096, n;
+      char *input = malloc(cap);
+      while ((n = fread(input + len, 1, cap - len - 1, stdin)) > 0) {
+        len += n;
+        if (cap - len == 1) input = realloc(input, cap *= 2);
+      }
+      input[len] = '\\0';
+      result = pg_query_fingerprint_with_opts(input, PG_QUERY_PARSE_DEFAULT, PG_QUERY_FINGERPRINT_DEFAULT, true);
+      if (result.error) return 1;
+      printf("%s\\n", result.fingerprint_str);
+      return 0;
+    }
+  C
+  system("cc -I#{libdir} -I#{libdir}/src -o #{helper_bin} #{helper_src} #{libdir}/libpg_query.a") || raise('ERROR')
+
+  test_lines = File.read(File.join(libdir, 'test/fingerprint_tests.c')).lines.grep(/\A\s*"/)
+  tests = test_lines.map { |line| line.strip.delete_suffix(',').undump }
+
+  entries = tests.each_slice(2).map do |input, expected_hash|
+    output = IO.popen([helper_bin], 'r+') do |io|
+      io.write(input)
+      io.close_write
+      io.read
+    end
+    raise "Failed to fingerprint #{input.inspect}" unless $?.success?
+
+    tokens_line, _, hash = output.chomp.rpartition("\n")
+    raise "Unexpected fingerprint for #{input.inspect}: got #{hash}, expected #{expected_hash}" if hash != expected_hash
+
+    parts = tokens_line.delete_prefix('[').delete_suffix(']').scan(/"(.*?)", /m).flatten
+    format(%(  {\n    "input": %<input>s,\n    "expectedParts": %<parts>s,\n    "expectedHash": %<hash>s\n  }),
+           input: JSON.generate(input), parts: JSON.generate(parts).gsub('","', '", "'), hash: JSON.generate(hash))
+  end
+
+  File.write(outfile, "[\n#{entries.join(",\n")}\n]\n")
 end
