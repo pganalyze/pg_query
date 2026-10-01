@@ -29,6 +29,40 @@ def fingerprint_defs
   @fingerprint_defs ||= JSON.parse File.read(File.join(__dir__, '../files/fingerprint.json'))
 end
 
+# Expected values match the upstream libpg_query fingerprint option tests
+# (test/fingerprint_opts_tests.c)
+FINGERPRINT_OPTS_TESTS = [
+  # By default, 2+ consecutive digits in the relation name are ignored (these two match)
+  ['SELECT * FROM orders_2024_01', PgQuery::FINGERPRINT_DEFAULT, '0e612f391ad711b8'],
+  ['SELECT * FROM orders_2024_02', PgQuery::FINGERPRINT_DEFAULT, '0e612f391ad711b8'],
+  # With FINGERPRINT_FULL_RELNAME the full relation name is fingerprinted (these two differ)
+  ['SELECT * FROM orders_2024_01', PgQuery::FINGERPRINT_FULL_RELNAME, '3cc2d1ca3f22c9bf'],
+  ['SELECT * FROM orders_2024_02', PgQuery::FINGERPRINT_FULL_RELNAME, '291f96ac98cf4c38'],
+  # By default (Postgres 18+ behavior), the alias replaces the relation name, and the schema name is ignored
+  ['SELECT * FROM sales', PgQuery::FINGERPRINT_DEFAULT, '4d93c901b91cb364'],
+  ['SELECT * FROM public.sales', PgQuery::FINGERPRINT_DEFAULT, '4d93c901b91cb364'],
+  ['SELECT * FROM sales s', PgQuery::FINGERPRINT_DEFAULT, '93a3bbe18171c380'],
+  # With FINGERPRINT_RANGEVAR_IGNORE_ALIASES, aliases are ignored (matches "SELECT * FROM sales" above)
+  ['SELECT * FROM sales s', PgQuery::FINGERPRINT_RANGEVAR_IGNORE_ALIASES, '4d93c901b91cb364'],
+  # With FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA, the schema name is fingerprinted (differs from "SELECT * FROM sales" above)
+  ['SELECT * FROM public.sales', PgQuery::FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA, '78d676e53f612747'],
+  # ... whilst aliases still replace the relation name
+  ['SELECT * FROM public.sales s', PgQuery::FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA, '9cf22829ca3b350b'],
+  # FINGERPRINT_RANGEVAR_PG17_COMPAT matches the fingerprint from libpg_query 17
+  ['SELECT * FROM x AS a, y AS b', PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT, '4e9acae841dae228'],
+  # All flags combined
+  ['SELECT * FROM public.orders_2024_01 o', PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT | PgQuery::FINGERPRINT_FULL_RELNAME, '115077f8a9c3c10d']
+].freeze
+
+ALL_FINGERPRINT_OPTS = [
+  PgQuery::FINGERPRINT_DEFAULT,
+  PgQuery::FINGERPRINT_RANGEVAR_IGNORE_ALIASES,
+  PgQuery::FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA,
+  PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT,
+  PgQuery::FINGERPRINT_FULL_RELNAME,
+  PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT | PgQuery::FINGERPRINT_FULL_RELNAME
+].freeze
+
 describe PgQuery, "#fingerprint" do
   fingerprint_defs.each do |testdef|
     it format("returns expected hash parts for '%s'", testdef['input']) do
@@ -106,5 +140,42 @@ describe PgQuery, "#fingerprint" do
     q1 = 'SELECT * FROM x WHERE y IN ( $1::uuid, $2::uuid, $3::uuid )'
     q2 = 'SELECT * FROM x WHERE y IN ( $1::uuid )'
     expect(fingerprint(q1)).to eq fingerprint(q2)
+  end
+
+  context "with the C implementation (PgQuery.fingerprint)" do
+    it "returns the same fingerprint as the Ruby implementation" do
+      expect(PgQuery.fingerprint("SELECT * FROM x WHERE y = $1")).to eq fingerprint("SELECT * FROM x WHERE y = $1")
+    end
+
+    it "raises an error for invalid queries" do
+      expect { PgQuery.fingerprint("SELECT FROM WHERE") }.to raise_error(PgQuery::ParseError)
+    end
+
+    FINGERPRINT_OPTS_TESTS.each do |input, opts, expected|
+      it format("returns expected hash value for '%s' with options %d", input, opts) do
+        expect(PgQuery.fingerprint(input, opts: opts)).to eq expected
+      end
+    end
+  end
+
+  context "with fingerprint options" do
+    FINGERPRINT_OPTS_TESTS.each do |input, opts, expected|
+      it format("returns expected hash value for '%s' with options %d", input, opts) do
+        expect(PgQuery.parse(input).fingerprint(opts: opts)).to eq expected
+      end
+    end
+
+    it "uses the Postgres 18+ defaults when no options are passed" do
+      expect(PgQuery.parse("SELECT * FROM sales s").fingerprint).to eq PgQuery.parse("SELECT * FROM sales s").fingerprint(opts: PgQuery::FINGERPRINT_DEFAULT)
+    end
+
+    # Ensures the Ruby implementation matches the C implementation for all option combinations
+    fingerprint_defs.each do |testdef|
+      ALL_FINGERPRINT_OPTS.each do |opts|
+        it format("matches the C implementation for '%s' with options %d", testdef['input'], opts) do
+          expect(PgQuery.parse(testdef['input']).fingerprint(opts: opts)).to eq PgQuery.fingerprint(testdef['input'], opts: opts)
+        end
+      end
+    end
   end
 end

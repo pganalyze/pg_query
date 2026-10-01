@@ -24,6 +24,13 @@
     - Role names, `RENAME` targets and `NOTIFY` payloads are now ignored, and
       transaction options (e.g. isolation level) are now fingerprinted
     - This changes fingerprints for affected queries compared to 6.x releases
+* Add fingerprint options to `PgQuery.fingerprint` and `PgQuery::ParserResult#fingerprint`
+  - Pass `opts:` with a combination of `PgQuery::FINGERPRINT_*` flags to change how
+    relation references are fingerprinted
+  - Use `PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT` to fingerprint relation references like 6.x releases
+    (other fingerprinting changes in this release still apply)
+  - Use `PgQuery::FINGERPRINT_FULL_RELNAME` to fingerprint the full relation name, instead
+    of ignoring 2+ consecutive digits
   - Switch Protobuf implementation from protobuf-c to upb
   - Overly deep queries now return a "stack depth limit exceeded" error instead of crashing
 * Add #walk_subtree helper to tree walk from arbitrary child nodes

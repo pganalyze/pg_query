@@ -156,6 +156,34 @@ PgQuery.fingerprint("SELECT $1")
 => "50fde20626009aba"
 ```
 
+By default, relation references are fingerprinted following the Postgres 18+ query ID behavior:
+In SELECT/DML statements the alias name replaces the relation name when present, and schema names
+are ignored. Sequences of two or more digits in relation names are also ignored, so that queries on
+date/number-suffixed tables (e.g. partitions like `orders_2024_01`) get the same fingerprint.
+
+You can change this by passing a combination of fingerprint options, to both `PgQuery.fingerprint` and
+`PgQuery::ParserResult#fingerprint`:
+
+* `PgQuery::FINGERPRINT_RANGEVAR_IGNORE_ALIASES`: Always fingerprint relation names, and ignore aliases
+* `PgQuery::FINGERPRINT_RANGEVAR_INCLUDE_SCHEMA`: Also fingerprint schema names in SELECT/DML statements
+* `PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT`: Both of the above, matching how Postgres 17 and earlier
+  calculate query IDs, and how pg_query 6.x and earlier fingerprinted relation references
+* `PgQuery::FINGERPRINT_FULL_RELNAME`: Fingerprint the full relation name, including digit sequences
+
+```ruby
+PgQuery.fingerprint("SELECT * FROM public.sales s")
+
+=> "93a3bbe18171c380"
+
+PgQuery.fingerprint("SELECT * FROM public.sales s", opts: PgQuery::FINGERPRINT_RANGEVAR_PG17_COMPAT)
+
+=> "78d676e53f612747"
+
+PgQuery.parse("SELECT * FROM orders_2024_01").fingerprint(opts: PgQuery::FINGERPRINT_FULL_RELNAME)
+
+=> "3cc2d1ca3f22c9bf"
+```
+
 ### Scanning a query into tokens
 
 ```ruby
