@@ -1743,6 +1743,30 @@ $BODY$
     expect(query.select_tables).to match_array(['bar', 'baz'])
   end
 
+  it 'finds tables and functions in a MERGE statement' do
+    query = described_class.parse(<<-SQL)
+      MERGE INTO foo USING (SELECT a FROM bar) s ON foo.a = s.a
+      WHEN MATCHED THEN UPDATE SET b = my_func(s.a)
+      WHEN NOT MATCHED THEN INSERT (a) VALUES (s.a)
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar'])
+    expect(query.dml_tables).to eq(['foo'])
+    expect(query.select_tables).to eq(['bar'])
+    expect(query.call_functions).to eq(['my_func'])
+  end
+
+  it 'does not confuse CTE names for tables when referenced from a MERGE' do
+    query = described_class.parse(<<-SQL)
+      WITH cte_a AS (SELECT a FROM bar)
+      MERGE INTO foo USING cte_a ON foo.a = cte_a.a
+      WHEN MATCHED THEN DELETE
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar'])
+    expect(query.dml_tables).to eq(['foo'])
+    expect(query.select_tables).to eq(['bar'])
+    expect(query.cte_names).to eq(['cte_a'])
+  end
+
   it 'does not confuse CTE names for tables when referenced from a FILTER or window clause' do
     query = described_class.parse(<<-SQL)
       WITH cte_a AS (SELECT 1 AS x), cte_b AS (SELECT 2 AS y)

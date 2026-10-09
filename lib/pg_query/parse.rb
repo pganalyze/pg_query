@@ -180,6 +180,25 @@ module PgQuery
               @cte_names.concat(cte_names)
               statements.concat(cte_statements)
             end
+          # MERGE writes to its target relation and reads from the source
+          when :merge_stmt
+            from_clause_items << { item: PgQuery::Node.new(range_var: statement.merge_stmt.relation), type: :dml }
+            from_clause_items << { item: statement.merge_stmt.source_relation, type: :select } if statement.merge_stmt.source_relation
+            subselect_items << statement.merge_stmt.join_condition if statement.merge_stmt.join_condition
+            statement.merge_stmt.merge_when_clauses.each do |item|
+              next unless item.node == :merge_when_clause
+              subselect_items << item.merge_when_clause.condition if item.merge_when_clause.condition
+              subselect_items.concat(item.merge_when_clause.target_list.to_ary)
+              subselect_items.concat(item.merge_when_clause.values.to_ary)
+            end
+            subselect_items.concat(statement.merge_stmt.returning_list.to_ary)
+
+            if statement.merge_stmt.with_clause
+              record_cte_self_references!(statement.merge_stmt.with_clause)
+              cte_statements, cte_names = statements_and_cte_names_for_with_clause(statement.merge_stmt.with_clause)
+              @cte_names.concat(cte_names)
+              statements.concat(cte_statements)
+            end
           when :copy_stmt
             from_clause_items << { item: PgQuery::Node.new(range_var: statement.copy_stmt.relation), type: :dml } if statement.copy_stmt.relation
             statements << statement.copy_stmt.query
