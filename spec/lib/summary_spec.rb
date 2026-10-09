@@ -94,7 +94,7 @@ describe PgQuery, '.summary' do
   end
 
   # Note that the source table (src) is not reported, since the C implementation only
-  # looks at the target relation of a MERGE. PgQuery.parse reports neither of the two.
+  # looks at the target relation of a MERGE, unlike PgQuery.parse.
   it 'finds the target table of MERGE statements' do
     summary = described_class.summary('MERGE INTO tgt USING src ON tgt.id = src.id WHEN MATCHED THEN UPDATE SET a = src.a')
 
