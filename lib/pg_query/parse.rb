@@ -97,14 +97,27 @@ module PgQuery
     #
     # Note we use ".to_ary" on arrays from the Protobuf library before
     # passing them to concat, because of https://bugs.ruby-lang.org/issues/18140
-    def load_objects! # rubocop:disable Metrics/CyclomaticComplexity
+    def load_objects!
       @tables = [] # types: select, dml, ddl
       @cte_names = []
       @aliases = {}
       @functions = [] # types: call, ddl
+
+      # A CTE name is only in scope for the statement that defines it, so each
+      # top-level statement is walked with its own CTE scope. Otherwise a CTE in
+      # one statement masks a real relation of the same name referenced in a
+      # later statement, and that relation goes unreported.
+      @tree.stmts.each { |raw_stmt| load_objects_in_statement!(raw_stmt.stmt) }
+
+      @tables.uniq!
+      @cte_names.uniq!
+    end
+
+    def load_objects_in_statement!(toplevel_statement) # rubocop:disable Metrics/CyclomaticComplexity
+      @statement_cte_names = []
       @cte_self_reference_locations = []
 
-      statements = @tree.stmts.dup.to_a.map(&:stmt)
+      statements = [toplevel_statement]
       from_clause_items = [] # types: select, dml, ddl
       subselect_items = []
       call_items = [] # CALL fn()
@@ -139,6 +152,7 @@ module PgQuery
               record_cte_self_references!(statement.select_stmt.with_clause)
               cte_statements, cte_names = statements_and_cte_names_for_with_clause(statement.select_stmt.with_clause)
               @cte_names.concat(cte_names)
+              @statement_cte_names.concat(cte_names)
               statements.concat(cte_statements)
             end
 
@@ -178,6 +192,7 @@ module PgQuery
               record_cte_self_references!(value.with_clause)
               cte_statements, cte_names = statements_and_cte_names_for_with_clause(value.with_clause)
               @cte_names.concat(cte_names)
+              @statement_cte_names.concat(cte_names)
               statements.concat(cte_statements)
             end
           when :copy_stmt
@@ -372,9 +387,6 @@ module PgQuery
 
         break if subselect_items.empty? && statements.empty? && from_clause_items.empty?
       end
-
-      @tables.uniq!
-      @cte_names.uniq!
     end
 
     def statements_and_cte_names_for_with_clause(with_clause)
@@ -398,7 +410,7 @@ module PgQuery
     def cte_reference?(rangevar, type)
       return false unless type == :select
       return false unless rangevar.schemaname.empty?
-      return false unless @cte_names.include?(rangevar.relname)
+      return false unless @statement_cte_names.include?(rangevar.relname)
 
       !@cte_self_reference_locations.include?(rangevar.location)
     end
@@ -424,7 +436,7 @@ module PgQuery
 
     def record_self_references_for_cte!(cte)
       return if cte.ctequery.nil?
-      return if @cte_names.include?(cte.ctename)
+      return if @statement_cte_names.include?(cte.ctename)
 
       record_self_references_in(cte.ctequery, cte.ctename)
     end
