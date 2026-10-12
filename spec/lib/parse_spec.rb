@@ -1411,6 +1411,15 @@ $BODY$
       expect(query.dml_tables).to eq ['users']
       expect(query.select_tables).to eq ['other']
     end
+
+    it 'does not let a CTE mask a real relation in a later statement' do
+      query = described_class.parse('WITH users AS (SELECT 1) SELECT * FROM users; SELECT * FROM users')
+      # The CTE is only in scope for the first statement, so the second
+      # statement's `FROM users` is the real relation.
+      expect(query.cte_names).to eq ['users']
+      expect(query.tables).to eq ['users']
+      expect(query.select_tables).to eq ['users']
+    end
   end
 
   it 'correctly finds nested tables in from clause' do
