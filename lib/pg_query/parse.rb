@@ -449,11 +449,33 @@ module PgQuery
     end
 
     def record_self_references_in_message(message, cte_name)
+      with_clause = message.class.descriptor.lookup('with_clause')&.get(message)
+      return record_self_references_in_shadowing_with(with_clause, cte_name) if shadows_cte?(with_clause, cte_name)
+
       message.class.descriptor.each do |field_descriptor|
         child = field_descriptor.get(message)
         next unless child.is_a?(Google::Protobuf::MessageExts) || child.is_a?(Google::Protobuf::RepeatedField)
 
         record_self_references_in(child, cte_name)
+      end
+    end
+
+    def shadows_cte?(with_clause, cte_name)
+      return false unless with_clause.is_a?(PgQuery::WithClause)
+
+      with_clause.ctes.any? { |item| item.node == :common_table_expr && item.common_table_expr.ctename == cte_name }
+    end
+
+    # A nested WITH that redefines the CTE's name shadows it: the statement body,
+    # later siblings and (if RECURSIVE) every definition in that WITH see the
+    # inner CTE, so only the definitions up to and including the redefinition
+    # can still reference the real relation.
+    def record_self_references_in_shadowing_with(with_clause, cte_name)
+      return if with_clause.recursive
+
+      with_clause.ctes.each do |item|
+        record_self_references_in(item.common_table_expr.ctequery, cte_name) if item.node == :common_table_expr
+        break if item.node == :common_table_expr && item.common_table_expr.ctename == cte_name
       end
     end
 
