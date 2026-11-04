@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* Fix `#tables` reporting a CTE as a table when a nested `WITH` redefines its name ([#360](https://github.com/pganalyze/pg_query/issues/360))
+  - In `WITH a AS (WITH a AS (SELECT 1 FROM t) SELECT * FROM a) SELECT * FROM a`
+    the inner `FROM a` is the nested CTE, but the self-reference scan added in
+    6.2.5 recorded it as the table `a`.
 * Fix `#tables` dropping a relation when a CTE shares its name
   - A non-recursive CTE is not visible inside its own definition, so
     `WITH users AS (SELECT * FROM users) SELECT * FROM users` reads the `users`
