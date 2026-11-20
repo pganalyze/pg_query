@@ -262,14 +262,15 @@ VALUE pg_query_ruby_deparse_protobuf_opts(VALUE self, VALUE input, VALUE pretty_
 	pbuf.len = RSTRING_LEN(input);
 	result = pg_query_deparse_protobuf_opts(pbuf, deparse_opts);
 
+	for (int i = 0; i < deparse_opts.comment_count; i++)
+		free(deparse_opts.comments[i]);
+	free(deparse_opts.comments);
+
 	if (result.error) raise_ruby_deparse_error(result);
 
 	output = rb_str_new2(result.query);
 
 	pg_query_free_deparse_result(result);
-	for (int i = 0; i < deparse_opts.comment_count; i++)
-		free(deparse_opts.comments[i]);
-	free(deparse_opts.comments);
 
 	return output;
 }
