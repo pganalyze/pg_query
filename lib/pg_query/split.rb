@@ -14,7 +14,7 @@ module PgQuery
     raise SplitError.new(stderr, 'stderr', '', '') unless stderr.empty?
 
     result.map do |location, len|
-      query[location..location + len]
+      query.byteslice(location, len)
     end
   end
 end
