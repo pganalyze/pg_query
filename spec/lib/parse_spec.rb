@@ -1393,6 +1393,41 @@ $BODY$
       expect(query.tables).to eq ['t']
     end
 
+    it 'does not treat a reference to a nested CTE that redefines the name as a table' do
+      query = described_class.parse('WITH a AS (WITH a AS (SELECT 1 FROM t) SELECT * FROM a) SELECT * FROM a')
+      # The inner `FROM a` resolves to the nested CTE `a`, not to a table.
+      expect(query.tables).to eq ['t']
+    end
+
+    it 'does not treat a nested CTE reference as a table when the redefinition is in a UNION branch' do
+      query = described_class.parse(<<-SQL)
+        WITH a AS ((SELECT 1 FROM t) UNION (WITH a AS (SELECT 1 FROM t2) SELECT * FROM a)) SELECT * FROM a
+      SQL
+      expect(query.tables).to match_array(%w[t t2])
+    end
+
+    it 'does not treat a later sibling of a nested redefinition as a table' do
+      query = described_class.parse(<<-SQL)
+        WITH a AS (WITH a AS (SELECT 1 FROM t), b AS (SELECT * FROM a) SELECT * FROM b) SELECT * FROM a
+      SQL
+      expect(query.tables).to eq ['t']
+    end
+
+    it 'finds the table referenced inside a nested redefinition of the same name' do
+      query = described_class.parse('WITH a AS (WITH a AS (SELECT * FROM a) SELECT * FROM a) SELECT * FROM a')
+      # Neither `a` is visible inside its own non-recursive definition, so the innermost `a` is the table.
+      expect(query.tables).to eq ['a']
+      expect(query.tables_with_details.length).to eq 1
+    end
+
+    it 'does not treat any reference inside a nested WITH RECURSIVE redefinition as a table' do
+      query = described_class.parse(<<-SQL)
+        WITH a AS (WITH RECURSIVE a AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM a WHERE n < 5) SELECT * FROM a)
+        SELECT * FROM a
+      SQL
+      expect(query.tables).to eq []
+    end
+
     it 'finds the DML target even when a CTE shares its name' do
       query = described_class.parse(<<-SQL)
         WITH users AS (SELECT id FROM users)
