@@ -233,6 +233,13 @@ VALUE pg_query_ruby_deparse_protobuf_opts(VALUE self, VALUE input, VALUE pretty_
 	Check_Type(indent_size, T_FIXNUM);
 	Check_Type(max_line_length, T_FIXNUM);
 
+	/*
+	 * Converting the comment fields below can call back into Ruby (to_int,
+	 * to_str), so work on a private copy whose length and buffer can't change
+	 * underneath the loop.
+	 */
+	comments = rb_ary_dup(comments);
+
 	VALUE output;
 	PgQueryProtobuf pbuf = {0};
 	PgQueryDeparseResult result = {0};
