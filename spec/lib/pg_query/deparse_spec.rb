@@ -1520,6 +1520,80 @@ describe PgQuery do
       end
 
       it { is_expected.to eq('CREATE TABLE remove_comments (id int)') }
+
+      context 'when converting a comment field calls back into Ruby' do
+        let(:tree) { PgQuery.parse('SELECT 1').tree }
+        let(:comments) { PgQuery.deparse_comments_for_query('/* a */ SELECT 1') }
+        let(:extra) { PgQuery.deparse_comments_for_query('/* b */ SELECT 1').first }
+
+        def deparse_with_comments
+          PgQuery.deparse(tree, opts: PgQuery::DeparseOpts.new(comments: comments))
+        end
+
+        def convertible_to(value, &side_effect)
+          Object.new.tap do |o|
+            o.define_singleton_method(:to_int) do
+              side_effect.call
+              value
+            end
+          end
+        end
+
+        it 'ignores comments added to the array during conversion' do
+          called = false
+          comments.first.match_location = convertible_to(comments.first.match_location) do
+            called = true
+            comments.concat(Array.new(4000) { extra })
+          end
+
+          expect(deparse_with_comments).to eq '/* a */ SELECT 1'
+          expect(called).to be true
+          expect(comments.length).to eq 4001
+        end
+
+        it 'ignores comments added within the existing capacity of the array' do
+          20.times { comments << comments.first.dup }
+          comments.slice!(1..)
+          comments.first.match_location = convertible_to(comments.first.match_location) do
+            20.times { comments << extra }
+          end
+
+          expect(deparse_with_comments).to eq '/* a */ SELECT 1'
+          expect(comments.length).to eq 21
+        end
+
+        it 'raises when comments are removed from the array during conversion' do
+          comments << extra
+          comments.first.match_location = convertible_to(comments.first.match_location) { comments.pop }
+
+          expect { deparse_with_comments }.to raise_error(TypeError)
+        end
+
+        it 'uses the comment text as it was when it was converted' do
+          first = comments.first
+          comments << extra
+          extra.match_location = convertible_to(extra.match_location) do
+            first.str.replace('/* changed, and much longer than the original comment text */')
+          end
+
+          expect(deparse_with_comments).to eq '/* a *//* b */ SELECT 1'
+        end
+
+        it 'does not crash when conversion raises' do
+          comments.first.match_location = nil
+
+          expect { deparse_with_comments }.to raise_error(TypeError)
+        end
+      end
+
+      context 'when building the comment objects raises' do
+        before { PgQuery::DeparseComment.define_method(:initialize) { raise 'boom' } }
+        after { PgQuery::DeparseComment.remove_method(:initialize) }
+
+        it 'passes the error on' do
+          expect { PgQuery.deparse_comments_for_query('/* a */ SELECT 1') }.to raise_error(RuntimeError, 'boom')
+        end
+      end
     end
 
     context 'OVER' do
