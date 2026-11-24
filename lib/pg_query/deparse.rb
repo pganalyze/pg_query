@@ -31,9 +31,9 @@ module PgQuery
         opts.max_line_length || 0,
         opts.trailing_newline,
         opts.commas_start_of_line
-      ).force_encoding('UTF-8')
+      )
     else
-      PgQuery.deparse_protobuf(protobuf_encoded).force_encoding('UTF-8')
+      PgQuery.deparse_protobuf(protobuf_encoded)
     end
   end
 
