@@ -212,6 +212,7 @@ module PgQuery
               record_cte_self_references!(statement.merge_stmt.with_clause)
               cte_statements, cte_names = statements_and_cte_names_for_with_clause(statement.merge_stmt.with_clause)
               @cte_names.concat(cte_names)
+              @statement_cte_names.concat(cte_names)
               statements.concat(cte_statements)
             end
           when :copy_stmt
