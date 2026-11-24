@@ -234,6 +234,9 @@ VALUE pg_query_ruby_deparse_protobuf_opts(VALUE self, VALUE input, VALUE pretty_
 	Check_Type(max_line_length, T_FIXNUM);
 
 	VALUE output;
+	/* GC-owned buffers, so a raise during conversion doesn't leak */
+	VALUE comment_structs_buf, comment_ptrs_buf;
+
 	PgQueryProtobuf pbuf = {0};
 	PgQueryDeparseResult result = {0};
 	PostgresDeparseOpts deparse_opts = {0};
@@ -242,29 +245,48 @@ VALUE pg_query_ruby_deparse_protobuf_opts(VALUE self, VALUE input, VALUE pretty_
 	deparse_opts.max_line_length = NUM2INT(max_line_length);
 	deparse_opts.trailing_newline = RTEST(trailing_newline);
 	deparse_opts.commas_start_of_line = RTEST(commas_start_of_line);
-	deparse_opts.comments = malloc(RARRAY_LEN(comments) * sizeof(PostgresDeparseComment *));
 	deparse_opts.comment_count = RARRAY_LEN(comments);
-	VALUE *comments_arr = RARRAY_PTR(comments);
+	deparse_opts.comments = ALLOCV_N(PostgresDeparseComment *, comment_ptrs_buf, deparse_opts.comment_count);
 
-	for (int i = 0; i < RARRAY_LEN(comments); i++)
+	PostgresDeparseComment *comment_structs = ALLOCV_N(PostgresDeparseComment, comment_structs_buf, deparse_opts.comment_count);
+	VALUE comment_strs = rb_ary_new_capa(deparse_opts.comment_count);
+
+	/*
+	 * Convert the comment fields. This can call back into Ruby (to_int, to_str),
+	 * which may modify the comments array or the comment strings, or raise.
+	 */
+	for (size_t i = 0; i < deparse_opts.comment_count; i++)
 	{
-		PostgresDeparseComment* comment  = malloc(sizeof(PostgresDeparseComment));
-		VALUE str_ref                    = rb_ivar_get(comments_arr[i], rb_intern("@str"));
-		comment->match_location          = NUM2INT(rb_ivar_get(comments_arr[i], rb_intern("@match_location")));
-		comment->newlines_before_comment = NUM2INT(rb_ivar_get(comments_arr[i], rb_intern("@newlines_before_comment")));
-		comment->newlines_after_comment  = NUM2INT(rb_ivar_get(comments_arr[i], rb_intern("@newlines_after_comment")));
-		comment->str                     = StringValueCStr(str_ref);
+		PostgresDeparseComment *comment = &comment_structs[i];
+
+		/* rb_ary_entry returns nil if the array shrank, which raises a TypeError below */
+		VALUE comment_ref               = rb_ary_entry(comments, i);
+		VALUE str_ref                   = rb_ivar_get(comment_ref, rb_intern("@str"));
+
+		comment->match_location          = NUM2INT(rb_ivar_get(comment_ref, rb_intern("@match_location")));
+		comment->newlines_before_comment = NUM2INT(rb_ivar_get(comment_ref, rb_intern("@newlines_before_comment")));
+		comment->newlines_after_comment  = NUM2INT(rb_ivar_get(comment_ref, rb_intern("@newlines_after_comment")));
+
+		(void) StringValueCStr(str_ref); /* to_str conversion, raises on embedded NUL */
+		rb_ary_push(comment_strs, rb_str_new_frozen(str_ref));
 
 		deparse_opts.comments[i] = comment;
 	}
+
+	/*
+	 * Take the string pointers only now that no more Ruby code or allocation
+	 * can run before the deparse call, so the strings can't be changed or moved.
+	 */
+	for (size_t i = 0; i < deparse_opts.comment_count; i++)
+		deparse_opts.comments[i]->str = RSTRING_PTR(RARRAY_AREF(comment_strs, i));
 
 	pbuf.data = StringValuePtr(input);
 	pbuf.len = RSTRING_LEN(input);
 	result = pg_query_deparse_protobuf_opts(pbuf, deparse_opts);
 
-	for (int i = 0; i < deparse_opts.comment_count; i++)
-		free(deparse_opts.comments[i]);
-	free(deparse_opts.comments);
+	RB_GC_GUARD(comment_strs);
+	ALLOCV_END(comment_structs_buf);
+	ALLOCV_END(comment_ptrs_buf);
 
 	if (result.error) raise_ruby_deparse_error(result);
 
@@ -275,22 +297,19 @@ VALUE pg_query_ruby_deparse_protobuf_opts(VALUE self, VALUE input, VALUE pretty_
 	return output;
 }
 
-VALUE pg_query_ruby_deparse_comments_for_query(VALUE self, VALUE input)
+/* Runs under rb_protect, so the result can be freed if building the Ruby objects raises */
+static VALUE build_deparse_comments(VALUE arg)
 {
-	Check_Type(input, T_STRING);
-
+	PgQueryDeparseCommentsResult *result = (PgQueryDeparseCommentsResult *) arg;
 	VALUE cPgQuery, cDeparseComment;
+	VALUE output = rb_ary_new();
 
 	cPgQuery        = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cDeparseComment = rb_const_get_at(cPgQuery, rb_intern("DeparseComment"));
 
-	VALUE output = rb_ary_new();
-	PgQueryDeparseCommentsResult result = pg_query_deparse_comments_for_query(StringValueCStr(input));
-	if (result.error) raise_ruby_deparse_comments_error(result);
-
-	for (int i = 0; i < result.comment_count; i++)
+	for (size_t i = 0; i < result->comment_count; i++)
 	{
-		PostgresDeparseComment* comment = result.comments[i];
+		PostgresDeparseComment* comment = result->comments[i];
 		VALUE c = rb_class_new_instance(0, NULL, cDeparseComment);
 		rb_ivar_set(c, rb_intern("@str"), rb_str_new2(comment->str));
 		rb_ivar_set(c, rb_intern("@match_location"), INT2NUM(comment->match_location));
@@ -299,7 +318,24 @@ VALUE pg_query_ruby_deparse_comments_for_query(VALUE self, VALUE input)
 		rb_ary_push(output, c);
 	}
 
+	return output;
+}
+
+VALUE pg_query_ruby_deparse_comments_for_query(VALUE self, VALUE input)
+{
+	Check_Type(input, T_STRING);
+
+	VALUE output;
+	int state;
+	PgQueryDeparseCommentsResult result = pg_query_deparse_comments_for_query(StringValueCStr(input));
+
+	if (result.error) raise_ruby_deparse_comments_error(result);
+
+	output = rb_protect(build_deparse_comments, (VALUE) &result, &state);
+
 	pg_query_free_deparse_comments_result(result);
+
+	if (state) rb_jump_tag(state);
 
 	return output;
 }
