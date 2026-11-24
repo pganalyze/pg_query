@@ -50,7 +50,7 @@ void raise_ruby_parse_error(PgQueryProtobufParseResult result)
 	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -68,7 +68,7 @@ void raise_ruby_deparse_error(PgQueryDeparseResult result)
 	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -86,7 +86,7 @@ void raise_ruby_deparse_comments_error(PgQueryDeparseCommentsResult result)
 	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -104,7 +104,7 @@ void raise_ruby_normalize_error(PgQueryNormalizeResult result)
 	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -122,7 +122,7 @@ void raise_ruby_fingerprint_error(PgQueryFingerprintResult result)
 	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -140,7 +140,7 @@ void raise_ruby_scan_error(PgQueryScanResult result)
 	cPgQuery   = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cScanError = rb_const_get_at(cPgQuery, rb_intern("ScanError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -158,7 +158,7 @@ void raise_ruby_split_error(PgQuerySplitResult result)
 	cPgQuery   = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cSplitError = rb_const_get_at(cPgQuery, rb_intern("SplitError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -176,7 +176,7 @@ void raise_ruby_summary_error(PgQuerySummaryParseResult result)
 	cPgQuery    = rb_const_get(rb_cObject, rb_intern("PgQuery"));
 	cParseError = rb_const_get_at(cPgQuery, rb_intern("ParseError"));
 
-	args[0] = rb_str_new2(result.error->message);
+	args[0] = rb_utf8_str_new_cstr(result.error->message);
 	args[1] = rb_str_new2(result.error->filename);
 	args[2] = INT2NUM(result.error->lineno);
 	args[3] = INT2NUM(result.error->cursorpos);
@@ -219,7 +219,7 @@ VALUE pg_query_ruby_deparse_protobuf(VALUE self, VALUE input)
 
 	if (result.error) raise_ruby_deparse_error(result);
 
-	output = rb_str_new2(result.query);
+	output = rb_utf8_str_new_cstr(result.query);
 
 	pg_query_free_deparse_result(result);
 
@@ -268,7 +268,7 @@ VALUE pg_query_ruby_deparse_protobuf_opts(VALUE self, VALUE input, VALUE pretty_
 
 	if (result.error) raise_ruby_deparse_error(result);
 
-	output = rb_str_new2(result.query);
+	output = rb_utf8_str_new_cstr(result.query);
 
 	pg_query_free_deparse_result(result);
 
@@ -292,7 +292,7 @@ VALUE pg_query_ruby_deparse_comments_for_query(VALUE self, VALUE input)
 	{
 		PostgresDeparseComment* comment = result.comments[i];
 		VALUE c = rb_class_new_instance(0, NULL, cDeparseComment);
-		rb_ivar_set(c, rb_intern("@str"), rb_str_new2(comment->str));
+		rb_ivar_set(c, rb_intern("@str"), rb_utf8_str_new_cstr(comment->str));
 		rb_ivar_set(c, rb_intern("@match_location"), INT2NUM(comment->match_location));
 		rb_ivar_set(c, rb_intern("@newlines_before_comment"), INT2NUM(comment->newlines_before_comment));
 		rb_ivar_set(c, rb_intern("@newlines_after_comment"), INT2NUM(comment->newlines_after_comment));
@@ -313,7 +313,7 @@ VALUE pg_query_ruby_normalize(VALUE self, VALUE input)
 
 	if (result.error) raise_ruby_normalize_error(result);
 
-	output = rb_str_new2(result.normalized_query);
+	output = rb_utf8_str_new_cstr(result.normalized_query);
 
 	pg_query_free_normalize_result(result);
 
