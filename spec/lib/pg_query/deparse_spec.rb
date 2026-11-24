@@ -1520,6 +1520,21 @@ describe PgQuery do
       end
 
       it { is_expected.to eq('CREATE TABLE remove_comments (id int)') }
+
+      it 'ignores comments added to the array while converting the options' do
+        comments = PgQuery.deparse_comments_for_query('/* a */ SELECT 1')
+        extra = PgQuery.deparse_comments_for_query('/* b */ SELECT 1').first
+        location = comments.first.match_location
+        comments.first.match_location = Object.new.tap do |o|
+          o.define_singleton_method(:to_int) do
+            comments.concat(Array.new(4000) { extra })
+            location
+          end
+        end
+
+        tree = PgQuery.parse('SELECT 1').tree
+        expect(PgQuery.deparse(tree, opts: PgQuery::DeparseOpts.new(comments: comments))).to eq '/* a */ SELECT 1'
+      end
     end
 
     context 'OVER' do
