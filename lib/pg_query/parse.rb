@@ -402,6 +402,11 @@ module PgQuery
             statements << next_item[:item].range_subselect.subquery
           when :range_function
             subselect_items += next_item[:item].range_function.functions
+          when :range_table_sample
+            sample = next_item[:item].range_table_sample
+            from_clause_items << { item: sample.relation, type: next_item[:type] }
+            subselect_items.concat(sample.args.to_ary)
+            subselect_items << sample.repeatable if sample.repeatable
           end
         end
 

@@ -1873,6 +1873,27 @@ $BODY$
     expect(query.call_functions).to eq ['unnest', 'json_build_object', 'row_to_json', 'public.my_function']
   end
 
+  it 'finds tables used with TABLESAMPLE' do
+    query = described_class.parse(<<-SQL)
+      SELECT * FROM foo f TABLESAMPLE SYSTEM (100)
+      JOIN bar TABLESAMPLE BERNOULLI ((SELECT pct FROM baz)) REPEATABLE ((SELECT seed FROM qux)) ON true
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar', 'baz', 'qux'])
+    expect(query.select_tables).to match_array(['foo', 'bar', 'baz', 'qux'])
+    expect(query.dml_tables).to eq([])
+    expect(query.ddl_tables).to eq([])
+    expect(query.aliases).to eq('f' => 'foo')
+  end
+
+  it 'finds tables used with TABLESAMPLE in DELETE USING' do
+    query = described_class.parse(<<-SQL)
+      DELETE FROM foo USING bar TABLESAMPLE SYSTEM (100) WHERE foo.id = bar.id
+    SQL
+    expect(query.tables).to match_array(['foo', 'bar'])
+    expect(query.dml_tables).to eq(['foo'])
+    expect(query.select_tables).to eq(['bar'])
+  end
+
   it 'finds the table in a SELECT INTO that is being created' do
     query = described_class.parse(<<-SQL)
     SELECT * INTO films_recent FROM films WHERE date_prod >= '2002-01-01';
